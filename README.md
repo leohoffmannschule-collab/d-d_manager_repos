@@ -9,6 +9,19 @@ Referenzdaten (Völker, Klassen, Zauber, Ausrüstung, Monster …) kommen von de
 [D&D 5e API](https://www.dnd5eapi.co/api) des [5e-bits](https://github.com/5e-bits)-Projekts und
 werden lokal zwischengespeichert.
 
+## Dokumentation
+
+Dieses Projekt bringt zwei ausführliche PDF-Dokumente mit, beide im Ordner [`docs/`](docs):
+
+| Dokument | Für wen | Inhalt |
+| -------- | ------- | ------ |
+| 📘 [**Einrichtungsanleitung**](docs/Einrichtungsanleitung.pdf) | Wer den Server betreibt | Alles aus diesem README, ausführlicher: Windows/VS Code, macOS/Linux, Raspberry Pi, Konfiguration, Backup, Fehlerbehebung |
+| 📗 [**Spielerhandbuch**](docs/Spielerhandbuch.pdf) | Wer am Spieltisch sitzt | Charakter erschaffen, das Blatt im Detail, Kompendium, Würfelbeutel, häufige Fragen |
+
+Die restlichen Abschnitte dieses READMEs sind die Kurzfassung der Einrichtungsanleitung – für den
+schnellen Blick zwischendurch reicht das README, für die vollständige Anleitung samt
+Fehlerbehebung lohnt sich das PDF.
+
 ## Funktionen
 
 - **Charakterliste** mit Anlegen, Abschrift und Löschen
@@ -113,7 +126,9 @@ pm2 save && pm2 startup
 3. Die App startet danach im Vollbild mit eigenem Symbol.
 
 Tipp: Dem Rechner bzw. Pi im Router eine feste IP-Adresse zuweisen, damit sich die Adresse nicht
-ändert.
+ändert. Wie die App danach am Spieltisch benutzt wird – Charakter erschaffen, das Blatt im Detail,
+Würfeln – steht im [Spielerhandbuch](docs/Spielerhandbuch.pdf); am einfachsten direkt an die
+Spielerinnen und Spieler weiterreichen.
 
 ### Hinweis zu HTTPS und Offline-Betrieb
 
@@ -159,6 +174,7 @@ frontend/   React 19 + Vite, Tailwind CSS v4, PWA
 backend/    Node.js + Express, SQLite über das eingebaute node:sqlite
             (Rückfallebene better-sqlite3 für ältere Node-Versionen)
 design/     Die Design-Entwürfe (Artboards) zum mittelalterlichen Erscheinungsbild
+docs/       Einrichtungsanleitung.pdf und Spielerhandbuch.pdf (siehe „Dokumentation" oben)
 scripts/    Hilfsskripte, plattformunabhängig in Node geschrieben
 .vscode/    Start- und Task-Konfiguration für VS Code
 ```
