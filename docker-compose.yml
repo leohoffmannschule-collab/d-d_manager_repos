@@ -1,0 +1,18 @@
+services:
+  dnd-manager:
+    build: .
+    image: dnd-manager:latest
+    container_name: dnd-manager
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    volumes:
+      - dnd-manager-data:/app/data
+    environment:
+      - PORT=3001
+      # 2014 = klassisches 5e-SRD-Regelwerk. Für die 2024er Regeln kann
+      # "https://www.dnd5eapi.co/api/2024" verwendet werden.
+      - DND5E_API_BASE=https://www.dnd5eapi.co/api/2014
+
+volumes:
+  dnd-manager-data:
