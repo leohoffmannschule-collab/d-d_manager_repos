@@ -1,7 +1,13 @@
+// structuredClone fehlt auf iPads, die älter als iPadOS 15.4 sind.
+function deepClone(obj) {
+  if (typeof structuredClone === 'function') return structuredClone(obj);
+  return JSON.parse(JSON.stringify(obj));
+}
+
 // Immutably sets a nested value, e.g. setPath(obj, 'combat.hp.current', 5)
 export function setPath(obj, path, value) {
   const keys = path.split('.');
-  const clone = structuredClone(obj);
+  const clone = deepClone(obj);
   let cursor = clone;
   for (let i = 0; i < keys.length - 1; i++) {
     cursor = cursor[keys[i]];

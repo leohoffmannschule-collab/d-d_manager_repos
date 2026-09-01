@@ -29,7 +29,14 @@ async function fetchFromUpstream(subPath) {
 
 // GET /api/compendium/*  ->  proxies + caches https://www.dnd5eapi.co/api/2014/*
 router.get(/.*/, async (req, res) => {
-  const subPath = req.params[0] || '';
+  // req.url ist der Pfad relativ zum Mount-Punkt, samt Query-Parametern.
+  const subPath = req.url.replace(/^\/+/, '');
+
+  // Keine Ausbrüche aus dem API-Pfad zulassen.
+  if (subPath.split('/').includes('..')) {
+    return res.status(400).json({ error: 'Ungültiger Pfad' });
+  }
+
   const cacheKey = subPath || 'index';
   const cached = getCached.get(cacheKey);
 

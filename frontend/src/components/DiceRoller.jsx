@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { IconClose, IconD20, IconD20Detailed } from './icons.jsx';
+import { newId } from '../lib/id.js';
 
 const DICE = [4, 6, 8, 10, 12, 20, 100];
 
@@ -17,7 +18,7 @@ export default function DiceRoller() {
     const rolls = Array.from({ length: count }, () => rollDie(sides));
     const total = rolls.reduce((sum, r) => sum + r, 0) + Number(modifier || 0);
     const entry = {
-      id: crypto.randomUUID(),
+      id: newId(),
       label: `${count}W${sides}${modifier ? (modifier > 0 ? `+${modifier}` : modifier) : ''}`,
       rolls,
       total,

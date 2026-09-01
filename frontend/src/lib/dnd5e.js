@@ -1,3 +1,5 @@
+import { newId } from './id.js';
+
 export const ABILITIES = [
   { key: 'str', label: 'Stärke' },
   { key: 'dex', label: 'Geschicklichkeit' },
@@ -94,10 +96,10 @@ export function defaultFreeformData() {
     portrait: '',
     summary: '',
     sections: [
-      { id: crypto.randomUUID(), title: 'Werte', content: '' },
-      { id: crypto.randomUUID(), title: 'Ausrüstung', content: '' },
-      { id: crypto.randomUUID(), title: 'Hintergrund', content: '' },
-      { id: crypto.randomUUID(), title: 'Notizen', content: '' },
+      { id: newId(), title: 'Werte', content: '' },
+      { id: newId(), title: 'Ausrüstung', content: '' },
+      { id: newId(), title: 'Hintergrund', content: '' },
+      { id: newId(), title: 'Notizen', content: '' },
     ],
   };
 }

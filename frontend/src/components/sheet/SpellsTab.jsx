@@ -3,6 +3,7 @@ import { ABILITIES, SPELL_LEVELS, abilityModifier, formatModifier, proficiencyBo
 import { compendiumApi } from '../../lib/api.js';
 import { Card, FieldLabel, Stepper, Toggle } from '../ui.jsx';
 import { IconPlus, IconSearch } from '../icons.jsx';
+import { newId } from '../../lib/id.js';
 
 function SpellSearch({ onAdd }) {
   const [allSpells, setAllSpells] = useState(null);
@@ -25,9 +26,9 @@ function SpellSearch({ onAdd }) {
   async function handleAdd(entry) {
     try {
       const detail = await compendiumApi.detail('spells', entry.index);
-      onAdd({ id: crypto.randomUUID(), index: entry.index, name: detail.name, level: detail.level ?? 0, prepared: false });
+      onAdd({ id: newId(), index: entry.index, name: detail.name, level: detail.level ?? 0, prepared: false });
     } catch {
-      onAdd({ id: crypto.randomUUID(), index: entry.index, name: entry.name, level: 0, prepared: false });
+      onAdd({ id: newId(), index: entry.index, name: entry.name, level: 0, prepared: false });
     }
     setQuery('');
   }

@@ -1,7 +1,8 @@
 import { IconPlus } from './icons.jsx';
+import { newId } from '../lib/id.js';
 
 function emptyRow(fields) {
-  const row = { id: crypto.randomUUID() };
+  const row = { id: newId() };
   fields.forEach((f) => {
     row[f.key] = f.type === 'number' ? 0 : '';
   });

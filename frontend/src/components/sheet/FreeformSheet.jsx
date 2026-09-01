@@ -1,5 +1,6 @@
 import { Card, TextAreaField } from '../ui.jsx';
 import { IconPlus } from '../icons.jsx';
+import { newId } from '../../lib/id.js';
 
 export default function FreeformSheet({ data, update }) {
   function updateSection(id, patch) {
@@ -34,7 +35,7 @@ export default function FreeformSheet({ data, update }) {
 
       <button
         onClick={() =>
-          update('sections', [...data.sections, { id: crypto.randomUUID(), title: 'Neuer Abschnitt', content: '' }])
+          update('sections', [...data.sections, { id: newId(), title: 'Neuer Abschnitt', content: '' }])
         }
         className="flex min-h-12 items-center justify-center gap-2 border border-dashed border-rule-strong font-display text-[13px] tracking-[0.1em] text-sepia uppercase hover:border-gold hover:text-rubric"
       >
