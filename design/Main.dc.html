@@ -1,0 +1,275 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=UnifrakturMaguntia&display=swap');
+    body { margin: 0; font-family: 'EB Garamond', Georgia, 'Times New Roman', serif; }
+    a { color: #9a2b22; text-decoration: none; }
+    a:hover { color: #6f1d17; }
+  </style>
+</helmet>
+
+<div style="width: 820px; height: 1180px; display: flex; flex-direction: column; overflow: hidden; background-color: #e6d7b0; background-image: radial-gradient(ellipse at 18% 12%, rgba(255,250,235,0.60), transparent 55%), radial-gradient(ellipse at 82% 68%, rgba(150,120,78,0.20), transparent 60%), radial-gradient(ellipse at 45% 98%, rgba(112,88,54,0.14), transparent 55%); color: #2b2114;">
+
+  <!-- Kopfleiste: Buchdeckel aus dunklem Leder -->
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 22px; height: 62px; background-color: #382718; background-image: linear-gradient(180deg, rgba(255,225,170,0.10), rgba(0,0,0,0.18)); border-bottom: 2px solid #b8912f; flex-shrink: 0;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#d9b451" stroke-width="1.4" stroke-linejoin="round">
+        <path d="M12 2.6 20.2 7v10L12 21.4 3.8 17V7z"></path>
+        <path d="M12 2.6 20.2 7 12 11.4 3.8 7z"></path>
+        <path d="M12 11.4V21.4"></path>
+      </svg>
+      <span style="font-family: 'Cinzel', Georgia, serif; font-size: 19px; font-weight: 600; letter-spacing: 0.16em; color: #e8cf8d; text-transform: uppercase;">Abenteuer-Almanach</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <div style="display: flex; align-items: center; gap: 7px; padding: 9px 14px; border: 1px solid #b8912f; border-radius: 2px; background-color: rgba(216,180,81,0.14);">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#e8cf8d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 3h9a3 3 0 0 1 3 3v15H8a2 2 0 0 1-2-2z"></path>
+          <path d="M18 3a3 3 0 0 0-3 3v12"></path>
+          <path d="M9 8h6M9 12h6"></path>
+        </svg>
+        <span style="font-family: 'Cinzel', Georgia, serif; font-size: 13px; letter-spacing: 0.10em; color: #e8cf8d;">Charaktere</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 7px; padding: 9px 14px; border: 1px solid transparent; border-radius: 2px;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#c9b189" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 5.5C5.5 4 8.5 4 12 5.8 15.5 4 18.5 4 21 5.5v13c-2.5-1.5-5.5-1.5-9 .3-3.5-1.8-6.5-1.8-9-.3z"></path>
+          <path d="M12 5.8v13"></path>
+        </svg>
+        <span style="font-family: 'Cinzel', Georgia, serif; font-size: 13px; letter-spacing: 0.10em; color: #c9b189;">Kompendium</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 7px; padding: 9px 14px; border: 1px solid transparent; border-radius: 2px;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#c9b189" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"></circle>
+          <path d="M9.6 9.2a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.7-.9 1.3v.6"></path>
+          <path d="M12 17.2h.01"></path>
+        </svg>
+        <span style="font-family: 'Cinzel', Georgia, serif; font-size: 13px; letter-spacing: 0.10em; color: #c9b189;">Hilfe</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Seiteninhalt -->
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 15px; padding: 20px 24px 0;">
+
+    <!-- Charakterkopf -->
+    <div style="display: flex; align-items: center; gap: 18px;">
+      <div style="width: 92px; height: 92px; border-radius: 50%; flex-shrink: 0; background-color: #d8c49a; box-shadow: 0 0 0 2px #b8912f, 0 0 0 5px #e6d7b0, 0 0 0 6px #a3865c, 0 2px 8px rgba(60,45,25,0.28); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+        <span style="font-family: 'Cinzel', Georgia, serif; font-size: 49px; font-weight: 600; color: #9a2b22;">E</span>
+      </div>
+      <div style="flex-grow: 1; min-width: 0;">
+        <div style="font-family: 'Cinzel', Georgia, serif; font-size: 31px; font-weight: 600; letter-spacing: 0.03em; color: #2b2114;">Elara Nachtwind</div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
+          <span style="font-size: 16px; color: #6d5c45; font-style: italic;">Waldelfe · Waldläuferin · Stufe 5</span>
+          <span style="width: 4px; height: 4px; border-radius: 50%; background-color: #b8912f;"></span>
+          <span style="display: flex; align-items: center; gap: 5px; font-size: 14px; color: #5f7a4e;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5f7a4e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"></path></svg>
+            In der Chronik verzeichnet
+          </span>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 9px 16px; border: 1px solid #c2a878; background-color: rgba(244,234,210,0.75);">
+        <span style="font-family: 'Cinzel', Georgia, serif; font-size: 10px; letter-spacing: 0.18em; color: #8a7355; text-transform: uppercase;">Trefferpunkte</span>
+        <span style="font-family: 'Cinzel', Georgia, serif; font-size: 24px; font-weight: 700; color: #9a2b22;">38<span style="font-size: 15px; color: #8a7355;"> / 44</span></span>
+      </div>
+    </div>
+
+    <!-- Reiter -->
+    <div style="display: flex; gap: 4px; border-bottom: 1px solid #a3865c;">
+      <div style="padding: 11px 20px; background-color: #f4ead2; border: 1px solid #a3865c; border-bottom: 1px solid #f4ead2; margin-bottom: -1px; font-family: 'Cinzel', Georgia, serif; font-size: 14px; letter-spacing: 0.08em; color: #9a2b22;">Übersicht</div>
+      <div style="padding: 11px 20px; font-family: 'Cinzel', Georgia, serif; font-size: 14px; letter-spacing: 0.08em; color: #6d5c45;">Kampf</div>
+      <div style="padding: 11px 20px; font-family: 'Cinzel', Georgia, serif; font-size: 14px; letter-spacing: 0.08em; color: #6d5c45;">Inventar</div>
+      <div style="padding: 11px 20px; font-family: 'Cinzel', Georgia, serif; font-size: 14px; letter-spacing: 0.08em; color: #6d5c45;">Zauber</div>
+      <div style="padding: 11px 20px; font-family: 'Cinzel', Georgia, serif; font-size: 14px; letter-spacing: 0.08em; color: #6d5c45;">Hintergrund</div>
+    </div>
+
+    <!-- Tafel: Charakter -->
+    <div style="background-color: #f4ead2; border: 1px solid #c2a878; box-shadow: 0 2px 7px rgba(60,45,25,0.10); padding: 16px 18px 18px;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="#b8912f" stroke="none"><path d="M12 2.5 14 9l6.5 1.5L15.5 15l1.5 6.5L12 18l-5 3.5L8.5 15 3.5 10.5 10 9z"></path></svg>
+        <span style="font-family: 'Cinzel', Georgia, serif; font-size: 15px; font-weight: 600; letter-spacing: 0.14em; color: #9a2b22; text-transform: uppercase;">Charakter</span>
+        <span style="flex-grow: 1; height: 1px; background-color: #c2a878;"></span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 22px;">
+        <div style="display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 10px; letter-spacing: 0.16em; color: #8a7355; text-transform: uppercase;">Volk</span>
+          <div style="border-bottom: 1px solid #c2a878; padding-bottom: 6px; font-size: 18px; color: #2b2114;">Waldelfe</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 10px; letter-spacing: 0.16em; color: #8a7355; text-transform: uppercase;">Klasse</span>
+          <div style="border-bottom: 1px solid #c2a878; padding-bottom: 6px; font-size: 18px; color: #2b2114;">Waldläuferin</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 10px; letter-spacing: 0.16em; color: #8a7355; text-transform: uppercase;">Unterklasse</span>
+          <div style="border-bottom: 1px solid #c2a878; padding-bottom: 6px; font-size: 18px; color: #2b2114;">Jägerin</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 10px; letter-spacing: 0.16em; color: #8a7355; text-transform: uppercase;">Stufe</span>
+          <div style="border-bottom: 1px solid #c2a878; padding-bottom: 6px; font-size: 18px; color: #2b2114;">5</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 10px; letter-spacing: 0.16em; color: #8a7355; text-transform: uppercase;">Hintergrund</span>
+          <div style="border-bottom: 1px solid #c2a878; padding-bottom: 6px; font-size: 18px; color: #2b2114;">Späherin</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 10px; letter-spacing: 0.16em; color: #8a7355; text-transform: uppercase;">Gesinnung</span>
+          <div style="border-bottom: 1px solid #c2a878; padding-bottom: 6px; font-size: 18px; color: #2b2114;">Chaotisch gut</div>
+        </div>
+      </div>
+      <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed #c9b48c; font-size: 15px; font-style: italic; color: #6d5c45;">Übungsbonus <span style="font-family: 'Cinzel', Georgia, serif; font-style: normal; font-weight: 600; color: #9a2b22;">+3</span> · Erfahrung 6.500</div>
+    </div>
+
+    <!-- Tafel: Attribute als Wappenschilde -->
+    <div style="background-color: #f4ead2; border: 1px solid #c2a878; box-shadow: 0 2px 7px rgba(60,45,25,0.10); padding: 16px 18px 20px;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="#b8912f" stroke="none"><path d="M12 2.5 14 9l6.5 1.5L15.5 15l1.5 6.5L12 18l-5 3.5L8.5 15 3.5 10.5 10 9z"></path></svg>
+        <span style="font-family: 'Cinzel', Georgia, serif; font-size: 15px; font-weight: 600; letter-spacing: 0.14em; color: #9a2b22; text-transform: uppercase;">Attribute</span>
+        <span style="flex-grow: 1; height: 1px; background-color: #c2a878;"></span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px;">
+
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 10px; letter-spacing: 0.12em; color: #8a7355; text-transform: uppercase;">Stärke</span>
+          <div style="position: relative; width: 74px; height: 88px;">
+            <svg width="74" height="88" viewBox="0 0 74 88" fill="#ece0c2" stroke="#a3865c" stroke-width="1.5"><path d="M4 5h66v42c0 20-14 30-33 36C18 77 4 67 4 47z"></path></svg>
+            <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;">
+              <span style="font-family: 'Cinzel', Georgia, serif; font-size: 26px; font-weight: 700; color: #2b2114;">12</span>
+              <span style="font-family: 'Cinzel', Georgia, serif; font-size: 14px; color: #9a2b22;">+1</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 10px; letter-spacing: 0.12em; color: #8a7355; text-transform: uppercase;">Gesch.</span>
+          <div style="position: relative; width: 74px; height: 88px;">
+            <svg width="74" height="88" viewBox="0 0 74 88" fill="#f6e9c6" stroke="#b8912f" stroke-width="2"><path d="M4 5h66v42c0 20-14 30-33 36C18 77 4 67 4 47z"></path></svg>
+            <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;">
+              <span style="font-family: 'Cinzel', Georgia, serif; font-size: 26px; font-weight: 700; color: #2b2114;">18</span>
+              <span style="font-family: 'Cinzel', Georgia, serif; font-size: 14px; color: #9a2b22;">+4</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 10px; letter-spacing: 0.12em; color: #8a7355; text-transform: uppercase;">Konst.</span>
+          <div style="position: relative; width: 74px; height: 88px;">
+            <svg width="74" height="88" viewBox="0 0 74 88" fill="#ece0c2" stroke="#a3865c" stroke-width="1.5"><path d="M4 5h66v42c0 20-14 30-33 36C18 77 4 67 4 47z"></path></svg>
+            <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;">
+              <span style="font-family: 'Cinzel', Georgia, serif; font-size: 26px; font-weight: 700; color: #2b2114;">14</span>
+              <span style="font-family: 'Cinzel', Georgia, serif; font-size: 14px; color: #9a2b22;">+2</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 10px; letter-spacing: 0.12em; color: #8a7355; text-transform: uppercase;">Intel.</span>
+          <div style="position: relative; width: 74px; height: 88px;">
+            <svg width="74" height="88" viewBox="0 0 74 88" fill="#ece0c2" stroke="#a3865c" stroke-width="1.5"><path d="M4 5h66v42c0 20-14 30-33 36C18 77 4 67 4 47z"></path></svg>
+            <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;">
+              <span style="font-family: 'Cinzel', Georgia, serif; font-size: 26px; font-weight: 700; color: #2b2114;">11</span>
+              <span style="font-family: 'Cinzel', Georgia, serif; font-size: 14px; color: #6d5c45;">+0</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 10px; letter-spacing: 0.12em; color: #8a7355; text-transform: uppercase;">Weisheit</span>
+          <div style="position: relative; width: 74px; height: 88px;">
+            <svg width="74" height="88" viewBox="0 0 74 88" fill="#ece0c2" stroke="#a3865c" stroke-width="1.5"><path d="M4 5h66v42c0 20-14 30-33 36C18 77 4 67 4 47z"></path></svg>
+            <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;">
+              <span style="font-family: 'Cinzel', Georgia, serif; font-size: 26px; font-weight: 700; color: #2b2114;">16</span>
+              <span style="font-family: 'Cinzel', Georgia, serif; font-size: 14px; color: #9a2b22;">+3</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 10px; letter-spacing: 0.12em; color: #8a7355; text-transform: uppercase;">Charisma</span>
+          <div style="position: relative; width: 74px; height: 88px;">
+            <svg width="74" height="88" viewBox="0 0 74 88" fill="#ece0c2" stroke="#a3865c" stroke-width="1.5"><path d="M4 5h66v42c0 20-14 30-33 36C18 77 4 67 4 47z"></path></svg>
+            <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;">
+              <span style="font-family: 'Cinzel', Georgia, serif; font-size: 26px; font-weight: 700; color: #2b2114;">10</span>
+              <span style="font-family: 'Cinzel', Georgia, serif; font-size: 14px; color: #6d5c45;">+0</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Tafel: Fertigkeiten -->
+    <div style="background-color: #f4ead2; border: 1px solid #c2a878; box-shadow: 0 2px 7px rgba(60,45,25,0.10); padding: 16px 18px 18px; flex-grow: 1;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="#b8912f" stroke="none"><path d="M12 2.5 14 9l6.5 1.5L15.5 15l1.5 6.5L12 18l-5 3.5L8.5 15 3.5 10.5 10 9z"></path></svg>
+        <span style="font-family: 'Cinzel', Georgia, serif; font-size: 15px; font-weight: 600; letter-spacing: 0.14em; color: #9a2b22; text-transform: uppercase;">Fertigkeiten</span>
+        <span style="flex-grow: 1; height: 1px; background-color: #c2a878;"></span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px 26px;">
+
+        <div style="display: flex; align-items: center; gap: 11px; padding: 8px 2px;">
+          <span style="width: 17px; height: 17px; border: 1.5px solid #a3865c; background-color: #9a2b22; display: flex; align-items: center; justify-content: center;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#f4ead2" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"></path></svg>
+          </span>
+          <span style="flex-grow: 1; font-size: 17px; color: #2b2114;">Heimlichkeit <span style="font-size: 13px; color: #8a7355;">(GES)</span></span>
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 17px; font-weight: 600; color: #9a2b22;">+7</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 11px; padding: 8px 2px;">
+          <span style="width: 17px; height: 17px; border: 1.5px solid #a3865c; background-color: #9a2b22; display: flex; align-items: center; justify-content: center;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#f4ead2" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"></path></svg>
+          </span>
+          <span style="flex-grow: 1; font-size: 17px; color: #2b2114;">Wahrnehmung <span style="font-size: 13px; color: #8a7355;">(WEI)</span></span>
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 17px; font-weight: 600; color: #9a2b22;">+6</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 11px; padding: 8px 2px;">
+          <span style="width: 17px; height: 17px; border: 1.5px solid #a3865c; background-color: #9a2b22; display: flex; align-items: center; justify-content: center;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#f4ead2" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"></path></svg>
+          </span>
+          <span style="flex-grow: 1; font-size: 17px; color: #2b2114;">Überlebenskunst <span style="font-size: 13px; color: #8a7355;">(WEI)</span></span>
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 17px; font-weight: 600; color: #9a2b22;">+6</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 11px; padding: 8px 2px;">
+          <span style="width: 17px; height: 17px; border: 1.5px solid #a3865c; background-color: transparent;"></span>
+          <span style="flex-grow: 1; font-size: 17px; color: #6d5c45;">Akrobatik <span style="font-size: 13px; color: #8a7355;">(GES)</span></span>
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 17px; color: #6d5c45;">+4</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 11px; padding: 8px 2px;">
+          <span style="width: 17px; height: 17px; border: 1.5px solid #a3865c; background-color: transparent;"></span>
+          <span style="flex-grow: 1; font-size: 17px; color: #6d5c45;">Naturkunde <span style="font-size: 13px; color: #8a7355;">(INT)</span></span>
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 17px; color: #6d5c45;">+0</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 11px; padding: 8px 2px;">
+          <span style="width: 17px; height: 17px; border: 1.5px solid #a3865c; background-color: transparent;"></span>
+          <span style="flex-grow: 1; font-size: 17px; color: #6d5c45;">Athletik <span style="font-size: 13px; color: #8a7355;">(STÄ)</span></span>
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 17px; color: #6d5c45;">+1</span>
+        </div>
+
+      </div>
+      <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed #c9b48c; font-size: 15px; font-style: italic; color: #6d5c45;">Passive Wahrnehmung <span style="font-family: 'Cinzel', Georgia, serif; font-style: normal; font-weight: 600; color: #2b2114;">16</span></div>
+    </div>
+
+  </div>
+
+  <!-- Würfelbeutel: schwebende Schaltfläche -->
+  <div style="position: relative; height: 0;">
+    <div style="position: absolute; right: 26px; bottom: 22px; width: 66px; height: 66px; border-radius: 50%; background-color: #9a2b22; box-shadow: 0 0 0 2px #b8912f, 0 4px 12px rgba(60,45,25,0.42); display: flex; align-items: center; justify-content: center;">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#f0dca8" stroke-width="1.3" stroke-linejoin="round">
+        <path d="M12 2.6 20.2 7v10L12 21.4 3.8 17V7z"></path>
+        <path d="M12 2.6 20.2 7 12 11.4 3.8 7zM12 11.4V21.4M3.8 7l8.2 4.4M20.2 7 12 11.4"></path>
+      </svg>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

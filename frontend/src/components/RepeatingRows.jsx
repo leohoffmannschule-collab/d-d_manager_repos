@@ -1,3 +1,5 @@
+import { IconPlus } from './icons.jsx';
+
 function emptyRow(fields) {
   const row = { id: crypto.randomUUID() };
   fields.forEach((f) => {
@@ -6,7 +8,13 @@ function emptyRow(fields) {
   return row;
 }
 
-export default function RepeatingRows({ items = [], onChange, fields, addLabel = '+ Hinzufügen', emptyText = 'Noch nichts eingetragen.' }) {
+export default function RepeatingRows({
+  items = [],
+  onChange,
+  fields,
+  addLabel = 'Hinzufügen',
+  emptyText = 'Noch nichts eingetragen.',
+}) {
   function updateRow(id, key, value) {
     onChange(items.map((row) => (row.id === id ? { ...row, [key]: value } : row)));
   }
@@ -15,25 +23,24 @@ export default function RepeatingRows({ items = [], onChange, fields, addLabel =
     onChange(items.filter((row) => row.id !== id));
   }
 
-  function addRow() {
-    onChange([...items, emptyRow(fields)]);
-  }
-
   return (
-    <div className="space-y-2">
-      {items.length === 0 && <p className="text-sm text-parchment-100/40">{emptyText}</p>}
+    <div className="flex flex-col gap-2.5">
+      {items.length === 0 && <p className="text-sepia italic">{emptyText}</p>}
+
       {items.map((row) => (
-        <div key={row.id} className="rounded-xl border border-ink-800 bg-ink-800/40 p-3">
-          <div className="mb-2 flex flex-wrap gap-2">
+        <div key={row.id} className="border border-rule bg-panel-soft/60 p-3.5">
+          <div className="flex flex-wrap gap-x-4 gap-y-2">
             {fields.map((field) => (
-              <label key={field.key} className={field.wide ? 'w-full' : 'flex-1 min-w-[6rem]'}>
-                <span className="mb-1 block text-[11px] font-medium text-parchment-100/50">{field.label}</span>
+              <label key={field.key} className={field.wide ? 'w-full' : 'min-w-[7rem] flex-1'}>
+                <span className="mb-0.5 block font-display text-[10px] tracking-[0.14em] text-faint uppercase">
+                  {field.label}
+                </span>
                 {field.type === 'textarea' ? (
                   <textarea
                     value={row[field.key] ?? ''}
                     onChange={(e) => updateRow(row.id, field.key, e.target.value)}
                     rows={2}
-                    className="w-full resize-y rounded-lg border border-ink-700 bg-ink-900 px-2 py-1.5 text-sm text-parchment-50 focus:border-gold-500 focus:outline-none"
+                    className="field-box resize-y text-[16px] leading-relaxed"
                   />
                 ) : (
                   <input
@@ -43,18 +50,23 @@ export default function RepeatingRows({ items = [], onChange, fields, addLabel =
                     onChange={(e) =>
                       updateRow(row.id, field.key, field.type === 'number' ? Number(e.target.value) || 0 : e.target.value)
                     }
-                    className="w-full rounded-lg border border-ink-700 bg-ink-900 px-2 py-1.5 text-sm text-parchment-50 focus:border-gold-500 focus:outline-none"
+                    className="field-line text-[17px]"
                   />
                 )}
               </label>
             ))}
           </div>
-          <button onClick={() => removeRow(row.id)} className="text-xs text-red-300/80 hover:underline">
+          <button onClick={() => removeRow(row.id)} className="mt-2 min-h-9 text-[15px] text-rubric hover:underline">
             Entfernen
           </button>
         </div>
       ))}
-      <button onClick={addRow} className="w-full rounded-lg border border-dashed border-ink-700 py-2 text-sm text-parchment-100/60 hover:border-gold-600/60 hover:text-gold-400">
+
+      <button
+        onClick={() => onChange([...items, emptyRow(fields)])}
+        className="flex min-h-12 items-center justify-center gap-2 border border-dashed border-rule-strong font-display text-[13px] tracking-[0.1em] text-sepia uppercase hover:border-gold hover:text-rubric"
+      >
+        <IconPlus size={15} />
         {addLabel}
       </button>
     </div>

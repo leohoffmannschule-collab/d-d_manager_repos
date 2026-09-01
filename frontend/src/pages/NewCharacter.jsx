@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { charactersApi, compendiumApi } from '../lib/api.js';
 import { defaultCharacterData, defaultFreeformData } from '../lib/dnd5e.js';
+import { Card, FieldLabel } from '../components/ui.jsx';
 
 export default function NewCharacter() {
   const navigate = useNavigate();
@@ -22,13 +23,15 @@ export default function NewCharacter() {
         setRaces(raceData.results ?? []);
         setClasses(classData.results ?? []);
       })
-      .catch(() => setApiWarning('D&D 5e API gerade nicht erreichbar – Rasse/Klasse können später manuell eingetragen werden.'));
+      .catch(() =>
+        setApiWarning('Das Kompendium ist gerade nicht erreichbar – Volk und Klasse lassen sich auch später eintragen.')
+      );
   }, [system]);
 
   async function handleSubmit(e) {
     e.preventDefault();
     if (!name.trim()) {
-      setError('Bitte gib einen Namen ein.');
+      setError('Ohne Namen kein Eintrag – bitte trage einen ein.');
       return;
     }
     setSaving(true);
@@ -51,91 +54,88 @@ export default function NewCharacter() {
   }
 
   return (
-    <div className="mx-auto max-w-lg">
-      <h1 className="mb-6 font-display text-2xl text-parchment-50">Neuer Charakter</h1>
+    <div className="mx-auto max-w-xl">
+      <h1 className="mb-1 font-display text-2xl font-semibold tracking-[0.08em] text-ink uppercase">Neuer Eintrag</h1>
+      <p className="mb-6 text-sepia italic">Wer soll in den Almanach aufgenommen werden?</p>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-parchment-100/70">Name des Charakters</label>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+        <Card title="Name">
           <input
             autoFocus
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="z. B. Elara Nachtwind"
-            className="w-full rounded-xl border border-ink-700 bg-ink-900 px-4 py-3 text-parchment-50 placeholder:text-parchment-100/30 focus:border-gold-500 focus:outline-none"
+            className="field-line font-display text-2xl"
           />
-        </div>
+        </Card>
 
-        <div>
-          <label className="mb-2 block text-sm font-medium text-parchment-100/70">System</label>
-          <div className="grid grid-cols-2 gap-2">
+        <Card title="Regelwerk">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <button
               type="button"
               onClick={() => setSystem('dnd5e')}
-              className={`rounded-xl border px-3 py-3 text-sm font-medium ${
-                system === 'dnd5e' ? 'border-gold-500 bg-ink-800 text-gold-400' : 'border-ink-700 bg-ink-900 text-parchment-100/60'
+              className={`flex flex-col gap-1 border p-4 text-left ${
+                system === 'dnd5e' ? 'border-gold bg-gold/12' : 'border-rule bg-panel-soft'
               }`}
             >
-              D&amp;D 5e
-              <span className="mt-0.5 block text-xs font-normal opacity-70">Vollständiges Charakterblatt</span>
+              <span className="font-display text-[15px] tracking-[0.08em] text-ink">D&amp;D 5e</span>
+              <span className="text-sepia italic">Vollständiges Charakterblatt mit Kompendium</span>
             </button>
             <button
               type="button"
               onClick={() => setSystem('freeform')}
-              className={`rounded-xl border px-3 py-3 text-sm font-medium ${
-                system === 'freeform' ? 'border-gold-500 bg-ink-800 text-gold-400' : 'border-ink-700 bg-ink-900 text-parchment-100/60'
+              className={`flex flex-col gap-1 border p-4 text-left ${
+                system === 'freeform' ? 'border-gold bg-gold/12' : 'border-rule bg-panel-soft'
               }`}
             >
-              Anderes System
-              <span className="mt-0.5 block text-xs font-normal opacity-70">Freie Abschnitte</span>
+              <span className="font-display text-[15px] tracking-[0.08em] text-ink">Anderes System</span>
+              <span className="text-sepia italic">Freie Abschnitte, selbst benannt</span>
             </button>
           </div>
-        </div>
+        </Card>
 
         {system === 'dnd5e' && (
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-parchment-100/70">Volk</label>
-              <input
-                list="race-options"
-                value={race}
-                onChange={(e) => setRace(e.target.value)}
-                placeholder="z. B. Elf"
-                className="w-full rounded-xl border border-ink-700 bg-ink-900 px-3 py-2.5 text-parchment-50 focus:border-gold-500 focus:outline-none"
-              />
-              <datalist id="race-options">
-                {races.map((r) => (
-                  <option key={r.index} value={r.name} />
-                ))}
-              </datalist>
+          <Card title="Herkunft">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label className="block">
+                <FieldLabel>Volk</FieldLabel>
+                <input
+                  list="race-options"
+                  value={race}
+                  onChange={(e) => setRace(e.target.value)}
+                  placeholder="z. B. Elf"
+                  className="field-line"
+                />
+                <datalist id="race-options">
+                  {races.map((r) => (
+                    <option key={r.index} value={r.name} />
+                  ))}
+                </datalist>
+              </label>
+              <label className="block">
+                <FieldLabel>Klasse</FieldLabel>
+                <input
+                  list="class-options"
+                  value={className}
+                  onChange={(e) => setClassName(e.target.value)}
+                  placeholder="z. B. Magier"
+                  className="field-line"
+                />
+                <datalist id="class-options">
+                  {classes.map((c) => (
+                    <option key={c.index} value={c.name} />
+                  ))}
+                </datalist>
+              </label>
             </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-parchment-100/70">Klasse</label>
-              <input
-                list="class-options"
-                value={className}
-                onChange={(e) => setClassName(e.target.value)}
-                placeholder="z. B. Magier"
-                className="w-full rounded-xl border border-ink-700 bg-ink-900 px-3 py-2.5 text-parchment-50 focus:border-gold-500 focus:outline-none"
-              />
-              <datalist id="class-options">
-                {classes.map((c) => (
-                  <option key={c.index} value={c.name} />
-                ))}
-              </datalist>
-            </div>
-          </div>
+            {apiWarning && <p className="mt-3 text-[15px] text-faint italic">{apiWarning}</p>}
+          </Card>
         )}
 
-        {apiWarning && <p className="text-xs text-parchment-100/50">{apiWarning}</p>}
-        {error && <p className="rounded-lg bg-red-900/40 p-3 text-sm text-red-200">{error}</p>}
+        {error && <p className="panel border-rubric p-4 text-rubric">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={saving}
-          className="w-full rounded-xl bg-gold-500 py-3 font-semibold text-ink-950 shadow active:scale-95 disabled:opacity-60"
-        >
-          {saving ? 'Wird erstellt…' : 'Charakter erschaffen'}
+        <button type="submit" disabled={saving} className="btn btn-seal w-full disabled:opacity-60">
+          {saving ? 'Wird eingetragen …' : 'In den Almanach eintragen'}
         </button>
       </form>
     </div>

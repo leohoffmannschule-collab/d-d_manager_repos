@@ -1,9 +1,9 @@
+import { Fleuron } from './icons.jsx';
+
 const SKIP_KEYS = new Set(['index', 'url', 'updated_at', 'name', 'desc', '_id']);
 
 function humanizeKey(key) {
-  return key
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function renderValue(value) {
@@ -23,13 +23,13 @@ function renderValue(value) {
   }
   if (typeof value === 'object') {
     if ('name' in value) return value.name;
-    const parts = Object.entries(value)
+    return Object.entries(value)
       .map(([k, v]) => {
         const rendered = renderValue(v);
         return rendered ? `${humanizeKey(k)}: ${rendered}` : null;
       })
-      .filter(Boolean);
-    return parts.join(', ');
+      .filter(Boolean)
+      .join(', ');
   }
   return null;
 }
@@ -37,6 +37,9 @@ function renderValue(value) {
 export default function CompendiumDetail({ item }) {
   if (!item) return null;
 
+  const name = item.name ?? '';
+  const initial = name.charAt(0);
+  const rest = name.slice(1);
   const descParagraphs = Array.isArray(item.desc) ? item.desc : item.desc ? [item.desc] : [];
   const entries = Object.entries(item).filter(([key, value]) => {
     if (SKIP_KEYS.has(key)) return false;
@@ -45,34 +48,49 @@ export default function CompendiumDetail({ item }) {
   });
 
   return (
-    <div>
-      <h3 className="mb-3 font-display text-xl text-gold-400">{item.name}</h3>
+    <div className="flex flex-col gap-4">
+      <h3 className="flex items-baseline">
+        <span className="font-initial text-[42px] leading-none text-rubric">{initial}</span>
+        <span className="font-display text-2xl font-semibold tracking-[0.03em] text-ink">{rest}</span>
+      </h3>
+
+      <div className="flex items-center gap-3 text-gold">
+        <span className="h-px w-10 bg-gold" />
+        <Fleuron size={13} />
+        <span className="h-px flex-1 bg-gold" />
+      </div>
 
       {descParagraphs.length > 0 && (
-        <div className="mb-4 space-y-2 text-sm leading-relaxed text-parchment-100/80">
+        <div className="flex flex-col gap-2 leading-relaxed text-ink">
           {descParagraphs.map((p, i) => (
             <p key={i}>{p}</p>
           ))}
         </div>
       )}
 
-      {item.higher_level && item.higher_level.length > 0 && (
-        <div className="mb-4 rounded-lg bg-ink-800/60 p-3 text-sm text-parchment-100/70">
-          <p className="mb-1 font-semibold text-gold-400/90">Auf höheren Graden</p>
+      {item.higher_level?.length > 0 && (
+        <div className="border-l-[3px] border-gold bg-gold/15 px-4 py-3">
+          <p className="mb-1 font-display text-[12px] font-semibold tracking-[0.14em] text-rubric uppercase">
+            Auf höheren Graden
+          </p>
           {item.higher_level.map((p, i) => (
-            <p key={i}>{p}</p>
+            <p key={i} className="text-sepia">
+              {p}
+            </p>
           ))}
         </div>
       )}
 
-      <dl className="grid grid-cols-1 gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
-        {entries.map(([key, value]) => (
-          <div key={key} className="border-b border-ink-800 pb-1.5">
-            <dt className="text-[11px] font-medium uppercase tracking-wide text-parchment-100/40">{humanizeKey(key)}</dt>
-            <dd className="text-parchment-50">{renderValue(value)}</dd>
-          </div>
-        ))}
-      </dl>
+      {entries.length > 0 && (
+        <dl className="grid grid-cols-1 gap-x-6 gap-y-2.5 sm:grid-cols-2">
+          {entries.map(([key, value]) => (
+            <div key={key} className="border-b border-dotted border-rule pb-1.5">
+              <dt className="font-display text-[10px] tracking-[0.16em] text-faint uppercase">{humanizeKey(key)}</dt>
+              <dd className="text-ink">{renderValue(value)}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
     </div>
   );
 }

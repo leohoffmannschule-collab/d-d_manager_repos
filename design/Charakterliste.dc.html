@@ -1,0 +1,188 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=UnifrakturMaguntia&display=swap');
+    body { margin: 0; font-family: 'EB Garamond', Georgia, 'Times New Roman', serif; }
+    a { color: #9a2b22; text-decoration: none; }
+    a:hover { color: #6f1d17; }
+  </style>
+</helmet>
+
+<div style="width: 820px; height: 1180px; display: flex; flex-direction: column; overflow: hidden; background-color: #e6d7b0; background-image: radial-gradient(ellipse at 18% 12%, rgba(255,250,235,0.60), transparent 55%), radial-gradient(ellipse at 82% 68%, rgba(150,120,78,0.20), transparent 60%), radial-gradient(ellipse at 45% 98%, rgba(112,88,54,0.14), transparent 55%); color: #2b2114;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 22px; height: 62px; background-color: #382718; background-image: linear-gradient(180deg, rgba(255,225,170,0.10), rgba(0,0,0,0.18)); border-bottom: 2px solid #b8912f; flex-shrink: 0;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#d9b451" stroke-width="1.4" stroke-linejoin="round">
+        <path d="M12 2.6 20.2 7v10L12 21.4 3.8 17V7z"></path>
+        <path d="M12 2.6 20.2 7 12 11.4 3.8 7z"></path>
+        <path d="M12 11.4V21.4"></path>
+      </svg>
+      <span style="font-family: 'Cinzel', Georgia, serif; font-size: 19px; font-weight: 600; letter-spacing: 0.16em; color: #e8cf8d; text-transform: uppercase;">Abenteuer-Almanach</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <div style="display: flex; align-items: center; gap: 7px; padding: 9px 14px; border: 1px solid #b8912f; border-radius: 2px; background-color: rgba(216,180,81,0.14);">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#e8cf8d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 3h9a3 3 0 0 1 3 3v15H8a2 2 0 0 1-2-2z"></path>
+          <path d="M18 3a3 3 0 0 0-3 3v12"></path>
+          <path d="M9 8h6M9 12h6"></path>
+        </svg>
+        <span style="font-family: 'Cinzel', Georgia, serif; font-size: 13px; letter-spacing: 0.10em; color: #e8cf8d;">Charaktere</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 7px; padding: 9px 14px;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#c9b189" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 5.5C5.5 4 8.5 4 12 5.8 15.5 4 18.5 4 21 5.5v13c-2.5-1.5-5.5-1.5-9 .3-3.5-1.8-6.5-1.8-9-.3z"></path>
+          <path d="M12 5.8v13"></path>
+        </svg>
+        <span style="font-family: 'Cinzel', Georgia, serif; font-size: 13px; letter-spacing: 0.10em; color: #c9b189;">Kompendium</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 7px; padding: 9px 14px;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#c9b189" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"></circle>
+          <path d="M9.6 9.2a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.7-.9 1.3v.6"></path>
+          <path d="M12 17.2h.01"></path>
+        </svg>
+        <span style="font-family: 'Cinzel', Georgia, serif; font-size: 13px; letter-spacing: 0.10em; color: #c9b189;">Hilfe</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 20px; padding: 26px 26px 0;">
+
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px;">
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <span style="font-family: 'Cinzel', Georgia, serif; font-size: 27px; font-weight: 600; letter-spacing: 0.08em; color: #2b2114; text-transform: uppercase;">Deine Gefährten</span>
+        <span style="font-size: 17px; font-style: italic; color: #6d5c45;">Vier Seelen sind in diesem Almanach verzeichnet</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 9px; height: 48px; padding: 0 20px; background-color: #9a2b22; border: 1px solid #7d2018; box-shadow: 0 0 0 1px #b8912f inset, 0 2px 6px rgba(60,45,25,0.32);">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#f0dca8" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+        <span style="font-family: 'Cinzel', Georgia, serif; font-size: 14px; font-weight: 600; letter-spacing: 0.12em; color: #f0dca8; text-transform: uppercase;">Neuer Charakter</span>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px;">
+
+      <div style="display: flex; flex-direction: column; gap: 14px; padding: 18px; background-color: #f4ead2; border: 1px solid #c2a878; box-shadow: 0 2px 7px rgba(60,45,25,0.10);">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div style="width: 66px; height: 66px; border-radius: 50%; flex-shrink: 0; background-color: #d8c49a; box-shadow: 0 0 0 2px #b8912f, 0 0 0 4px #f4ead2, 0 0 0 5px #a3865c; display: flex; align-items: center; justify-content: center;">
+            <span style="font-family: 'Cinzel', Georgia, serif; font-size: 34px; font-weight: 600; color: #9a2b22;">E</span>
+          </div>
+          <div style="flex-grow: 1; min-width: 0;">
+            <div style="font-family: 'Cinzel', Georgia, serif; font-size: 21px; font-weight: 600; color: #2b2114;">Elara Nachtwind</div>
+            <div style="font-size: 16px; font-style: italic; color: #6d5c45;">Waldelfe · Waldläuferin 5</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 10px; letter-spacing: 0.16em; color: #8a7355; text-transform: uppercase;">Trefferpunkte</span>
+          <span style="flex-grow: 1; height: 9px; background-color: #ddcaa4; border: 1px solid #b39a70; overflow: hidden; display: flex;">
+            <span style="width: 86%; background-color: #9a2b22;"></span>
+          </span>
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 15px; font-weight: 600; color: #9a2b22;">38/44</span>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 16px; padding-top: 11px; border-top: 1px dashed #c9b48c;">
+          <span style="font-size: 15px; color: #6d5c45;">Abschrift</span>
+          <span style="font-size: 15px; color: #9a2b22;">Löschen</span>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px; padding: 18px; background-color: #f4ead2; border: 1px solid #c2a878; box-shadow: 0 2px 7px rgba(60,45,25,0.10);">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div style="width: 66px; height: 66px; border-radius: 50%; flex-shrink: 0; background-color: #d8c49a; box-shadow: 0 0 0 2px #b8912f, 0 0 0 4px #f4ead2, 0 0 0 5px #a3865c; display: flex; align-items: center; justify-content: center;">
+            <span style="font-family: 'Cinzel', Georgia, serif; font-size: 34px; font-weight: 600; color: #9a2b22;">B</span>
+          </div>
+          <div style="flex-grow: 1; min-width: 0;">
+            <div style="font-family: 'Cinzel', Georgia, serif; font-size: 21px; font-weight: 600; color: #2b2114;">Bruder Aldric</div>
+            <div style="font-size: 16px; font-style: italic; color: #6d5c45;">Mensch · Kleriker 4</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 10px; letter-spacing: 0.16em; color: #8a7355; text-transform: uppercase;">Trefferpunkte</span>
+          <span style="flex-grow: 1; height: 9px; background-color: #ddcaa4; border: 1px solid #b39a70; overflow: hidden; display: flex;">
+            <span style="width: 100%; background-color: #9a2b22;"></span>
+          </span>
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 15px; font-weight: 600; color: #9a2b22;">31/31</span>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 16px; padding-top: 11px; border-top: 1px dashed #c9b48c;">
+          <span style="font-size: 15px; color: #6d5c45;">Abschrift</span>
+          <span style="font-size: 15px; color: #9a2b22;">Löschen</span>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px; padding: 18px; background-color: #f4ead2; border: 1px solid #c2a878; box-shadow: 0 2px 7px rgba(60,45,25,0.10);">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div style="width: 66px; height: 66px; border-radius: 50%; flex-shrink: 0; background-color: #d8c49a; box-shadow: 0 0 0 2px #b8912f, 0 0 0 4px #f4ead2, 0 0 0 5px #a3865c; display: flex; align-items: center; justify-content: center;">
+            <span style="font-family: 'Cinzel', Georgia, serif; font-size: 34px; font-weight: 600; color: #9a2b22;">G</span>
+          </div>
+          <div style="flex-grow: 1; min-width: 0;">
+            <div style="font-family: 'Cinzel', Georgia, serif; font-size: 21px; font-weight: 600; color: #2b2114;">Grimm Steinfaust</div>
+            <div style="font-size: 16px; font-style: italic; color: #6d5c45;">Bergzwerg · Barbar 5</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 10px; letter-spacing: 0.16em; color: #8a7355; text-transform: uppercase;">Trefferpunkte</span>
+          <span style="flex-grow: 1; height: 9px; background-color: #ddcaa4; border: 1px solid #b39a70; overflow: hidden; display: flex;">
+            <span style="width: 41%; background-color: #9a2b22;"></span>
+          </span>
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 15px; font-weight: 600; color: #9a2b22;">23/56</span>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 16px; padding-top: 11px; border-top: 1px dashed #c9b48c;">
+          <span style="font-size: 15px; color: #6d5c45;">Abschrift</span>
+          <span style="font-size: 15px; color: #9a2b22;">Löschen</span>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px; padding: 18px; background-color: #f4ead2; border: 1px solid #c2a878; box-shadow: 0 2px 7px rgba(60,45,25,0.10);">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div style="width: 66px; height: 66px; border-radius: 50%; flex-shrink: 0; background-color: #d8c49a; box-shadow: 0 0 0 2px #b8912f, 0 0 0 4px #f4ead2, 0 0 0 5px #a3865c; display: flex; align-items: center; justify-content: center;">
+            <span style="font-family: 'Cinzel', Georgia, serif; font-size: 34px; font-weight: 600; color: #9a2b22;">S</span>
+          </div>
+          <div style="flex-grow: 1; min-width: 0;">
+            <div style="font-family: 'Cinzel', Georgia, serif; font-size: 21px; font-weight: 600; color: #2b2114;">Sil die Gaunerin</div>
+            <div style="font-size: 16px; font-style: italic; color: #6d5c45;">Halbling · Schurkin 3</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 10px; letter-spacing: 0.16em; color: #8a7355; text-transform: uppercase;">Trefferpunkte</span>
+          <span style="flex-grow: 1; height: 9px; background-color: #ddcaa4; border: 1px solid #b39a70; overflow: hidden; display: flex;">
+            <span style="width: 70%; background-color: #9a2b22;"></span>
+          </span>
+          <span style="font-family: 'Cinzel', Georgia, serif; font-size: 15px; font-weight: 600; color: #9a2b22;">14/20</span>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 16px; padding-top: 11px; border-top: 1px dashed #c9b48c;">
+          <span style="font-size: 15px; color: #6d5c45;">Abschrift</span>
+          <span style="font-size: 15px; color: #9a2b22;">Löschen</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 34px; border: 1px dashed #b39a70;">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#a3865c" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 3h9a3 3 0 0 1 3 3v15H8a2 2 0 0 1-2-2z"></path>
+        <path d="M18 3a3 3 0 0 0-3 3v12"></path>
+        <path d="M12 9v6M9 12h6"></path>
+      </svg>
+      <span style="font-size: 17px; font-style: italic; color: #6d5c45;">Ein leeres Blatt wartet auf den nächsten Helden</span>
+    </div>
+
+  </div>
+
+  <div style="position: relative; height: 0;">
+    <div style="position: absolute; right: 26px; bottom: 22px; width: 66px; height: 66px; border-radius: 50%; background-color: #9a2b22; box-shadow: 0 0 0 2px #b8912f, 0 4px 12px rgba(60,45,25,0.42); display: flex; align-items: center; justify-content: center;">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#f0dca8" stroke-width="1.3" stroke-linejoin="round">
+        <path d="M12 2.6 20.2 7v10L12 21.4 3.8 17V7z"></path>
+        <path d="M12 2.6 20.2 7 12 11.4 3.8 7zM12 11.4V21.4M3.8 7l8.2 4.4M20.2 7 12 11.4"></path>
+      </svg>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

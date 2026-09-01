@@ -1,17 +1,58 @@
 @import "tailwindcss";
 
+/* Schriften liegen als npm-Paket bei und werden mitgebaut – die App braucht
+   also kein Internet, um richtig auszusehen (wichtig auf dem Raspberry Pi). */
+@import "@fontsource/cinzel/latin-400.css";
+@import "@fontsource/cinzel/latin-600.css";
+@import "@fontsource/cinzel/latin-700.css";
+@import "@fontsource/eb-garamond/latin-400.css";
+@import "@fontsource/eb-garamond/latin-500.css";
+@import "@fontsource/eb-garamond/latin-600.css";
+@import "@fontsource/eb-garamond/latin-400-italic.css";
+@import "@fontsource/unifrakturmaguntia/latin-400.css";
+
 @theme {
-  --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
-  --color-ink-950: #150c2b;
-  --color-ink-900: #1d1338;
-  --color-ink-800: #2b1b4d;
-  --color-ink-700: #3a2566;
-  --color-ink-600: #4a3080;
-  --color-parchment-50: #faf6ec;
-  --color-parchment-100: #f3ead4;
-  --color-gold-400: #f0c34d;
-  --color-gold-500: #d9a62f;
-  --color-gold-600: #c8862a;
+  --font-display: "Cinzel", Georgia, "Times New Roman", serif;
+  --font-body: "EB Garamond", Georgia, "Times New Roman", serif;
+  --font-initial: "UnifrakturMaguntia", "Cinzel", Georgia, serif;
+
+  /* Pergament – Standardfassung */
+  --color-ground: #e6d7b0;
+  --color-panel: #f4ead2;
+  --color-panel-soft: #f8f0dc;
+  --color-ink: #2b2114;
+  --color-sepia: #6d5c45;
+  --color-faint: #a3927a;
+  --color-rule: #c2a878;
+  --color-rule-strong: #a3865c;
+  --color-rubric: #9a2b22;
+  --color-rubric-deep: #7d2018;
+  --color-rubric-ink: #f4ead2;
+  --color-gold: #b8912f;
+  --color-gold-soft: #d9b451;
+  --color-leather: #382718;
+  --color-leather-ink: #e8cf8d;
+  --color-leather-dim: #c9b189;
+}
+
+/* Kerzenlicht – für Runden im abgedunkelten Zimmer */
+[data-theme="kerzenlicht"] {
+  --color-ground: #1c150d;
+  --color-panel: #261d12;
+  --color-panel-soft: #2f2416;
+  --color-ink: #f2e4c2;
+  --color-sepia: #c4b391;
+  --color-faint: #a89372;
+  --color-rule: #5a4526;
+  --color-rule-strong: #7a5f2c;
+  --color-rubric: #c1483a;
+  --color-rubric-deep: #9a2b22;
+  --color-rubric-ink: #1c150d;
+  --color-gold: #d9b451;
+  --color-gold-soft: #e8cf8d;
+  --color-leather: #100c07;
+  --color-leather-ink: #e8cf8d;
+  --color-leather-dim: #a89372;
 }
 
 html,
@@ -21,26 +62,143 @@ body,
 }
 
 body {
-  background-color: var(--color-ink-950);
-  color: var(--color-parchment-50);
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 17px;
+  color: var(--color-ink);
+  background-color: var(--color-ground);
+  background-image:
+    radial-gradient(ellipse at 18% 12%, rgba(255, 250, 235, 0.6), transparent 55%),
+    radial-gradient(ellipse at 82% 68%, rgba(150, 120, 78, 0.2), transparent 60%),
+    radial-gradient(ellipse at 45% 98%, rgba(112, 88, 54, 0.14), transparent 55%);
+  background-attachment: fixed;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: none;
 }
 
-input,
-textarea,
-select {
-  color-scheme: dark;
+[data-theme="kerzenlicht"] body {
+  background-image:
+    radial-gradient(ellipse at 30% 6%, rgba(216, 180, 81, 0.16), transparent 58%),
+    radial-gradient(ellipse at 78% 84%, rgba(154, 43, 34, 0.12), transparent 60%);
+}
+
+@layer components {
+  /* Aufgelegtes Velinblatt */
+  .panel {
+    background-color: var(--color-panel);
+    border: 1px solid var(--color-rule);
+    box-shadow: 0 2px 7px rgba(60, 45, 25, 0.1);
+  }
+
+  [data-theme="kerzenlicht"] .panel {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.42);
+  }
+
+  /* Eingabe auf der Linie – wie in ein Register geschrieben */
+  .field-line {
+    width: 100%;
+    min-height: 44px;
+    padding: 6px 2px;
+    color: var(--color-ink);
+    background-color: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--color-rule);
+    font-family: var(--font-body);
+    font-size: 18px;
+  }
+
+  .field-line:focus {
+    outline: none;
+    border-bottom-color: var(--color-rubric);
+    box-shadow: 0 1px 0 0 var(--color-rubric);
+  }
+
+  .field-line::placeholder {
+    color: var(--color-faint);
+    font-style: italic;
+  }
+
+  /* Eingabefeld im Kasten (Suche, Zähler, Textflächen) */
+  .field-box {
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 12px;
+    color: var(--color-ink);
+    background-color: var(--color-panel-soft);
+    border: 1px solid var(--color-rule);
+    font-family: var(--font-body);
+    font-size: 17px;
+  }
+
+  .field-box:focus {
+    outline: none;
+    border-color: var(--color-rubric);
+  }
+
+  .field-box::placeholder {
+    color: var(--color-faint);
+    font-style: italic;
+  }
+
+  /* Schaltflächen */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 48px;
+    padding: 0 20px;
+    font-family: var(--font-display);
+    font-size: 14px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .btn-seal {
+    color: #f0dca8;
+    background-color: var(--color-rubric);
+    border: 1px solid var(--color-rubric-deep);
+    box-shadow: inset 0 0 0 1px var(--color-gold);
+    font-weight: 600;
+  }
+
+  .btn-seal:active {
+    transform: scale(0.98);
+  }
+
+  .btn-plate {
+    color: var(--color-sepia);
+    background-color: var(--color-panel);
+    border: 1px solid var(--color-rule-strong);
+  }
+
+  .btn-plate:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Zahlenfelder ohne Spinner – auf dem iPad stören die Pfeilchen nur */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  appearance: textfield;
 }
 
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: var(--color-ink-600);
+  background: var(--color-rule);
   border-radius: 999px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }

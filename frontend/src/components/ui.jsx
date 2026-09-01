@@ -1,21 +1,41 @@
+import { Fleuron, IconCheck, IconMinus, IconPlus } from './icons.jsx';
+
+/** Überschrift in Rubrikrot, mit goldenem Stern und durchlaufender Linie. */
+export function Rubric({ children, className = '' }) {
+  return (
+    <div className={`mb-3 flex items-center gap-2.5 ${className}`}>
+      <Fleuron className="text-gold" />
+      <h2 className="font-display text-[15px] font-semibold tracking-[0.14em] text-rubric uppercase">{children}</h2>
+      <span className="h-px flex-1 bg-rule" />
+    </div>
+  );
+}
+
+/** Aufgelegtes Velinblatt. */
 export function Card({ title, children, className = '' }) {
   return (
-    <section className={`rounded-2xl border border-ink-800 bg-ink-900 p-4 ${className}`}>
-      {title && <h2 className="mb-3 font-display text-lg text-gold-400">{title}</h2>}
+    <section className={`panel p-4 sm:p-5 ${className}`}>
+      {title && <Rubric>{title}</Rubric>}
       {children}
     </section>
+  );
+}
+
+export function FieldLabel({ children }) {
+  return (
+    <span className="mb-1 block font-display text-[10px] tracking-[0.16em] text-faint uppercase">{children}</span>
   );
 }
 
 export function TextField({ label, value, onChange, placeholder, className = '' }) {
   return (
     <label className={`block ${className}`}>
-      {label && <span className="mb-1 block text-xs font-medium text-parchment-100/60">{label}</span>}
+      {label && <FieldLabel>{label}</FieldLabel>}
       <input
         value={value ?? ''}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-lg border border-ink-700 bg-ink-800 px-3 py-2 text-parchment-50 placeholder:text-parchment-100/30 focus:border-gold-500 focus:outline-none"
+        className="field-line"
       />
     </label>
   );
@@ -24,12 +44,12 @@ export function TextField({ label, value, onChange, placeholder, className = '' 
 export function TextAreaField({ label, value, onChange, rows = 3, className = '' }) {
   return (
     <label className={`block ${className}`}>
-      {label && <span className="mb-1 block text-xs font-medium text-parchment-100/60">{label}</span>}
+      {label && <FieldLabel>{label}</FieldLabel>}
       <textarea
         value={value ?? ''}
         onChange={(e) => onChange(e.target.value)}
         rows={rows}
-        className="w-full resize-y rounded-lg border border-ink-700 bg-ink-800 px-3 py-2 text-parchment-50 focus:border-gold-500 focus:outline-none"
+        className="field-box resize-y leading-relaxed"
       />
     </label>
   );
@@ -38,7 +58,7 @@ export function TextAreaField({ label, value, onChange, rows = 3, className = ''
 export function NumberField({ label, value, onChange, className = '', min, step = 1 }) {
   return (
     <label className={`block ${className}`}>
-      {label && <span className="mb-1 block text-xs font-medium text-parchment-100/60">{label}</span>}
+      {label && <FieldLabel>{label}</FieldLabel>}
       <input
         type="number"
         inputMode="numeric"
@@ -46,7 +66,7 @@ export function NumberField({ label, value, onChange, className = '', min, step 
         min={min}
         step={step}
         onChange={(e) => onChange(e.target.value === '' ? 0 : Number(e.target.value))}
-        className="w-full rounded-lg border border-ink-700 bg-ink-800 px-3 py-2 text-parchment-50 focus:border-gold-500 focus:outline-none"
+        className="field-line font-display"
       />
     </label>
   );
@@ -55,28 +75,30 @@ export function NumberField({ label, value, onChange, className = '', min, step 
 export function Stepper({ label, value, onChange, min = 0, max = 999 }) {
   return (
     <div>
-      {label && <span className="mb-1 block text-xs font-medium text-parchment-100/60">{label}</span>}
+      {label && <FieldLabel>{label}</FieldLabel>}
       <div className="flex items-center gap-1.5">
         <button
           type="button"
           onClick={() => onChange(Math.max(min, (value ?? 0) - 1))}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-ink-700 bg-ink-800 text-lg text-parchment-50 active:scale-95"
+          className="btn-plate flex h-11 w-11 shrink-0 items-center justify-center"
+          aria-label="Weniger"
         >
-          −
+          <IconMinus size={17} />
         </button>
         <input
           type="number"
           inputMode="numeric"
           value={value ?? 0}
           onChange={(e) => onChange(Math.min(max, Math.max(min, Number(e.target.value) || 0)))}
-          className="w-14 rounded-lg border border-ink-700 bg-ink-800 px-1 py-1.5 text-center text-parchment-50 focus:border-gold-500 focus:outline-none"
+          className="h-11 w-14 border border-rule bg-panel-soft text-center font-display text-lg text-ink focus:border-rubric focus:outline-none"
         />
         <button
           type="button"
           onClick={() => onChange(Math.min(max, (value ?? 0) + 1))}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-ink-700 bg-ink-800 text-lg text-parchment-50 active:scale-95"
+          className="btn-plate flex h-11 w-11 shrink-0 items-center justify-center"
+          aria-label="Mehr"
         >
-          +
+          <IconPlus size={17} />
         </button>
       </div>
     </div>
@@ -85,19 +107,15 @@ export function Stepper({ label, value, onChange, min = 0, max = 999 }) {
 
 export function Toggle({ checked, onChange, label }) {
   return (
-    <button
-      type="button"
-      onClick={() => onChange(!checked)}
-      className="flex items-center gap-2 text-left"
-    >
+    <button type="button" onClick={() => onChange(!checked)} className="flex min-h-11 items-center gap-2.5 text-left">
       <span
-        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
-          checked ? 'border-gold-500 bg-gold-500 text-ink-950' : 'border-ink-600 bg-ink-800'
+        className={`flex h-5 w-5 shrink-0 items-center justify-center border-[1.5px] border-rule-strong ${
+          checked ? 'bg-rubric text-rubric-ink' : 'bg-transparent'
         }`}
       >
-        {checked && '✓'}
+        {checked && <IconCheck size={12} />}
       </span>
-      {label && <span className="text-sm text-parchment-100/80">{label}</span>}
+      {label && <span className="text-ink">{label}</span>}
     </button>
   );
 }

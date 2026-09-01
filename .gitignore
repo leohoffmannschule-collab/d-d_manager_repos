@@ -1,0 +1,5 @@
+node_modules/
+
+# Fertig zusammengebauter Design-Canvas (entsteht neu aus den .dc.html-Dateien)
+design/*.html
+!design/*.dc.html
