@@ -1,0 +1,20 @@
+{
+  "artboards": [
+    { "file": "Charakterliste.dc.html", "x": 0, "y": 0, "w": 820, "h": 1180, "title": "Charakterliste — iPad" },
+    { "file": "Main.dc.html", "x": 900, "y": 0, "w": 820, "h": 1180, "title": "Charakterblatt — iPad" },
+    { "file": "Kompendium.dc.html", "x": 1800, "y": 0, "w": 820, "h": 1180, "title": "Kompendium — iPad" },
+    { "file": "StyleTile.dc.html", "x": 0, "y": 1300, "w": 900, "h": 820, "title": "Stilfibel" },
+    { "file": "Wuerfel.dc.html", "x": 1000, "y": 1300, "w": 390, "h": 844, "title": "Würfelbeutel — iPhone" },
+    { "file": "Kerzenlicht.dc.html", "x": 1480, "y": 1300, "w": 620, "h": 820, "title": "Kerzenlicht — Alternative" }
+  ],
+  "annotations": [
+    {
+      "id": "richtung",
+      "x": 0,
+      "y": -170,
+      "w": 620,
+      "text": "Richtung: illuminierte Handschrift.\nPergament als Grund, Velin-Tafeln darauf, Eisengallustinte, Rubrikrot für Überschriften, Blattgold als Zierrat. Cinzel für Überschriften und Zahlen, EB Garamond für Fließtext, Unifraktur nur für Initialen.\nDie App bekommt Pergament als Standard und Kerzenlicht (unten rechts) als Umschalter für dunkle Räume."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

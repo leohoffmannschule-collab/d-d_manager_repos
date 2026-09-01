@@ -22,13 +22,15 @@ router.get('/', (req, res) => {
     .all();
   const summaries = rows.map((row) => {
     const character = rowToCharacter(row);
+    const className = character.data?.className ?? '';
+    const level = character.data?.level;
     return {
       id: character.id,
       name: character.name,
       system: character.system,
       createdAt: character.createdAt,
       updatedAt: character.updatedAt,
-      classLevel: character.data?.classLevel ?? '',
+      classLevel: [className, className && level ? level : ''].filter(Boolean).join(' '),
       race: character.data?.race ?? '',
       portrait: character.data?.portrait ?? '',
       hp: character.data?.combat?.hp ?? null,

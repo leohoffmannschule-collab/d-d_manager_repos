@@ -4,13 +4,18 @@
   "description": "Backend API for the Pen & Paper character manager (D&D 5e API cache + character storage)",
   "type": "module",
   "main": "src/server.js",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js"
   },
   "dependencies": {
-    "better-sqlite3": "^11.9.1",
     "cors": "^2.8.5",
     "express": "^4.21.2"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^11.9.1"
   }
 }
