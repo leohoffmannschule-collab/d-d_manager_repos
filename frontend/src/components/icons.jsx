@@ -309,3 +309,12 @@ export function IconLink(props) {
     </Icon>
   );
 }
+
+export function IconDownload(props) {
+  return (
+    <Icon {...props}>
+      <path d="M12 3.8v12.4M7.8 12l4.2 4.2 4.2-4.2" />
+      <path d="M3.8 15v4.8h16.4V15" />
+    </Icon>
+  );
+}

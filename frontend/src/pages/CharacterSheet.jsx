@@ -3,8 +3,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { charactersApi } from '../lib/api.js';
 import { setPath, fileToResizedDataUrl } from '../lib/setPath.js';
 import { withDefaults } from '../lib/dnd5e.js';
+import { ladeBlattHerunter } from '../lib/blattAusfuhr.js';
 import { useLive } from '../lib/live.jsx';
-import { IconCheck, IconEye, IconQuill } from '../components/icons.jsx';
+import { IconCheck, IconDownload, IconEye, IconQuill } from '../components/icons.jsx';
 import OverviewTab from '../components/sheet/OverviewTab.jsx';
 import CombatTab from '../components/sheet/CombatTab.jsx';
 import InventoryTab from '../components/sheet/InventoryTab.jsx';
@@ -32,6 +33,7 @@ export default function CharacterSheet() {
   const [error, setError] = useState('');
   const [saveStatus, setSaveStatus] = useState('idle');
   const [tab, setTab] = useState('overview');
+  const [mitnehmen, setMitnehmen] = useState('bereit');
   const saveTimer = useRef(null);
   // Solange hier noch ungesicherte Änderungen liegen, darf nichts von außen
   // hereinschreiben – sonst überholt die Spielleitung den eigenen Federstrich.
@@ -110,6 +112,20 @@ export default function CharacterSheet() {
     updateData('portrait', dataUrl);
   }
 
+  // Das Blatt als eigenständige Datei mitnehmen – für die Vorbereitung,
+  // wenn der Almanach gerade nicht läuft.
+  async function handleMitnehmen() {
+    setMitnehmen('laeuft');
+    try {
+      await ladeBlattHerunter(character);
+      setMitnehmen('fertig');
+      setTimeout(() => setMitnehmen('bereit'), 2500);
+    } catch (err) {
+      setError(err.message);
+      setMitnehmen('bereit');
+    }
+  }
+
   async function handleDelete() {
     if (!confirm(`„${character.name}“ wirklich unwiderruflich aus dem Almanach tilgen?`)) return;
     await charactersApi.remove(id);
@@ -186,6 +202,16 @@ export default function CharacterSheet() {
               </span>
             </div>
           )}
+
+          <button
+            onClick={handleMitnehmen}
+            disabled={mitnehmen === 'laeuft'}
+            className="btn-plate flex min-h-11 items-center gap-1.5 px-3 text-[13px] disabled:opacity-60"
+            title="Als eigenständige Datei sichern – sie braucht weder Netz noch Server"
+          >
+            {mitnehmen === 'fertig' ? <IconCheck size={15} /> : <IconDownload size={15} />}
+            {mitnehmen === 'laeuft' ? 'wird abgeschrieben …' : mitnehmen === 'fertig' ? 'gesichert' : 'Mitnehmen'}
+          </button>
 
           {schreibbar && (
             <button onClick={handleDelete} className="min-h-11 px-2 text-[15px] text-rubric hover:underline">

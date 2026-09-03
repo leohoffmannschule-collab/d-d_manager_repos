@@ -94,6 +94,20 @@ export default function Help() {
         </ul>
       </Card>
 
+      <Card title="Das Blatt mitnehmen">
+        <p className="leading-relaxed text-ink">
+          Oben auf deinem Blatt liegt der Knopf <span className="font-display">Mitnehmen</span>. Er sichert dein
+          Blatt als einzelne Datei auf dein Gerät – mit Bildnis, Figur und allem, was darauf steht. Diese Datei
+          braucht weder Netz noch Server: Ein Doppelklick genügt, auf jedem Rechner, Tablet oder Telefon. Gedruckt
+          sieht sie aus wie ein Charakterbogen.
+        </p>
+        <p className="mt-3 leading-relaxed text-ink">
+          Das ist gedacht für die Vorbereitung, wenn der Almanach gerade nicht läuft – oder für den Zug zur Runde.
+          Ändern lässt sich in der Datei nichts, was zurückwandert: Am Spieltisch gilt das Blatt im Almanach. Ganz
+          hinten in der Datei steckt außerdem der vollständige Datensatz, sie ist also zugleich eine Sicherung.
+        </p>
+      </Card>
+
       <Card title="Die Figurenschmiede">
         <p className="leading-relaxed text-ink">
           Im Reiter <span className="font-display">Figur</span> stellst du deine Miniatur zusammen: Volk, Statur,

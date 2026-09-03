@@ -41,6 +41,10 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
   sowie **kurze und lange Rast**, die auffüllen, was sich erneuert.
 - **Figurenschmiede**: eine eigene Miniatur zusammenstellen – Volk, Statur, Rüstung, Waffe, Haar, Bart, Farben –,
   drehen und gießen. Daraus entstehen Bildnis und Spielfigur.
+- **Blatt mitnehmen**: Ein Knopf sichert das eigene Blatt als einzelne HTML-Datei – mit Bildnis und Figur, ohne
+  Verweis nach draußen. Sie öffnet sich mit einem Doppelklick auf jedem Gerät, auch wenn der Pi ausgeschaltet ist,
+  und druckt sich als Charakterbogen. Der vollständige Datensatz reist am Ende der Datei mit, sie ist also zugleich
+  eine Sicherung.
 - **Zwei Fassungen**: *Pergament* für helle Räume, *Kerzenlicht* für den abgedunkelten Spieltisch.
 - **Als App installierbar** (PWA), automatisches Speichern, keine Werbung, keine Cloud.
 
@@ -165,6 +169,11 @@ alle Mitspieler Tailscale installieren. Der Cloudflare-Tunnel braucht bei ihnen 
 
 Über die Tunnel-Adresse (HTTPS) arbeitet auch der Offline-Zwischenspeicher; im Heimnetz über
 gewöhnliches `http://` lädt die App bei jedem Öffnen frisch – am Spieltisch kein Problem.
+
+Wer sich unabhängig davon machen will, nimmt sein Blatt einfach mit: Der Knopf **Mitnehmen** oben auf dem
+Charakterblatt sichert es als einzelne Datei, die ohne Server, ohne Netz und ohne App auskommt. Das ist der
+verlässliche Weg, sich auf eine Runde vorzubereiten, während der Pi aus ist – der Zwischenspeicher des Browsers
+ist immer nur so gut wie das, was zuletzt geöffnet war.
 
 ## Entwickeln unter Windows mit VS Code
 
