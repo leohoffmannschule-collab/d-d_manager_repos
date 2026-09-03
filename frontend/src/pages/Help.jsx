@@ -1,6 +1,9 @@
 import { Card } from '../components/ui.jsx';
+import { useAuth } from '../lib/auth.jsx';
 
 export default function Help() {
+  const { isDm } = useAuth();
+
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-4">
       <div>
@@ -10,12 +13,56 @@ export default function Help() {
 
       <Card title="Über den Abenteuer-Almanach">
         <p className="leading-relaxed text-ink">
-          Dieser Charaktermanager läuft auf deinem eigenen Rechner oder Raspberry Pi im Heimnetzwerk. Alle
-          Charakterdaten bleiben ausschließlich dort – nichts wandert zu einem fremden Dienst. Angaben zu Völkern,
-          Klassen, Zaubern und Ungeheuern stammen aus der offenen D&amp;D-5e-API und werden nach dem ersten Abruf
-          örtlich verwahrt, damit das Kompendium auch bei wackligem Internet schnell bleibt.
+          Der Almanach läuft auf deinem eigenen Rechner oder Raspberry Pi. Alle Daten bleiben ausschließlich dort –
+          nichts wandert zu einem fremden Dienst. Angaben zu Völkern, Klassen, Zaubern und Ungeheuern stammen aus der
+          offenen D&amp;D-5e-API und werden nach dem ersten Abruf örtlich verwahrt, damit das Kompendium auch bei
+          wackligem Internet schnell bleibt.
         </p>
       </Card>
+
+      <Card title="Konten und Rollen">
+        <p className="leading-relaxed text-ink">
+          Das erste angelegte Konto führt die <span className="font-display">Spielleitung</span>. Alle weiteren treten
+          mit einem Einladungscode bei, den die Spielleitung unter <span className="font-display">Spielleitung →
+          Runde</span> erzeugt. Wer zur Runde gehört, sieht sein eigenes Charakterblatt, die Blätter der Mitspieler
+          zum Lesen, den Spieltisch und die ausgeteilten Handzettel. Bestiarium, geheime Notizen und verborgene
+          Figuren bleiben hinter dem Schirm der Spielleitung.
+        </p>
+      </Card>
+
+      <Card title="Der Spieltisch">
+        <ul className="flex list-disc flex-col gap-1.5 pl-5 leading-relaxed text-ink marker:text-rubric">
+          <li>Mit einem Finger oder der gedrückten Maustaste wird die Karte geschoben, mit dem Mausrad oder zwei Fingern gezoomt.</li>
+          <li>Die eigene Figur lässt sich ziehen; beim Loslassen schnappt sie auf das Raster ein. Fremde Figuren bewegt nur die Spielleitung.</li>
+          <li>Ein <span className="font-display">Alt+Klick</span> lässt eine Stelle für alle kurz aufleuchten – praktisch statt „da vorne links, nein, weiter unten“.</li>
+          <li>Jede Bewegung, jeder Wurf und jede Änderung der Trefferpunkte steht sofort bei allen anderen auf dem Schirm.</li>
+        </ul>
+      </Card>
+
+      {isDm && (
+        <Card title="Für die Spielleitung">
+          <ul className="flex list-disc flex-col gap-1.5 pl-5 leading-relaxed text-ink marker:text-rubric">
+            <li>
+              <span className="font-display">Karte hochladen</span> legt eine neue Szene an. Unter „Raster“ die
+              Feldgröße so einstellen, dass die Linien auf der Karte liegen – ein Feld sind fünf Fuß.
+            </li>
+            <li>
+              <span className="font-display">Aufdecken</span> und <span className="font-display">Verhüllen</span> malen
+              den Nebel des Krieges. Vor dem Spiel einmal „alles verhüllen“, dann Raum für Raum öffnen.
+            </li>
+            <li>
+              Im <span className="font-display">Bestiarium</span> genügt ein Klick, um „3 Goblins“ samt gewürfelter
+              Initiative in den Kampf zu stellen – wahlweise verborgen, bis der Hinterhalt zuschnappt.
+            </li>
+            <li>
+              <span className="font-display">Figuren aus dem Kampf</span> legt für jeden Kämpfer eine Figur auf die
+              Karte. Schaden, den du in der Kampfliste einträgst, steht sofort auf dem Charakterblatt – und umgekehrt.
+            </li>
+            <li>Notizen lassen sich als Handzettel austeilen; die Runde sieht sie dann am Spieltisch.</li>
+            <li>Im Würfelbeutel kannst du <span className="font-display">verdeckt</span> würfeln – das sieht nur du.</li>
+          </ul>
+        </Card>
+      )}
 
       <Card title="Auf dem iPad zum Home-Bildschirm hinzufügen">
         <ol className="flex list-decimal flex-col gap-1.5 pl-5 leading-relaxed text-ink marker:font-display marker:text-rubric">
@@ -37,7 +84,16 @@ export default function Help() {
       <Card title="Würfeln">
         <p className="leading-relaxed text-ink">
           Der Würfelbeutel unten rechts ist von jeder Seite aus erreichbar: Anzahl und Modifikator eintragen, Würfel
-          antippen, fertig. Die letzten zwanzig Würfe bleiben in der Wurfchronik stehen.
+          antippen, fertig. Vorteil und Nachteil gelten für den ersten W20 im Wurf, und eigene Ausdrücke wie{' '}
+          <span className="font-display">2W6+3</span> gehen auch. Gewürfelt wird auf dem Server – jeder Wurf steht
+          damit sofort bei allen am Tisch in der Wurfchronik.
+        </p>
+      </Card>
+
+      <Card title="Wenn der Punkt neben dem Namen rot blinkt">
+        <p className="leading-relaxed text-ink">
+          Dann ist die Verbindung zum Spieltisch gerade unterbrochen – der Almanach knüpft sie von allein wieder an.
+          Sobald der Punkt golden leuchtet, laufen die Änderungen der anderen wieder ein.
         </p>
       </Card>
 

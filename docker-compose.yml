@@ -13,6 +13,23 @@ services:
       # 2014 = klassisches 5e-SRD-Regelwerk. Für die 2024er Regeln kann
       # "https://www.dnd5eapi.co/api/2024" verwendet werden.
       - DND5E_API_BASE=https://www.dnd5eapi.co/api/2014
+      # Der Tunnel unten ist der erste Zwischenschritt vor dem Almanach.
+      - TRUST_PROXY=1
+
+  # Der Weg von außen, ganz ohne Portfreigabe im Router: cloudflared baut
+  # eine Verbindung von innen nach außen auf. Nur mit Tunnel-Kennwort
+  # aktiv – siehe .env.example und die Anleitung in der README.
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: dnd-manager-tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN:?In .env fehlt CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - dnd-manager
+    profiles:
+      - tunnel
 
 volumes:
   dnd-manager-data:

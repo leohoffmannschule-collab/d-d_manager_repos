@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { charactersApi } from '../lib/api.js';
-import { IconPlus, IconScroll } from '../components/icons.jsx';
+import { useAuth } from '../lib/auth.jsx';
+import { useLive, useLiveStatus } from '../lib/live.jsx';
+import { IconEye, IconPlus, IconScroll } from '../components/icons.jsx';
 
 function subtitle(count) {
   if (count === 0) return 'Noch ist keine Seele verzeichnet';
@@ -13,13 +15,35 @@ export default function Dashboard() {
   const [characters, setCharacters] = useState(null);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { user, isDm } = useAuth();
+  const { generation } = useLiveStatus();
 
-  useEffect(() => {
+  const laden = useCallback(() => {
     charactersApi
       .list()
       .then(setCharacters)
       .catch((err) => setError(err.message));
   }, []);
+
+  useEffect(() => {
+    laden();
+  }, [laden, generation]);
+
+  // Trefferpunkte der Mitspieler bewegen sich mit – so sieht die Runde
+  // sofort, wenn es jemanden erwischt hat.
+  useLive('charakter:aktualisiert', (nachricht) => {
+    setCharacters((liste) => {
+      if (!liste) return liste;
+      const index = liste.findIndex((c) => c.id === nachricht.id);
+      if (index === -1) return liste;
+      const kopie = [...liste];
+      kopie[index] = { ...kopie[index], ...nachricht };
+      return kopie;
+    });
+  });
+  useLive('charakter:entfernt', ({ id }) => {
+    setCharacters((liste) => liste?.filter((c) => c.id !== id) ?? liste);
+  });
 
   async function handleDuplicate(id, e) {
     e.preventDefault();
@@ -58,6 +82,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {characters?.map((c) => {
           const hp = c.hp;
+          const eigenes = c.ownerId === user.id;
           const ratio = hp?.max ? Math.max(0, Math.min(1, (hp.current ?? 0) / hp.max)) : null;
           return (
             <div
@@ -80,6 +105,12 @@ export default function Dashboard() {
                   <p className="truncate text-sepia italic">
                     {[c.race, c.classLevel].filter(Boolean).join(' · ') || 'Noch ohne Angaben'}
                   </p>
+                  {!eigenes && (
+                    <p className="flex items-center gap-1.5 text-[14px] text-faint">
+                      <IconEye size={12} />
+                      {c.ownerName ? `Blatt von ${c.ownerName}` : 'ohne Besitzer'}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -99,9 +130,11 @@ export default function Dashboard() {
                 <button onClick={(e) => handleDuplicate(c.id, e)} className="min-h-9 text-sepia hover:text-ink">
                   Abschrift
                 </button>
-                <button onClick={(e) => handleDelete(c.id, c.name, e)} className="min-h-9 text-rubric hover:underline">
-                  Löschen
-                </button>
+                {(eigenes || isDm) && (
+                  <button onClick={(e) => handleDelete(c.id, c.name, e)} className="min-h-9 text-rubric hover:underline">
+                    Löschen
+                  </button>
+                )}
               </div>
             </div>
           );

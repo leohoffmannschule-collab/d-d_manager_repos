@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { charactersApi } from '../lib/api.js';
 import { setPath, fileToResizedDataUrl } from '../lib/setPath.js';
-import { IconCheck, IconQuill } from '../components/icons.jsx';
+import { useLive } from '../lib/live.jsx';
+import { IconCheck, IconEye, IconQuill } from '../components/icons.jsx';
 import OverviewTab from '../components/sheet/OverviewTab.jsx';
 import CombatTab from '../components/sheet/CombatTab.jsx';
 import InventoryTab from '../components/sheet/InventoryTab.jsx';
@@ -26,6 +27,9 @@ export default function CharacterSheet() {
   const [saveStatus, setSaveStatus] = useState('idle');
   const [tab, setTab] = useState('overview');
   const saveTimer = useRef(null);
+  // Solange hier noch ungesicherte Änderungen liegen, darf nichts von außen
+  // hereinschreiben – sonst überholt die Spielleitung den eigenen Federstrich.
+  const offeneAenderung = useRef(false);
 
   useEffect(() => {
     setCharacter(null);
@@ -35,17 +39,30 @@ export default function CharacterSheet() {
       .catch((err) => setError(err.message));
   }, [id]);
 
+  // Teilt die Spielleitung im Kampf Schaden aus, wandern die Trefferpunkte
+  // von selbst aufs Blatt.
+  useLive('charakter:aktualisiert', (nachricht) => {
+    if (nachricht.id !== id || offeneAenderung.current || !nachricht.hp) return;
+    setCharacter((prev) =>
+      prev ? { ...prev, data: setPath(prev.data, 'combat.hp', { ...prev.data?.combat?.hp, ...nachricht.hp }) } : prev
+    );
+  });
+
   const persist = useCallback(
     (next) => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
+      offeneAenderung.current = true;
       setSaveStatus('pending');
       saveTimer.current = setTimeout(async () => {
         setSaveStatus('saving');
         try {
           await charactersApi.update(id, { name: next.name, data: next.data });
           setSaveStatus('saved');
-        } catch {
+        } catch (err) {
           setSaveStatus('error');
+          setError(err.message);
+        } finally {
+          offeneAenderung.current = false;
         }
       }, 600);
     },
@@ -86,12 +103,19 @@ export default function CharacterSheet() {
 
   const isDnd = character.system === 'dnd5e';
   const hp = character.data?.combat?.hp;
+  // Fremde Blätter liegen offen auf dem Tisch, aber schreiben darf nur, wem
+  // sie gehören (und die Spielleitung).
+  const schreibbar = character.editable !== false;
 
   return (
     <div>
       <div className="mb-5 flex flex-wrap items-center gap-4">
         <div className="flex min-w-0 grow basis-64 items-center gap-4">
-          <label className="group relative h-20 w-20 shrink-0 cursor-pointer overflow-hidden rounded-full bg-panel-soft ring-2 ring-gold ring-offset-2 ring-offset-[var(--color-ground)]">
+          <label
+            className={`group relative h-20 w-20 shrink-0 overflow-hidden rounded-full bg-panel-soft ring-2 ring-gold ring-offset-2 ring-offset-[var(--color-ground)] ${
+              schreibbar ? 'cursor-pointer' : ''
+            }`}
+          >
             {character.data.portrait ? (
               <img src={character.data.portrait} alt="" className="h-full w-full object-cover" />
             ) : (
@@ -102,13 +126,14 @@ export default function CharacterSheet() {
             <span className="absolute inset-0 hidden items-center justify-center bg-black/55 font-display text-[11px] tracking-[0.1em] text-[#f0dca8] uppercase group-hover:flex">
               Bildnis
             </span>
-            <input type="file" accept="image/*" onChange={handlePortrait} className="hidden" />
+            <input type="file" accept="image/*" onChange={handlePortrait} disabled={!schreibbar} className="hidden" />
           </label>
 
           <div className="min-w-0 flex-1">
             <input
               value={character.name}
               onChange={(e) => updateName(e.target.value)}
+              readOnly={!schreibbar}
               className="w-full border-0 bg-transparent p-0 font-display text-2xl font-semibold text-ink focus:outline-none sm:text-3xl"
               aria-label="Name des Charakters"
             />
@@ -121,7 +146,14 @@ export default function CharacterSheet() {
                   : 'Freies System'}
               </span>
               <span className="h-1 w-1 rounded-full bg-gold" />
-              <SaveStatus status={saveStatus} />
+              {schreibbar ? (
+                <SaveStatus status={saveStatus} />
+              ) : (
+                <span className="flex items-center gap-1.5 text-faint">
+                  <IconEye size={14} />
+                  Blatt von {character.ownerName ?? 'jemand anderem'} – nur zum Lesen
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -137,9 +169,11 @@ export default function CharacterSheet() {
             </div>
           )}
 
-          <button onClick={handleDelete} className="min-h-11 px-2 text-[15px] text-rubric hover:underline">
-            Löschen
-          </button>
+          {schreibbar && (
+            <button onClick={handleDelete} className="min-h-11 px-2 text-[15px] text-rubric hover:underline">
+              Löschen
+            </button>
+          )}
         </div>
       </div>
 
@@ -160,10 +194,16 @@ export default function CharacterSheet() {
               </button>
             ))}
           </div>
-          {DND_TABS.map((t) => tab === t.key && <t.Component key={t.key} data={character.data} update={updateData} />)}
+          <fieldset disabled={!schreibbar} className="min-w-0 border-0 p-0">
+            {DND_TABS.map(
+              (t) => tab === t.key && <t.Component key={t.key} data={character.data} update={updateData} />
+            )}
+          </fieldset>
         </>
       ) : (
-        <FreeformSheet data={character.data} update={updateData} />
+        <fieldset disabled={!schreibbar} className="min-w-0 border-0 p-0">
+          <FreeformSheet data={character.data} update={updateData} />
+        </fieldset>
       )}
     </div>
   );

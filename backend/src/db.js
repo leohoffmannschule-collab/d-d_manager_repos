@@ -8,6 +8,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dataDir = process.env.DATA_DIR || path.join(__dirname, '..', 'data');
 fs.mkdirSync(dataDir, { recursive: true });
 
+export const mediaDir = path.join(dataDir, 'medien');
+fs.mkdirSync(mediaDir, { recursive: true });
+
 const dbPath = path.join(dataDir, 'manager.sqlite3');
 
 /**
@@ -54,6 +57,7 @@ const { db, driver } = openDatabase();
 export { db, driver };
 
 db.exec('PRAGMA journal_mode = WAL');
+db.exec('PRAGMA foreign_keys = ON');
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS characters (
@@ -70,6 +74,166 @@ db.exec(`
     payload TEXT NOT NULL,
     fetched_at TEXT NOT NULL
   );
+
+  /* --- Runde: Konten, Anmeldungen, Einladungen --------------------------- */
+
+  CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    name_key TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    role TEXT NOT NULL DEFAULT 'spieler',
+    color TEXT NOT NULL DEFAULT '#9a2b22',
+    created_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS auth_sessions (
+    token_hash TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TEXT NOT NULL,
+    last_seen TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS invites (
+    code TEXT PRIMARY KEY,
+    note TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL,
+    used_by TEXT,
+    used_at TEXT
+  );
+
+  /* --- Spielleitung: Kampf, Bestiarium, Notizen -------------------------- */
+
+  CREATE TABLE IF NOT EXISTS combatants (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL DEFAULT 'monster',
+    initiative INTEGER NOT NULL DEFAULT 0,
+    hp INTEGER NOT NULL DEFAULT 0,
+    max_hp INTEGER NOT NULL DEFAULT 0,
+    ac INTEGER NOT NULL DEFAULT 10,
+    conditions TEXT NOT NULL DEFAULT '[]',
+    notes TEXT NOT NULL DEFAULT '',
+    character_id TEXT REFERENCES characters(id) ON DELETE SET NULL,
+    hidden INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS library (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    category TEXT NOT NULL DEFAULT 'monster',
+    ac INTEGER,
+    hp INTEGER,
+    speed TEXT NOT NULL DEFAULT '',
+    stats TEXT NOT NULL DEFAULT '{}',
+    abilities TEXT NOT NULL DEFAULT '',
+    actions TEXT NOT NULL DEFAULT '',
+    notes TEXT NOT NULL DEFAULT '',
+    tags TEXT NOT NULL DEFAULT '[]',
+    created_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS notes (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL DEFAULT '',
+    tags TEXT NOT NULL DEFAULT '[]',
+    visibility TEXT NOT NULL DEFAULT 'sl',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS rolls (
+    id TEXT PRIMARY KEY,
+    user_id TEXT,
+    user_name TEXT NOT NULL DEFAULT '',
+    label TEXT NOT NULL DEFAULT '',
+    expression TEXT NOT NULL,
+    mode TEXT NOT NULL DEFAULT 'normal',
+    details TEXT NOT NULL DEFAULT '[]',
+    total INTEGER NOT NULL DEFAULT 0,
+    secret INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL
+  );
+
+  /* --- Spieltisch: Szenen, Figuren, Nebel -------------------------------- */
+
+  CREATE TABLE IF NOT EXISTS scenes (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    media_id TEXT,
+    width INTEGER NOT NULL DEFAULT 0,
+    height INTEGER NOT NULL DEFAULT 0,
+    grid_size INTEGER NOT NULL DEFAULT 70,
+    grid_offset_x INTEGER NOT NULL DEFAULT 0,
+    grid_offset_y INTEGER NOT NULL DEFAULT 0,
+    grid_visible INTEGER NOT NULL DEFAULT 1,
+    fog_enabled INTEGER NOT NULL DEFAULT 1,
+    fog TEXT NOT NULL DEFAULT '[]',
+    created_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS tokens (
+    id TEXT PRIMARY KEY,
+    scene_id TEXT NOT NULL REFERENCES scenes(id) ON DELETE CASCADE,
+    name TEXT NOT NULL DEFAULT '',
+    x REAL NOT NULL DEFAULT 0,
+    y REAL NOT NULL DEFAULT 0,
+    size INTEGER NOT NULL DEFAULT 1,
+    color TEXT NOT NULL DEFAULT '#9a2b22',
+    media_id TEXT,
+    character_id TEXT REFERENCES characters(id) ON DELETE SET NULL,
+    combatant_id TEXT REFERENCES combatants(id) ON DELETE SET NULL,
+    hidden INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS media (
+    id TEXT PRIMARY KEY,
+    filename TEXT NOT NULL,
+    mime TEXT NOT NULL,
+    bytes INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS app_state (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_tokens_scene ON tokens(scene_id);
+  CREATE INDEX IF NOT EXISTS idx_rolls_created ON rolls(created_at);
 `);
+
+/** Fügt eine Spalte hinzu, falls eine ältere Datenbank sie noch nicht hat. */
+function addColumnIfMissing(table, column, definition) {
+  const columns = db.prepare(`PRAGMA table_info(${table})`).all();
+  if (columns.some((c) => c.name === column)) return;
+  db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+}
+
+// Bestehende Almanach-Datenbanken kennen noch keinen Besitzer je Charakter.
+addColumnIfMissing('characters', 'owner_id', 'TEXT');
+addColumnIfMissing('characters', 'shared', 'INTEGER NOT NULL DEFAULT 1');
+
+/** Kleiner Schlüssel-Wert-Speicher für Einzelwerte (aktive Szene, Kampfrunde …). */
+export function getState(key, fallback = null) {
+  const row = db.prepare('SELECT value FROM app_state WHERE key = ?').get(key);
+  if (!row) return fallback;
+  try {
+    return JSON.parse(row.value);
+  } catch {
+    return fallback;
+  }
+}
+
+export function setState(key, value) {
+  db.prepare(
+    `INSERT INTO app_state (key, value) VALUES (?, ?)
+     ON CONFLICT(key) DO UPDATE SET value = excluded.value`
+  ).run(key, JSON.stringify(value));
+  return value;
+}
 
 export default db;
