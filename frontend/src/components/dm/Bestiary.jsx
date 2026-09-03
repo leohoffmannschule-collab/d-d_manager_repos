@@ -1,7 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { compendiumApi, libraryApi } from '../../lib/api.js';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
+import { compendiumApi, libraryApi, mediaApi } from '../../lib/api.js';
 import { Rubric } from '../ui.jsx';
 import { IconBook, IconEyeOff, IconPlus, IconSearch, IconSwords, IconTrash } from '../icons.jsx';
+
+// three.js kommt erst mit, wenn wirklich jemand eine Figur gießt.
+const MiniForge = lazy(() => import('../mini/MiniForge.jsx'));
 
 const LEER = {
   name: '',
@@ -14,6 +17,8 @@ const LEER = {
   actions: '',
   notes: '',
   tags: [],
+  mini: null,
+  mediaId: null,
 };
 
 const ATTRIBUTE = [
@@ -27,7 +32,13 @@ const ATTRIBUTE = [
 
 function Formular({ eintrag, onSpeichern, onAbbrechen }) {
   const [werte, setWerte] = useState(eintrag ?? LEER);
+  const [schmiede, setSchmiede] = useState(false);
   const setzen = (feld, wert) => setWerte((w) => ({ ...w, [feld]: wert }));
+
+  async function figurGiessen({ config, figur }) {
+    const bild = await mediaApi.upload(figur, 'gegner.png');
+    setWerte((w) => ({ ...w, mini: config, mediaId: bild.id }));
+  }
 
   return (
     <form
@@ -115,6 +126,33 @@ function Formular({ eintrag, onSpeichern, onAbbrechen }) {
           placeholder="Wald, Untote"
         />
       </label>
+
+      <div className="border-t border-dashed border-rule pt-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <button type="button" onClick={() => setSchmiede((s) => !s)} className="btn btn-plate">
+            {schmiede ? 'Schmiede schließen' : 'Figur gießen'}
+          </button>
+          {werte.mediaId && (
+            <span className="flex items-center gap-2 text-sepia italic">
+              <img src={mediaApi.url(werte.mediaId)} alt="" className="h-10 w-10 object-contain" />
+              Figur bereit – sie steht künftig mit auf dem Spieltisch.
+            </span>
+          )}
+        </div>
+        {schmiede && (
+          <div className="mt-4">
+            <Suspense fallback={<p className="text-sepia italic">Die Schmiede wird angeheizt …</p>}>
+              <MiniForge
+                config={werte.mini}
+                onChange={(c) => setzen('mini', c)}
+                onSave={figurGiessen}
+                gespeichert={!!werte.mediaId}
+                hinweis="Nach dem Gießen den Eintrag unten aufnehmen, damit die Figur erhalten bleibt."
+              />
+            </Suspense>
+          </div>
+        )}
+      </div>
 
       <div className="flex gap-2.5">
         <button type="submit" className="btn btn-seal">
@@ -267,6 +305,7 @@ export default function Bestiary() {
 
       {formular && (
         <Formular
+          key={formular.id ?? 'neu'}
           eintrag={formular.id ? formular : null}
           onAbbrechen={() => setFormular(null)}
           onSpeichern={async (werte) => {
@@ -289,6 +328,9 @@ export default function Bestiary() {
             return (
               <li key={e.id} className="panel p-3.5">
                 <div className="flex flex-wrap items-center gap-3">
+                  {e.mediaId && (
+                    <img src={mediaApi.url(e.mediaId)} alt="" className="h-12 w-12 shrink-0 object-contain" />
+                  )}
                   <button onClick={() => setAufgeklappt(offen ? null : e.id)} className="min-w-0 flex-1 text-left">
                     <p className="truncate font-display text-[17px] text-ink">{e.name}</p>
                     <p className="text-[15px] text-sepia">

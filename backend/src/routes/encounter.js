@@ -4,6 +4,7 @@ import { db, getState, setState } from '../db.js';
 import { isDm, requireAuth, requireDm } from '../auth.js';
 import { broadcast } from '../events.js';
 import { rollD20 } from '../dice.js';
+import * as chronik from '../chronicle.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -27,6 +28,7 @@ function rowToCombatant(row) {
     conditions: JSON.parse(row.conditions),
     notes: row.notes,
     characterId: row.character_id,
+    mediaId: row.media_id,
     hidden: !!row.hidden,
   };
 }
@@ -122,8 +124,8 @@ router.post('/combatants', requireDm, (req, res) => {
   }
   const hpValue = toNumber(hp, 0);
   db.prepare(
-    `INSERT INTO combatants (id, name, type, initiative, hp, max_hp, ac, conditions, notes, character_id, hidden, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO combatants (id, name, type, initiative, hp, max_hp, ac, conditions, notes, character_id, media_id, hidden, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     randomUUID(),
     name.trim().slice(0, 100),
@@ -135,6 +137,7 @@ router.post('/combatants', requireDm, (req, res) => {
     JSON.stringify(Array.isArray(conditions) ? conditions.filter((c) => typeof c === 'string').slice(0, 20) : []),
     typeof notes === 'string' ? notes.slice(0, 500) : '',
     characterId ?? null,
+    req.body?.mediaId ?? null,
     hidden ? 1 : 0,
     new Date().toISOString()
   );
@@ -179,6 +182,29 @@ router.put('/combatants/:id', requireDm, (req, res) => {
   );
 
   if (felder.hp !== row.hp || felder.max_hp !== row.max_hp) syncCharakter(holen(row.id));
+
+  if (felder.conditions !== row.conditions) {
+    const vorher = new Set(JSON.parse(row.conditions));
+    const nachher = JSON.parse(felder.conditions);
+    const neu = nachher.filter((c) => !vorher.has(c));
+    const weg = [...vorher].filter((c) => !nachher.includes(c));
+    if (neu.length || weg.length) {
+      chronik.log({
+        kind: 'zustand',
+        actor: req.user.name,
+        target: felder.name,
+        text: [
+          neu.length ? `${felder.name} ist jetzt ${neu.join(', ')}.` : '',
+          weg.length ? `${felder.name} ist nicht mehr ${weg.join(', ')}.` : '',
+        ]
+          .filter(Boolean)
+          .join(' '),
+        meta: { added: neu, removed: weg },
+        secret: !!felder.hidden,
+      });
+    }
+  }
+
   antwort(req, res);
 });
 
@@ -190,6 +216,32 @@ router.post('/combatants/:id/damage', requireDm, (req, res) => {
   const hp = Math.max(0, Math.min(row.max_hp || Number.MAX_SAFE_INTEGER, row.hp - amount));
   db.prepare('UPDATE combatants SET hp = ? WHERE id = ?').run(hp, row.id);
   syncCharakter(holen(row.id));
+
+  if (amount !== 0) {
+    chronik.log({
+      kind: amount > 0 ? 'schaden' : 'heilung',
+      actor: req.user.name,
+      target: row.name,
+      text:
+        amount > 0
+          ? `${row.name} nimmt ${amount} Schaden.`
+          : `${row.name} wird um ${-amount} Trefferpunkte geheilt.`,
+      meta: { amount, hp, maxHp: row.max_hp },
+      // Von verborgenen Kämpfern soll die Runde nichts mitbekommen.
+      secret: !!row.hidden,
+    });
+  }
+  if (hp === 0 && row.hp > 0) {
+    chronik.log({
+      kind: 'tod',
+      actor: req.user.name,
+      target: row.name,
+      text: `${row.name} geht zu Boden.`,
+      meta: { type: row.type },
+      secret: !!row.hidden,
+    });
+  }
+
   antwort(req, res);
 });
 
@@ -237,6 +289,9 @@ function zug(richtung) {
       round = Math.max(1, round - 1);
     }
     setState('kampf', { round, activeCombatantId: kaempfer[next].id });
+    if (round !== aktuell.round) {
+      chronik.log({ kind: 'runde', text: `Kampfrunde ${round} beginnt.`, meta: { round } });
+    }
     antwort(req, res);
   };
 }
@@ -246,8 +301,17 @@ router.post('/prev-turn', requireDm, zug(-1));
 
 // POST /api/encounter/reset
 router.post('/reset', requireDm, (req, res) => {
+  const meta_ = meta();
+  const zahl = db.prepare('SELECT COUNT(*) AS n FROM combatants').get().n;
   db.prepare('DELETE FROM combatants').run();
   setState('kampf', { round: 1, activeCombatantId: null });
+  if (zahl > 0) {
+    chronik.log({
+      kind: 'kampf',
+      text: `Der Kampf endet nach ${meta_.round} ${meta_.round === 1 ? 'Runde' : 'Runden'}.`,
+      meta: { rounds: meta_.round, kapitel: true },
+    });
+  }
   antwort(req, res);
 });
 
@@ -274,18 +338,20 @@ router.post('/party', requireDm, (req, res) => {
     const data = JSON.parse(row.data);
     const hp = data?.combat?.hp ?? {};
     db.prepare(
-      `INSERT INTO combatants (id, name, type, initiative, hp, max_hp, ac, conditions, notes, character_id, hidden, created_at)
-       VALUES (?, ?, 'pc', 0, ?, ?, ?, '[]', '', ?, 0, ?)`
+      `INSERT INTO combatants (id, name, type, initiative, hp, max_hp, ac, conditions, notes, character_id, media_id, hidden, created_at)
+       VALUES (?, ?, 'pc', 0, ?, ?, ?, '[]', '', ?, ?, 0, ?)`
     ).run(
       randomUUID(),
       row.name,
       toNumber(hp.current, 0),
       toNumber(hp.max, 0),
-      toNumber(data?.combat?.ac, 10),
+      toNumber(data?.combat?.armorClass ?? data?.combat?.ac, 10),
       row.id,
+      data?.miniMediaId ?? null,
       now
     );
   }
+  chronik.log({ kind: 'kampf', text: 'Ein Kampf beginnt.', meta: { kapitel: true } });
   antwort(req, res);
 });
 

@@ -94,6 +94,33 @@ export const libraryApi = {
   fromCompendium: (monster) => post('/library/aus-kompendium', monster),
 };
 
+export const encountersApi = {
+  list: () => request('/encounters'),
+  create: (payload) => post('/encounters', payload),
+  update: (id, payload) => put(`/encounters/${id}`, payload),
+  remove: (id) => del(`/encounters/${id}`),
+  stellen: (id, rollInitiative = true) => post(`/encounters/${id}/stellen`, { rollInitiative }),
+  ausKampf: (name) => post('/encounters/aus-kampf', { name }),
+};
+
+export const chronicleApi = {
+  sessions: () => request('/chronicle/sessions'),
+  session: (id) => request(`/chronicle/sessions/${id}`),
+  start: (title) => post('/chronicle/sessions', { title }),
+  end: (id) => post(`/chronicle/sessions/${id}/ende`),
+  rename: (id, title) => patch(`/chronicle/sessions/${id}`, { title }),
+  removeSession: (id) => del(`/chronicle/sessions/${id}`),
+  addEntry: (text, secret = false) => post('/chronicle/eintrag', { text, secret }),
+  removeEntry: (id) => del(`/chronicle/eintrag/${id}`),
+  kiStatus: () => request('/chronicle/ki'),
+  rueckblick: (id) => post(`/chronicle/sessions/${id}/rueckblick`),
+  async protokoll(id) {
+    const res = await fetch(`${API_BASE}/chronicle/sessions/${id}/protokoll`, { credentials: 'same-origin' });
+    if (!res.ok) throw new Error('Das Protokoll ließ sich nicht holen.');
+    return res.text();
+  },
+};
+
 export const notesApi = {
   list: () => request('/notes'),
   create: (payload) => post('/notes', payload),

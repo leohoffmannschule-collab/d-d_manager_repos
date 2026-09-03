@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { db, getState, setState } from '../db.js';
 import { isDm, requireAuth, requireDm } from '../auth.js';
 import { broadcast, originClient } from '../events.js';
+import * as chronik from '../chronicle.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -185,6 +186,7 @@ router.post('/:id/aktivieren', requireDm, (req, res) => {
   const row = holeSzene(req.params.id);
   if (!row) return res.status(404).json({ error: 'Szene nicht gefunden.' });
   setState('szene', row.id);
+  chronik.log({ kind: 'szene', text: `Die Runde erreicht: ${row.name}.`, meta: { sceneId: row.id } });
   sendeSzene();
   res.json(rowToScene(row));
 });
@@ -226,10 +228,15 @@ router.post('/:id/nebel/alles', requireDm, (req, res) => {
 
   let fog = [];
   if (revealed) {
-    const cols = Math.ceil((row.width || 0) / row.grid_size);
-    const rows = Math.ceil((row.height || 0) / row.grid_size);
-    for (let y = 0; y < rows && fog.length < MAX_FELDER; y++) {
-      for (let x = 0; x < cols && fog.length < MAX_FELDER; x++) fog.push(`${x},${y}`);
+    // Dieselbe Feldrechnung wie im Browser: Bei verschobenem Raster fängt
+    // das erste Feld links oben bei einem negativen Index an.
+    const g = row.grid_size;
+    const minX = Math.floor(-row.grid_offset_x / g);
+    const minY = Math.floor(-row.grid_offset_y / g);
+    const maxX = Math.floor((Math.max(1, row.width) - 1 - row.grid_offset_x) / g);
+    const maxY = Math.floor((Math.max(1, row.height) - 1 - row.grid_offset_y) / g);
+    for (let y = minY; y <= maxY && fog.length < MAX_FELDER; y++) {
+      for (let x = minX; x <= maxX && fog.length < MAX_FELDER; x++) fog.push(`${x},${y}`);
     }
   }
   db.prepare('UPDATE scenes SET fog = ? WHERE id = ?').run(JSON.stringify(fog), row.id);
@@ -322,7 +329,7 @@ router.post('/:id/figuren/aus-kampf', requireDm, (req, res) => {
   let platz = 0;
   const einfuegen = db.prepare(
     `INSERT INTO tokens (id, scene_id, name, x, y, size, color, media_id, character_id, combatant_id, hidden, created_at)
-     VALUES (?, ?, ?, ?, ?, 1, ?, NULL, ?, ?, ?, ?)`
+     VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?)`
   );
 
   for (const k of kaempfer) {
@@ -336,6 +343,8 @@ router.post('/:id/figuren/aus-kampf', requireDm, (req, res) => {
       (platz % 12) * raster,
       Math.floor(platz / 12) * raster,
       k.type === 'pc' ? '#2d4f7c' : k.type === 'npc' ? '#2f6b4f' : '#9a2b22',
+      // Wer eine Figur gegossen hat, steht damit auf der Karte.
+      k.media_id ?? null,
       k.character_id,
       k.id,
       k.hidden,

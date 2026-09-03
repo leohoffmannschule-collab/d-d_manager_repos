@@ -63,7 +63,7 @@ export default function DiceRoller() {
 
   // Würfe der anderen laufen live ein – auch bei geschlossenem Beutel.
   useLive('wurf', (wurf) => {
-    setHistory((h) => [wurf, ...h].slice(0, 40));
+    setHistory((h) => (h.some((w) => w.id === wurf.id) ? h : [wurf, ...h].slice(0, 40)));
     if (!open) setNeu(true);
   });
   useLive('wuerfe:geleert', () => setHistory([]));
@@ -71,10 +71,11 @@ export default function DiceRoller() {
   async function wuerfeln(expression, label = '') {
     setFehler('');
     try {
-      await diceApi.roll({ expression, mode: modus, label, secret: isDm && verdeckt });
-      // Der eigene Wurf kommt nicht über den Live-Kanal zurück, also selbst
-      // eintragen – so steht er sofort oben.
-      laden();
+      const eigener = await diceApi.roll({ expression, mode: modus, label, secret: isDm && verdeckt });
+      // Sofort eintragen, statt die ganze Chronik neu zu holen. Trifft der
+      // eigene Wurf gleich darauf über den Live-Kanal ein, fängt ihn die
+      // Prüfung auf die Kennung oben ab.
+      setHistory((h) => (h.some((w) => w.id === eigener.id) ? h : [eigener, ...h].slice(0, 40)));
       setModus('normal');
     } catch (err) {
       setFehler(err.message);

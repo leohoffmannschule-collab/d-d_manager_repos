@@ -58,11 +58,61 @@ export default function Help() {
               <span className="font-display">Figuren aus dem Kampf</span> legt für jeden Kämpfer eine Figur auf die
               Karte. Schaden, den du in der Kampfliste einträgst, steht sofort auf dem Charakterblatt – und umgekehrt.
             </li>
+            <li>
+              Unter <span className="font-display">Begegnungen</span> stellst du Gruppen einmal zusammen und stellst
+              sie an jedem Abend mit einem Klick – samt gewürfelter Initiative. Was du improvisiert hast, sicherst du
+              mit <span className="font-display">Laufenden Kampf sichern</span> für das nächste Mal.
+            </li>
+            <li>
+              Auch Gegner bekommen im Bestiarium eine gegossene Figur; sie steht dann mit auf dem Spieltisch.
+            </li>
             <li>Notizen lassen sich als Handzettel austeilen; die Runde sieht sie dann am Spieltisch.</li>
+            <li>
+              In der Chronik trägst du nach, was der Almanach nicht sehen konnte, und schließt am Ende die Sitzung.
+            </li>
             <li>Im Würfelbeutel kannst du <span className="font-display">verdeckt</span> würfeln – das sieht nur du.</li>
           </ul>
         </Card>
       )}
+
+      <Card title="Dein Charakterblatt">
+        <ul className="flex list-disc flex-col gap-1.5 pl-5 leading-relaxed text-ink marker:text-rubric">
+          <li>
+            Jeder Wert ist zugleich ein Würfelknopf: Tippe auf den Bonus neben einer Fertigkeit, einem Rettungswurf
+            oder einem Attribut, und der Wurf steht sofort bei allen am Tisch.
+          </li>
+          <li>
+            Im Reiter <span className="font-display">Kampf</span> stehen Zustände, Erschöpfung, Konzentration,
+            Widerstände und Sinne. Was deine Klasse zählen muss – Wut, Ki, bardische Inspiration – trägst du unter
+            <span className="font-display"> Klassenressourcen</span> ein.
+          </li>
+          <li>
+            <span className="font-display">Kurze</span> und <span className="font-display">lange Rast</span> füllen
+            auf, was sich erneuert. Trefferwürfel gibst du einzeln aus; der Wurf wird gleich gutgeschrieben.
+          </li>
+          <li>Die Erfahrung verrät, welche Stufe dir zusteht – ein Knopf setzt sie.</li>
+        </ul>
+      </Card>
+
+      <Card title="Die Figurenschmiede">
+        <p className="leading-relaxed text-ink">
+          Im Reiter <span className="font-display">Figur</span> stellst du deine Miniatur zusammen: Volk, Statur,
+          Rüstung, Waffe, Haar, Bart und Farben. Die Figur dreht sich, wenn du sie mit dem Finger ziehst;{' '}
+          <span className="font-display">Auswürfeln</span> macht auf Zuruf einen Vorschlag. Beim{' '}
+          <span className="font-display">Gießen</span> entsteht daraus das Bildnis für dein Blatt und die Figur, mit
+          der du über die Karte ziehst – die Spielleitung legt sie beim nächsten Kampf von selbst aus.
+        </p>
+      </Card>
+
+      <Card title="Die Chronik">
+        <p className="leading-relaxed text-ink">
+          Der Almanach schreibt mit, was am Tisch geschieht: Würfe, Wunden, wer zu Boden geht, welche Gegner
+          auftreten, wohin die Runde zieht und was ausgeteilt wird. Unter <span className="font-display">Chronik</span>{' '}
+          steht der Abend hinterher als Protokoll, nach Stationen und Kämpfen geordnet, und lässt sich als Datei
+          sichern. Es wird dabei <span className="font-display">nichts mitgehört und nichts aufgenommen</span> –
+          Grundlage ist allein, was ohnehin durch den Almanach läuft.
+        </p>
+      </Card>
 
       <Card title="Auf dem iPad zum Home-Bildschirm hinzufügen">
         <ol className="flex list-decimal flex-col gap-1.5 pl-5 leading-relaxed text-ink marker:font-display marker:text-rubric">

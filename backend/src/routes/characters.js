@@ -40,7 +40,7 @@ function summary(row) {
     race: character.data?.race ?? '',
     portrait: character.data?.portrait ?? '',
     hp: character.data?.combat?.hp ?? null,
-    ac: character.data?.combat?.ac ?? null,
+    ac: character.data?.combat?.armorClass ?? null,
   };
 }
 

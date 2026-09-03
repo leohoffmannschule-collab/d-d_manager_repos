@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { charactersApi } from '../lib/api.js';
 import { setPath, fileToResizedDataUrl } from '../lib/setPath.js';
+import { withDefaults } from '../lib/dnd5e.js';
 import { useLive } from '../lib/live.jsx';
 import { IconCheck, IconEye, IconQuill } from '../components/icons.jsx';
 import OverviewTab from '../components/sheet/OverviewTab.jsx';
@@ -11,12 +12,17 @@ import SpellsTab from '../components/sheet/SpellsTab.jsx';
 import BackgroundTab from '../components/sheet/BackgroundTab.jsx';
 import FreeformSheet from '../components/sheet/FreeformSheet.jsx';
 
+// Die Figurenschmiede bringt three.js mit. Das lädt erst, wenn jemand den
+// Reiter aufschlägt – wer nur sein Blatt führt, wartet nicht darauf.
+const MiniTab = lazy(() => import('../components/sheet/MiniTab.jsx'));
+
 const DND_TABS = [
   { key: 'overview', label: 'Übersicht', Component: OverviewTab },
   { key: 'combat', label: 'Kampf', Component: CombatTab },
   { key: 'inventory', label: 'Inventar', Component: InventoryTab },
   { key: 'spells', label: 'Zauber', Component: SpellsTab },
   { key: 'background', label: 'Hintergrund', Component: BackgroundTab },
+  { key: 'mini', label: 'Figur', Component: MiniTab },
 ];
 
 export default function CharacterSheet() {
@@ -35,7 +41,10 @@ export default function CharacterSheet() {
     setCharacter(null);
     charactersApi
       .get(id)
-      .then(setCharacter)
+      // Blätter aus früheren Fassungen kennen die neuen Felder noch nicht.
+      .then((geladen) =>
+        setCharacter(geladen.system === 'dnd5e' ? { ...geladen, data: withDefaults(geladen.data) } : geladen)
+      )
       .catch((err) => setError(err.message));
   }, [id]);
 
@@ -80,6 +89,15 @@ export default function CharacterSheet() {
   function updateData(path, value) {
     setCharacter((prev) => {
       const next = { ...prev, data: setPath(prev.data, path, value) };
+      persist(next);
+      return next;
+    });
+  }
+
+  // Für Vorgänge, die viele Felder auf einmal betreffen – etwa eine Rast.
+  function replaceData(data) {
+    setCharacter((prev) => {
+      const next = { ...prev, data };
       persist(next);
       return next;
     });
@@ -195,9 +213,14 @@ export default function CharacterSheet() {
             ))}
           </div>
           <fieldset disabled={!schreibbar} className="min-w-0 border-0 p-0">
-            {DND_TABS.map(
-              (t) => tab === t.key && <t.Component key={t.key} data={character.data} update={updateData} />
-            )}
+            <Suspense fallback={<p className="text-sepia italic">Die Schmiede wird angeheizt …</p>}>
+              {DND_TABS.map(
+                (t) =>
+                  tab === t.key && (
+                    <t.Component key={t.key} data={character.data} update={updateData} replace={replaceData} />
+                  )
+              )}
+            </Suspense>
           </fieldset>
         </>
       ) : (

@@ -4,6 +4,7 @@ import { db } from '../db.js';
 import { requireDm } from '../auth.js';
 import { rollD20 } from '../dice.js';
 import { sendeKampf } from './encounter.js';
+import * as chronik from '../chronicle.js';
 
 const router = Router();
 
@@ -28,6 +29,8 @@ function rowToEntry(row) {
     actions: row.actions,
     notes: row.notes,
     tags: JSON.parse(row.tags),
+    mini: JSON.parse(row.mini || '{}'),
+    mediaId: row.media_id,
     createdAt: row.created_at,
   };
 }
@@ -48,8 +51,8 @@ router.post('/', (req, res) => {
   }
   const id = randomUUID();
   db.prepare(
-    `INSERT INTO library (id, name, category, ac, hp, speed, stats, abilities, actions, notes, tags, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO library (id, name, category, ac, hp, speed, stats, abilities, actions, notes, tags, mini, media_id, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     id,
     body.name.trim().slice(0, 100),
@@ -62,6 +65,8 @@ router.post('/', (req, res) => {
     typeof body.actions === 'string' ? body.actions.slice(0, 4000) : '',
     typeof body.notes === 'string' ? body.notes.slice(0, 2000) : '',
     JSON.stringify(Array.isArray(body.tags) ? body.tags.filter((t) => typeof t === 'string').slice(0, 20) : []),
+    JSON.stringify(body.mini && typeof body.mini === 'object' ? body.mini : {}),
+    body.mediaId ?? null,
     new Date().toISOString()
   );
   res.status(201).json(rowToEntry(db.prepare('SELECT * FROM library WHERE id = ?').get(id)));
@@ -74,7 +79,7 @@ router.put('/:id', (req, res) => {
   const body = req.body ?? {};
   db.prepare(
     `UPDATE library SET name = ?, category = ?, ac = ?, hp = ?, speed = ?, stats = ?,
-            abilities = ?, actions = ?, notes = ?, tags = ? WHERE id = ?`
+            abilities = ?, actions = ?, notes = ?, tags = ?, mini = ?, media_id = ? WHERE id = ?`
   ).run(
     typeof body.name === 'string' && body.name.trim() ? body.name.trim().slice(0, 100) : row.name,
     KATEGORIEN.has(body.category) ? body.category : row.category,
@@ -88,6 +93,8 @@ router.put('/:id', (req, res) => {
     Array.isArray(body.tags)
       ? JSON.stringify(body.tags.filter((t) => typeof t === 'string').slice(0, 20))
       : row.tags,
+    'mini' in body && body.mini && typeof body.mini === 'object' ? JSON.stringify(body.mini) : row.mini,
+    'mediaId' in body ? (body.mediaId ?? null) : row.media_id,
     row.id
   );
   res.json(rowToEntry(db.prepare('SELECT * FROM library WHERE id = ?').get(row.id)));
@@ -111,8 +118,8 @@ router.post('/:id/add-to-encounter', (req, res) => {
   const now = new Date().toISOString();
 
   const einfuegen = db.prepare(
-    `INSERT INTO combatants (id, name, type, initiative, hp, max_hp, ac, conditions, notes, character_id, hidden, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, '[]', '', NULL, ?, ?)`
+    `INSERT INTO combatants (id, name, type, initiative, hp, max_hp, ac, conditions, notes, character_id, media_id, hidden, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, '[]', '', NULL, ?, ?, ?)`
   );
 
   for (let i = 0; i < anzahl; i++) {
@@ -124,10 +131,18 @@ router.post('/:id/add-to-encounter', (req, res) => {
       row.hp ?? 0,
       row.hp ?? 0,
       row.ac ?? 10,
+      row.media_id ?? null,
       body.hidden ? 1 : 0,
       now
     );
   }
+
+  chronik.log({
+    kind: 'auftritt',
+    text: `${anzahl > 1 ? `${anzahl}× ` : ''}${row.name} ${anzahl > 1 ? 'treten' : 'tritt'} auf.`,
+    meta: { libraryId: row.id, count: anzahl },
+    secret: !!body.hidden,
+  });
 
   sendeKampf();
   res.status(201).json({ created: anzahl });

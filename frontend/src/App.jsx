@@ -6,6 +6,7 @@ import CharacterSheet from './pages/CharacterSheet.jsx';
 import Compendium from './pages/Compendium.jsx';
 import Tabletop from './pages/Tabletop.jsx';
 import DmBoard from './pages/DmBoard.jsx';
+import Chronicle from './pages/Chronicle.jsx';
 import Login from './pages/Login.jsx';
 import Help from './pages/Help.jsx';
 import NotFound from './pages/NotFound.jsx';
@@ -41,6 +42,7 @@ export default function App() {
           <Route path="/charaktere/:id" element={<CharacterSheet />} />
           <Route path="/tisch" element={<Tabletop />} />
           <Route path="/kompendium" element={<Compendium />} />
+          <Route path="/chronik" element={<Chronicle />} />
           <Route
             path="/spielleitung"
             element={

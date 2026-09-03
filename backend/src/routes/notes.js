@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { db } from '../db.js';
 import { isDm, requireAuth, requireDm } from '../auth.js';
 import { broadcast } from '../events.js';
+import * as chronik from '../chronicle.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -48,7 +49,10 @@ router.post('/', requireDm, (req, res) => {
     now
   );
   const note = rowToNote(db.prepare('SELECT * FROM notes WHERE id = ?').get(id));
-  if (note.visibility === 'runde') broadcast('notizen:aktualisiert', {});
+  if (note.visibility === 'runde') {
+    broadcast('notizen:aktualisiert', {});
+    chronik.log({ kind: 'handzettel', text: `Die Runde erhält: „${note.title}“.`, meta: { noteId: note.id } });
+  }
   res.status(201).json(note);
 });
 
@@ -70,6 +74,9 @@ router.put('/:id', requireDm, (req, res) => {
   const note = rowToNote(db.prepare('SELECT * FROM notes WHERE id = ?').get(row.id));
   // Auch beim Zurückziehen eines Handouts müssen die Spieler es verschwinden sehen.
   if (note.visibility === 'runde' || row.visibility === 'runde') broadcast('notizen:aktualisiert', {});
+  if (note.visibility === 'runde' && row.visibility !== 'runde') {
+    chronik.log({ kind: 'handzettel', text: `Die Runde erhält: „${note.title}“.`, meta: { noteId: note.id } });
+  }
   res.json(note);
 });
 

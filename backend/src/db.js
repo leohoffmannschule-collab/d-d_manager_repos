@@ -202,8 +202,41 @@ db.exec(`
     value TEXT NOT NULL
   );
 
+  /* --- Gespeicherte Begegnungen ------------------------------------------ */
+
+  CREATE TABLE IF NOT EXISTS encounters (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    notes TEXT NOT NULL DEFAULT '',
+    entries TEXT NOT NULL DEFAULT '[]',
+    created_at TEXT NOT NULL
+  );
+
+  /* --- Chronik der Sitzungen --------------------------------------------- */
+
+  CREATE TABLE IF NOT EXISTS game_sessions (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    started_at TEXT NOT NULL,
+    ended_at TEXT,
+    summary TEXT NOT NULL DEFAULT ''
+  );
+
+  CREATE TABLE IF NOT EXISTS chronicle (
+    id TEXT PRIMARY KEY,
+    session_id TEXT REFERENCES game_sessions(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL,
+    actor TEXT NOT NULL DEFAULT '',
+    target TEXT NOT NULL DEFAULT '',
+    text TEXT NOT NULL,
+    meta TEXT NOT NULL DEFAULT '{}',
+    secret INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL
+  );
+
   CREATE INDEX IF NOT EXISTS idx_tokens_scene ON tokens(scene_id);
   CREATE INDEX IF NOT EXISTS idx_rolls_created ON rolls(created_at);
+  CREATE INDEX IF NOT EXISTS idx_chronicle_session ON chronicle(session_id, created_at);
 `);
 
 /** Fügt eine Spalte hinzu, falls eine ältere Datenbank sie noch nicht hat. */
@@ -216,6 +249,14 @@ function addColumnIfMissing(table, column, definition) {
 // Bestehende Almanach-Datenbanken kennen noch keinen Besitzer je Charakter.
 addColumnIfMissing('characters', 'owner_id', 'TEXT');
 addColumnIfMissing('characters', 'shared', 'INTEGER NOT NULL DEFAULT 1');
+
+// Bestiarium-Einträge tragen jetzt eine eigene Miniatur.
+addColumnIfMissing('library', 'mini', "TEXT NOT NULL DEFAULT '{}'");
+addColumnIfMissing('library', 'media_id', 'TEXT');
+
+// Kämpfer merken sich ihr Figurenbild, damit es beim Auslegen auf den
+// Spieltisch mitwandert.
+addColumnIfMissing('combatants', 'media_id', 'TEXT');
 
 /** Kleiner Schlüssel-Wert-Speicher für Einzelwerte (aktive Szene, Kampfrunde …). */
 export function getState(key, fallback = null) {

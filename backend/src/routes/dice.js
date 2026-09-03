@@ -4,6 +4,7 @@ import { db } from '../db.js';
 import { isDm, requireAuth, requireDm } from '../auth.js';
 import { broadcast } from '../events.js';
 import { rollDice } from '../dice.js';
+import * as chronik from '../chronicle.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -84,6 +85,14 @@ router.post('/roll', (req, res) => {
   db.prepare(
     `DELETE FROM rolls WHERE id NOT IN (SELECT id FROM rolls ORDER BY created_at DESC LIMIT ?)`
   ).run(AUFBEWAHREN);
+
+  chronik.log({
+    kind: 'wurf',
+    actor: req.user.name,
+    text: `${eintrag.label ? `${eintrag.label}: ` : ''}${eintrag.expression} ergibt ${eintrag.total}`,
+    meta: { total: eintrag.total, expression: eintrag.expression, mode: eintrag.mode },
+    secret,
+  });
 
   const nutzlast = { ...eintrag, color: req.user.color };
   broadcast('wurf', nutzlast, secret ? { dmOnly: true } : {});

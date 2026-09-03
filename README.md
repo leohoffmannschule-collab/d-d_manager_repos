@@ -11,7 +11,8 @@ Der Almanach besteht aus drei Teilen, die sich eine Anmeldung, eine Datenbank un
 | ------------------- | ----------------- | ---------------------------------------------------------------------------- |
 | **Charaktere**      | alle              | vollständige 5e-Charakterblätter, freies Blatt für andere Systeme, Kompendium |
 | **Spieltisch**      | alle              | Karten, Figuren, Nebel des Krieges, Lineal, Zeigefinger, Initiative, Handzettel |
-| **Spielleitung**    | nur die Leitung   | Initiative-Tracker, Bestiarium, geheime Notizen, Konten und Einladungen       |
+| **Spielleitung**    | nur die Leitung   | Initiative-Tracker, Bestiarium, Begegnungen, geheime Notizen, Konten          |
+| **Chronik**         | alle              | Protokoll des Abends, aus dem entstanden, was am Tisch wirklich geschah       |
 
 Was einer ändert, sehen die anderen sofort – ohne Neuladen.
 
@@ -33,6 +34,13 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
 - **Initiativliste** und **Handzettel** der Spielleitung, live am Tisch.
 - **Kompendium**: Völker, Klassen, Hintergründe, Talente, Zauber, Ausrüstung, magische Gegenstände,
   Monster und Zustände – durchsuchbar, direkt aus der D&D-5e-API und örtlich zwischengespeichert.
+- **Alles am Blatt ist würfelbar**: Ein Tipp auf den Bonus neben Fertigkeit, Rettungswurf, Attribut oder Angriff
+  legt den Wurf für alle sichtbar auf den Tisch.
+- **Vollständige Spielführung**: Zustände, Erschöpfung in sechs Stufen, Konzentration, Inspiration, Resistenzen und
+  Sinne, eingestimmte Gegenstände, frei benannte Klassenressourcen (Wut, Ki, bardische Inspiration …), Trefferwürfel
+  sowie **kurze und lange Rast**, die auffüllen, was sich erneuert.
+- **Figurenschmiede**: eine eigene Miniatur zusammenstellen – Volk, Statur, Rüstung, Waffe, Haar, Bart, Farben –,
+  drehen und gießen. Daraus entstehen Bildnis und Spielfigur.
 - **Zwei Fassungen**: *Pergament* für helle Räume, *Kerzenlicht* für den abgedunkelten Spieltisch.
 - **Als App installierbar** (PWA), automatisches Speichern, keine Werbung, keine Cloud.
 
@@ -47,9 +55,25 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
 - **Szenen**: Karten hochladen, Raster einstellen, Szene auf den Tisch legen, Figuren aus dem laufenden
   Kampf auslegen, Figuren benennen, einfärben, vergrößern, mit einem Bildnis versehen oder verbergen.
 - **Notizen** mit Schlagworten – geheim oder als **Handzettel** an die Runde ausgeteilt.
+- **Begegnungen**: Gruppen einmal zusammenstellen und an jedem Abend mit einem Klick stellen – samt gewürfelter
+  Initiative und wahlweise verborgen. Ein improvisierter Kampf lässt sich für das nächste Mal sichern.
 - **Verdeckt würfeln** – der Wurf erscheint nur im eigenen Würfelbeutel.
 - **Konten und Einladungen**: Codes erzeugen, Rollen vergeben, vergessene Passwörter neu setzen,
   Charakterblätter ihren Besitzern zuordnen.
+
+### Die Chronik
+
+Der Almanach schreibt mit, was am Tisch geschieht: Würfe, Schaden und Heilung, wer zu Boden geht, welche Zustände
+wirken, wann eine Kampfrunde beginnt, welche Gegner auftreten, wohin die Runde zieht, welche Handzettel ausgeteilt
+werden. Daraus entsteht ein Protokoll, nach Stationen und Kämpfen in Kapitel geordnet, das sich als Markdown-Datei
+sichern lässt. Die Spielleitung kann nachtragen, was der Almanach nicht sehen konnte, und Einträge verdeckt halten.
+
+**Es wird nichts mitgehört und nichts aufgenommen.** Grundlage ist allein, was ohnehin durch den Server läuft – kein
+Mikrofon, keine Spracherkennung, keine Einwilligungen, die einzuholen wären.
+
+Wer zusätzlich einen erzählenden Rückblick möchte, kann ein Sprachmodell anschließen (siehe *Konfiguration*). Das ist
+bewusst nicht voreingestellt: Es kostet Rechenzeit oder Geld und schickt das Protokoll aus dem Haus. Ohne diese
+Einstellung fehlt nichts – das Protokoll entsteht so oder so.
 
 ## Voraussetzungen
 
@@ -162,6 +186,14 @@ gewöhnliches `http://` lädt die App bei jedem Öffnen frisch – am Spieltisch
 | `DND5E_API_BASE` | `https://www.dnd5eapi.co/api/2014` | Basis-URL der D&D-5e-API (Regelwerk-Version)                      |
 | `TRUST_PROXY`    | `loopback`                         | `1`, wenn ein Tunnel im eigenen Container davorsteht (siehe Compose) |
 
+Freiwillig, nur für den erzählenden Rückblick in der Chronik:
+
+| Variable               | Bedeutung                                                                                  |
+| ---------------------- | ------------------------------------------------------------------------------------------ |
+| `CHRONIK_KI_URL`       | Adresse einer OpenAI-kompatiblen Schnittstelle. Örtlich z. B. `http://localhost:8080/v1/chat/completions` für llama.cpp oder Ollama; sonst die von OpenAI oder Anthropic. Ohne diese Variable bleibt der Knopf verborgen. |
+| `CHRONIK_KI_MODELL`    | Name des Modells (Vorgabe `gpt-4o-mini`).                                                    |
+| `CHRONIK_KI_SCHLUESSEL`| Zugangsschlüssel, falls der Dienst einen verlangt. Bei einem örtlichen Modell nicht nötig.   |
+
 ## Daten sichern
 
 Alles steckt in einem Ordner: die Datenbank `manager.sqlite3` und der Ordner `medien/` mit den
@@ -182,15 +214,18 @@ Compress-Archive backend\data $env:USERPROFILE\Desktop\almanach-sicherung.zip
 
 ```
 frontend/   React 19 + Vite, Tailwind CSS v4, PWA
-            src/pages/       Charaktere, Spieltisch, Spielleitung, Kompendium, Anmeldung
+            src/pages/       Charaktere, Spieltisch, Spielleitung, Chronik, Kompendium, Anmeldung
             src/components/  Spieltisch (Brett, Werkzeuge, Figuren), Spielleitung (Bestiarium,
-                             Notizen, Runde), Initiativliste, Würfelbeutel, Blattbausteine
-            src/lib/         API-Zugriff, Anmeldung, Live-Kanal, Bildverarbeitung
+                             Begegnungen, Notizen, Runde), Figurenschmiede, Initiativliste,
+                             Würfelbeutel, Blattbausteine
+            src/lib/         API-Zugriff, Anmeldung, Live-Kanal, Regelwerk, Rasten, Miniaturen
 backend/    Node.js + Express, SQLite über das eingebaute node:sqlite
             src/auth.js      Passwörter (scrypt), Anmeldungen, Rollen
             src/events.js    Live-Kanal (Server-Sent Events)
-            src/routes/      Konten, Charaktere, Kampf, Bestiarium, Notizen, Würfel,
-                             Szenen/Figuren/Nebel, Bilder, Kompendium-Zwischenspeicher
+            src/chronicle.js Mitschrift der Sitzung
+            src/routes/      Konten, Charaktere, Kampf, Bestiarium, Begegnungen, Notizen,
+                             Würfel, Szenen/Figuren/Nebel, Bilder, Chronik,
+                             Kompendium-Zwischenspeicher
 design/     Die Design-Entwürfe (Artboards) zum mittelalterlichen Erscheinungsbild
 scripts/    Hilfsskripte, plattformunabhängig in Node geschrieben
 ```
@@ -222,6 +257,10 @@ Nützliche Befehle im Projektstamm:
   das bleibt auch auf einem iPad flüssig, und übers Netz wandern nur die geänderten Felder.
 - **Bilder** werden als `data:`-URL hochgeladen, auf der Platte abgelegt und unter einer Kennung
   ausgeliefert, die sich nie ändert – der Browser behält sie also.
+- **Die Miniaturen** sind keine geladenen Modelle, sondern werden aus einfachen Körpern zusammengesetzt: Kugeln,
+  Kästen, Kegel. So muss keine Modelldatei auf den Pi, jede Figur steht in Sekundenbruchteilen neu da, und beim
+  Gießen entsteht daraus ein PNG mit durchsichtigem Grund. three.js wird erst geladen, wenn jemand die Schmiede
+  aufschlägt – wer nur sein Blatt führt, wartet nicht darauf.
 
 ## Erscheinungsbild
 

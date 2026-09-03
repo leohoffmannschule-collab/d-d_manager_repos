@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import DiceRoller from './DiceRoller.jsx';
+import Wurfmeldung from './Wurfmeldung.jsx';
 import { useTheme } from '../lib/useTheme.js';
 import { useAuth } from '../lib/auth.jsx';
 import { useLiveStatus } from '../lib/live.jsx';
@@ -14,6 +15,7 @@ import {
   IconKey,
   IconLogout,
   IconMap,
+  IconQuill,
   IconScroll,
   IconSun,
   IconUsers,
@@ -24,6 +26,7 @@ function navItems(isDm) {
     { to: '/', label: 'Charaktere', Icon: IconScroll, end: true },
     { to: '/tisch', label: 'Spieltisch', Icon: IconMap },
     { to: '/kompendium', label: 'Kompendium', Icon: IconBook },
+    { to: '/chronik', label: 'Chronik', Icon: IconQuill },
     ...(isDm ? [{ to: '/spielleitung', label: 'Spielleitung', Icon: IconCrown }] : []),
   ];
 }
@@ -230,6 +233,7 @@ export default function Layout() {
         <Outlet />
       </main>
 
+      <Wurfmeldung />
       <DiceRoller />
 
       <nav
