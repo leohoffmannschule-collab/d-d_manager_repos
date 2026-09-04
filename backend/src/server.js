@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { driver } from './db.js';
+import db, { driver } from './db.js';
 import { attachUser, countUsers, requireAuth } from './auth.js';
 import { addClient, presence } from './events.js';
 import ambienceRouter from './routes/ambience.js';
@@ -54,7 +54,20 @@ app.use('/api/media', mediaRouter);
 
 app.use(express.json({ limit: '2mb' }));
 
+/**
+ * Lebenszeichen – auch für den Healthcheck des Containers.
+ *
+ * Die Datenbank wird dabei wirklich angefasst. Ein Server, der noch antwortet,
+ * aber nicht mehr an seine Daten kommt (volle Karte, kaputtes Dateisystem),
+ * soll nicht als gesund durchgehen: Docker startet ihn dann neu, statt eine
+ * stille Ruine am Laufen zu halten.
+ */
 app.get('/api/health', (req, res) => {
+  try {
+    db.prepare('SELECT 1').get();
+  } catch (err) {
+    return res.status(503).json({ code: 'datenbank_unerreichbar', error: err.message, driver });
+  }
   res.json({ status: 'ok', driver, angemeldet: !!req.user, time: new Date().toISOString() });
 });
 

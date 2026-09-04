@@ -5,6 +5,8 @@ services:
     container_name: dnd-manager
     restart: unless-stopped
     ports:
+      # Nur im Heimnetz erreichbar. Von außen kommt niemand über diesen Port,
+      # sondern über den Tunnel unten – der braucht keine Portfreigabe.
       - "3001:3001"
     volumes:
       - dnd-manager-data:/app/data
@@ -18,10 +20,21 @@ services:
       # Ambiente über Spotify – leer lassen, dann bleibt der Klangteppich
       # verborgen. Siehe .env.example.
       - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID:-}
+      # Freiwillig: erzählender Rückblick in der Chronik.
+      - CHRONIK_KI_URL=${CHRONIK_KI_URL:-}
+      - CHRONIK_KI_MODELL=${CHRONIK_KI_MODELL:-}
+      - CHRONIK_KI_SCHLUESSEL=${CHRONIK_KI_SCHLUESSEL:-}
+    # Ein Pi läuft monatelang durch. Ohne Grenze wächst das Protokoll, bis die
+    # Karte voll ist – und dann steht alles.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   # Der Weg von außen, ganz ohne Portfreigabe im Router: cloudflared baut
   # eine Verbindung von innen nach außen auf. Nur mit Tunnel-Kennwort
-  # aktiv – siehe .env.example und die Anleitung in der README.
+  # aktiv – siehe .env.example und docs/EINRICHTUNG.md.
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: dnd-manager-tunnel
@@ -30,7 +43,16 @@ services:
     environment:
       - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN:?In .env fehlt CLOUDFLARE_TUNNEL_TOKEN}
     depends_on:
-      - dnd-manager
+      dnd-manager:
+        # Erst aufmachen, wenn der Almanach wirklich antwortet – sonst sieht
+        # die Runde beim Neustart für ein paar Sekunden einen Fehler von
+        # Cloudflare statt der Anmeldeseite.
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     profiles:
       - tunnel
 

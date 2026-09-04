@@ -16,6 +16,12 @@ Der Almanach besteht aus drei Teilen, die sich eine Anmeldung, eine Datenbank un
 
 Was einer ändert, sehen die anderen sofort – ohne Neuladen.
 
+> **Du willst ihn aufsetzen?** Das
+> **[Einrichtungs-Handbuch](docs/EINRICHTUNG.md)** führt dich Schritt für
+> Schritt vom nackten Raspberry Pi bis zur Runde, die von überall spielt –
+> samt Cloudflare-Tunnel, Spotify, Sicherung und Störungssuche. Rechne mit
+> zwei Stunden, davon die meiste Zeit Wartezeit.
+
 ## Funktionen
 
 ### Für die Runde
@@ -231,16 +237,29 @@ Freiwillig, nur für den erzählenden Rückblick in der Chronik:
 Alles steckt in einem Ordner: die Datenbank `manager.sqlite3` und der Ordner `medien/` mit den
 hochgeladenen Karten und Bildnissen.
 
+Im laufenden Betrieb darf die Datenbank **nicht einfach kopiert** werden – der Almanach schreibt
+im WAL-Verfahren, und eine Kopie mitten im Spiel erwischt womöglich einen halben Schreibvorgang.
+Das mitgelieferte Skript zieht stattdessen einen in sich stimmigen Stand, während die Runde
+weiterspielt:
+
 ```bash
-# Docker auf dem Pi
+# Datenbank sichern (klein, taugt für jede Nacht)
+docker compose exec -T dnd-manager node scripts/sicherung.mjs /app/data/sicherungen
+
+# Alles, samt Karten und Bildnissen
+docker compose exec -T dnd-manager node scripts/sicherung.mjs /app/data/sicherungen --medien
+```
+
+Damit ist ein Missgeschick abgedeckt, nicht aber eine kaputte Speicherkarte. Dafür wandert der
+ganze Ordner regelmäßig vom Pi herunter:
+
+```bash
 docker run --rm -v dnd-manager-data:/data -v "$PWD":/backup alpine \
   tar czf /backup/almanach-sicherung-$(date +%F).tar.gz -C /data .
 ```
 
-```powershell
-# Windows, ohne Docker
-Compress-Archive backend\data $env:USERPROFILE\Desktop\almanach-sicherung.zip
-```
+Wie beides zusammen als Nacht- und Wochenaufgabe eingerichtet wird, steht im
+[Einrichtungs-Handbuch](docs/EINRICHTUNG.md#8-sicherung-einrichten).
 
 ## Projektaufbau
 
