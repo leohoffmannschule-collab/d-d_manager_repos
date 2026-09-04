@@ -32,17 +32,25 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
 - **Gemeinsamer Würfelbeutel**: W4–W100, Anzahl und Modifikator, Vorteil/Nachteil, eigene Ausdrücke wie
   `2W6+3`. Gewürfelt wird auf dem Server, jeder Wurf steht sofort bei allen in der Chronik.
 - **Initiativliste** und **Handzettel** der Spielleitung, live am Tisch.
+- **Beutekiste**: die gemeinsame Kiste der Runde mit Münzen und Gefundenem, die alle füllen dürfen. Das Teilen
+  rechnet der Almanach aus – und wechselt Münzen dabei nur nach unten, damit niemand Platin bekommt, das die Runde
+  nie hatte. Die Spielleitung kann die Anteile direkt in die Beutel schreiben lassen.
 - **Kompendium**: Völker, Klassen, Hintergründe, Talente, Zauber, Ausrüstung, magische Gegenstände,
   Monster und Zustände – durchsuchbar, direkt aus der D&D-5e-API und örtlich zwischengespeichert.
 - **Alles am Blatt ist würfelbar**: Ein Tipp auf den Bonus neben Fertigkeit, Rettungswurf, Attribut oder Angriff
-  legt den Wurf für alle sichtbar auf den Tisch.
+  legt den Wurf für alle sichtbar auf den Tisch. Die eigene **Initiative** würfelt jede und jeder selbst; sie steht
+  sofort in der Kampfliste.
+- **Zauber im Blatt nachschlagen**: Ein Tipp auf den Namen klappt den vollen Text aus dem Kompendium auf –
+  Reichweite, Komponenten, Wirkungsdauer, Beschreibung und höhere Grade.
+- **Rettungswürfe gegen den Tod tragen sich selbst ein** (eine 20 richtet auf, eine 1 zählt doppelt), und die
+  **Konzentrationsprobe** rechnet den Schwierigkeitsgrad aus dem erlittenen Schaden.
 - **Vollständige Spielführung**: Zustände, Erschöpfung in sechs Stufen, Konzentration, Inspiration, Resistenzen und
   Sinne, eingestimmte Gegenstände, frei benannte Klassenressourcen (Wut, Ki, bardische Inspiration …), Trefferwürfel
   sowie **kurze und lange Rast**, die auffüllen, was sich erneuert.
 - **Figurenschmiede**: eine eigene Miniatur zusammenstellen – Volk, Statur, Rüstung, Waffe, Haar, Bart, Farben –,
   drehen und gießen. Daraus entstehen Bildnis und Spielfigur.
-- **Blatt mitnehmen**: Ein Knopf sichert das eigene Blatt als einzelne HTML-Datei – mit Bildnis und Figur, ohne
-  Verweis nach draußen. Sie öffnet sich mit einem Doppelklick auf jedem Gerät, auch wenn der Pi ausgeschaltet ist,
+- **Blatt mitnehmen**: Ein Knopf sichert das eigene Blatt als einzelne HTML-Datei – mit Bildnis, Figur und den
+  vollständigen Zaubertexten, ohne Verweis nach draußen. Sie öffnet sich mit einem Doppelklick auf jedem Gerät, auch wenn der Pi ausgeschaltet ist,
   und druckt sich als Charakterbogen. Der vollständige Datensatz reist am Ende der Datei mit, sie ist also zugleich
   eine Sicherung.
 - **Zwei Fassungen**: *Pergament* für helle Räume, *Kerzenlicht* für den abgedunkelten Spieltisch.
@@ -233,7 +241,7 @@ backend/    Node.js + Express, SQLite über das eingebaute node:sqlite
             src/events.js    Live-Kanal (Server-Sent Events)
             src/chronicle.js Mitschrift der Sitzung
             src/routes/      Konten, Charaktere, Kampf, Bestiarium, Begegnungen, Notizen,
-                             Würfel, Szenen/Figuren/Nebel, Bilder, Chronik,
+                             Würfel, Szenen/Figuren/Nebel, Bilder, Beute, Chronik,
                              Kompendium-Zwischenspeicher
 design/     Die Design-Entwürfe (Artboards) zum mittelalterlichen Erscheinungsbild
 scripts/    Hilfsskripte, plattformunabhängig in Node geschrieben

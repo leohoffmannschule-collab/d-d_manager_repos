@@ -18,6 +18,7 @@ import libraryRouter from './routes/library.js';
 import mediaRouter from './routes/media.js';
 import notesRouter from './routes/notes.js';
 import scenesRouter from './routes/scenes.js';
+import stashRouter from './routes/stash.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -80,6 +81,7 @@ app.use('/api/encounters', encountersRouter);
 app.use('/api/library', libraryRouter);
 app.use('/api/notes', notesRouter);
 app.use('/api/scenes', scenesRouter);
+app.use('/api/stash', stashRouter);
 
 app.use('/api', (req, res) => {
   res.status(404).json({ error: 'Diesen Weg kennt der Almanach nicht.' });

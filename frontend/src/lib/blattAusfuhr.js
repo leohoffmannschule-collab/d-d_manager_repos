@@ -63,6 +63,63 @@ async function alsDatenUrl(quelle) {
   }
 }
 
+/**
+ * Die Zaubertexte aus dem Kompendium holen. Genau dafür nimmt man das Blatt
+ * ja mit: Wer den ganzen Abend nachschlagen muss, hat vom Ausdruck nichts.
+ * Schlägt der Abruf fehl, bleibt es beim Namen.
+ */
+async function zaubertexte(spells) {
+  const mitEintrag = (spells ?? []).filter((s) => s.index);
+  const paare = await Promise.all(
+    mitEintrag.map(async (s) => {
+      try {
+        const antwort = await fetch(`/api/compendium/spells/${s.index}`, { credentials: 'same-origin' });
+        return [s.id, antwort.ok ? await antwort.json() : null];
+      } catch {
+        return [s.id, null];
+      }
+    })
+  );
+  return Object.fromEntries(paare);
+}
+
+function zauberblock(spell, detail) {
+  if (!detail) return '';
+  const kopfzeile = [
+    detail.level === 0 ? 'Zaubertrick' : `Grad ${detail.level}`,
+    detail.school?.name,
+    detail.concentration ? 'Konzentration' : null,
+    detail.ritual ? 'Ritual' : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
+  const werte = [
+    ['Zeitaufwand', detail.casting_time],
+    ['Reichweite', detail.range],
+    ['Komponenten', (detail.components ?? []).join(', ') + (detail.material ? ` (${detail.material})` : '')],
+    ['Wirkungsdauer', detail.duration],
+  ]
+    .filter(([, wert]) => wert)
+    .map(([label, wert]) => `<span><i>${esc(label)}:</i> ${esc(wert)}</span>`)
+    .join(' &nbsp;·&nbsp; ');
+
+  const text = (Array.isArray(detail.desc) ? detail.desc : [detail.desc])
+    .filter(Boolean)
+    .map((absatz) => `<p>${escAbsatz(absatz)}</p>`)
+    .join('');
+
+  const hoeher = (detail.higher_level ?? []).length
+    ? `<p class="hoeher"><i>Auf höheren Graden:</i> ${detail.higher_level.map(escAbsatz).join(' ')}</p>`
+    : '';
+
+  return `<div class="zauberblock">
+      <b>${esc(spell.name)}</b> <span class="kopfzeile">${esc(kopfzeile)}</span>
+      <div class="zauberwerte">${werte}</div>
+      ${text}${hoeher}
+    </div>`;
+}
+
 const tafel = (titel, inhalt) =>
   inhalt ? `<section class="tafel"><h2>${esc(titel)}</h2>${inhalt}</section>` : '';
 
@@ -262,7 +319,7 @@ function hintergrund(data) {
 
 /* --- Das ganze Blatt ----------------------------------------------------- */
 
-function dnd5eKoerper(character, data, bilder) {
+function dnd5eKoerper(character, data, bilder, texte) {
   const pb = proficiencyBonus(data.level);
   const wahrnehmung = data.skills.perception ?? { proficient: false, expertise: false };
   const passiv =
@@ -308,6 +365,14 @@ function dnd5eKoerper(character, data, bilder) {
     )}
     ${tafel('Ressourcen', ressourcen(data))}
     ${tafel('Zauber', zauber(data))}
+    ${tafel(
+      'Zauberbeschreibungen',
+      (data.spellcasting?.spells ?? [])
+        .slice()
+        .sort((a, b) => a.level - b.level || a.name.localeCompare(b.name, 'de'))
+        .map((s) => zauberblock(s, texte[s.id]))
+        .join('')
+    )}
     ${tafel('Beutel & Ausrüstung', inventar(data))}
     ${tafel(
       'Merkmale & Züge',
@@ -391,6 +456,15 @@ const STIL = `
   .fliesstext p{margin:2px 0 0;white-space:normal}
   .figur{max-width:220px;display:block;margin:0 auto}
   .hinweis{margin:8px 0 0;color:var(--blass);font-size:15px;font-style:italic}
+  .zauberblock{margin-bottom:14px;padding-bottom:10px;border-bottom:1px dotted var(--linie);break-inside:avoid}
+  .zauberblock:last-child{border-bottom:0}
+  .zauberblock b{font-family:var(--kapital);font-size:17px}
+  .zauberblock .kopfzeile{color:var(--rubrik);font-size:15px}
+  .zauberwerte{margin:2px 0 6px;color:var(--sepia);font-size:15px}
+  .zauberwerte i{color:var(--blass);font-style:normal;font-family:var(--kapital);font-size:10px;
+    letter-spacing:.12em;text-transform:uppercase}
+  .zauberblock p{margin:4px 0 0}
+  .zauberblock .hoeher{color:var(--sepia)}
   .leiste{max-width:960px;margin:0 auto 14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;
     color:var(--sepia);font-size:15px;font-style:italic}
   .leiste button{font-family:var(--kapital);font-size:12px;letter-spacing:.12em;text-transform:uppercase;
@@ -414,8 +488,9 @@ export async function blattAlsHtml(character) {
   ]);
 
   const stand = new Date().toLocaleString('de-DE');
+  const texte = istDnd ? await zaubertexte(data.spellcasting?.spells) : {};
   const koerper = istDnd
-    ? dnd5eKoerper(character, data, { portrait, mini })
+    ? dnd5eKoerper(character, data, { portrait, mini }, texte)
     : freiKoerper(character, data, { portrait, mini });
 
   // Der Datensatz reist mit, damit die Datei zugleich eine Sicherung ist.

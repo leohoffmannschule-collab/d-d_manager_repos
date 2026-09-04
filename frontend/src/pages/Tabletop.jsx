@@ -3,10 +3,11 @@ import Board from '../components/tabletop/Board.jsx';
 import SceneBar from '../components/tabletop/SceneBar.jsx';
 import TokenPanel from '../components/tabletop/TokenPanel.jsx';
 import Initiative from '../components/Initiative.jsx';
+import Beute from '../components/Beute.jsx';
 import { charactersApi, encounterApi, notesApi, scenesApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
 import { useLive, useLiveStatus } from '../lib/live.jsx';
-import { IconMap, IconPlus, IconScroll, IconSwords, IconUsers } from '../components/icons.jsx';
+import { IconHeart, IconMap, IconPlus, IconScroll, IconSwords } from '../components/icons.jsx';
 
 /** Nebel-Änderungen werden gebündelt gesendet, nicht Feld für Feld. */
 const PINSEL_MS = 120;
@@ -46,25 +47,6 @@ function Handzettel() {
             </p>
           )}
           <p className="mt-1.5 whitespace-pre-wrap text-sepia">{n.content}</p>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function AmTisch() {
-  const { presence } = useLiveStatus();
-  return presence.length === 0 ? (
-    <p className="text-sepia italic">Gerade ist niemand sonst am Tisch.</p>
-  ) : (
-    <ul className="space-y-1.5">
-      {presence.map((p) => (
-        <li key={p.id} className="flex items-center gap-2.5">
-          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: p.color }} />
-          <span className="text-ink">{p.name}</span>
-          <span className="font-display text-[10px] tracking-[0.14em] text-faint uppercase">
-            {p.role === 'sl' ? 'Spielleitung' : 'Runde'}
-          </span>
         </li>
       ))}
     </ul>
@@ -212,36 +194,11 @@ export default function Tabletop() {
 
   /* --- Anzeige ---------------------------------------------------------- */
 
-  if (!scene) {
-    return (
-      <div className="-mx-4 -mt-5">
-        {isDm && (
-          <SceneBar
-            scene={null}
-            mode={mode}
-            onMode={setMode}
-            onChanged={ladeSzene}
-            onFogAll={() => {}}
-            onTokensFromEncounter={() => {}}
-          />
-        )}
-        <div className="m-4 flex flex-col items-center justify-center gap-3 border border-dashed border-rule-strong p-12 text-center">
-          <IconMap size={34} className="text-faint" />
-          <p className="text-sepia italic">
-            {isDm
-              ? 'Noch liegt keine Karte auf dem Tisch. Lade eine hoch, dann sieht sie die ganze Runde.'
-              : 'Die Spielleitung hat noch keine Karte aufgelegt.'}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   const reiterListe = [
     { id: 'kampf', label: 'Kampf', Icon: IconSwords },
+    { id: 'beute', label: 'Beute', Icon: IconHeart },
     { id: 'handzettel', label: 'Handzettel', Icon: IconScroll },
-    { id: 'tisch', label: 'Am Tisch', Icon: IconUsers },
-    ...(isDm ? [{ id: 'figur', label: 'Figur', Icon: IconPlus }] : []),
+    ...(isDm && scene ? [{ id: 'figur', label: 'Figur', Icon: IconPlus }] : []),
   ];
 
   return (
@@ -254,10 +211,12 @@ export default function Tabletop() {
             onMode={setMode}
             onChanged={ladeSzene}
             onFogAll={async (revealed) => {
+              if (!scene) return;
               await scenesApi.fogAll(scene.id, revealed);
               ladeSzene();
             }}
             onTokensFromEncounter={async () => {
+              if (!scene) return;
               await scenesApi.tokensFromEncounter(scene.id);
               ladeSzene();
             }}
@@ -265,29 +224,42 @@ export default function Tabletop() {
         )}
 
         <div className="relative h-[58vh] border-y border-rule lg:h-auto lg:flex-1 lg:border-y-0">
-          <Board
-            scene={scene}
-            fog={fog}
-            tokens={tokens}
-            combatants={combatants}
-            activeCombatantId={activeCombatantId}
-            dm={isDm}
-            mode={mode}
-            canMoveToken={darfBewegen}
-            onMoveToken={figurBewegen}
-            onPaintFog={nebelMalen}
-            onPing={zeigen}
-            pings={pings}
-            selectedTokenId={gewaehlt}
-            onSelectToken={(id) => {
-              setGewaehlt(id);
-              if (isDm) setReiter('figur');
-            }}
-          />
+          {scene ? (
+            <Board
+              scene={scene}
+              fog={fog}
+              tokens={tokens}
+              combatants={combatants}
+              activeCombatantId={activeCombatantId}
+              dm={isDm}
+              mode={mode}
+              canMoveToken={darfBewegen}
+              onMoveToken={figurBewegen}
+              onPaintFog={nebelMalen}
+              onPing={zeigen}
+              pings={pings}
+              selectedTokenId={gewaehlt}
+              onSelectToken={(id) => {
+                setGewaehlt(id);
+                if (isDm) setReiter('figur');
+              }}
+            />
+          ) : (
+            <div className="flex h-full flex-col items-center justify-center gap-3 bg-[#14100a] px-6 text-center">
+              <IconMap size={34} className="text-[#5a4526]" />
+              <p className="max-w-sm text-[#a89372] italic">
+                {isDm
+                  ? 'Noch liegt keine Karte auf dem Tisch. Lade eine hoch – bis dahin lässt sich rechts trotzdem kämpfen, teilen und lesen.'
+                  : 'Die Spielleitung hat noch keine Karte aufgelegt. Kampf, Beute und Handzettel stehen rechts trotzdem bereit.'}
+              </p>
+            </div>
+          )}
 
-          <div className="pointer-events-none absolute top-3 left-3 bg-black/45 px-2.5 py-1 font-display text-[12px] tracking-[0.12em] text-[#e8cf8d] uppercase">
-            {scene.name}
-          </div>
+          {scene && (
+            <div className="pointer-events-none absolute top-3 left-3 bg-black/45 px-2.5 py-1 font-display text-[12px] tracking-[0.12em] text-[#e8cf8d] uppercase">
+              {scene.name}
+            </div>
+          )}
 
           <button
             onClick={() => setSeite((s) => !s)}
@@ -320,9 +292,9 @@ export default function Tabletop() {
 
         <div className="p-4">
           {reiter === 'kampf' && <Initiative variant="tafel" />}
+          {reiter === 'beute' && <Beute />}
           {reiter === 'handzettel' && <Handzettel />}
-          {reiter === 'tisch' && <AmTisch />}
-          {reiter === 'figur' && isDm && (
+          {reiter === 'figur' && isDm && scene && (
             <>
               <button
                 onClick={async () => {

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { encounterApi } from '../lib/api.js';
+import { charactersApi, encounterApi } from '../lib/api.js';
+import { blattWurf } from '../lib/wuerfeln.js';
 import { useAuth } from '../lib/auth.jsx';
 import { useLive, useLiveStatus } from '../lib/live.jsx';
 import {
@@ -276,18 +277,29 @@ function NeuerKaempfer({ onFertig }) {
  * Spielleitung mit allen Griffen („voll“).
  */
 export default function Initiative({ variant = 'tafel' }) {
-  const { isDm } = useAuth();
+  const { user, isDm } = useAuth();
   const { generation } = useLiveStatus();
   const [kampf, setKampf] = useState({ round: 1, activeCombatantId: null, combatants: [] });
+  const [meine, setMeine] = useState([]);
   const voll = variant === 'voll';
+
+  // Die eigene Zeile im Kampf – falls die Runde schon geholt wurde.
+  const eigene = kampf.combatants.find((c) => c.characterId && meine.some((m) => m.id === c.characterId));
+  const eigenerCharakter = eigene && meine.find((m) => m.id === eigene.characterId);
 
   const laden = useCallback(() => {
     encounterApi.get().then(setKampf).catch(() => {});
   }, []);
 
   useEffect(() => {
-    if (generation > 0) laden();
-  }, [generation, laden]);
+    if (generation > 0) {
+      laden();
+      charactersApi
+        .list()
+        .then((alle) => setMeine(alle.filter((c) => c.ownerId === user.id)))
+        .catch(() => {});
+    }
+  }, [generation, laden, user.id]);
 
   useLive('kampf', setKampf);
   useLive('charakter:aktualisiert', laden);
@@ -310,6 +322,22 @@ export default function Initiative({ variant = 'tafel' }) {
           </div>
         )}
       </div>
+
+      {/* Am Anfang jedes Kampfes würfelt die ganze Runde – jede und jeder
+          trägt den eigenen Wurf selbst ein. */}
+      {!isDm && eigene && (
+        <button
+          onClick={async () => {
+            const wurf = await blattWurf('Initiative', eigenerCharakter?.initiative ?? 0);
+            await encounterApi.setInitiative(eigene.id, wurf.total);
+          }}
+          className="btn btn-seal mb-3 w-full"
+        >
+          <IconSwords size={16} />
+          Eigene Initiative würfeln
+          {eigenerCharakter && ` (${eigenerCharakter.initiative >= 0 ? '+' : ''}${eigenerCharakter.initiative})`}
+        </button>
+      )}
 
       {isDm && (
         <div className="mb-3 flex flex-wrap gap-1.5">

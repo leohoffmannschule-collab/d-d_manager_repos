@@ -245,6 +245,29 @@ router.post('/combatants/:id/damage', requireDm, (req, res) => {
   antwort(req, res);
 });
 
+/**
+ * POST /api/encounter/combatants/:id/initiative  { value }
+ *
+ * Zu Beginn jedes Kampfes würfelt die ganze Runde. Bisher musste die
+ * Spielleitung fünf Zahlen abtippen – hier trägt jede und jeder den eigenen
+ * Wurf selbst ein. Fremde Zeilen bleiben tabu.
+ */
+router.post('/combatants/:id/initiative', (req, res) => {
+  const row = holen(req.params.id);
+  if (!row) return res.status(404).json({ error: 'Kämpfer nicht gefunden.' });
+
+  if (!isDm(req.user)) {
+    if (!row.character_id) return res.status(403).json({ error: 'Diese Zeile gehört nicht dir.' });
+    const charakter = db.prepare('SELECT owner_id FROM characters WHERE id = ?').get(row.character_id);
+    if (charakter?.owner_id !== req.user.id) {
+      return res.status(403).json({ error: 'Diese Zeile gehört jemand anderem.' });
+    }
+  }
+
+  db.prepare('UPDATE combatants SET initiative = ? WHERE id = ?').run(toNumber(req.body?.value, 0), row.id);
+  antwort(req, res);
+});
+
 // DELETE /api/encounter/combatants/:id
 router.delete('/combatants/:id', requireDm, (req, res) => {
   const row = holen(req.params.id);

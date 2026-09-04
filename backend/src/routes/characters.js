@@ -41,6 +41,9 @@ function summary(row) {
     portrait: character.data?.portrait ?? '',
     hp: character.data?.combat?.hp ?? null,
     ac: character.data?.combat?.armorClass ?? null,
+    initiative:
+      Math.floor(((Number(character.data?.abilities?.dex) || 10) - 10) / 2) +
+      (Number(character.data?.combat?.initiativeBonus) || 0),
   };
 }
 

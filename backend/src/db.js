@@ -212,6 +212,18 @@ db.exec(`
     created_at TEXT NOT NULL
   );
 
+  /* --- Beutekiste der Runde ---------------------------------------------- */
+
+  CREATE TABLE IF NOT EXISTS stash_items (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    qty INTEGER NOT NULL DEFAULT 1,
+    weight REAL NOT NULL DEFAULT 0,
+    notes TEXT NOT NULL DEFAULT '',
+    holder_id TEXT REFERENCES characters(id) ON DELETE SET NULL,
+    created_at TEXT NOT NULL
+  );
+
   /* --- Chronik der Sitzungen --------------------------------------------- */
 
   CREATE TABLE IF NOT EXISTS game_sessions (

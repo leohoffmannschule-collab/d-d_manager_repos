@@ -94,6 +94,38 @@ export default function Help() {
         </ul>
       </Card>
 
+      <Card title="Zauber, Rasten und der letzte Atemzug">
+        <ul className="flex list-disc flex-col gap-1.5 pl-5 leading-relaxed text-ink marker:text-rubric">
+          <li>
+            Im Reiter <span className="font-display">Zauber</span> genügt ein Tipp auf den Namen, und der ganze
+            Zaubertext steht da – Reichweite, Komponenten, Wirkungsdauer und Beschreibung. Kein Blättern ins
+            Kompendium mitten im Zug.
+          </li>
+          <li>
+            Der <span className="font-display">Rettungswurf gegen den Tod</span> trägt sich selbst ein: Eine 20
+            richtet dich mit einem Trefferpunkt wieder auf, eine 1 zählt doppelt.
+          </li>
+          <li>
+            Läuft eine <span className="font-display">Konzentration</span> und du wirst getroffen, trag den Schaden
+            ein – der Schwierigkeitsgrad ergibt sich daraus, und der Wurf sagt dir, ob der Zauber hält.
+          </li>
+          <li>
+            Beginnt ein Kampf, würfelst du deine <span className="font-display">Initiative</span> am Spieltisch
+            selbst; sie steht sofort in der Liste der Spielleitung.
+          </li>
+        </ul>
+      </Card>
+
+      <Card title="Die Beutekiste">
+        <p className="leading-relaxed text-ink">
+          Am Spieltisch liegt unter <span className="font-display">Beute</span> die gemeinsame Kiste der Runde:
+          Münzen und Gefundenes, für alle sichtbar, und jede und jeder darf eintragen. Ein Klick auf{' '}
+          <span className="font-display">Auf … teilen</span> rechnet aus, was auf jeden Kopf entfällt – dabei werden
+          Münzen nur nach unten gewechselt, damit niemand ein Platinstück ausgezahlt bekommt, das die Runde nie
+          besessen hat. Die Spielleitung kann die Anteile mit einem Knopf in die Beutel schreiben lassen.
+        </p>
+      </Card>
+
       <Card title="Das Blatt mitnehmen">
         <p className="leading-relaxed text-ink">
           Oben auf deinem Blatt liegt der Knopf <span className="font-display">Mitnehmen</span>. Er sichert dein

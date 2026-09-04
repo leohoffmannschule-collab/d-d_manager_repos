@@ -83,6 +83,17 @@ export const encounterApi = {
   reset: () => post('/encounter/reset'),
   rollInitiative: (onlyEmpty = true) => post('/encounter/roll-initiative', { onlyEmpty }),
   addParty: () => post('/encounter/party'),
+  setInitiative: (id, value) => post(`/encounter/combatants/${id}/initiative`, { value }),
+};
+
+export const stashApi = {
+  get: () => request('/stash'),
+  addItem: (payload) => post('/stash/items', payload),
+  updateItem: (id, payload) => put(`/stash/items/${id}`, payload),
+  removeItem: (id) => del(`/stash/items/${id}`),
+  setCoins: (coins) => put('/stash/coins', coins),
+  teilung: (anteile) => request(`/stash/teilung?anteile=${anteile}`),
+  auszahlen: (characterIds) => post('/stash/auszahlen', { characterIds }),
 };
 
 export const libraryApi = {

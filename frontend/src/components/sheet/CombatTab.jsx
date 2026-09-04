@@ -4,6 +4,7 @@ import {
   EXHAUSTION_STEPS,
   abilityModifier,
   formatModifier,
+  proficiencyBonus,
 } from '../../lib/dnd5e.js';
 import { kurzeRast, langeRast } from '../../lib/rasten.js';
 import { ausdruckWurf, blattWurf } from '../../lib/wuerfeln.js';
@@ -179,6 +180,68 @@ function Ressourcen({ data, update }) {
 
 export default function CombatTab({ data, update, replace }) {
   const [rastOffen, setRastOffen] = useState(false);
+  const [todesmeldung, setTodesmeldung] = useState('');
+  const [schaden, setSchaden] = useState('');
+  const [konzentrationsmeldung, setKonzentrationsmeldung] = useState('');
+
+  /**
+   * Der Rettungswurf gegen den Tod trägt sich selbst ein: Eine 20 richtet
+   * wieder auf, eine 1 zählt doppelt, alles ab 10 ist ein Erfolg.
+   */
+  async function todesrettung() {
+    const wurf = await blattWurf('Rettungswurf gegen den Tod', 0);
+    const augen = wurf.details?.[0]?.rolls?.[0] ?? wurf.total;
+    const stand = data.combat.deathSaves;
+
+    if (augen === 20) {
+      replace({
+        ...data,
+        combat: {
+          ...data.combat,
+          hp: { ...data.combat.hp, current: Math.max(1, data.combat.hp.current) },
+          deathSaves: { successes: 0, failures: 0 },
+        },
+      });
+      setTodesmeldung('Eine 20 – du kommst mit einem Trefferpunkt wieder zu dir.');
+      return;
+    }
+
+    const erfolge = augen >= 10 ? Math.min(3, stand.successes + 1) : stand.successes;
+    const fehlschlaege = augen >= 10 ? stand.failures : Math.min(3, stand.failures + (augen === 1 ? 2 : 1));
+
+    replace({ ...data, combat: { ...data.combat, deathSaves: { successes: erfolge, failures: fehlschlaege } } });
+    setTodesmeldung(
+      erfolge >= 3
+        ? 'Drei Erfolge – du bist stabil.'
+        : fehlschlaege >= 3
+          ? 'Drei Fehlschläge. Das war der letzte Atemzug.'
+          : augen === 1
+            ? 'Eine 1 – das zählt doppelt.'
+            : `${augen} gewürfelt: ${augen >= 10 ? 'Erfolg' : 'Fehlschlag'}.`
+    );
+  }
+
+  /**
+   * Konzentrationsprobe: Der Schwierigkeitsgrad ist 10 oder die Hälfte des
+   * erlittenen Schadens – was höher liegt. Das rechnet niemand gern im Kopf,
+   * während der Rest des Tisches wartet.
+   */
+  async function konzentrationsprobe() {
+    const treffer = Number(schaden) || 0;
+    const sg = Math.max(10, Math.floor(treffer / 2));
+    const mod =
+      abilityModifier(data.abilities.con) + (data.savingThrows.con ? proficiencyBonus(data.level) : 0);
+    const wurf = await blattWurf(`Konzentration halten (SG ${sg})`, mod);
+
+    if (wurf.total >= sg) {
+      setKonzentrationsmeldung(`${wurf.total} gegen SG ${sg} – der Zauber hält.`);
+    } else {
+      setKonzentrationsmeldung(`${wurf.total} gegen SG ${sg} – die Konzentration bricht.`);
+      update('combat.concentration', { active: false, spell: '' });
+    }
+    setSchaden('');
+  }
+
   const initiative = abilityModifier(data.abilities.dex) + (data.combat.initiativeBonus || 0);
   const deathSaves = data.combat.deathSaves;
   const zustaende = data.combat.conditions ?? [];
@@ -242,10 +305,11 @@ export default function CombatTab({ data, update, replace }) {
               onChange={(v) => update('combat.deathSaves.failures', v)}
               filledClass="border-rubric bg-rubric"
             />
-            <button type="button" onClick={() => blattWurf('Rettungswurf gegen den Tod', 0)} className="btn btn-plate">
+            <button type="button" onClick={todesrettung} className="btn btn-plate">
               <IconD20 size={16} /> Würfeln
             </button>
           </div>
+          {todesmeldung && <p className="mt-2 text-rubric italic">{todesmeldung}</p>}
         </div>
       </Card>
 
@@ -347,10 +411,30 @@ export default function CombatTab({ data, update, replace }) {
             />
           </div>
           {konzentration.active && (
-            <p className="mt-2 text-sepia italic">
-              Bei Schaden ein Rettungswurf auf Konstitution gegen SG 10 oder die Hälfte des Schadens – was höher ist.
-            </p>
+            <div className="mt-3 border-t border-dotted border-rule pt-3">
+              <span className="mb-1.5 block font-display text-[10px] tracking-[0.16em] text-faint uppercase">
+                Getroffen? Schaden eintragen – der Schwierigkeitsgrad ergibt sich daraus
+              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  value={schaden}
+                  onChange={(e) => setSchaden(e.target.value)}
+                  placeholder="Schaden"
+                  className="h-11 w-24 border border-rule bg-panel-soft px-2 text-center font-display text-ink"
+                />
+                <button type="button" onClick={konzentrationsprobe} className="btn btn-plate">
+                  <IconD20 size={16} /> Konzentration prüfen
+                </button>
+                <span className="text-sepia italic">
+                  SG {Math.max(10, Math.floor((Number(schaden) || 0) / 2))}
+                </span>
+              </div>
+            </div>
           )}
+          {konzentrationsmeldung && <p className="mt-2 text-rubric italic">{konzentrationsmeldung}</p>}
         </div>
       </Card>
 
