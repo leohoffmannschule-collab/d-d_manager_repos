@@ -39,14 +39,14 @@ router.get('/history', (req, res) => {
 router.post('/roll', (req, res) => {
   const { expression, mode, label } = req.body ?? {};
   if (!expression || typeof expression !== 'string') {
-    return res.status(400).json({ error: 'Würfelausdruck ist erforderlich.' });
+    return res.status(400).json({ code: 'wurfausdruck_fehlt', error: 'Würfelausdruck ist erforderlich.' });
   }
 
   let ergebnis;
   try {
     ergebnis = rollDice(expression, mode === 'advantage' || mode === 'disadvantage' ? mode : 'normal');
   } catch (err) {
-    return res.status(400).json({ error: err.message });
+    return res.status(400).json({ code: 'wurfausdruck_ungueltig', error: err.message });
   }
 
   // Verdeckt würfeln kann nur die Spielleitung – sonst könnte sich jeder
@@ -90,7 +90,13 @@ router.post('/roll', (req, res) => {
     kind: 'wurf',
     actor: req.user.name,
     text: `${eintrag.label ? `${eintrag.label}: ` : ''}${eintrag.expression} ergibt ${eintrag.total}`,
-    meta: { total: eintrag.total, expression: eintrag.expression, mode: eintrag.mode },
+    meta: {
+      total: eintrag.total,
+      expression: eintrag.expression,
+      mode: eintrag.mode,
+      label: eintrag.label,
+      details: eintrag.details,
+    },
     secret,
   });
 

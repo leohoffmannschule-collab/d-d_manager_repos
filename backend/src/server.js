@@ -84,7 +84,7 @@ app.use('/api/scenes', scenesRouter);
 app.use('/api/stash', stashRouter);
 
 app.use('/api', (req, res) => {
-  res.status(404).json({ error: 'Diesen Weg kennt der Almanach nicht.' });
+  res.status(404).json({ code: 'route_unbekannt', error: 'Diesen Weg kennt der Almanach nicht.' });
 });
 
 // Serve the built frontend when it has been copied here (npm run build).
@@ -102,11 +102,11 @@ if (hasFrontend) {
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   if (err?.type === 'entity.too.large') {
-    return res.status(413).json({ error: 'Die gesendeten Daten sind zu groß.' });
+    return res.status(413).json({ code: 'daten_zu_gross', error: 'Die gesendeten Daten sind zu groß.' });
   }
   console.error(err);
   if (res.headersSent) return;
-  res.status(500).json({ error: 'Im Almanach ist etwas schiefgegangen.' });
+  res.status(500).json({ code: 'serverfehler', error: 'Im Almanach ist etwas schiefgegangen.' });
 });
 
 function localAddresses() {

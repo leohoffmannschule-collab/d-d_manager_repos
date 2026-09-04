@@ -33,7 +33,7 @@ router.get('/', (req, res) => {
 router.post('/', requireDm, (req, res) => {
   const body = req.body ?? {};
   if (!body.title || typeof body.title !== 'string' || !body.title.trim()) {
-    return res.status(400).json({ error: 'Titel ist erforderlich.' });
+    return res.status(400).json({ code: 'titel_fehlt', error: 'Titel ist erforderlich.' });
   }
   const id = randomUUID();
   const now = new Date().toISOString();
@@ -51,14 +51,14 @@ router.post('/', requireDm, (req, res) => {
   const note = rowToNote(db.prepare('SELECT * FROM notes WHERE id = ?').get(id));
   if (note.visibility === 'runde') {
     broadcast('notizen:aktualisiert', {});
-    chronik.log({ kind: 'handzettel', text: `Die Runde erhält: „${note.title}“.`, meta: { noteId: note.id } });
+    chronik.log({ kind: 'handzettel', text: `Die Runde erhält: „${note.title}“.`, meta: { noteId: note.id, title: note.title } });
   }
   res.status(201).json(note);
 });
 
 router.put('/:id', requireDm, (req, res) => {
   const row = db.prepare('SELECT * FROM notes WHERE id = ?').get(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Notiz nicht gefunden.' });
+  if (!row) return res.status(404).json({ code: 'notiz_nicht_gefunden', error: 'Notiz nicht gefunden.' });
 
   const body = req.body ?? {};
   db.prepare('UPDATE notes SET title = ?, content = ?, tags = ?, visibility = ?, updated_at = ? WHERE id = ?').run(
@@ -75,14 +75,14 @@ router.put('/:id', requireDm, (req, res) => {
   // Auch beim Zurückziehen eines Handouts müssen die Spieler es verschwinden sehen.
   if (note.visibility === 'runde' || row.visibility === 'runde') broadcast('notizen:aktualisiert', {});
   if (note.visibility === 'runde' && row.visibility !== 'runde') {
-    chronik.log({ kind: 'handzettel', text: `Die Runde erhält: „${note.title}“.`, meta: { noteId: note.id } });
+    chronik.log({ kind: 'handzettel', text: `Die Runde erhält: „${note.title}“.`, meta: { noteId: note.id, title: note.title } });
   }
   res.json(note);
 });
 
 router.delete('/:id', requireDm, (req, res) => {
   const row = db.prepare('SELECT * FROM notes WHERE id = ?').get(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Notiz nicht gefunden.' });
+  if (!row) return res.status(404).json({ code: 'notiz_nicht_gefunden', error: 'Notiz nicht gefunden.' });
   db.prepare('DELETE FROM notes WHERE id = ?').run(row.id);
   if (row.visibility === 'runde') broadcast('notizen:aktualisiert', {});
   res.status(204).end();

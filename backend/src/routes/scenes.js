@@ -123,7 +123,7 @@ router.get('/aktiv', (req, res) => {
 router.post('/', requireDm, (req, res) => {
   const body = req.body ?? {};
   if (!body.name || typeof body.name !== 'string' || !body.name.trim()) {
-    return res.status(400).json({ error: 'Name ist erforderlich.' });
+    return res.status(400).json({ code: 'name_fehlt', error: 'Name ist erforderlich.' });
   }
   const id = randomUUID();
   db.prepare(
@@ -148,7 +148,7 @@ router.post('/', requireDm, (req, res) => {
 
 router.put('/:id', requireDm, (req, res) => {
   const row = holeSzene(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Szene nicht gefunden.' });
+  if (!row) return res.status(404).json({ code: 'szene_nicht_gefunden', error: 'Szene nicht gefunden.' });
   const body = req.body ?? {};
 
   db.prepare(
@@ -172,7 +172,7 @@ router.put('/:id', requireDm, (req, res) => {
 
 router.delete('/:id', requireDm, (req, res) => {
   const row = holeSzene(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Szene nicht gefunden.' });
+  if (!row) return res.status(404).json({ code: 'szene_nicht_gefunden', error: 'Szene nicht gefunden.' });
   db.prepare('DELETE FROM scenes WHERE id = ?').run(row.id);
   if (aktiveSzeneId() === row.id) {
     setState('szene', db.prepare('SELECT id FROM scenes ORDER BY created_at DESC').get()?.id ?? null);
@@ -184,9 +184,9 @@ router.delete('/:id', requireDm, (req, res) => {
 // POST /api/scenes/:id/aktivieren – Szene auf den Tisch legen
 router.post('/:id/aktivieren', requireDm, (req, res) => {
   const row = holeSzene(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Szene nicht gefunden.' });
+  if (!row) return res.status(404).json({ code: 'szene_nicht_gefunden', error: 'Szene nicht gefunden.' });
   setState('szene', row.id);
-  chronik.log({ kind: 'szene', text: `Die Runde erreicht: ${row.name}.`, meta: { sceneId: row.id } });
+  chronik.log({ kind: 'szene', text: `Die Runde erreicht: ${row.name}.`, meta: { sceneId: row.id, name: row.name } });
   sendeSzene();
   res.json(rowToScene(row));
 });
@@ -198,7 +198,7 @@ const MAX_FELDER = 40000;
 // POST /api/scenes/:id/nebel  { cells: ['3,4', …], revealed: true }
 router.post('/:id/nebel', requireDm, (req, res) => {
   const row = holeSzene(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Szene nicht gefunden.' });
+  if (!row) return res.status(404).json({ code: 'szene_nicht_gefunden', error: 'Szene nicht gefunden.' });
 
   const cells = Array.isArray(req.body?.cells)
     ? req.body.cells.filter((c) => typeof c === 'string' && /^-?\d+,-?\d+$/.test(c)).slice(0, 4000)
@@ -223,7 +223,7 @@ router.post('/:id/nebel', requireDm, (req, res) => {
 // POST /api/scenes/:id/nebel/alles  { revealed: true|false }
 router.post('/:id/nebel/alles', requireDm, (req, res) => {
   const row = holeSzene(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Szene nicht gefunden.' });
+  if (!row) return res.status(404).json({ code: 'szene_nicht_gefunden', error: 'Szene nicht gefunden.' });
   const revealed = req.body?.revealed === true;
 
   let fog = [];
@@ -248,7 +248,7 @@ router.post('/:id/nebel/alles', requireDm, (req, res) => {
 
 router.post('/:id/figuren', requireDm, (req, res) => {
   const szene = holeSzene(req.params.id);
-  if (!szene) return res.status(404).json({ error: 'Szene nicht gefunden.' });
+  if (!szene) return res.status(404).json({ code: 'szene_nicht_gefunden', error: 'Szene nicht gefunden.' });
 
   const body = req.body ?? {};
   const id = randomUUID();
@@ -277,8 +277,8 @@ router.post('/:id/figuren', requireDm, (req, res) => {
 // PATCH /api/scenes/figuren/:id – Bewegen darf auch, wem die Figur gehört
 router.patch('/figuren/:id', (req, res) => {
   const row = holeFigur(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Figur nicht gefunden.' });
-  if (!darfBewegen(req.user, row)) return res.status(403).json({ error: 'Diese Figur gehört jemand anderem.' });
+  if (!row) return res.status(404).json({ code: 'figur_nicht_gefunden', error: 'Figur nicht gefunden.' });
+  if (!darfBewegen(req.user, row)) return res.status(403).json({ code: 'figur_fremd', error: 'Diese Figur gehört jemand anderem.' });
 
   const body = req.body ?? {};
   const nurBewegen = !isDm(req.user);
@@ -305,7 +305,7 @@ router.patch('/figuren/:id', (req, res) => {
 
 router.delete('/figuren/:id', requireDm, (req, res) => {
   const row = holeFigur(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Figur nicht gefunden.' });
+  if (!row) return res.status(404).json({ code: 'figur_nicht_gefunden', error: 'Figur nicht gefunden.' });
   db.prepare('DELETE FROM tokens WHERE id = ?').run(row.id);
   broadcast('figur:entfernt', { id: row.id });
   res.status(204).end();
@@ -314,7 +314,7 @@ router.delete('/figuren/:id', requireDm, (req, res) => {
 // POST /api/scenes/:id/figuren/aus-kampf – alle Kämpfer als Figuren auslegen
 router.post('/:id/figuren/aus-kampf', requireDm, (req, res) => {
   const szene = holeSzene(req.params.id);
-  if (!szene) return res.status(404).json({ error: 'Szene nicht gefunden.' });
+  if (!szene) return res.status(404).json({ code: 'szene_nicht_gefunden', error: 'Szene nicht gefunden.' });
 
   const vorhanden = new Set(
     db

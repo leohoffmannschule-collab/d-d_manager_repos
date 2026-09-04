@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { chronicleApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
-import { useLive, useLiveStatus } from '../lib/live.jsx';
+import { useSitzung, useSitzungen } from '../lib/daten.jsx';
 import { Card } from '../components/ui.jsx';
+import { CHRONIK_ART, benenne } from '../lib/beschriftung.js';
 import {
   IconBook,
   IconD20,
@@ -59,7 +60,7 @@ function Eintrag({ eintrag, isDm, onLoeschen }) {
     <li className="group flex items-start gap-3 border-b border-dotted border-rule py-1.5">
       <span className="mt-0.5 w-11 shrink-0 font-display text-[12px] text-faint">{uhrzeit(eintrag.createdAt)}</span>
       <Symbol size={15} className={`mt-0.5 shrink-0 ${eintrag.secret ? 'text-rubric' : 'text-faint'}`} />
-      <span className="min-w-0 flex-1 text-ink">
+      <span className="min-w-0 flex-1 text-ink" title={benenne(CHRONIK_ART, eintrag.kind)}>
         {eintrag.text}
         {eintrag.secret && <span className="ml-2 text-[14px] text-rubric italic">verdeckt</span>}
       </span>
@@ -78,52 +79,24 @@ function Eintrag({ eintrag, isDm, onLoeschen }) {
 
 export default function Chronicle() {
   const { isDm } = useAuth();
-  const { generation } = useLiveStatus();
-  const [sitzungen, setSitzungen] = useState([]);
   const [gewaehlt, setGewaehlt] = useState(null);
-  const [sitzung, setSitzung] = useState(null);
+  const { sitzungen, offene, laden: ladeListe } = useSitzungen();
+  const { sitzung, setSitzung, laden: ladeSitzung } = useSitzung(gewaehlt);
   const [notiz, setNotiz] = useState('');
   const [ki, setKi] = useState({ verfuegbar: false });
   const [meldung, setMeldung] = useState('');
   const [laeuft, setLaeuft] = useState(false);
 
-  const ladeListe = useCallback(async () => {
-    const liste = await chronicleApi.sessions();
-    setSitzungen(liste);
-    setGewaehlt((aktuell) => aktuell ?? liste[0]?.id ?? null);
-    return liste;
-  }, []);
-
-  const ladeSitzung = useCallback(async (id) => {
-    if (!id) return setSitzung(null);
-    setSitzung(await chronicleApi.session(id));
-  }, []);
+  // Beim ersten Laden die jüngste Sitzung aufschlagen.
+  useEffect(() => {
+    setGewaehlt((aktuell) => aktuell ?? sitzungen[0]?.id ?? null);
+  }, [sitzungen]);
 
   useEffect(() => {
-    if (generation === 0) return;
-    ladeListe().catch(() => {});
     chronicleApi.kiStatus().then(setKi).catch(() => {});
-  }, [generation, ladeListe]);
-
-  useEffect(() => {
-    ladeSitzung(gewaehlt).catch(() => {});
-  }, [gewaehlt, ladeSitzung]);
-
-  // Neue Einträge laufen live ein, solange man die offene Sitzung ansieht.
-  useLive('chronik', (eintrag) => {
-    setSitzung((s) => (s && s.id === eintrag.sessionId ? { ...s, entries: [...s.entries, eintrag] } : s));
-    setSitzungen((liste) =>
-      liste.map((s) => (s.id === eintrag.sessionId ? { ...s, anzahl: (s.anzahl ?? 0) + 1 } : s))
-    );
-  });
-  useLive('chronik:sitzung', () => {
-    ladeListe().catch(() => {});
-    ladeSitzung(gewaehlt).catch(() => {});
-  });
-  useLive('chronik:geaendert', () => ladeSitzung(gewaehlt).catch(() => {}));
+  }, []);
 
   const kapitel = useMemo(() => inKapitel(sitzung?.entries ?? []), [sitzung]);
-  const offene = sitzungen.find((s) => s.laufend);
 
   async function ausfuehren(aufgabe) {
     setMeldung('');
@@ -257,7 +230,7 @@ export default function Chronicle() {
                           if (!confirm(`Die Sitzung „${sitzung.title}“ samt Chronik löschen?`)) return;
                           await chronicleApi.removeSession(sitzung.id);
                           setGewaehlt(null);
-                          const liste = await ladeListe();
+                          const liste = (await ladeListe()) ?? [];
                           setGewaehlt(liste[0]?.id ?? null);
                         })
                       }

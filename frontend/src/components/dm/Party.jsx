@@ -1,22 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
 import { authApi, charactersApi } from '../../lib/api.js';
 import { useAuth } from '../../lib/auth.jsx';
+import { useEinladungen, useKonten } from '../../lib/daten.jsx';
 import { useLive } from '../../lib/live.jsx';
 import { Rubric } from '../ui.jsx';
 import { IconCheck, IconCrown, IconKey, IconLink, IconPlus, IconTrash, IconUsers } from '../icons.jsx';
 
 function Einladungen() {
-  const [einladungen, setEinladungen] = useState([]);
+  const { einladungen, offene, laden } = useEinladungen();
   const [notiz, setNotiz] = useState('');
   const [kopiert, setKopiert] = useState(null);
-
-  const laden = useCallback(() => {
-    authApi.invites().then(setEinladungen).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    laden();
-  }, [laden]);
 
   async function kopieren(code) {
     // Die Zwischenablage gibt es nur in „sicherem“ Kontext; über den Tunnel
@@ -29,8 +22,6 @@ function Einladungen() {
       setKopiert(null);
     }
   }
-
-  const offen = einladungen.filter((e) => !e.used_at);
 
   return (
     <section className="panel p-4">
@@ -59,11 +50,11 @@ function Einladungen() {
         </button>
       </form>
 
-      {offen.length === 0 ? (
+      {offene.length === 0 ? (
         <p className="text-sepia italic">Kein offener Code.</p>
       ) : (
         <ul className="space-y-1.5">
-          {offen.map((e) => (
+          {offene.map((e) => (
             <li key={e.code} className="flex flex-wrap items-center gap-3 border border-rule bg-panel-soft px-3 py-2">
               <button
                 onClick={() => kopieren(e.code)}
@@ -247,17 +238,7 @@ function Charakterzuweisung({ users, onChanged }) {
 
 /** Verwaltung der Runde: Konten, Einladungen und Zuordnung der Charaktere. */
 export default function Party() {
-  const [users, setUsers] = useState([]);
-
-  const laden = useCallback(() => {
-    authApi.users().then(setUsers).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    laden();
-  }, [laden]);
-
-  useLive('runde:aktualisiert', laden);
+  const { konten: users, laden } = useKonten();
 
   return (
     <div className="space-y-4">

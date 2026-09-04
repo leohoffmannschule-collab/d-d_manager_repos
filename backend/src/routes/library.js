@@ -47,7 +47,7 @@ router.get('/', (req, res) => {
 router.post('/', (req, res) => {
   const body = req.body ?? {};
   if (!body.name || typeof body.name !== 'string' || !body.name.trim()) {
-    return res.status(400).json({ error: 'Name ist erforderlich.' });
+    return res.status(400).json({ code: 'name_fehlt', error: 'Name ist erforderlich.' });
   }
   const id = randomUUID();
   db.prepare(
@@ -74,7 +74,7 @@ router.post('/', (req, res) => {
 
 router.put('/:id', (req, res) => {
   const row = db.prepare('SELECT * FROM library WHERE id = ?').get(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Eintrag nicht gefunden.' });
+  if (!row) return res.status(404).json({ code: 'eintrag_nicht_gefunden', error: 'Eintrag nicht gefunden.' });
 
   const body = req.body ?? {};
   db.prepare(
@@ -102,14 +102,14 @@ router.put('/:id', (req, res) => {
 
 router.delete('/:id', (req, res) => {
   const info = db.prepare('DELETE FROM library WHERE id = ?').run(req.params.id);
-  if (info.changes === 0) return res.status(404).json({ error: 'Eintrag nicht gefunden.' });
+  if (info.changes === 0) return res.status(404).json({ code: 'eintrag_nicht_gefunden', error: 'Eintrag nicht gefunden.' });
   res.status(204).end();
 });
 
 // POST /api/library/:id/add-to-encounter – „3 Goblins“ mit einem Klick
 router.post('/:id/add-to-encounter', (req, res) => {
   const row = db.prepare('SELECT * FROM library WHERE id = ?').get(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Eintrag nicht gefunden.' });
+  if (!row) return res.status(404).json({ code: 'eintrag_nicht_gefunden', error: 'Eintrag nicht gefunden.' });
 
   const body = req.body ?? {};
   const anzahl = Math.min(Math.max(parseInt(body.count, 10) || 1, 1), 20);
@@ -140,7 +140,7 @@ router.post('/:id/add-to-encounter', (req, res) => {
   chronik.log({
     kind: 'auftritt',
     text: `${anzahl > 1 ? `${anzahl}× ` : ''}${row.name} ${anzahl > 1 ? 'treten' : 'tritt'} auf.`,
-    meta: { libraryId: row.id, count: anzahl },
+    meta: { libraryId: row.id, name: row.name, count: anzahl },
     secret: !!body.hidden,
   });
 
@@ -151,7 +151,7 @@ router.post('/:id/add-to-encounter', (req, res) => {
 // POST /api/library/aus-kompendium – Monster aus dem Kompendium übernehmen
 router.post('/aus-kompendium', (req, res) => {
   const m = req.body ?? {};
-  if (!m.name) return res.status(400).json({ error: 'Kein Monster übergeben.' });
+  if (!m.name) return res.status(400).json({ code: 'monster_fehlt', error: 'Kein Monster übergeben.' });
 
   const beschreibe = (liste) =>
     (Array.isArray(liste) ? liste : [])

@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { IconClose, IconD20, IconD20Detailed, IconEyeOff, IconTrash } from './icons.jsx';
 import { diceApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
-import { useLive, useLiveStatus } from '../lib/live.jsx';
+import { useWuerfe } from '../lib/daten.jsx';
 
 const DICE = [4, 6, 8, 10, 12, 20, 100];
 
@@ -39,43 +39,22 @@ function Wurfzeile({ wurf, hervorgehoben }) {
 
 export default function DiceRoller() {
   const { isDm } = useAuth();
-  const { generation } = useLiveStatus();
+  const { wuerfe: history, aufnehmen, ungelesen, gelesen, laden } = useWuerfe(40);
   const [open, setOpen] = useState(false);
   const [count, setCount] = useState(1);
   const [modifier, setModifier] = useState(0);
   const [ausdruck, setAusdruck] = useState('');
   const [modus, setModus] = useState('normal');
   const [verdeckt, setVerdeckt] = useState(false);
-  const [history, setHistory] = useState([]);
-  const [neu, setNeu] = useState(false);
   const [fehler, setFehler] = useState('');
-
-  const laden = useCallback(() => {
-    diceApi
-      .history(40)
-      .then(setHistory)
-      .catch(() => setHistory([]));
-  }, []);
-
-  useEffect(() => {
-    if (generation > 0) laden();
-  }, [generation, laden]);
-
-  // Würfe der anderen laufen live ein – auch bei geschlossenem Beutel.
-  useLive('wurf', (wurf) => {
-    setHistory((h) => (h.some((w) => w.id === wurf.id) ? h : [wurf, ...h].slice(0, 40)));
-    if (!open) setNeu(true);
-  });
-  useLive('wuerfe:geleert', () => setHistory([]));
 
   async function wuerfeln(expression, label = '') {
     setFehler('');
     try {
-      const eigener = await diceApi.roll({ expression, mode: modus, label, secret: isDm && verdeckt });
       // Sofort eintragen, statt die ganze Chronik neu zu holen. Trifft der
-      // eigene Wurf gleich darauf über den Live-Kanal ein, fängt ihn die
-      // Prüfung auf die Kennung oben ab.
-      setHistory((h) => (h.some((w) => w.id === eigener.id) ? h : [eigener, ...h].slice(0, 40)));
+      // eigene Wurf gleich darauf über den Live-Kanal ein, erkennt ihn die
+      // Datenschicht an der Kennung wieder.
+      aufnehmen(await diceApi.roll({ expression, mode: modus, label, secret: isDm && verdeckt }));
       setModus('normal');
     } catch (err) {
       setFehler(err.message);
@@ -92,14 +71,13 @@ export default function DiceRoller() {
       <button
         onClick={() => {
           setOpen(true);
-          setNeu(false);
-          laden();
+          gelesen();
         }}
         className="fixed right-4 bottom-24 z-40 flex h-16 w-16 items-center justify-center rounded-full bg-rubric text-[#f0dca8] shadow-lg shadow-black/40 ring-2 ring-gold active:scale-95 md:bottom-6"
         aria-label="Würfelbeutel öffnen"
       >
         <IconD20Detailed size={32} />
-        {neu && <span className="absolute top-1 right-1 h-3 w-3 rounded-full bg-gold-soft ring-2 ring-rubric" />}
+        {ungelesen && <span className="absolute top-1 right-1 h-3 w-3 rounded-full bg-gold-soft ring-2 ring-rubric" />}
       </button>
 
       {open && (
@@ -196,7 +174,7 @@ export default function DiceRoller() {
               ))}
               {isDm && (
                 <button
-                  onClick={() => diceApi.clear().then(() => setHistory([]))}
+                  onClick={() => diceApi.clear().then(laden)}
                   disabled={history.length === 0}
                   className="flex h-13 items-center justify-center gap-1.5 border border-dashed border-rule-strong py-3 text-[15px] text-sepia italic disabled:opacity-40"
                 >

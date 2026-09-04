@@ -1,5 +1,6 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, lazy, useMemo, useState } from 'react';
 import { compendiumApi, libraryApi, mediaApi } from '../../lib/api.js';
+import { useBestiarium } from '../../lib/daten.jsx';
 import { Rubric } from '../ui.jsx';
 import { IconBook, IconEyeOff, IconPlus, IconSearch, IconSwords, IconTrash } from '../icons.jsx';
 
@@ -230,21 +231,13 @@ function AusDemKompendium({ onFertig }) {
 
 /** Bestiarium: Statblöcke anlegen und mit einem Klick in den Kampf holen. */
 export default function Bestiary() {
-  const [eintraege, setEintraege] = useState([]);
+  const { eintraege, laden } = useBestiarium();
   const [suche, setSuche] = useState('');
   const [filter, setFilter] = useState('alle');
   const [formular, setFormular] = useState(null);
   const [kompendium, setKompendium] = useState(false);
   const [anzahl, setAnzahl] = useState({});
   const [aufgeklappt, setAufgeklappt] = useState(null);
-
-  const laden = useCallback(() => {
-    libraryApi.list().then(setEintraege).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    laden();
-  }, [laden]);
 
   const treffer = useMemo(() => {
     const begriff = suche.trim().toLowerCase();

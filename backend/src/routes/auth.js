@@ -78,9 +78,9 @@ router.post('/register', (req, res) => {
   const { name, password, invite } = req.body ?? {};
 
   const namensfehler = pruefeName(name);
-  if (namensfehler) return res.status(400).json({ error: namensfehler });
+  if (namensfehler) return res.status(400).json({ code: 'name_ungueltig', error: namensfehler });
   if (typeof password !== 'string' || password.length < MIN_PASSWORT) {
-    return res.status(400).json({ error: `Das Passwort braucht mindestens ${MIN_PASSWORT} Zeichen.` });
+    return res.status(400).json({ code: 'passwort_zu_kurz', error: `Das Passwort braucht mindestens ${MIN_PASSWORT} Zeichen.` });
   }
 
   const erste = countUsers() === 0;
@@ -89,12 +89,12 @@ router.post('/register', (req, res) => {
   if (!erste) {
     const code = typeof invite === 'string' ? invite.trim().toUpperCase() : '';
     einladung = db.prepare('SELECT * FROM invites WHERE code = ?').get(code);
-    if (!einladung) return res.status(403).json({ error: 'Dieser Einladungscode gilt nicht.' });
-    if (einladung.used_by) return res.status(403).json({ error: 'Dieser Einladungscode wurde schon eingelöst.' });
+    if (!einladung) return res.status(403).json({ code: 'einladung_ungueltig', error: 'Dieser Einladungscode gilt nicht.' });
+    if (einladung.used_by) return res.status(403).json({ code: 'einladung_verbraucht', error: 'Dieser Einladungscode wurde schon eingelöst.' });
   }
 
   if (db.prepare('SELECT id FROM users WHERE name_key = ?').get(nameKey(name))) {
-    return res.status(409).json({ error: 'Diesen Namen führt der Almanach bereits.' });
+    return res.status(409).json({ code: 'name_vergeben', error: 'Diesen Namen führt der Almanach bereits.' });
   }
 
   const user = createUser({
@@ -123,16 +123,16 @@ router.post('/login', (req, res) => {
   const schluessel = `${req.ip}|${nameKey(String(name ?? ''))}`;
 
   if (drosseln(schluessel) >= SPERRE_AB) {
-    return res.status(429).json({ error: 'Zu viele Versuche. Bitte in zehn Minuten noch einmal.' });
+    return res.status(429).json({ code: 'zu_viele_versuche', error: 'Zu viele Versuche. Bitte in zehn Minuten noch einmal.' });
   }
   if (typeof name !== 'string' || typeof password !== 'string') {
-    return res.status(400).json({ error: 'Name und Passwort sind erforderlich.' });
+    return res.status(400).json({ code: 'anmeldedaten_fehlen', error: 'Name und Passwort sind erforderlich.' });
   }
 
   const row = db.prepare('SELECT * FROM users WHERE name_key = ?').get(nameKey(name));
   if (!row || !verifyPassword(password, row.password_hash)) {
     fehlversuch(schluessel);
-    return res.status(401).json({ error: 'Name oder Passwort stimmt nicht.' });
+    return res.status(401).json({ code: 'anmeldung_falsch', error: 'Name oder Passwort stimmt nicht.' });
   }
 
   versuche.delete(schluessel);
@@ -152,10 +152,10 @@ router.post('/password', requireAuth, (req, res) => {
   const { current, next } = req.body ?? {};
   const row = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
   if (!verifyPassword(String(current ?? ''), row.password_hash)) {
-    return res.status(403).json({ error: 'Das bisherige Passwort stimmt nicht.' });
+    return res.status(403).json({ code: 'passwort_falsch', error: 'Das bisherige Passwort stimmt nicht.' });
   }
   if (typeof next !== 'string' || next.length < MIN_PASSWORT) {
-    return res.status(400).json({ error: `Das Passwort braucht mindestens ${MIN_PASSWORT} Zeichen.` });
+    return res.status(400).json({ code: 'passwort_zu_kurz', error: `Das Passwort braucht mindestens ${MIN_PASSWORT} Zeichen.` });
   }
   db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hashPassword(next), req.user.id);
   destroyAllSessions(req.user.id);
@@ -178,15 +178,15 @@ router.get('/users', requireDm, (req, res) => {
 
 router.patch('/users/:id', requireDm, (req, res) => {
   const row = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Konto nicht gefunden.' });
+  if (!row) return res.status(404).json({ code: 'konto_nicht_gefunden', error: 'Konto nicht gefunden.' });
 
   const { role, color, password } = req.body ?? {};
 
   if (role && role !== row.role) {
-    if (!['sl', 'spieler'].includes(role)) return res.status(400).json({ error: 'Unbekannte Rolle.' });
+    if (!['sl', 'spieler'].includes(role)) return res.status(400).json({ code: 'unbekannte_rolle', error: 'Unbekannte Rolle.' });
     // Es muss immer jemand die Spielleitung innehaben.
     if (row.role === 'sl' && db.prepare("SELECT COUNT(*) AS n FROM users WHERE role = 'sl'").get().n <= 1) {
-      return res.status(400).json({ error: 'Es braucht mindestens eine Spielleitung.' });
+      return res.status(400).json({ code: 'letzte_spielleitung', error: 'Es braucht mindestens eine Spielleitung.' });
     }
     db.prepare('UPDATE users SET role = ? WHERE id = ?').run(role, row.id);
   }
@@ -195,7 +195,7 @@ router.patch('/users/:id', requireDm, (req, res) => {
   }
   if (typeof password === 'string' && password) {
     if (password.length < MIN_PASSWORT) {
-      return res.status(400).json({ error: `Das Passwort braucht mindestens ${MIN_PASSWORT} Zeichen.` });
+      return res.status(400).json({ code: 'passwort_zu_kurz', error: `Das Passwort braucht mindestens ${MIN_PASSWORT} Zeichen.` });
     }
     db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hashPassword(password), row.id);
     destroyAllSessions(row.id);
@@ -207,10 +207,10 @@ router.patch('/users/:id', requireDm, (req, res) => {
 
 router.delete('/users/:id', requireDm, (req, res) => {
   const row = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Konto nicht gefunden.' });
-  if (row.id === req.user.id) return res.status(400).json({ error: 'Das eigene Konto lässt sich nicht löschen.' });
+  if (!row) return res.status(404).json({ code: 'konto_nicht_gefunden', error: 'Konto nicht gefunden.' });
+  if (row.id === req.user.id) return res.status(400).json({ code: 'eigenes_konto', error: 'Das eigene Konto lässt sich nicht löschen.' });
   if (row.role === 'sl' && db.prepare("SELECT COUNT(*) AS n FROM users WHERE role = 'sl'").get().n <= 1) {
-    return res.status(400).json({ error: 'Es braucht mindestens eine Spielleitung.' });
+    return res.status(400).json({ code: 'letzte_spielleitung', error: 'Es braucht mindestens eine Spielleitung.' });
   }
   // Die Charaktere bleiben erhalten und fallen an die Spielleitung zurück.
   db.prepare('UPDATE characters SET owner_id = ? WHERE owner_id = ?').run(req.user.id, row.id);
@@ -244,7 +244,7 @@ router.post('/invites', requireDm, (req, res) => {
 
 router.delete('/invites/:code', requireDm, (req, res) => {
   const info = db.prepare('DELETE FROM invites WHERE code = ?').run(req.params.code.toUpperCase());
-  if (info.changes === 0) return res.status(404).json({ error: 'Einladung nicht gefunden.' });
+  if (info.changes === 0) return res.status(404).json({ code: 'einladung_nicht_gefunden', error: 'Einladung nicht gefunden.' });
   res.status(204).end();
 });
 

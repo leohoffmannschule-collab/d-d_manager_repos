@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { mediaApi, scenesApi } from '../../lib/api.js';
+import { useSzenenListe } from '../../lib/daten.jsx';
 import { bildLesen } from '../../lib/bilder.js';
 import {
   IconCheck,
@@ -36,7 +37,7 @@ function Knopf({ aktiv, children, ...rest }) {
 
 /** Werkzeugleiste und Szenenverwaltung – nur für die Spielleitung. */
 export default function SceneBar({ scene, mode, onMode, onChanged, onFogAll, onTokensFromEncounter }) {
-  const [szenen, setSzenen] = useState([]);
+  const { szenen, laden } = useSzenenListe();
   // Liegt noch nichts auf dem Tisch, steht die Szenenlade gleich offen –
   // sonst sucht man beim ersten Mal nach dem Weg zur ersten Karte.
   const [offen, setOffen] = useState(!scene);
@@ -45,11 +46,6 @@ export default function SceneBar({ scene, mode, onMode, onChanged, onFogAll, onT
   const [laedt, setLaedt] = useState(false);
   const [fehler, setFehler] = useState('');
   const datei = useRef(null);
-
-  const laden = () => scenesApi.list().then(setSzenen).catch(() => {});
-  useEffect(() => {
-    laden();
-  }, [scene?.id]);
 
   async function neueSzene(file) {
     setFehler('');

@@ -1,40 +1,28 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import Board from '../components/tabletop/Board.jsx';
 import SceneBar from '../components/tabletop/SceneBar.jsx';
 import TokenPanel from '../components/tabletop/TokenPanel.jsx';
 import Initiative from '../components/Initiative.jsx';
 import Beute from '../components/Beute.jsx';
-import { charactersApi, encounterApi, notesApi, scenesApi } from '../lib/api.js';
+import { scenesApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
-import { useLive, useLiveStatus } from '../lib/live.jsx';
+import { useCharaktere, useKampf, useNotizen, usePings, useSzene } from '../lib/daten.jsx';
+import { useLive } from '../lib/live.jsx';
 import { IconHeart, IconMap, IconPlus, IconScroll, IconSwords } from '../components/icons.jsx';
 
 /** Nebel-Änderungen werden gebündelt gesendet, nicht Feld für Feld. */
 const PINSEL_MS = 120;
 
 function Handzettel() {
-  const { generation } = useLiveStatus();
-  const [notizen, setNotizen] = useState([]);
+  const { handzettel } = useNotizen();
 
-  const laden = useCallback(() => {
-    notesApi
-      .list()
-      .then((alle) => setNotizen(alle.filter((n) => n.visibility === 'runde')))
-      .catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    if (generation > 0) laden();
-  }, [generation, laden]);
-  useLive('notizen:aktualisiert', laden);
-
-  if (notizen.length === 0) {
+  if (handzettel.length === 0) {
     return <p className="text-sepia italic">Noch hat die Spielleitung nichts ausgeteilt.</p>;
   }
 
   return (
     <ul className="space-y-3">
-      {notizen.map((n) => (
+      {handzettel.map((n) => (
         <li key={n.id} className="border border-rule bg-panel-soft p-3">
           <h3 className="font-display text-[15px] font-semibold text-ink">{n.title}</h3>
           {n.tags.length > 0 && (
@@ -54,122 +42,48 @@ function Handzettel() {
 }
 
 export default function Tabletop() {
-  const { user, isDm } = useAuth();
-  const { generation } = useLiveStatus();
+  const { isDm } = useAuth();
 
-  const [scene, setScene] = useState(null);
-  const [tokens, setTokens] = useState([]);
-  const [fog, setFog] = useState(() => new Set());
-  const [combatants, setCombatants] = useState([]);
-  const [activeCombatantId, setActiveCombatantId] = useState(null);
-  const [meine, setMeine] = useState([]);
+  const { szene: scene, figuren: tokens, nebel: fog, nebelSetzen, figurSetzen, laden: ladeSzene } = useSzene();
+  const { kampf } = useKampf();
+  const { meine } = useCharaktere();
+  const pings = usePings();
+
+  const combatants = kampf.combatants;
+  const activeCombatantId = kampf.activeCombatantId;
+  const meineKennungen = useMemo(() => meine.map((c) => c.id), [meine]);
+
   const [mode, setMode] = useState('bewegen');
   const [gewaehlt, setGewaehlt] = useState(null);
-  const [pings, setPings] = useState([]);
   const [reiter, setReiter] = useState('kampf');
   const [seite, setSeite] = useState(false);
 
   const pinselPuffer = useRef({ auf: new Set(), zu: new Set() });
   const pinselZeit = useRef(null);
 
-  /* --- Laden ------------------------------------------------------------ */
-
-  const ladeSzene = useCallback(async () => {
-    const aktiv = await scenesApi.active();
-    setScene(aktiv);
-    setTokens(aktiv?.tokens ?? []);
-    setFog(new Set(aktiv?.fog ?? []));
-  }, []);
-
-  const ladeKampf = useCallback(async () => {
-    const kampf = await encounterApi.get();
-    setCombatants(kampf.combatants);
-    setActiveCombatantId(kampf.activeCombatantId);
-  }, []);
-
-  useEffect(() => {
-    if (generation === 0) return;
-    ladeSzene().catch(() => {});
-    ladeKampf().catch(() => {});
-    charactersApi
-      .list()
-      .then((alle) => setMeine(alle.filter((c) => c.ownerId === user.id).map((c) => c.id)))
-      .catch(() => {});
-  }, [generation, ladeSzene, ladeKampf, user.id]);
-
-  /* --- Live ------------------------------------------------------------- */
-
-  useLive('szene', (neu) => {
-    setScene(neu);
-    setTokens(neu?.tokens ?? []);
-    setFog(new Set(neu?.fog ?? []));
-  });
-
-  useLive('figur', (token) => {
-    setTokens((alle) => {
-      const index = alle.findIndex((t) => t.id === token.id);
-      if (index === -1) return [...alle, token];
-      const kopie = [...alle];
-      kopie[index] = token;
-      return kopie;
-    });
-  });
-
-  useLive('figur:entfernt', ({ id }) => {
-    setTokens((alle) => alle.filter((t) => t.id !== id));
-    setGewaehlt((g) => (g === id ? null : g));
-  });
-
-  useLive('nebel', ({ sceneId, cells, revealed }) => {
-    if (scene && sceneId !== scene.id) return;
-    setFog((alt) => {
-      const naechste = new Set(alt);
-      for (const cell of cells) {
-        if (revealed) naechste.add(cell);
-        else naechste.delete(cell);
-      }
-      return naechste;
-    });
-  });
-
-  useLive('kampf', (kampf) => {
-    setCombatants(kampf.combatants);
-    setActiveCombatantId(kampf.activeCombatantId);
-  });
-
-  useLive('ping', (ping) => {
-    const key = `${ping.at}-${ping.name}`;
-    setPings((alle) => [...alle, { ...ping, key }]);
-    setTimeout(() => setPings((alle) => alle.filter((p) => p.key !== key)), 2600);
-  });
+  // Eine entfernte Figur darf nicht ausgewählt bleiben.
+  useLive('figur:entfernt', ({ id }) => setGewaehlt((g) => (g === id ? null : g)));
 
   /* --- Handlungen ------------------------------------------------------- */
 
   const darfBewegen = useCallback(
-    (token) => isDm || (!token.hidden && !!token.characterId && meine.includes(token.characterId)),
-    [isDm, meine]
+    (token) => isDm || (!token.hidden && !!token.characterId && meineKennungen.includes(token.characterId)),
+    [isDm, meineKennungen]
   );
 
   const figurBewegen = useCallback(
     (id, x, y) => {
-      setTokens((alle) => alle.map((t) => (t.id === id ? { ...t, x, y } : t)));
+      figurSetzen(id, x, y);
       scenesApi.moveToken(id, { x, y }).catch(() => ladeSzene());
     },
-    [ladeSzene]
+    [figurSetzen, ladeSzene]
   );
 
   /** Malen fühlt sich flüssig an, weil der Nebel zuerst lokal weicht. */
   const nebelMalen = useCallback(
     (cells, revealed) => {
       if (!scene) return;
-      setFog((alt) => {
-        const naechste = new Set(alt);
-        for (const cell of cells) {
-          if (revealed) naechste.add(cell);
-          else naechste.delete(cell);
-        }
-        return naechste;
-      });
+      nebelSetzen(cells, revealed);
 
       const topf = revealed ? pinselPuffer.current.auf : pinselPuffer.current.zu;
       for (const cell of cells) topf.add(cell);
@@ -183,7 +97,7 @@ export default function Tabletop() {
         if (zu.size) scenesApi.fog(scene.id, [...zu], false).catch(() => {});
       }, PINSEL_MS);
     },
-    [scene]
+    [scene, nebelSetzen]
   );
 
   const zeigen = useCallback((punkt) => {

@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { charactersApi, stashApi } from '../lib/api.js';
+import { useEffect, useMemo, useState } from 'react';
+import { stashApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
-import { useLive, useLiveStatus } from '../lib/live.jsx';
+import { useBeute, useCharaktere } from '../lib/daten.jsx';
 import { IconCheck, IconPlus, IconTrash, IconUsers } from './icons.jsx';
 
 const MUENZEN = [
@@ -22,31 +22,17 @@ const inWorten = (muenzen) =>
  */
 export default function Beute() {
   const { isDm } = useAuth();
-  const { generation } = useLiveStatus();
-  const [kiste, setKiste] = useState({ items: [], coins: {} });
-  const [charaktere, setCharaktere] = useState([]);
+  const { kiste, setKiste, laden } = useBeute();
+  const { geteilte: charaktere, laden: charaktereLaden } = useCharaktere();
   const [neu, setNeu] = useState({ name: '', qty: 1 });
   const [teilung, setTeilung] = useState(null);
   const [empfaenger, setEmpfaenger] = useState([]);
   const [meldung, setMeldung] = useState('');
 
-  const laden = useCallback(() => {
-    stashApi.get().then(setKiste).catch(() => {});
-    charactersApi
-      .list()
-      .then((alle) => {
-        const runde = alle.filter((c) => c.shared);
-        setCharaktere(runde);
-        setEmpfaenger((bisher) => (bisher.length ? bisher : runde.map((c) => c.id)));
-      })
-      .catch(() => {});
-  }, []);
-
+  // Vorgewählt sind alle, die in der Runde stehen.
   useEffect(() => {
-    if (generation > 0) laden();
-  }, [generation, laden]);
-
-  useLive('beute', setKiste);
+    setEmpfaenger((bisher) => (bisher.length ? bisher : charaktere.map((c) => c.id)));
+  }, [charaktere]);
 
   const gewicht = useMemo(
     () => kiste.items.reduce((summe, g) => summe + (Number(g.weight) || 0) * (Number(g.qty) || 1), 0),
@@ -152,6 +138,7 @@ export default function Beute() {
                       );
                       setTeilung(null);
                       laden();
+                      charaktereLaden();
                     } catch (err) {
                       setMeldung(err.message);
                     }

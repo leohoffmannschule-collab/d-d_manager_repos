@@ -235,7 +235,8 @@ frontend/   React 19 + Vite, Tailwind CSS v4, PWA
             src/components/  Spieltisch (Brett, Werkzeuge, Figuren), Spielleitung (Bestiarium,
                              Begegnungen, Notizen, Runde), Figurenschmiede, Initiativliste,
                              Würfelbeutel, Blattbausteine
-            src/lib/         API-Zugriff, Anmeldung, Live-Kanal, Regelwerk, Rasten, Miniaturen
+            src/lib/         daten.jsx (Datenschicht), api.js, auth.jsx, live.jsx,
+                             beschriftung.js, Regelwerk, Rasten, Miniaturen
 backend/    Node.js + Express, SQLite über das eingebaute node:sqlite
             src/auth.js      Passwörter (scrypt), Anmeldungen, Rollen
             src/events.js    Live-Kanal (Server-Sent Events)
@@ -256,6 +257,47 @@ Nützliche Befehle im Projektstamm:
 | `npm run build` | Oberfläche bauen und ins Backend kopieren                      |
 | `npm start`     | Bauen und fertige Fassung starten (3001)                       |
 | `npm run serve` | Nur den Server starten (ohne neu zu bauen)                     |
+| `npm run vertrag` | Die Schnittstelle gegen einen eigenen Testserver prüfen      |
+
+## Die Oberfläche umbauen
+
+Der Almanach ist so geschnitten, dass die Oberfläche austauschbar ist – ohne den Server anzufassen.
+
+| Schicht                  | Ort                                                        | beim Umbau |
+| ------------------------ | ---------------------------------------------------------- | ---------- |
+| Regelwerk                | `frontend/src/lib/dnd5e.js`, `rasten.js`, `wuerfeln.js`     | bleibt     |
+| Zugriff auf den Server   | `frontend/src/lib/api.js`                                   | bleibt     |
+| Anmeldung und Live-Kanal | `frontend/src/lib/auth.jsx`, `live.jsx`                     | bleibt     |
+| **Datenschicht**         | `frontend/src/lib/daten.jsx`                                | bleibt     |
+| Beschriftung             | `frontend/src/lib/beschriftung.js`                          | anpassen   |
+| Aussehen                 | `frontend/src/index.css` (Farben, Schriften als Variablen)  | anpassen   |
+| Darstellung              | `frontend/src/pages/`, `frontend/src/components/`           | ersetzen   |
+
+In `daten.jsx` steckt das mühsame Stück: wann geladen wird, welches Ereignis welchen Zustand betrifft, was nach
+einem Funkloch nachzuholen ist. Ein Bauteil bekommt fertige Daten und einen Handgriff zum Nachladen – mehr weiß es
+nicht:
+
+```jsx
+const { kampf } = useKampf();
+const { kiste, laden } = useBeute();
+const { szene, figuren, nebel } = useSzene();
+```
+
+Der Server legt sich seinerseits auf keine Darstellung fest: Zustände und Fehler kommen als unveränderliche
+Schlüssel (`schwer_verwundet`, `einladung_verbraucht`), nicht als fertige Sätze. Übersetzt werden sie an einer
+einzigen Stelle, in `beschriftung.js`.
+
+Die ganze Schnittstelle steht in **[docs/API.md](docs/API.md)** – genug, um eine neue Oberfläche zu bauen, ohne den
+Quelltext des Servers zu lesen. Und sie ist nicht nur aufgeschrieben, sondern nachgewiesen:
+
+```bash
+npm run vertrag
+```
+
+Das startet einen eigenen Almanach mit leerer Datenbank, spielt eine Runde durch und prüft fünfzig Zusagen –
+Rollen, getrennte Sichten für Spielleitung und Runde, Fehlerschlüssel, Rechenwege, den Live-Kanal. Wer die
+Oberfläche umbaut, weist damit nach, dass der Unterbau steht; wer am Server schraubt, merkt sofort, wenn er etwas
+bricht, worauf sich eine Oberfläche verlässt.
 
 ## Wie die Technik dahinter arbeitet
 

@@ -72,6 +72,11 @@ export function beendeSitzung() {
 /**
  * Einen Eintrag in die Chronik schreiben.
  *
+ * `kind` und `meta` sind der eigentliche Inhalt: Daraus kann jede Oberfläche
+ * den Satz selbst bauen – in ihrer Sprache und ihrem Ton. Das mitgelieferte
+ * `text` ist nur eine fertige Fassung für alle, die sich die Mühe sparen
+ * wollen, und für die Ausfuhr als Protokoll.
+ *
  * Läuft gerade keine Sitzung, wird eine eröffnet – sonst ginge der erste
  * Kampf des Abends verloren, nur weil niemand auf „Sitzung beginnen“ gedrückt
  * hat. Die Spielleitung kann sie hinterher umbenennen.

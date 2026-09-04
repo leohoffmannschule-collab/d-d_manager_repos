@@ -14,7 +14,8 @@
     "dev:frontend": "npm run dev --prefix frontend",
     "build": "npm run build --prefix frontend && node scripts/copy-frontend.mjs",
     "start": "npm run build && npm start --prefix backend",
-    "serve": "npm start --prefix backend"
+    "serve": "npm start --prefix backend",
+    "vertrag": "node scripts/vertrag.mjs"
   },
   "devDependencies": {
     "concurrently": "^10.0.5"

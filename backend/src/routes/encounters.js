@@ -50,7 +50,7 @@ router.get('/', (req, res) => {
 router.post('/', (req, res) => {
   const body = req.body ?? {};
   if (!body.name || typeof body.name !== 'string' || !body.name.trim()) {
-    return res.status(400).json({ error: 'Name ist erforderlich.' });
+    return res.status(400).json({ code: 'name_fehlt', error: 'Name ist erforderlich.' });
   }
   const id = randomUUID();
   db.prepare('INSERT INTO encounters (id, name, notes, entries, created_at) VALUES (?, ?, ?, ?, ?)').run(
@@ -65,7 +65,7 @@ router.post('/', (req, res) => {
 
 router.put('/:id', (req, res) => {
   const row = db.prepare('SELECT * FROM encounters WHERE id = ?').get(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Begegnung nicht gefunden.' });
+  if (!row) return res.status(404).json({ code: 'begegnung_nicht_gefunden', error: 'Begegnung nicht gefunden.' });
   const body = req.body ?? {};
   db.prepare('UPDATE encounters SET name = ?, notes = ?, entries = ? WHERE id = ?').run(
     typeof body.name === 'string' && body.name.trim() ? body.name.trim().slice(0, 100) : row.name,
@@ -78,14 +78,14 @@ router.put('/:id', (req, res) => {
 
 router.delete('/:id', (req, res) => {
   const info = db.prepare('DELETE FROM encounters WHERE id = ?').run(req.params.id);
-  if (info.changes === 0) return res.status(404).json({ error: 'Begegnung nicht gefunden.' });
+  if (info.changes === 0) return res.status(404).json({ code: 'begegnung_nicht_gefunden', error: 'Begegnung nicht gefunden.' });
   res.status(204).end();
 });
 
 // POST /api/encounters/:id/stellen – die ganze Begegnung in den Kampf setzen
 router.post('/:id/stellen', (req, res) => {
   const row = db.prepare('SELECT * FROM encounters WHERE id = ?').get(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Begegnung nicht gefunden.' });
+  if (!row) return res.status(404).json({ code: 'begegnung_nicht_gefunden', error: 'Begegnung nicht gefunden.' });
 
   const wuerfeln = req.body?.rollInitiative !== false;
   const eintraege = JSON.parse(row.entries);
@@ -121,7 +121,12 @@ router.post('/:id/stellen', (req, res) => {
     text: offenkundig.length
       ? `Begegnung „${row.name}“: ${offenkundig.map((e) => `${e.count}× ${e.name}`).join(', ')}.`
       : `Begegnung „${row.name}“ wird gestellt.`,
-    meta: { encounterId: row.id, count: gestellt },
+    meta: {
+      encounterId: row.id,
+      name: row.name,
+      count: gestellt,
+      gruppen: offenkundig.map((e) => ({ name: e.name, count: e.count })),
+    },
     secret: offenkundig.length === 0,
   });
 
@@ -134,7 +139,7 @@ router.post('/aus-kampf', (req, res) => {
   const name = typeof req.body?.name === 'string' && req.body.name.trim() ? req.body.name.trim() : 'Gesicherter Kampf';
   const kaempfer = db.prepare("SELECT * FROM combatants WHERE type != 'pc'").all();
   if (kaempfer.length === 0) {
-    return res.status(400).json({ error: 'Im Kampf steht gerade kein Gegner, den man sichern könnte.' });
+    return res.status(400).json({ code: 'kampf_ohne_gegner', error: 'Im Kampf steht gerade kein Gegner, den man sichern könnte.' });
   }
 
   // Gleichnamige Gegner („Goblin 1“, „Goblin 2“) wieder zu einer Gruppe fassen.

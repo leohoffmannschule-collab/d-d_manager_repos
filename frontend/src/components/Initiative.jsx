@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
-import { charactersApi, encounterApi } from '../lib/api.js';
+import { useState } from 'react';
+import { encounterApi } from '../lib/api.js';
 import { blattWurf } from '../lib/wuerfeln.js';
 import { useAuth } from '../lib/auth.jsx';
-import { useLive, useLiveStatus } from '../lib/live.jsx';
+import { useCharaktere, useKampf } from '../lib/daten.jsx';
+import { ZUSTAND, benenne } from '../lib/beschriftung.js';
 import {
   IconChevronRight,
   IconEye,
@@ -44,7 +45,7 @@ const TYP_NAME = { pc: 'Held', npc: 'NSC', monster: 'Monster' };
 /** Ein Balken für die Trefferpunkte, wo Zahlen zu viel verraten würden. */
 function Lebensbalken({ hp, maxHp, status }) {
   if (hp == null) {
-    return <span className="text-[15px] text-faint italic">{status ?? '—'}</span>;
+    return <span className="text-[15px] text-faint italic">{benenne(ZUSTAND, status, '—')}</span>;
   }
   const anteil = maxHp ? Math.max(0, Math.min(1, hp / maxHp)) : 0;
   return (
@@ -277,32 +278,14 @@ function NeuerKaempfer({ onFertig }) {
  * Spielleitung mit allen Griffen („voll“).
  */
 export default function Initiative({ variant = 'tafel' }) {
-  const { user, isDm } = useAuth();
-  const { generation } = useLiveStatus();
-  const [kampf, setKampf] = useState({ round: 1, activeCombatantId: null, combatants: [] });
-  const [meine, setMeine] = useState([]);
+  const { isDm } = useAuth();
+  const { kampf } = useKampf();
+  const { meine } = useCharaktere();
   const voll = variant === 'voll';
 
   // Die eigene Zeile im Kampf – falls die Runde schon geholt wurde.
   const eigene = kampf.combatants.find((c) => c.characterId && meine.some((m) => m.id === c.characterId));
   const eigenerCharakter = eigene && meine.find((m) => m.id === eigene.characterId);
-
-  const laden = useCallback(() => {
-    encounterApi.get().then(setKampf).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    if (generation > 0) {
-      laden();
-      charactersApi
-        .list()
-        .then((alle) => setMeine(alle.filter((c) => c.ownerId === user.id)))
-        .catch(() => {});
-    }
-  }, [generation, laden, user.id]);
-
-  useLive('kampf', setKampf);
-  useLive('charakter:aktualisiert', laden);
 
   return (
     <div>

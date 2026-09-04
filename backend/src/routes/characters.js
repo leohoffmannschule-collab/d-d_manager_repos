@@ -73,8 +73,8 @@ router.get('/', (req, res) => {
 // GET /api/characters/:id
 router.get('/:id', (req, res) => {
   const row = holen(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Charakter nicht gefunden' });
-  if (!darfSehen(req.user, row)) return res.status(403).json({ error: 'Dieses Blatt ist nicht für dich bestimmt.' });
+  if (!row) return res.status(404).json({ code: 'charakter_nicht_gefunden', error: 'Charakter nicht gefunden' });
+  if (!darfSehen(req.user, row)) return res.status(403).json({ code: 'blatt_nicht_sichtbar', error: 'Dieses Blatt ist nicht für dich bestimmt.' });
   res.json({ ...rowToCharacter(row), editable: darfBearbeiten(req.user, row) });
 });
 
@@ -82,7 +82,7 @@ router.get('/:id', (req, res) => {
 router.post('/', (req, res) => {
   const { name, system = 'dnd5e', data = {} } = req.body ?? {};
   if (!name || typeof name !== 'string' || !name.trim()) {
-    return res.status(400).json({ error: 'Name ist erforderlich' });
+    return res.status(400).json({ code: 'name_fehlt', error: 'Name ist erforderlich' });
   }
   const id = randomUUID();
   const now = new Date().toISOString();
@@ -98,9 +98,9 @@ router.post('/', (req, res) => {
 // PUT /api/characters/:id – full update (autosave from the sheet editor)
 router.put('/:id', (req, res) => {
   const existing = holen(req.params.id);
-  if (!existing) return res.status(404).json({ error: 'Charakter nicht gefunden' });
+  if (!existing) return res.status(404).json({ code: 'charakter_nicht_gefunden', error: 'Charakter nicht gefunden' });
   if (!darfBearbeiten(req.user, existing)) {
-    return res.status(403).json({ error: 'Dieses Blatt gehört jemand anderem.' });
+    return res.status(403).json({ code: 'blatt_fremd', error: 'Dieses Blatt gehört jemand anderem.' });
   }
 
   const { name, data } = req.body ?? {};
@@ -138,18 +138,18 @@ router.put('/:id', (req, res) => {
 // PATCH /api/characters/:id – Besitz und Sichtbarkeit
 router.patch('/:id', (req, res) => {
   const existing = holen(req.params.id);
-  if (!existing) return res.status(404).json({ error: 'Charakter nicht gefunden' });
+  if (!existing) return res.status(404).json({ code: 'charakter_nicht_gefunden', error: 'Charakter nicht gefunden' });
   if (!darfBearbeiten(req.user, existing)) {
-    return res.status(403).json({ error: 'Dieses Blatt gehört jemand anderem.' });
+    return res.status(403).json({ code: 'blatt_fremd', error: 'Dieses Blatt gehört jemand anderem.' });
   }
 
   const { ownerId, shared } = req.body ?? {};
 
   if (ownerId !== undefined) {
     // Nur die Spielleitung teilt Charaktere zu.
-    if (!isDm(req.user)) return res.status(403).json({ error: 'Das darf nur die Spielleitung.' });
+    if (!isDm(req.user)) return res.status(403).json({ code: 'nur_spielleitung', error: 'Das darf nur die Spielleitung.' });
     if (ownerId !== null && !db.prepare('SELECT id FROM users WHERE id = ?').get(ownerId)) {
-      return res.status(400).json({ error: 'Konto nicht gefunden.' });
+      return res.status(400).json({ code: 'konto_nicht_gefunden', error: 'Konto nicht gefunden.' });
     }
     db.prepare('UPDATE characters SET owner_id = ? WHERE id = ?').run(ownerId, existing.id);
   }
@@ -165,9 +165,9 @@ router.patch('/:id', (req, res) => {
 // DELETE /api/characters/:id
 router.delete('/:id', (req, res) => {
   const existing = holen(req.params.id);
-  if (!existing) return res.status(404).json({ error: 'Charakter nicht gefunden' });
+  if (!existing) return res.status(404).json({ code: 'charakter_nicht_gefunden', error: 'Charakter nicht gefunden' });
   if (!darfBearbeiten(req.user, existing)) {
-    return res.status(403).json({ error: 'Dieses Blatt gehört jemand anderem.' });
+    return res.status(403).json({ code: 'blatt_fremd', error: 'Dieses Blatt gehört jemand anderem.' });
   }
   db.prepare('DELETE FROM characters WHERE id = ?').run(existing.id);
   broadcast('charakter:entfernt', { id: existing.id });
@@ -177,8 +177,8 @@ router.delete('/:id', (req, res) => {
 // POST /api/characters/:id/duplicate
 router.post('/:id/duplicate', (req, res) => {
   const existing = holen(req.params.id);
-  if (!existing) return res.status(404).json({ error: 'Charakter nicht gefunden' });
-  if (!darfSehen(req.user, existing)) return res.status(403).json({ error: 'Dieses Blatt ist nicht für dich bestimmt.' });
+  if (!existing) return res.status(404).json({ code: 'charakter_nicht_gefunden', error: 'Charakter nicht gefunden' });
+  if (!darfSehen(req.user, existing)) return res.status(403).json({ code: 'blatt_nicht_sichtbar', error: 'Dieses Blatt ist nicht für dich bestimmt.' });
 
   const id = randomUUID();
   const now = new Date().toISOString();

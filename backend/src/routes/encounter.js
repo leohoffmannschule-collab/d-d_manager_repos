@@ -45,14 +45,18 @@ function alleKaempfer() {
  * Was die Spielleitung sieht: alles. Was die Runde sieht: keine versteckten
  * Kämpfer, und von Monstern nur den Zustand statt der genauen Trefferpunkte –
  * sonst rechnet der Tisch aus, wie viel das Ungetüm noch aushält.
+ *
+ * Zurück kommt ein unveränderlicher Schlüssel, kein fertiger Satz. Wie er
+ * genannt wird, entscheidet die Oberfläche; der Server legt sich nicht auf
+ * eine Sprache fest.
  */
 function zustand(hp, maxHp) {
-  if (!maxHp || hp <= 0) return hp <= 0 ? 'kampfunfähig' : 'unversehrt';
+  if (!maxHp || hp <= 0) return hp <= 0 ? 'kampfunfaehig' : 'unversehrt';
   const anteil = hp / maxHp;
   if (anteil >= 1) return 'unversehrt';
-  if (anteil > 0.66) return 'leicht verletzt';
+  if (anteil > 0.66) return 'leicht_verletzt';
   if (anteil > 0.33) return 'verwundet';
-  return 'schwer verwundet';
+  return 'schwer_verwundet';
 }
 
 export function encounterView(user) {
@@ -120,7 +124,7 @@ router.get('/', (req, res) => {
 router.post('/combatants', requireDm, (req, res) => {
   const { name, type, initiative, hp, maxHp, ac, conditions, notes, characterId, hidden } = req.body ?? {};
   if (!name || typeof name !== 'string' || !name.trim()) {
-    return res.status(400).json({ error: 'Name ist erforderlich.' });
+    return res.status(400).json({ code: 'name_fehlt', error: 'Name ist erforderlich.' });
   }
   const hpValue = toNumber(hp, 0);
   db.prepare(
@@ -147,7 +151,7 @@ router.post('/combatants', requireDm, (req, res) => {
 // PUT /api/encounter/combatants/:id
 router.put('/combatants/:id', requireDm, (req, res) => {
   const row = holen(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Kämpfer nicht gefunden.' });
+  if (!row) return res.status(404).json({ code: 'kaempfer_nicht_gefunden', error: 'Kämpfer nicht gefunden.' });
 
   const body = req.body ?? {};
   const felder = {
@@ -199,7 +203,7 @@ router.put('/combatants/:id', requireDm, (req, res) => {
         ]
           .filter(Boolean)
           .join(' '),
-        meta: { added: neu, removed: weg },
+        meta: { target: felder.name, added: neu, removed: weg },
         secret: !!felder.hidden,
       });
     }
@@ -211,7 +215,7 @@ router.put('/combatants/:id', requireDm, (req, res) => {
 // POST /api/encounter/combatants/:id/damage – negative Werte heilen
 router.post('/combatants/:id/damage', requireDm, (req, res) => {
   const row = holen(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Kämpfer nicht gefunden.' });
+  if (!row) return res.status(404).json({ code: 'kaempfer_nicht_gefunden', error: 'Kämpfer nicht gefunden.' });
   const amount = toNumber(req.body?.amount, 0);
   const hp = Math.max(0, Math.min(row.max_hp || Number.MAX_SAFE_INTEGER, row.hp - amount));
   db.prepare('UPDATE combatants SET hp = ? WHERE id = ?').run(hp, row.id);
@@ -226,7 +230,7 @@ router.post('/combatants/:id/damage', requireDm, (req, res) => {
         amount > 0
           ? `${row.name} nimmt ${amount} Schaden.`
           : `${row.name} wird um ${-amount} Trefferpunkte geheilt.`,
-      meta: { amount, hp, maxHp: row.max_hp },
+      meta: { target: row.name, amount, hp, maxHp: row.max_hp },
       // Von verborgenen Kämpfern soll die Runde nichts mitbekommen.
       secret: !!row.hidden,
     });
@@ -237,7 +241,7 @@ router.post('/combatants/:id/damage', requireDm, (req, res) => {
       actor: req.user.name,
       target: row.name,
       text: `${row.name} geht zu Boden.`,
-      meta: { type: row.type },
+      meta: { target: row.name, type: row.type },
       secret: !!row.hidden,
     });
   }
@@ -254,13 +258,13 @@ router.post('/combatants/:id/damage', requireDm, (req, res) => {
  */
 router.post('/combatants/:id/initiative', (req, res) => {
   const row = holen(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Kämpfer nicht gefunden.' });
+  if (!row) return res.status(404).json({ code: 'kaempfer_nicht_gefunden', error: 'Kämpfer nicht gefunden.' });
 
   if (!isDm(req.user)) {
-    if (!row.character_id) return res.status(403).json({ error: 'Diese Zeile gehört nicht dir.' });
+    if (!row.character_id) return res.status(403).json({ code: 'kaempfer_fremd', error: 'Diese Zeile gehört nicht dir.' });
     const charakter = db.prepare('SELECT owner_id FROM characters WHERE id = ?').get(row.character_id);
     if (charakter?.owner_id !== req.user.id) {
-      return res.status(403).json({ error: 'Diese Zeile gehört jemand anderem.' });
+      return res.status(403).json({ code: 'kaempfer_fremd', error: 'Diese Zeile gehört jemand anderem.' });
     }
   }
 
@@ -271,7 +275,7 @@ router.post('/combatants/:id/initiative', (req, res) => {
 // DELETE /api/encounter/combatants/:id
 router.delete('/combatants/:id', requireDm, (req, res) => {
   const row = holen(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Kämpfer nicht gefunden.' });
+  if (!row) return res.status(404).json({ code: 'kaempfer_nicht_gefunden', error: 'Kämpfer nicht gefunden.' });
 
   const reihenfolge = alleKaempfer();
   const index = reihenfolge.findIndex((c) => c.id === row.id);

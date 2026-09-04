@@ -113,6 +113,25 @@ export function useLive(event, handler) {
   }, [event, subscribe]);
 }
 
+/** Auf mehrere Ereignisse zugleich hören – für Datenhaken, die auf einiges achten. */
+export function useLiveAlle(events, handler) {
+  const { subscribe } = useLiveContext();
+  const ref = useRef(handler);
+
+  useEffect(() => {
+    ref.current = handler;
+  });
+
+  const schluessel = events.join('|');
+  useEffect(() => {
+    const abmelden = schluessel
+      .split('|')
+      .filter(Boolean)
+      .map((name) => subscribe(name, (daten) => ref.current?.(daten, name)));
+    return () => abmelden.forEach((ab) => ab());
+  }, [schluessel, subscribe]);
+}
+
 export function useLiveStatus() {
   const { connected, generation, presence } = useLiveContext();
   return { connected, generation, presence };

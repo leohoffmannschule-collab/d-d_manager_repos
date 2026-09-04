@@ -1,20 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { notesApi } from '../../lib/api.js';
+import { useNotizen } from '../../lib/daten.jsx';
 import { IconEye, IconEyeOff, IconPlus, IconSearch, IconTrash } from '../icons.jsx';
 
 /** Notizen der Spielleitung – wahlweise geheim oder als Handzettel für alle. */
 export default function Notes() {
-  const [notizen, setNotizen] = useState([]);
+  const { notizen, laden } = useNotizen();
   const [suche, setSuche] = useState('');
   const [entwurf, setEntwurf] = useState(null);
-
-  const laden = useCallback(() => {
-    notesApi.list().then(setNotizen).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    laden();
-  }, [laden]);
 
   const treffer = useMemo(() => {
     const begriff = suche.trim().toLowerCase();

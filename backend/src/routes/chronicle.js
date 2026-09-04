@@ -38,7 +38,7 @@ router.get('/sessions', (req, res) => {
 
 router.get('/sessions/:id', (req, res) => {
   const row = db.prepare('SELECT * FROM game_sessions WHERE id = ?').get(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Sitzung nicht gefunden.' });
+  if (!row) return res.status(404).json({ code: 'sitzung_nicht_gefunden', error: 'Sitzung nicht gefunden.' });
   res.json({ ...rowToSession(row, req.user), entries: eintraege(row.id, req.user) });
 });
 
@@ -48,13 +48,13 @@ router.post('/sessions', requireDm, (req, res) => {
 
 router.post('/sessions/:id/ende', requireDm, (req, res) => {
   const beendet = chronik.beendeSitzung();
-  if (!beendet) return res.status(400).json({ error: 'Es läuft gerade keine Sitzung.' });
+  if (!beendet) return res.status(400).json({ code: 'keine_offene_sitzung', error: 'Es läuft gerade keine Sitzung.' });
   res.json(rowToSession(beendet, req.user));
 });
 
 router.patch('/sessions/:id', requireDm, (req, res) => {
   const row = db.prepare('SELECT * FROM game_sessions WHERE id = ?').get(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Sitzung nicht gefunden.' });
+  if (!row) return res.status(404).json({ code: 'sitzung_nicht_gefunden', error: 'Sitzung nicht gefunden.' });
   if (typeof req.body?.title === 'string' && req.body.title.trim()) {
     db.prepare('UPDATE game_sessions SET title = ? WHERE id = ?').run(req.body.title.trim().slice(0, 150), row.id);
   }
@@ -63,7 +63,7 @@ router.patch('/sessions/:id', requireDm, (req, res) => {
 
 router.delete('/sessions/:id', requireDm, (req, res) => {
   const info = db.prepare('DELETE FROM game_sessions WHERE id = ?').run(req.params.id);
-  if (info.changes === 0) return res.status(404).json({ error: 'Sitzung nicht gefunden.' });
+  if (info.changes === 0) return res.status(404).json({ code: 'sitzung_nicht_gefunden', error: 'Sitzung nicht gefunden.' });
   res.status(204).end();
 });
 
@@ -73,7 +73,7 @@ router.delete('/sessions/:id', requireDm, (req, res) => {
 // eine gelungene List, ein Schwur, der Name des Wirts.
 router.post('/eintrag', requireDm, (req, res) => {
   const text = typeof req.body?.text === 'string' ? req.body.text.trim() : '';
-  if (!text) return res.status(400).json({ error: 'Ohne Text kein Eintrag.' });
+  if (!text) return res.status(400).json({ code: 'text_fehlt', error: 'Ohne Text kein Eintrag.' });
   const eintrag = chronik.log({
     kind: 'notiz',
     actor: req.user.name,
@@ -85,7 +85,7 @@ router.post('/eintrag', requireDm, (req, res) => {
 
 router.delete('/eintrag/:id', requireDm, (req, res) => {
   const info = db.prepare('DELETE FROM chronicle WHERE id = ?').run(req.params.id);
-  if (info.changes === 0) return res.status(404).json({ error: 'Eintrag nicht gefunden.' });
+  if (info.changes === 0) return res.status(404).json({ code: 'eintrag_nicht_gefunden', error: 'Eintrag nicht gefunden.' });
   broadcast('chronik:geaendert', {});
   res.status(204).end();
 });
@@ -142,7 +142,7 @@ export function protokoll(session, liste) {
 
 router.get('/sessions/:id/protokoll', (req, res) => {
   const row = db.prepare('SELECT * FROM game_sessions WHERE id = ?').get(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Sitzung nicht gefunden.' });
+  if (!row) return res.status(404).json({ code: 'sitzung_nicht_gefunden', error: 'Sitzung nicht gefunden.' });
   const text = protokoll(row, eintraege(row.id, req.user));
   res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
   res.send(text);
@@ -171,17 +171,18 @@ router.get('/ki', (req, res) => {
 router.post('/sessions/:id/rueckblick', requireDm, async (req, res) => {
   if (!KI_URL) {
     return res.status(501).json({
+      code: 'ki_nicht_eingerichtet',
       error:
-        'Es ist kein Sprachmodell eingestellt. Setze CHRONIK_KI_URL (und bei Bedarf CHRONIK_KI_MODELL und ' +
+'Es ist kein Sprachmodell eingestellt. Setze CHRONIK_KI_URL (und bei Bedarf CHRONIK_KI_MODELL und ' +
         'CHRONIK_KI_SCHLUESSEL), um den Rückblick schreiben zu lassen. Das Protokoll selbst gibt es auch ohne.',
     });
   }
 
   const row = db.prepare('SELECT * FROM game_sessions WHERE id = ?').get(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Sitzung nicht gefunden.' });
+  if (!row) return res.status(404).json({ code: 'sitzung_nicht_gefunden', error: 'Sitzung nicht gefunden.' });
 
   const liste = db.prepare('SELECT * FROM chronicle WHERE session_id = ? ORDER BY created_at').all(row.id);
-  if (liste.length === 0) return res.status(400).json({ error: 'In dieser Sitzung steht noch nichts.' });
+  if (liste.length === 0) return res.status(400).json({ code: 'sitzung_leer', error: 'In dieser Sitzung steht noch nichts.' });
 
   const roh = protokoll(row, liste.map(chronik.rowToEntry));
 
@@ -211,18 +212,18 @@ router.post('/sessions/:id/rueckblick', requireDm, async (req, res) => {
 
     if (!antwort.ok) {
       const text = await antwort.text();
-      return res.status(502).json({ error: `Das Sprachmodell antwortete mit ${antwort.status}: ${text.slice(0, 200)}` });
+      return res.status(502).json({ code: 'ki_fehler', error: `Das Sprachmodell antwortete mit ${antwort.status}: ${text.slice(0, 200)}` });
     }
 
     const daten = await antwort.json();
     const rueckblick = daten?.choices?.[0]?.message?.content?.trim();
-    if (!rueckblick) return res.status(502).json({ error: 'Das Sprachmodell hat nichts geschrieben.' });
+    if (!rueckblick) return res.status(502).json({ code: 'ki_leer', error: 'Das Sprachmodell hat nichts geschrieben.' });
 
     db.prepare('UPDATE game_sessions SET summary = ? WHERE id = ?').run(rueckblick, row.id);
     broadcast('chronik:geaendert', {});
     res.json({ summary: rueckblick });
   } catch (err) {
-    res.status(502).json({ error: `Das Sprachmodell war nicht erreichbar: ${err.message}` });
+    res.status(502).json({ code: 'ki_nicht_erreichbar', error: `Das Sprachmodell war nicht erreichbar: ${err.message}` });
   }
 });
 

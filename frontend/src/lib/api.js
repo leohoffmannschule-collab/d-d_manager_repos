@@ -20,14 +20,19 @@ async function request(path, options = {}) {
 
   if (!res.ok) {
     let message = `Anfrage fehlgeschlagen (${res.status})`;
+    let code = null;
     try {
       const body = await res.json();
       if (body?.error) message = body.error;
+      if (body?.code) code = body.code;
     } catch {
       // ignore
     }
+    // Der Schlüssel ist das Verlässliche: Er bleibt, auch wenn der Text sich
+    // ändert oder übersetzt wird. Siehe lib/beschriftung.js.
     const error = new Error(message);
     error.status = res.status;
+    error.code = code;
     throw error;
   }
   if (res.status === 204) return null;

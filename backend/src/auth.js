@@ -136,14 +136,14 @@ export function attachUser(req, res, next) {
 }
 
 export function requireAuth(req, res, next) {
-  if (!req.user) return res.status(401).json({ error: 'Bitte zuerst anmelden.' });
+  if (!req.user) return res.status(401).json({ code: 'nicht_angemeldet', error: 'Bitte zuerst anmelden.' });
   next();
 }
 
 export function requireDm(req, res, next) {
-  if (!req.user) return res.status(401).json({ error: 'Bitte zuerst anmelden.' });
+  if (!req.user) return res.status(401).json({ code: 'nicht_angemeldet', error: 'Bitte zuerst anmelden.' });
   if (req.user.role !== 'sl') {
-    return res.status(403).json({ error: 'Das ist der Spielleitung vorbehalten.' });
+    return res.status(403).json({ code: 'nur_spielleitung', error: 'Das ist der Spielleitung vorbehalten.' });
   }
   next();
 }

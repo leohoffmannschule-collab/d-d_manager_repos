@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { charactersApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
-import { useLive, useLiveStatus } from '../lib/live.jsx';
+import { useCharaktere } from '../lib/daten.jsx';
 import { IconEye, IconPlus, IconScroll } from '../components/icons.jsx';
 
 function subtitle(count) {
@@ -12,44 +11,16 @@ function subtitle(count) {
 }
 
 export default function Dashboard() {
-  const [characters, setCharacters] = useState(null);
-  const [error, setError] = useState('');
   const navigate = useNavigate();
   const { user, isDm } = useAuth();
-  const { generation } = useLiveStatus();
-
-  const laden = useCallback(() => {
-    charactersApi
-      .list()
-      .then(setCharacters)
-      .catch((err) => setError(err.message));
-  }, []);
-
-  useEffect(() => {
-    laden();
-  }, [laden, generation]);
-
-  // Trefferpunkte der Mitspieler bewegen sich mit – so sieht die Runde
-  // sofort, wenn es jemanden erwischt hat.
-  useLive('charakter:aktualisiert', (nachricht) => {
-    setCharacters((liste) => {
-      if (!liste) return liste;
-      const index = liste.findIndex((c) => c.id === nachricht.id);
-      if (index === -1) return liste;
-      const kopie = [...liste];
-      kopie[index] = { ...kopie[index], ...nachricht };
-      return kopie;
-    });
-  });
-  useLive('charakter:entfernt', ({ id }) => {
-    setCharacters((liste) => liste?.filter((c) => c.id !== id) ?? liste);
-  });
+  const { charaktere: characters, laden, fehler } = useCharaktere();
+  const error = fehler?.message ?? '';
 
   async function handleDuplicate(id, e) {
     e.preventDefault();
     e.stopPropagation();
-    const copy = await charactersApi.duplicate(id);
-    setCharacters((list) => [copy, ...list]);
+    await charactersApi.duplicate(id);
+    laden();
   }
 
   async function handleDelete(id, name, e) {
@@ -57,7 +28,7 @@ export default function Dashboard() {
     e.stopPropagation();
     if (!confirm(`„${name}“ wirklich unwiderruflich aus dem Almanach tilgen?`)) return;
     await charactersApi.remove(id);
-    setCharacters((list) => list.filter((c) => c.id !== id));
+    laden();
   }
 
   return (

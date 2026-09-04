@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { randomUUID } from 'node:crypto';
 import { db, getState, setState } from '../db.js';
-import { isDm, requireAuth, requireDm } from '../auth.js';
+import { requireAuth, requireDm } from '../auth.js';
 import { broadcast, originClient } from '../events.js';
 import * as chronik from '../chronicle.js';
 
@@ -103,7 +103,7 @@ router.get('/', (req, res) => {
 router.post('/items', (req, res) => {
   const body = req.body ?? {};
   if (!body.name || typeof body.name !== 'string' || !body.name.trim()) {
-    return res.status(400).json({ error: 'Ohne Namen kein Eintrag.' });
+    return res.status(400).json({ code: 'name_fehlt', error: 'Ohne Namen kein Eintrag.' });
   }
   const id = randomUUID();
   db.prepare(
@@ -123,7 +123,7 @@ router.post('/items', (req, res) => {
 
 router.put('/items/:id', (req, res) => {
   const row = db.prepare('SELECT * FROM stash_items WHERE id = ?').get(req.params.id);
-  if (!row) return res.status(404).json({ error: 'Gegenstand nicht gefunden.' });
+  if (!row) return res.status(404).json({ code: 'gegenstand_nicht_gefunden', error: 'Gegenstand nicht gefunden.' });
   const body = req.body ?? {};
   db.prepare('UPDATE stash_items SET name = ?, qty = ?, weight = ?, notes = ?, holder_id = ? WHERE id = ?').run(
     typeof body.name === 'string' && body.name.trim() ? body.name.trim().slice(0, 120) : row.name,
@@ -139,7 +139,7 @@ router.put('/items/:id', (req, res) => {
 
 router.delete('/items/:id', (req, res) => {
   const info = db.prepare('DELETE FROM stash_items WHERE id = ?').run(req.params.id);
-  if (info.changes === 0) return res.status(404).json({ error: 'Gegenstand nicht gefunden.' });
+  if (info.changes === 0) return res.status(404).json({ code: 'gegenstand_nicht_gefunden', error: 'Gegenstand nicht gefunden.' });
   melden(req);
   res.status(204).end();
 });
@@ -177,17 +177,17 @@ router.get('/teilung', (req, res) => {
  */
 router.post('/auszahlen', requireDm, (req, res) => {
   const ids = Array.isArray(req.body?.characterIds) ? req.body.characterIds.slice(0, 20) : [];
-  if (ids.length === 0) return res.status(400).json({ error: 'Es wurde niemand genannt, der etwas bekommen soll.' });
+  if (ids.length === 0) return res.status(400).json({ code: 'empfaenger_fehlen', error: 'Es wurde niemand genannt, der etwas bekommen soll.' });
 
   const charaktere = ids
     .map((id) => db.prepare('SELECT * FROM characters WHERE id = ?').get(id))
     .filter(Boolean);
-  if (charaktere.length === 0) return res.status(400).json({ error: 'Keiner dieser Charaktere ist verzeichnet.' });
+  if (charaktere.length === 0) return res.status(400).json({ code: 'charakter_nicht_gefunden', error: 'Keiner dieser Charaktere ist verzeichnet.' });
 
   const vorrat = muenzen();
   const { proKopf: anteil, rest, restInKupfer } = teile(vorrat, charaktere.length);
   if (inKupfer(anteil) <= 0) {
-    return res.status(400).json({ error: 'In der Kiste liegt zu wenig, um sie zu teilen.' });
+    return res.status(400).json({ code: 'beute_zu_klein', error: 'In der Kiste liegt zu wenig, um sie zu teilen.' });
   }
 
   const jetzt = new Date().toISOString();
@@ -219,7 +219,12 @@ router.post('/auszahlen', requireDm, (req, res) => {
     kind: 'notiz',
     actor: req.user.name,
     text: `Die Beute wird geteilt: je ${beschreibung} für ${charaktere.map((c) => c.name).join(', ')}.`,
-    meta: { anteil, empfaenger: charaktere.length, restInKupfer },
+    meta: {
+      anteil,
+      empfaenger: charaktere.length,
+      namen: charaktere.map((c) => c.name),
+      restInKupfer,
+    },
   });
 
   melden(req);

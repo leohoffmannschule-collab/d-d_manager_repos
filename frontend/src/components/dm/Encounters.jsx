@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
-import { encountersApi, libraryApi, mediaApi } from '../../lib/api.js';
+import { useState } from 'react';
+import { encountersApi, mediaApi } from '../../lib/api.js';
+import { useBegegnungen, useBestiarium } from '../../lib/daten.jsx';
 import { Rubric } from '../ui.jsx';
 import { IconEyeOff, IconPlus, IconSearch, IconSwords, IconTrash } from '../icons.jsx';
 
@@ -151,19 +152,10 @@ function Bauplan({ entwurf, setEntwurf, bestiarium, onSpeichern, onAbbrechen }) 
  * laufenden Kampf mit einem Knopf.
  */
 export default function Encounters() {
-  const [begegnungen, setBegegnungen] = useState([]);
-  const [bestiarium, setBestiarium] = useState([]);
+  const { begegnungen, laden } = useBegegnungen();
+  const { eintraege: bestiarium } = useBestiarium();
   const [entwurf, setEntwurf] = useState(null);
   const [meldung, setMeldung] = useState('');
-
-  const laden = useCallback(() => {
-    encountersApi.list().then(setBegegnungen).catch(() => {});
-    libraryApi.list().then(setBestiarium).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    laden();
-  }, [laden]);
 
   async function speichern(werte) {
     if (werte.id) await encountersApi.update(werte.id, werte);
