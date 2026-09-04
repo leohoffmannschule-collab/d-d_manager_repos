@@ -11,7 +11,7 @@ Der Almanach besteht aus drei Teilen, die sich eine Anmeldung, eine Datenbank un
 | ------------------- | ----------------- | ---------------------------------------------------------------------------- |
 | **Charaktere**      | alle              | vollständige 5e-Charakterblätter, freies Blatt für andere Systeme, Kompendium |
 | **Spieltisch**      | alle              | Karten, Figuren, Nebel des Krieges, Lineal, Zeigefinger, Initiative, Handzettel |
-| **Spielleitung**    | nur die Leitung   | Initiative-Tracker, Bestiarium, Begegnungen, geheime Notizen, Konten          |
+| **Spielleitung**    | nur die Leitung   | Initiative-Tracker, Bestiarium, Begegnungen, Kartenbibliothek, Notizen, Konten |
 | **Chronik**         | alle              | Protokoll des Abends, aus dem entstanden, was am Tisch wirklich geschah       |
 
 Was einer ändert, sehen die anderen sofort – ohne Neuladen.
@@ -66,6 +66,10 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
   Hinterhalt zuschnappt.
 - **Szenen**: Karten hochladen, Raster einstellen, Szene auf den Tisch legen, Figuren aus dem laufenden
   Kampf auslegen, Figuren benennen, einfärben, vergrößern, mit einem Bildnis versehen oder verbergen.
+- **Kartenbibliothek**: ganze Stapel Battlemaps auf einmal hochladen, mit Schlagworten versehen und
+  durchsuchen. Das Raster wird einmal an der Vorschau ausgerichtet und vererbt sich an jede Szene aus
+  dieser Karte. Ein Klick legt die Karte auf – samt dem Nebel, den die Runde sich schon erspielt hat,
+  oder auf Wunsch frisch verhüllt.
 - **Notizen** mit Schlagworten – geheim oder als **Handzettel** an die Runde ausgeteilt.
 - **Begegnungen**: Gruppen einmal zusammenstellen und an jedem Abend mit einem Klick stellen – samt gewürfelter
   Initiative und wahlweise verborgen. Ein improvisierter Kampf lässt sich für das nächste Mal sichern.
@@ -233,7 +237,7 @@ Compress-Archive backend\data $env:USERPROFILE\Desktop\almanach-sicherung.zip
 frontend/   React 19 + Vite, Tailwind CSS v4, PWA
             src/pages/       Charaktere, Spieltisch, Spielleitung, Chronik, Kompendium, Anmeldung
             src/components/  Spieltisch (Brett, Werkzeuge, Figuren), Spielleitung (Bestiarium,
-                             Begegnungen, Notizen, Runde), Figurenschmiede, Initiativliste,
+                             Begegnungen, Karten, Notizen, Runde), Figurenschmiede, Initiativliste,
                              Würfelbeutel, Blattbausteine
             src/lib/         daten.jsx (Datenschicht), api.js, auth.jsx, live.jsx,
                              beschriftung.js, Regelwerk, Rasten, Miniaturen
@@ -242,7 +246,7 @@ backend/    Node.js + Express, SQLite über das eingebaute node:sqlite
             src/events.js    Live-Kanal (Server-Sent Events)
             src/chronicle.js Mitschrift der Sitzung
             src/routes/      Konten, Charaktere, Kampf, Bestiarium, Begegnungen, Notizen,
-                             Würfel, Szenen/Figuren/Nebel, Bilder, Beute, Chronik,
+                             Würfel, Szenen/Figuren/Nebel, Kartenbibliothek, Bilder, Beute, Chronik,
                              Kompendium-Zwischenspeicher
 design/     Die Design-Entwürfe (Artboards) zum mittelalterlichen Erscheinungsbild
 scripts/    Hilfsskripte, plattformunabhängig in Node geschrieben

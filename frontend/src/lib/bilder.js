@@ -41,3 +41,31 @@ export async function bildLesen(file, maxSeite = 4096) {
     name: file.name,
   };
 }
+
+/**
+ * Wie `bildLesen`, liefert zusätzlich aber ein kleines Vorschaubild.
+ *
+ * Die Bibliothek zeigt womöglich dreißig Karten nebeneinander. Würde jede
+ * Kachel das volle Bild laden, wäre der Pi mit ein paar hundert Megabyte
+ * beschäftigt und das iPad mit dem Scrollen. Beides entsteht hier aus einem
+ * einzigen Lesevorgang – die Datei wandert nur einmal durch den Speicher.
+ */
+export async function bildUndVorschau(file, maxSeite = 4096, vorschauSeite = 480) {
+  const voll = await bildLesen(file, maxSeite);
+
+  const img = await new Promise((resolve, reject) => {
+    const bild = new Image();
+    bild.onload = () => resolve(bild);
+    bild.onerror = () => reject(new Error('Das ist kein Bild, das der Browser kennt.'));
+    bild.src = voll.dataUrl;
+  });
+
+  const faktor = Math.min(1, vorschauSeite / Math.max(img.width, img.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(img.width * faktor));
+  canvas.height = Math.max(1, Math.round(img.height * faktor));
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+  return { ...voll, vorschauUrl: canvas.toDataURL('image/jpeg', 0.72) };
+}

@@ -43,8 +43,18 @@ export default function Help() {
         <Card title="Für die Spielleitung">
           <ul className="flex list-disc flex-col gap-1.5 pl-5 leading-relaxed text-ink marker:text-rubric">
             <li>
-              <span className="font-display">Karte hochladen</span> legt eine neue Szene an. Unter „Raster“ die
-              Feldgröße so einstellen, dass die Linien auf der Karte liegen – ein Feld sind fünf Fuß.
+              <span className="font-display">Karte hochladen</span> legt die Karte auf den Tisch und zugleich in
+              die Bibliothek. Unter „Raster“ die Feldgröße so einstellen, dass die Linien auf der Karte liegen –
+              ein Feld sind fünf Fuß – und dann{' '}
+              <span className="font-display">Raster in der Bibliothek merken</span>: Jede spätere Szene aus dieser
+              Karte kommt schon passend auf den Tisch.
+            </li>
+            <li>
+              Unter <span className="font-display">Spielleitung → Karten</span> liegt die Kartenbibliothek. Dort
+              lädst du ganze Stapel auf einmal hoch, gibst ihnen Schlagworte („Wald“, „Nacht“, „Verlies“) und
+              findest sie über die Suche wieder. <span className="font-display">Auflegen</span> holt eine Karte
+              samt bereits aufgedecktem Nebel zurück auf den Tisch, <span className="font-display">frisch</span>{' '}
+              beginnt sie neu unter geschlossenem Nebel.
             </li>
             <li>
               <span className="font-display">Aufdecken</span> und <span className="font-display">Verhüllen</span> malen

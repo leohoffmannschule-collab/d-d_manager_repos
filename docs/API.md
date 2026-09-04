@@ -188,7 +188,26 @@ Trefferpunkte wandern in beide Richtungen zwischen Kampf und Charakterblatt.
     POST   /api/scenes/ping                  { x, y }
 
 Der Nebel ist eine Liste von Rasterfeldern als `"x,y"`. Übers Netz wandern nur
-die geänderten Felder.
+die geänderten Felder. Eine Szene, die aus einer Karte der Bibliothek entstanden
+ist, trägt deren `mapId`.
+
+### /api/maps   (ganz [SL])
+
+    GET    /api/maps                  Bibliothek, alphabetisch, je Karte `szenen`
+    POST   /api/maps                  { name, mediaId?, thumbMediaId?, width, height, gridSize? }
+    PUT    /api/maps/:id              { name?, tags?, notes?, gridSize?, gridOffsetX?, gridOffsetY? }
+    DELETE /api/maps/:id
+    POST   /api/maps/:id/auflegen     { frisch?, name?, fogEnabled? } -> { sceneId, name, neu }
+
+Die Bibliothek ist Vorbereitungsmaterial und deshalb ganz hinter dem Schirm:
+Jeder Zweig antwortet einem Spielerkonto mit `403`. Eine Karte trägt ihre
+Rasterausrichtung selbst; jede Szene, die aus ihr entsteht, erbt sie.
+
+`auflegen` bringt die Karte auf den Tisch. Gibt es aus ihr schon eine Szene,
+wird diese samt Nebel wieder aktiviert (`neu: false`, `200`); `frisch: true`
+erzwingt eine neue Szene (`neu: true`, `201`). Ein Bild, das noch von einer
+Szene, Figur oder einem Bestiarium-Eintrag gebraucht wird, überlebt das Löschen
+seiner Karte.
 
 ### Weitere Zweige
 
@@ -225,6 +244,7 @@ Nachladen:
 const { kampf } = useKampf();
 const { kiste, laden } = useBeute();
 const { szene, figuren, nebel } = useSzene();
+const { karten } = useKarten();      // leer, solange die Rolle nicht stimmt
 ```
 
 Wer die Oberfläche neu gestaltet, wirft `pages/` und `components/` weg und

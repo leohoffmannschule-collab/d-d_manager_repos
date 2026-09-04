@@ -25,6 +25,7 @@ function rowToScene(row) {
     gridOffsetY: row.grid_offset_y,
     gridVisible: !!row.grid_visible,
     fogEnabled: !!row.fog_enabled,
+    mapId: row.map_id,
     fog: JSON.parse(row.fog),
     createdAt: row.created_at,
   };
@@ -74,7 +75,7 @@ function szenenSicht(user) {
   };
 }
 
-function sendeSzene() {
+export function sendeSzene() {
   broadcast('szene', szenenSicht({ role: 'sl' }), { role: 'sl' });
   broadcast('szene', szenenSicht({ role: 'spieler' }), { role: 'spieler' });
 }
@@ -181,13 +182,18 @@ router.delete('/:id', requireDm, (req, res) => {
   res.status(204).end();
 });
 
+/** Eine Szene auf den Tisch legen – auch aus der Kartenbibliothek heraus. */
+export function aktiviereSzene(row) {
+  setState('szene', row.id);
+  chronik.log({ kind: 'szene', text: `Die Runde erreicht: ${row.name}.`, meta: { sceneId: row.id, name: row.name } });
+  sendeSzene();
+}
+
 // POST /api/scenes/:id/aktivieren – Szene auf den Tisch legen
 router.post('/:id/aktivieren', requireDm, (req, res) => {
   const row = holeSzene(req.params.id);
   if (!row) return res.status(404).json({ code: 'szene_nicht_gefunden', error: 'Szene nicht gefunden.' });
-  setState('szene', row.id);
-  chronik.log({ kind: 'szene', text: `Die Runde erreicht: ${row.name}.`, meta: { sceneId: row.id, name: row.name } });
-  sendeSzene();
+  aktiviereSzene(row);
   res.json(rowToScene(row));
 });
 

@@ -44,7 +44,15 @@ function Handzettel() {
 export default function Tabletop() {
   const { isDm } = useAuth();
 
-  const { szene: scene, figuren: tokens, nebel: fog, nebelSetzen, figurSetzen, laden: ladeSzene } = useSzene();
+  const {
+    szene: scene,
+    figuren: tokens,
+    nebel: fog,
+    nebelSetzen,
+    figurSetzen,
+    laden: ladeSzene,
+    laedt: laedtSzene,
+  } = useSzene();
   const { kampf } = useKampf();
   const { meine } = useCharaktere();
   const pings = usePings();
@@ -121,6 +129,7 @@ export default function Tabletop() {
         {isDm && (
           <SceneBar
             scene={scene}
+            laedtSzene={laedtSzene}
             mode={mode}
             onMode={setMode}
             onChanged={ladeSzene}

@@ -171,3 +171,11 @@ export const mediaApi = {
   url: (id) => (id ? `${API_BASE}/media/${id}` : null),
   remove: (id) => del(`/media/${id}`),
 };
+
+export const mapsApi = {
+  list: () => request('/maps'),
+  create: (payload) => post('/maps', payload),
+  update: (id, payload) => put(`/maps/${id}`, payload),
+  remove: (id) => del(`/maps/${id}`),
+  auflegen: (id, payload) => post(`/maps/${id}/auflegen`, payload),
+};

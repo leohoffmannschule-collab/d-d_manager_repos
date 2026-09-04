@@ -174,6 +174,27 @@ db.exec(`
     created_at TEXT NOT NULL
   );
 
+  /* --- Kartenbibliothek der Spielleitung ---------------------------------
+     Eine Karte ist Vorbereitung: das Bild samt einmal eingestelltem Raster.
+     Eine Szene ist eine Karte im Spiel, mit Nebel und Figuren darauf. Aus
+     einer Karte lassen sich beliebig viele Szenen legen, ohne sie erneut
+     hochzuladen oder das Raster neu auszurichten. */
+
+  CREATE TABLE IF NOT EXISTS maps (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    media_id TEXT,
+    thumb_media_id TEXT,
+    width INTEGER NOT NULL DEFAULT 0,
+    height INTEGER NOT NULL DEFAULT 0,
+    grid_size INTEGER NOT NULL DEFAULT 70,
+    grid_offset_x INTEGER NOT NULL DEFAULT 0,
+    grid_offset_y INTEGER NOT NULL DEFAULT 0,
+    tags TEXT NOT NULL DEFAULT '[]',
+    notes TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL
+  );
+
   CREATE TABLE IF NOT EXISTS tokens (
     id TEXT PRIMARY KEY,
     scene_id TEXT NOT NULL REFERENCES scenes(id) ON DELETE CASCADE,
@@ -269,6 +290,10 @@ addColumnIfMissing('library', 'media_id', 'TEXT');
 // Kämpfer merken sich ihr Figurenbild, damit es beim Auslegen auf den
 // Spieltisch mitwandert.
 addColumnIfMissing('combatants', 'media_id', 'TEXT');
+
+// Eine Szene weiß, aus welcher Karte sie gelegt wurde – so lässt sich ein
+// nachjustiertes Raster in die Bibliothek zurückschreiben.
+addColumnIfMissing('scenes', 'map_id', 'TEXT');
 
 /** Kleiner Schlüssel-Wert-Speicher für Einzelwerte (aktive Szene, Kampfrunde …). */
 export function getState(key, fallback = null) {

@@ -1,7 +1,7 @@
-import { useRef, useState } from 'react';
-import { mediaApi, scenesApi } from '../../lib/api.js';
-import { useSzenenListe } from '../../lib/daten.jsx';
-import { bildLesen } from '../../lib/bilder.js';
+import { useEffect, useRef, useState } from 'react';
+import { mapsApi, mediaApi, scenesApi } from '../../lib/api.js';
+import { useKarten, useSzenenListe } from '../../lib/daten.jsx';
+import { bildUndVorschau } from '../../lib/bilder.js';
 import {
   IconCheck,
   IconEye,
@@ -36,37 +36,66 @@ function Knopf({ aktiv, children, ...rest }) {
 }
 
 /** Werkzeugleiste und Szenenverwaltung – nur für die Spielleitung. */
-export default function SceneBar({ scene, mode, onMode, onChanged, onFogAll, onTokensFromEncounter }) {
+export default function SceneBar({ scene, laedtSzene, mode, onMode, onChanged, onFogAll, onTokensFromEncounter }) {
   const { szenen, laden } = useSzenenListe();
-  // Liegt noch nichts auf dem Tisch, steht die Szenenlade gleich offen –
-  // sonst sucht man beim ersten Mal nach dem Weg zur ersten Karte.
-  const [offen, setOffen] = useState(!scene);
+  const { karten, laden: kartenLaden } = useKarten();
+  const [offen, setOffen] = useState(false);
+  const entschieden = useRef(false);
+
+  // Liegt noch nichts auf dem Tisch, steht die Szenenlade gleich offen – sonst
+  // sucht man beim ersten Mal nach dem Weg zur ersten Karte. Erst nach dem
+  // Laden entscheiden: solange geholt wird, ist `scene` noch leer, und die
+  // Lade würde jedes Mal aufspringen, auch wenn eine Karte längst liegt.
+  useEffect(() => {
+    if (entschieden.current || laedtSzene) return;
+    entschieden.current = true;
+    if (!scene) setOffen(true);
+  }, [laedtSzene, scene]);
   const [raster, setRaster] = useState(false);
   const [name, setName] = useState('');
   const [laedt, setLaedt] = useState(false);
   const [fehler, setFehler] = useState('');
   const datei = useRef(null);
 
+  /**
+   * Eine hochgeladene Karte geht den Umweg über die Bibliothek: dort bleibt
+   * sie liegen, wenn der Abend vorbei ist. Was am Tisch entsteht, ist beim
+   * nächsten Mal einen Griff entfernt statt einen neuen Upload.
+   */
   async function neueSzene(file) {
     setFehler('');
     setLaedt(true);
     try {
-      const bild = await bildLesen(file);
+      const bild = await bildUndVorschau(file);
       const { id: mediaId } = await mediaApi.upload(bild.dataUrl, bild.name);
-      await scenesApi.create({
+      const { id: thumbMediaId } = await mediaApi.upload(bild.vorschauUrl, `vorschau-${bild.name}`);
+      const karte = await mapsApi.create({
         name: name.trim() || file.name.replace(/\.[^.]+$/, ''),
         mediaId,
+        thumbMediaId,
         width: bild.width,
         height: bild.height,
         gridSize: 70,
       });
+      await mapsApi.auflegen(karte.id);
       setName('');
-      await laden();
+      await Promise.all([laden(), kartenLaden()]);
       onChanged?.();
     } catch (err) {
       setFehler(err.message);
     } finally {
       setLaedt(false);
+    }
+  }
+
+  async function ausBibliothek(karte) {
+    setFehler('');
+    try {
+      await mapsApi.auflegen(karte.id);
+      await Promise.all([laden(), kartenLaden()]);
+      onChanged?.();
+    } catch (err) {
+      setFehler(err.message);
     }
   }
 
@@ -140,6 +169,22 @@ export default function SceneBar({ scene, mode, onMode, onChanged, onFogAll, onT
           <Knopf aktiv={scene.fogEnabled} onClick={() => rasterAendern('fogEnabled', !scene.fogEnabled)}>
             <IconFog size={13} /> Nebel benutzen
           </Knopf>
+          {scene.mapId && (
+            <Knopf
+              onClick={async () => {
+                await mapsApi.update(scene.mapId, {
+                  gridSize: scene.gridSize,
+                  gridOffsetX: scene.gridOffsetX,
+                  gridOffsetY: scene.gridOffsetY,
+                });
+                await kartenLaden();
+                setFehler('');
+              }}
+              title="Diese Ausrichtung für alle künftigen Szenen aus dieser Karte übernehmen"
+            >
+              <IconCheck size={13} /> Raster in der Bibliothek merken
+            </Knopf>
+          )}
           <p className="text-[15px] text-sepia italic">
             Ein Feld entspricht 5 Fuß. Die Feldgröße so einstellen, dass die Linien auf der Karte liegen.
           </p>
@@ -184,6 +229,33 @@ export default function SceneBar({ scene, mode, onMode, onChanged, onFogAll, onT
           </div>
 
           {fehler && <p className="mb-3 text-rubric">{fehler}</p>}
+
+          {karten.length > 0 && (
+            <div className="mb-3 border-b border-dashed border-rule pb-3">
+              <p className="mb-1.5 font-display text-[10px] tracking-[0.16em] text-faint uppercase">
+                Aus der Bibliothek
+              </p>
+              <div className="flex max-h-28 flex-wrap gap-1.5 overflow-y-auto">
+                {karten.map((k) => (
+                  <button
+                    key={k.id}
+                    onClick={() => ausBibliothek(k)}
+                    className="btn-plate flex min-h-11 items-center gap-1.5 py-1 pr-3 pl-1 text-[13px]"
+                    title={k.notes || `${k.width}×${k.height}`}
+                  >
+                    {k.thumbMediaId || k.mediaId ? (
+                      <img src={mediaApi.url(k.thumbMediaId ?? k.mediaId)} alt="" className="h-9 w-12 object-cover" />
+                    ) : (
+                      <span className="flex h-9 w-12 items-center justify-center text-faint">
+                        <IconMap size={14} />
+                      </span>
+                    )}
+                    {k.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {szenen.map((s) => (

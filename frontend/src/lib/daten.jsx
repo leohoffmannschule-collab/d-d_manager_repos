@@ -7,6 +7,7 @@ import {
   encounterApi,
   encountersApi,
   libraryApi,
+  mapsApi,
   notesApi,
   scenesApi,
   stashApi,
@@ -286,4 +287,18 @@ export function useSitzung(id) {
   useLive('chronik:geaendert', laden);
 
   return { sitzung: daten, setSitzung: setDaten, laden, fehler, laedt };
+}
+
+/* --- Kartenbibliothek ---------------------------------------------------- */
+
+/**
+ * Die Vorbereitungs-Bibliothek des DM. Karten liegen hier, bevor sie jemand
+ * sieht – deshalb lädt der Haken nichts, solange die Rolle nicht stimmt: ein
+ * Spielerfenster würde sonst bei jedem Start ein 403 einsammeln.
+ */
+export function useKarten() {
+  const { isDm } = useAuth();
+  const holen = useCallback(() => (isDm ? mapsApi.list() : Promise.resolve([])), [isDm]);
+  const { daten, laden, fehler, laedt } = useDaten(holen, []);
+  return { karten: daten ?? [], laden, fehler, laedt };
 }
