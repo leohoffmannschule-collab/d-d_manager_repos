@@ -154,6 +154,13 @@ function Konto() {
           </div>
 
           <NavLink
+            to="/chronik"
+            onClick={() => setOffen(false)}
+            className="flex min-h-11 items-center gap-2.5 text-sepia hover:text-ink md:hidden"
+          >
+            <IconQuill size={16} /> Chronik
+          </NavLink>
+          <NavLink
             to="/hilfe"
             onClick={() => setOffen(false)}
             className="flex min-h-11 items-center gap-2.5 text-sepia hover:text-ink"
@@ -184,6 +191,11 @@ export default function Layout() {
   const { theme, toggleTheme } = useTheme();
   const { isDm } = useAuth();
   const items = navItems(isDm);
+
+  // Auf dem Telefon ist unten nur Platz für das, was während des Spiels
+  // angetippt wird. Die Chronik liest man hinterher – sie steht oben in der
+  // Leiste und im Kontomenü, aber nicht im Daumenbereich.
+  const unten = items.filter((i) => i.to !== '/chronik');
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -240,19 +252,19 @@ export default function Layout() {
         className="fixed inset-x-0 bottom-0 z-30 flex border-t-2 border-gold bg-leather md:hidden"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
-        {items.map(({ to, label, Icon, end }) => (
+        {unten.map(({ to, label, Icon, end }) => (
           <NavLink
             key={to}
             to={to}
             end={end}
             className={({ isActive }) =>
-              `flex flex-1 flex-col items-center gap-1 py-2.5 font-display text-[11px] tracking-[0.08em] ${
+              `flex min-w-0 flex-1 flex-col items-center gap-1 px-1 py-2.5 font-display text-[11px] tracking-[0.06em] ${
                 isActive ? 'text-gold-soft' : 'text-leather-dim'
               }`
             }
           >
             <Icon size={20} />
-            {label}
+            <span className="w-full truncate text-center">{label}</span>
           </NavLink>
         ))}
       </nav>
