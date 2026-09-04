@@ -5,6 +5,7 @@ import { randomUUID } from 'node:crypto';
 import { db, mediaDir } from '../db.js';
 import { requireDm } from '../auth.js';
 import { aktiviereSzene } from './scenes.js';
+import { klangAuflegen } from './ambience.js';
 
 const router = Router();
 
@@ -26,6 +27,7 @@ function rowToMap(row) {
     gridSize: row.grid_size,
     gridOffsetX: row.grid_offset_x,
     gridOffsetY: row.grid_offset_y,
+    ambienceId: row.ambience_id,
     tags: JSON.parse(row.tags),
     notes: row.notes,
     createdAt: row.created_at,
@@ -101,7 +103,8 @@ router.put('/:id', (req, res) => {
   const body = req.body ?? {};
 
   db.prepare(
-    `UPDATE maps SET name = ?, tags = ?, notes = ?, grid_size = ?, grid_offset_x = ?, grid_offset_y = ?
+    `UPDATE maps SET name = ?, tags = ?, notes = ?, grid_size = ?, grid_offset_x = ?, grid_offset_y = ?,
+                     ambience_id = ?
        WHERE id = ?`
   ).run(
     typeof body.name === 'string' && body.name.trim() ? body.name.trim().slice(0, 120) : row.name,
@@ -110,6 +113,7 @@ router.put('/:id', (req, res) => {
     'gridSize' in body ? clamp(toNumber(body.gridSize, row.grid_size), 10, 500) : row.grid_size,
     'gridOffsetX' in body ? clamp(toNumber(body.gridOffsetX, row.grid_offset_x), -500, 500) : row.grid_offset_x,
     'gridOffsetY' in body ? clamp(toNumber(body.gridOffsetY, row.grid_offset_y), -500, 500) : row.grid_offset_y,
+    'ambienceId' in body ? (body.ambienceId || null) : row.ambience_id,
     row.id
   );
   res.json(rowToMap(holen(row.id)));
@@ -150,6 +154,7 @@ router.post('/:id/auflegen', (req, res) => {
       .get(row.id);
     if (vorhanden) {
       aktiviereSzene(vorhanden);
+      if (row.ambience_id) klangAuflegen(row.ambience_id);
       return res.json({ sceneId: vorhanden.id, name: vorhanden.name, neu: false });
     }
   }
@@ -177,6 +182,8 @@ router.post('/:id/auflegen', (req, res) => {
 
   const szene = db.prepare('SELECT * FROM scenes WHERE id = ?').get(id);
   aktiviereSzene(szene);
+  // Hängt an der Karte eine Ambiente, legt sie sich mit auf.
+  if (row.ambience_id) klangAuflegen(row.ambience_id);
   res.status(201).json({ sceneId: id, name: szene.name, neu: true });
 });
 

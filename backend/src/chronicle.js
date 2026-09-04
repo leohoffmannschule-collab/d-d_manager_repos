@@ -25,6 +25,7 @@ const KIND_LABELS = {
   kampf: 'Kampf',
   auftritt: 'Auftritt',
   szene: 'Szene',
+  klang: 'Klang',
   handzettel: 'Handzettel',
   rast: 'Rast',
   notiz: 'Anmerkung',

@@ -28,6 +28,7 @@ export const CHRONIK_ART = {
   kampf: 'Kampf',
   auftritt: 'Auftritt',
   szene: 'Szene',
+  klang: 'Klang',
   handzettel: 'Handzettel',
   rast: 'Rast',
   notiz: 'Anmerkung',

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { mapsApi, mediaApi } from '../../lib/api.js';
-import { useKarten } from '../../lib/daten.jsx';
+import { useKarten, useKlangbibliothek } from '../../lib/daten.jsx';
 import { bildUndVorschau } from '../../lib/bilder.js';
 import { Rubric } from '../ui.jsx';
 import { IconCheck, IconMap, IconSearch, IconTrash, IconUpload } from '../icons.jsx';
@@ -55,6 +55,7 @@ function Rastervorschau({ karte, entwurf }) {
 
 /** Das aufgeschlagene Blatt einer Karte: benennen, verschlagworten, ausrichten. */
 function Kartenblatt({ karte, onGespeichert, onSchliessen, onMelden }) {
+  const { ambienten } = useKlangbibliothek();
   const [entwurf, setEntwurf] = useState({
     name: karte.name,
     tags: karte.tags.join(', '),
@@ -62,6 +63,7 @@ function Kartenblatt({ karte, onGespeichert, onSchliessen, onMelden }) {
     gridSize: karte.gridSize,
     gridOffsetX: karte.gridOffsetX,
     gridOffsetY: karte.gridOffsetY,
+    ambienceId: karte.ambienceId ?? '',
   });
   const [laedt, setLaedt] = useState(false);
 
@@ -77,6 +79,7 @@ function Kartenblatt({ karte, onGespeichert, onSchliessen, onMelden }) {
         gridSize: entwurf.gridSize,
         gridOffsetX: entwurf.gridOffsetX,
         gridOffsetY: entwurf.gridOffsetY,
+        ambienceId: entwurf.ambienceId || null,
       });
       await onGespeichert();
       onMelden('Die Karte ist gesichert.');
@@ -146,6 +149,29 @@ function Kartenblatt({ karte, onGespeichert, onSchliessen, onMelden }) {
             Ein Feld sind 5 Fuß. Einmal hier ausgerichtet, kommt jede Szene aus dieser Karte schon passend
             auf den Tisch.
           </p>
+
+          {ambienten.length > 0 && (
+            <label className="block border-t border-dashed border-rule pt-3">
+              <span className="mb-1 block font-display text-[10px] tracking-[0.16em] text-faint uppercase">
+                Ambiente
+              </span>
+              <select
+                value={entwurf.ambienceId}
+                onChange={(e) => setzen('ambienceId')(e.target.value)}
+                className="field-box w-full"
+              >
+                <option value="">— keine —</option>
+                {ambienten.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name}
+                  </option>
+                ))}
+              </select>
+              <span className="mt-1 block text-[14px] text-faint italic">
+                Wer diese Karte auflegt, legt zugleich diese Musik auf.
+              </span>
+            </label>
+          )}
 
           <button onClick={speichern} disabled={laedt} className="btn btn-seal disabled:opacity-60">
             <IconCheck size={16} /> {laedt ? 'sichert …' : 'Sichern'}

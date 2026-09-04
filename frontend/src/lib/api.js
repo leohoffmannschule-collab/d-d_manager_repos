@@ -179,3 +179,17 @@ export const mapsApi = {
   remove: (id) => del(`/maps/${id}`),
   auflegen: (id, payload) => post(`/maps/${id}/auflegen`, payload),
 };
+
+export const ambienceApi = {
+  einrichtung: () => request('/ambience/einrichtung'),
+  aktiv: () => request('/ambience/aktiv'),
+  list: () => request('/ambience'),
+  create: (payload) => post('/ambience', payload),
+  update: (id, payload) => put(`/ambience/${id}`, payload),
+  remove: (id) => del(`/ambience/${id}`),
+  auflegen: (id) => post(`/ambience/${id}/auflegen`),
+  pause: () => post('/ambience/pause'),
+  weiter: () => post('/ambience/weiter'),
+  stille: () => post('/ambience/stille'),
+  lautstaerke: (volume) => post('/ambience/lautstaerke', { volume }),
+};

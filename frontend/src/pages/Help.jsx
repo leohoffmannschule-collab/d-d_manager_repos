@@ -76,6 +76,11 @@ export default function Help() {
             <li>
               Auch Gegner bekommen im Bestiarium eine gegossene Figur; sie steht dann mit auf dem Spieltisch.
             </li>
+            <li>
+              Unter <span className="font-display">Klang</span> sammelst du Ambiente aus Spotify: Link einfügen,
+              benennen, verschlagworten. <span className="font-display">Auflegen</span> startet sie bei allen, die
+              zuhören. Hängst du eine Ambiente an eine Karte, legt sie sich mit der Karte auf.
+            </li>
             <li>Notizen lassen sich als Handzettel austeilen; die Runde sieht sie dann am Spieltisch.</li>
             <li>
               In der Chronik trägst du nach, was der Almanach nicht sehen konnte, und schließt am Ende die Sitzung.
@@ -84,6 +89,27 @@ export default function Help() {
           </ul>
         </Card>
       )}
+
+      <Card title="Musik am Tisch">
+        <p className="leading-relaxed text-ink">
+          Legt die Spielleitung eine Ambiente auf, erscheint unten rechts die{' '}
+          <span className="font-display">Klangleiste</span>. Der Ton kommt nicht vom Server, sondern aus deinem
+          eigenen Spotify – deshalb verbindest du es dort einmal und drückst <span className="font-display">
+          Zuhören</span>; der Browser gibt Ton erst nach einem Klick frei. Wie laut es bei dir wird, stellst du
+          selbst ein, und stummschalten darfst du jederzeit: Niemand am Tisch merkt es.
+        </p>
+        <ul className="mt-2 flex list-disc flex-col gap-1.5 pl-5 leading-relaxed text-ink marker:text-rubric">
+          <li>Zum Abspielen im Browser verlangt Spotify ein Premium-Konto.</li>
+          <li>
+            Ohne Premium – oder wenn der Ton lieber aus der Anlage kommen soll – wählst du unter{' '}
+            <span className="font-display">Ton kommt aus</span> ein anderes Gerät, auf dem Spotify offen ist.
+          </li>
+          <li>
+            Es geht nur über die verschlüsselte Adresse deiner Spielleitung. Über eine nackte Adresse im Heimnetz
+            gibt der Browser keinen Ton frei.
+          </li>
+        </ul>
+      </Card>
 
       <Card title="Dein Charakterblatt">
         <ul className="flex list-disc flex-col gap-1.5 pl-5 leading-relaxed text-ink marker:text-rubric">

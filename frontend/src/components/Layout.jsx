@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import DiceRoller from './DiceRoller.jsx';
+import Klangleiste from './Klangleiste.jsx';
 import Wurfmeldung from './Wurfmeldung.jsx';
 import { useTheme } from '../lib/useTheme.js';
 import { useAuth } from '../lib/auth.jsx';
@@ -247,6 +248,7 @@ export default function Layout() {
 
       <Wurfmeldung />
       <DiceRoller />
+      <Klangleiste />
 
       <nav
         className="fixed inset-x-0 bottom-0 z-30 flex border-t-2 border-gold bg-leather md:hidden"

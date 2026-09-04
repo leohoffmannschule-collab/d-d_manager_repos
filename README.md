@@ -11,7 +11,7 @@ Der Almanach besteht aus drei Teilen, die sich eine Anmeldung, eine Datenbank un
 | ------------------- | ----------------- | ---------------------------------------------------------------------------- |
 | **Charaktere**      | alle              | vollständige 5e-Charakterblätter, freies Blatt für andere Systeme, Kompendium |
 | **Spieltisch**      | alle              | Karten, Figuren, Nebel des Krieges, Lineal, Zeigefinger, Initiative, Handzettel |
-| **Spielleitung**    | nur die Leitung   | Initiative-Tracker, Bestiarium, Begegnungen, Kartenbibliothek, Notizen, Konten |
+| **Spielleitung**    | nur die Leitung   | Initiative-Tracker, Bestiarium, Begegnungen, Karten- und Klangbibliothek, Notizen, Konten |
 | **Chronik**         | alle              | Protokoll des Abends, aus dem entstanden, was am Tisch wirklich geschah       |
 
 Was einer ändert, sehen die anderen sofort – ohne Neuladen.
@@ -73,6 +73,11 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
 - **Notizen** mit Schlagworten – geheim oder als **Handzettel** an die Runde ausgeteilt.
 - **Begegnungen**: Gruppen einmal zusammenstellen und an jedem Abend mit einem Klick stellen – samt gewürfelter
   Initiative und wahlweise verborgen. Ein improvisierter Kampf lässt sich für das nächste Mal sichern.
+- **Klangteppich**: Ambiente über Spotify. Die Spielleitung sammelt Wiedergabelisten („Schankraum“,
+  „Hinterhalt“, „Verlies“), legt eine mit einem Klick auf – und sie beginnt bei allen, die zuhören.
+  Jeder regelt seine Lautstärke selbst oder leitet den Ton auf ein anderes Spotify-Gerät um. Eine Karte
+  darf ihre Ambiente mitbringen: Wer sie auflegt, legt die Musik mit auf. Braucht eine eigene
+  Spotify-Anwendung (siehe Konfiguration) und zum Abspielen im Browser Spotify Premium.
 - **Verdeckt würfeln** – der Wurf erscheint nur im eigenen Würfelbeutel.
 - **Konten und Einladungen**: Codes erzeugen, Rollen vergeben, vergessene Passwörter neu setzen,
   Charakterblätter ihren Besitzern zuordnen.
@@ -207,6 +212,12 @@ ist immer nur so gut wie das, was zuletzt geöffnet war.
 | `DND5E_API_BASE` | `https://www.dnd5eapi.co/api/2014` | Basis-URL der D&D-5e-API (Regelwerk-Version)                      |
 | `TRUST_PROXY`    | `loopback`                         | `1`, wenn ein Tunnel im eigenen Container davorsteht (siehe Compose) |
 
+Freiwillig, für den Klangteppich:
+
+| Variable            | Bedeutung                                                                                     |
+| ------------------- | --------------------------------------------------------------------------------------------- |
+| `SPOTIFY_CLIENT_ID` | Kennung einer eigenen Spotify-Anwendung (developer.spotify.com/dashboard). Als Redirect URI dort `https://deine-adresse/spotify` eintragen und Web API sowie Web Playback SDK anhaken. Ohne diese Variable bleibt die Klangleiste verborgen. Der Almanach speichert keine Spotify-Zugangsdaten – jeder meldet sich in seinem Browser selbst an. |
+
 Freiwillig, nur für den erzählenden Rückblick in der Chronik:
 
 | Variable               | Bedeutung                                                                                  |
@@ -237,16 +248,18 @@ Compress-Archive backend\data $env:USERPROFILE\Desktop\almanach-sicherung.zip
 frontend/   React 19 + Vite, Tailwind CSS v4, PWA
             src/pages/       Charaktere, Spieltisch, Spielleitung, Chronik, Kompendium, Anmeldung
             src/components/  Spieltisch (Brett, Werkzeuge, Figuren), Spielleitung (Bestiarium,
-                             Begegnungen, Karten, Notizen, Runde), Figurenschmiede, Initiativliste,
-                             Würfelbeutel, Blattbausteine
+                             Begegnungen, Karten, Klang, Notizen, Runde), Figurenschmiede,
+                             Initiativliste, Würfelbeutel, Klangleiste, Blattbausteine
             src/lib/         daten.jsx (Datenschicht), api.js, auth.jsx, live.jsx,
-                             beschriftung.js, Regelwerk, Rasten, Miniaturen
+                             klang.jsx + spotify.js (Ambiente), beschriftung.js,
+                             Regelwerk, Rasten, Miniaturen
 backend/    Node.js + Express, SQLite über das eingebaute node:sqlite
             src/auth.js      Passwörter (scrypt), Anmeldungen, Rollen
             src/events.js    Live-Kanal (Server-Sent Events)
             src/chronicle.js Mitschrift der Sitzung
             src/routes/      Konten, Charaktere, Kampf, Bestiarium, Begegnungen, Notizen,
-                             Würfel, Szenen/Figuren/Nebel, Kartenbibliothek, Bilder, Beute, Chronik,
+                             Würfel, Szenen/Figuren/Nebel, Karten- und Klangbibliothek,
+                             Bilder, Beute, Chronik,
                              Kompendium-Zwischenspeicher
 design/     Die Design-Entwürfe (Artboards) zum mittelalterlichen Erscheinungsbild
 scripts/    Hilfsskripte, plattformunabhängig in Node geschrieben

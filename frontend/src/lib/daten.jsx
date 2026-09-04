@@ -6,6 +6,7 @@ import {
   diceApi,
   encounterApi,
   encountersApi,
+  ambienceApi,
   libraryApi,
   mapsApi,
   notesApi,
@@ -301,4 +302,17 @@ export function useKarten() {
   const holen = useCallback(() => (isDm ? mapsApi.list() : Promise.resolve([])), [isDm]);
   const { daten, laden, fehler, laedt } = useDaten(holen, []);
   return { karten: daten ?? [], laden, fehler, laedt };
+}
+
+/* --- Klangteppich -------------------------------------------------------- */
+
+/**
+ * Die gespeicherten Ambienten des DM. Wie die Kartenbibliothek gehört sie zur
+ * Vorbereitung und lädt deshalb nur hinter dem Schirm.
+ */
+export function useKlangbibliothek() {
+  const { isDm } = useAuth();
+  const holen = useCallback(() => (isDm ? ambienceApi.list() : Promise.resolve([])), [isDm]);
+  const { daten, laden, fehler, laedt } = useDaten(holen, []);
+  return { ambienten: daten ?? [], laden, fehler, laedt };
 }

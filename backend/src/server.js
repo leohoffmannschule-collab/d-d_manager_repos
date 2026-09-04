@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { driver } from './db.js';
 import { attachUser, countUsers, requireAuth } from './auth.js';
 import { addClient, presence } from './events.js';
+import ambienceRouter from './routes/ambience.js';
 import authRouter from './routes/auth.js';
 import chronicleRouter from './routes/chronicle.js';
 import charactersRouter from './routes/characters.js';
@@ -72,6 +73,7 @@ app.get('/api/anwesenheit', requireAuth, (req, res) => {
   res.json(presence());
 });
 
+app.use('/api/ambience', ambienceRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/characters', charactersRouter);
 app.use('/api/compendium', requireAuth, compendiumRouter);

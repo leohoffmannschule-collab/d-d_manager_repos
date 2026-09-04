@@ -245,6 +245,21 @@ db.exec(`
     created_at TEXT NOT NULL
   );
 
+  /* --- Klangteppich: gespeicherte Spotify-Ambienten ----------------------- */
+
+  CREATE TABLE IF NOT EXISTS ambience (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    uri TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    image_url TEXT NOT NULL DEFAULT '',
+    tags TEXT NOT NULL DEFAULT '[]',
+    shuffle INTEGER NOT NULL DEFAULT 1,
+    volume INTEGER NOT NULL DEFAULT 45,
+    notes TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL
+  );
+
   /* --- Chronik der Sitzungen --------------------------------------------- */
 
   CREATE TABLE IF NOT EXISTS game_sessions (
@@ -294,6 +309,10 @@ addColumnIfMissing('combatants', 'media_id', 'TEXT');
 // Eine Szene weiß, aus welcher Karte sie gelegt wurde – so lässt sich ein
 // nachjustiertes Raster in die Bibliothek zurückschreiben.
 addColumnIfMissing('scenes', 'map_id', 'TEXT');
+
+// Eine Karte darf ihre eigene Ambiente mitbringen: Wer sie auflegt, legt
+// zugleich die Musik auf, die zu diesem Ort gehört.
+addColumnIfMissing('maps', 'ambience_id', 'TEXT');
 
 /** Kleiner Schlüssel-Wert-Speicher für Einzelwerte (aktive Szene, Kampfrunde …). */
 export function getState(key, fallback = null) {

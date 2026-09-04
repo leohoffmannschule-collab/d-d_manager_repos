@@ -57,6 +57,7 @@ export function LiveProvider({ children }) {
       'figur:entfernt',
       'nebel',
       'ping',
+      'klang',
       'wurf',
       'wuerfe:geleert',
       'charakter:aktualisiert',

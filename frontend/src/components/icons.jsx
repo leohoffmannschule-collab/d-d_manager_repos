@@ -318,3 +318,56 @@ export function IconDownload(props) {
     </Icon>
   );
 }
+
+export function IconNote(props) {
+  return (
+    <Icon {...props}>
+      <path d="M9.2 17.4V5.6l9-1.8v11.6" />
+      <circle cx="6.9" cy="17.6" r="2.3" />
+      <circle cx="15.9" cy="15.6" r="2.3" />
+    </Icon>
+  );
+}
+
+export function IconSpeaker(props) {
+  return (
+    <Icon {...props}>
+      <path d="M4.2 9.4h3.2L12 5.6v12.8L7.4 14.6H4.2z" />
+      <path d="M15.4 9.6a3.4 3.4 0 0 1 0 4.8M18 7a7 7 0 0 1 0 10" />
+    </Icon>
+  );
+}
+
+export function IconSpeakerOff(props) {
+  return (
+    <Icon {...props}>
+      <path d="M4.2 9.4h3.2L12 5.6v12.8L7.4 14.6H4.2z" />
+      <path d="M15.6 10.2l4.2 3.6M19.8 10.2l-4.2 3.6" />
+    </Icon>
+  );
+}
+
+export function IconPause(props) {
+  return (
+    <Icon {...props}>
+      <path d="M9.4 5.4v13.2M14.6 5.4v13.2" />
+    </Icon>
+  );
+}
+
+export function IconPlay(props) {
+  return (
+    <Icon {...props}>
+      <path d="M7.6 5.2l11 6.8-11 6.8z" />
+    </Icon>
+  );
+}
+
+export function IconSkip(props) {
+  return (
+    <Icon {...props}>
+      <path d="M6.4 5.4l8.4 6.6-8.4 6.6z" />
+      <path d="M17.6 5.4v13.2" />
+    </Icon>
+  );
+}

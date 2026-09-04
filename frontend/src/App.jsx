@@ -10,8 +10,10 @@ import Chronicle from './pages/Chronicle.jsx';
 import Login from './pages/Login.jsx';
 import Help from './pages/Help.jsx';
 import NotFound from './pages/NotFound.jsx';
+import SpotifyRueckkehr from './pages/SpotifyRueckkehr.jsx';
 import { useAuth } from './lib/auth.jsx';
 import { LiveProvider } from './lib/live.jsx';
+import { KlangProvider } from './lib/klang.jsx';
 
 function Ladeblatt() {
   return (
@@ -35,26 +37,29 @@ export default function App() {
 
   return (
     <LiveProvider>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/neu" element={<NewCharacter />} />
-          <Route path="/charaktere/:id" element={<CharacterSheet />} />
-          <Route path="/tisch" element={<Tabletop />} />
-          <Route path="/kompendium" element={<Compendium />} />
-          <Route path="/chronik" element={<Chronicle />} />
-          <Route
-            path="/spielleitung"
-            element={
-              <NurSpielleitung>
-                <DmBoard />
-              </NurSpielleitung>
-            }
-          />
-          <Route path="/hilfe" element={<Help />} />
-          <Route path="*" element={<NotFound />} />
-        </Route>
-      </Routes>
+      <KlangProvider>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/neu" element={<NewCharacter />} />
+            <Route path="/charaktere/:id" element={<CharacterSheet />} />
+            <Route path="/tisch" element={<Tabletop />} />
+            <Route path="/kompendium" element={<Compendium />} />
+            <Route path="/chronik" element={<Chronicle />} />
+            <Route
+              path="/spielleitung"
+              element={
+                <NurSpielleitung>
+                  <DmBoard />
+                </NurSpielleitung>
+              }
+            />
+            <Route path="/hilfe" element={<Help />} />
+            <Route path="/spotify" element={<SpotifyRueckkehr />} />
+            <Route path="*" element={<NotFound />} />
+          </Route>
+        </Routes>
+      </KlangProvider>
     </LiveProvider>
   );
 }

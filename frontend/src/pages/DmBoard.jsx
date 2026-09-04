@@ -3,15 +3,17 @@ import Initiative from '../components/Initiative.jsx';
 import Bestiary from '../components/dm/Bestiary.jsx';
 import Encounters from '../components/dm/Encounters.jsx';
 import Kartenbibliothek from '../components/dm/Kartenbibliothek.jsx';
+import Klangbibliothek from '../components/dm/Klangbibliothek.jsx';
 import Notes from '../components/dm/Notes.jsx';
 import Party from '../components/dm/Party.jsx';
-import { IconBook, IconCrown, IconMap, IconQuill, IconShield, IconSwords, IconUsers } from '../components/icons.jsx';
+import { IconBook, IconCrown, IconMap, IconNote, IconQuill, IconShield, IconSwords, IconUsers } from '../components/icons.jsx';
 
 const REITER = [
   { id: 'kampf', label: 'Kampf', Icon: IconSwords },
   { id: 'bestiarium', label: 'Bestiarium', Icon: IconBook },
   { id: 'begegnungen', label: 'Begegnungen', Icon: IconShield },
   { id: 'karten', label: 'Karten', Icon: IconMap },
+  { id: 'klang', label: 'Klang', Icon: IconNote },
   { id: 'notizen', label: 'Notizen', Icon: IconQuill },
   { id: 'runde', label: 'Runde', Icon: IconUsers },
 ];
@@ -51,6 +53,7 @@ export default function DmBoard() {
       {reiter === 'bestiarium' && <Bestiary />}
       {reiter === 'begegnungen' && <Encounters />}
       {reiter === 'karten' && <Kartenbibliothek />}
+      {reiter === 'klang' && <Klangbibliothek />}
       {reiter === 'notizen' && <Notes />}
       {reiter === 'runde' && <Party />}
     </div>
