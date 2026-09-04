@@ -79,11 +79,11 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
 - **Notizen** mit Schlagworten – geheim oder als **Handzettel** an die Runde ausgeteilt.
 - **Begegnungen**: Gruppen einmal zusammenstellen und an jedem Abend mit einem Klick stellen – samt gewürfelter
   Initiative und wahlweise verborgen. Ein improvisierter Kampf lässt sich für das nächste Mal sichern.
-- **Klangteppich**: Ambiente über Spotify. Die Spielleitung sammelt Wiedergabelisten („Schankraum“,
-  „Hinterhalt“, „Verlies“), legt eine mit einem Klick auf – und sie beginnt bei allen, die zuhören.
-  Jeder regelt seine Lautstärke selbst oder leitet den Ton auf ein anderes Spotify-Gerät um. Eine Karte
-  darf ihre Ambiente mitbringen: Wer sie auflegt, legt die Musik mit auf. Braucht eine eigene
-  Spotify-Anwendung (siehe Konfiguration) und zum Abspielen im Browser Spotify Premium.
+- **Klangteppich**: hinterlegte Spotify-Links als Ambiente. Die Spielleitung sammelt Wiedergabelisten
+  („Schankraum“, „Hinterhalt“, „Verlies“), verschlagwortet sie und legt eine mit einem Klick auf – dann
+  steht bei allen am Tisch, was jetzt dran ist, samt Knopf zum Öffnen in Spotify. Jeder hört auf seinem
+  eigenen Gerät und dreht so laut auf, wie er mag; das geht mit jedem Spotify-Konto, auch ohne Premium.
+  Eine Karte darf ihre Ambiente mitbringen: Wer sie auflegt, legt die Musik mit auf.
 - **Verdeckt würfeln** – der Wurf erscheint nur im eigenen Würfelbeutel.
 - **Konten und Einladungen**: Codes erzeugen, Rollen vergeben, vergessene Passwörter neu setzen,
   Charakterblätter ihren Besitzern zuordnen.
@@ -152,37 +152,36 @@ pm2 start src/server.js --name almanach --cwd /pfad/zu/d-d_manager_repos/backend
 pm2 save && pm2 startup
 ```
 
-## Von außen erreichbar – ohne den Router anzufassen
+## Von außen erreichbar – ohne Router, ohne Domain
 
 Damit die Mitspieler von zu Hause aus mitspielen können, muss der Almanach aus dem Internet erreichbar
 sein. Eine Portfreigabe im Router ist dafür **nicht** nötig (und oft auch nicht möglich, wenn der Router
-jemand anderem gehört): **Cloudflare Tunnel** baut die Verbindung von innen nach außen auf.
+jemand anderem gehört), und eine eigene Domain braucht es auch nicht: Der **Schnelltunnel** von
+Cloudflare baut die Verbindung von innen nach außen auf und leiht sich dafür eine Adresse auf
+`trycloudflare.com` – ohne Konto, ohne Anmeldung, mit gültigem HTTPS.
 
-1. Bei [Cloudflare](https://one.dash.cloudflare.com/) anmelden (kostenlos) und unter
-   **Networks → Tunnels** einen Tunnel anlegen.
-2. Als **Public Hostname** eine Adresse wählen. Ohne eigene Domain vergibt Cloudflare eine kostenlose
-   `*.trycloudflare.com`-Adresse; eine später gekaufte Domain lässt sich jederzeit nachtragen.
-3. Als **Service** eintragen: `http://dnd-manager:3001`
-   (so heißt der Almanach im Docker-Netz; ohne Docker: `http://localhost:3001`).
-4. Das angezeigte **Tunnel-Kennwort** in eine Datei `.env` neben der `docker-compose.yml` schreiben –
-   `.env.example` zeigt, wie:
+```bash
+docker compose --profile tunnel up -d
+./scripts/adresse.sh
+```
 
-   ```bash
-   cp .env.example .env
-   # CLOUDFLARE_TUNNEL_TOKEN=... eintragen
-   docker compose --profile tunnel up -d --build
-   ```
+Das Skript sagt dir, welche Adresse gerade gilt. Die schickst du deiner Runde.
 
-Danach ist der Almanach unter der Cloudflare-Adresse erreichbar – mit gültigem HTTPS-Zertifikat, ohne
-offene Ports und ohne feste IP-Adresse.
+> **Der Haken:** Die Adresse ist geliehen und **wechselt, wenn der Tunnel neu startet** – nach einem
+> Neustart des Pi oder einer Aktualisierung. Dann noch einmal `./scripts/adresse.sh` und die neue
+> Adresse in die Gruppe schicken. Im Alltag passiert das selten; im Heimnetz gilt ohnehin durchgehend
+> `http://<IP-des-Pi>:3001`.
 
 > **Umzug inklusive:** Weil der Tunnel von innen nach außen aufgebaut wird, funktioniert er überall.
-> Nimmst du den Pi zur Runde bei Freunden mit, steckst du ihn dort einfach ins Netz – dieselbe Adresse
-> tut es weiter, ohne dass irgendetwas umgestellt werden müsste. Im selben Raum geht natürlich auch
-> weiterhin `http://<IP-des-Pi>:3001`.
+> Nimmst du den Pi zur Runde bei Freunden mit, steckst du ihn dort einfach ins Netz.
 
-Wer lieber [Tailscale](https://tailscale.com/) nutzt: Das funktioniert genauso gut, verlangt aber, dass
-alle Mitspieler Tailscale installieren. Der Cloudflare-Tunnel braucht bei ihnen nur einen Browser.
+**Wer eine feste Adresse will**, hat zwei Wege:
+
+- **Eigene Domain** (etwa 10 € im Jahr) bei Cloudflare eintragen und statt des Schnelltunnels einen
+  benannten Tunnel anlegen. Dann bleibt die Adresse für immer dieselbe.
+- **[Tailscale](https://tailscale.com/)** – kostenlos für den privaten Gebrauch, feste Adresse, echtes
+  HTTPS auf einer `*.ts.net`-Adresse, und alles bleibt privat im eigenen Netz. Verlangt allerdings, dass
+  **jeder Mitspieler Tailscale installiert**; der Schnelltunnel braucht bei ihnen nur einen Browser.
 
 ## Zugriff von iPad und iPhone
 
@@ -218,11 +217,8 @@ ist immer nur so gut wie das, was zuletzt geöffnet war.
 | `DND5E_API_BASE` | `https://www.dnd5eapi.co/api/2014` | Basis-URL der D&D-5e-API (Regelwerk-Version)                      |
 | `TRUST_PROXY`    | `loopback`                         | `1`, wenn ein Tunnel im eigenen Container davorsteht (siehe Compose) |
 
-Freiwillig, für den Klangteppich:
-
-| Variable            | Bedeutung                                                                                     |
-| ------------------- | --------------------------------------------------------------------------------------------- |
-| `SPOTIFY_CLIENT_ID` | Kennung einer eigenen Spotify-Anwendung (developer.spotify.com/dashboard). Als Redirect URI dort `https://deine-adresse/spotify` eintragen und Web API sowie Web Playback SDK anhaken. Ohne diese Variable bleibt die Klangleiste verborgen. Der Almanach speichert keine Spotify-Zugangsdaten – jeder meldet sich in seinem Browser selbst an. |
+Für den Klangteppich ist nichts einzustellen: Die Spielleitung hinterlegt Spotify-Links, und der
+Almanach zeigt der Runde, welcher gerade dran ist. Abgespielt wird in Spotify selbst.
 
 Freiwillig, nur für den erzählenden Rückblick in der Chronik:
 

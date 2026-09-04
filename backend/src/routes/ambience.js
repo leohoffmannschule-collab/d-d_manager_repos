@@ -11,16 +11,18 @@ router.use(requireAuth);
 /**
  * Der Klangteppich.
  *
- * Der Server spielt selbst keine Musik und kennt auch niemandes Spotify-Konto.
- * Er hält nur fest, *was* gerade laufen soll – eine Adresse wie
- * `spotify:playlist:…`, dazu Zufallswiedergabe und eine Lautstärke. Wer
- * zuhören will, verbindet sein eigenes Spotify im Browser; der Ton entsteht
- * dort. Das ist keine Bequemlichkeit, sondern Absicht: So liegen auf dem Pi
- * keine fremden Zugangsdaten, und die Runde spielt aus fünf Wohnzimmern
- * trotzdem unter derselben Musik.
+ * Hier liegen Spotify-Links, sonst nichts. Der Almanach spielt nichts ab und
+ * kennt kein Spotify-Konto: Er sammelt, was die Spielleitung vorbereitet hat,
+ * und sagt der Runde, was gerade dran ist. Jeder öffnet es in seinem eigenen
+ * Spotify.
+ *
+ * Das ist bewusst die kleine Lösung. Die große – im Browser abspielen und über
+ * alle Fenster gleichschalten – verlangt von Spotify eine verschlüsselte
+ * Adresse unter eigenem Namen, ein Premium-Konto je Zuhörer und eine
+ * Freischaltliste. Wer den Almanach ohne eigene Domain betreibt, kann davon
+ * nichts erfüllen. Ein hinterlegter Link dagegen funktioniert für jeden,
+ * sofort und ohne Anmeldung.
  */
-
-const ZUGANG = process.env.SPOTIFY_CLIENT_ID || '';
 
 const TYPEN = new Set(['playlist', 'album', 'track', 'artist']);
 const KENNUNG = /^[A-Za-z0-9]{22}$/;
@@ -30,9 +32,8 @@ const KENNUNG = /^[A-Za-z0-9]{22}$/;
  *
  * Erlaubt sind der Teilen-Link aus der App (auch mit Sprachkürzel wie
  * `/intl-de/` und angehängtem `?si=…`) und die rohe URI. Alles andere fällt
- * durch: Diese Zeichenkette geben wir später jedem Browser der Runde zum
- * Abspielen, sie soll also nichts anderes sein können als eine Adresse bei
- * Spotify.
+ * durch: Was hier hereinkommt, wird der Runde später als Verweis vorgelegt,
+ * und der soll nirgendwo anders hinführen als zu Spotify.
  */
 export function spotifyAdresse(eingabe) {
   const text = String(eingabe ?? '').trim();
@@ -63,8 +64,11 @@ export function spotifyAdresse(eingabe) {
   return TYPEN.has(art) && KENNUNG.test(id) ? { uri: `spotify:${art}:${id}`, kind: art } : null;
 }
 
-const clamp = (wert, min, max) => Math.min(max, Math.max(min, wert));
-const zahl = (wert, ersatz) => (Number.isFinite(Number(wert)) ? Number(wert) : ersatz);
+/** Die Adresse zum Anklicken. Sie öffnet die App, wo es eine gibt, sonst den Web-Spieler. */
+export function webAdresse(uri) {
+  const [, art, id] = String(uri ?? '').split(':');
+  return art && id ? `https://open.spotify.com/${art}/${id}` : null;
+}
 
 const sauber = (t) => typeof t === 'string' && t.trim();
 const schlagworte = (liste) =>
@@ -75,11 +79,9 @@ function rowToKlang(row) {
     id: row.id,
     name: row.name,
     uri: row.uri,
+    webUrl: webAdresse(row.uri),
     kind: row.kind,
-    imageUrl: row.image_url,
     tags: JSON.parse(row.tags),
-    shuffle: !!row.shuffle,
-    volume: row.volume,
     notes: row.notes,
     createdAt: row.created_at,
   };
@@ -87,27 +89,19 @@ function rowToKlang(row) {
 
 const holen = (id) => db.prepare('SELECT * FROM ambience WHERE id = ?').get(id);
 
-/* --- Was gerade läuft ---------------------------------------------------- */
+/* --- Was gerade aufliegt ------------------------------------------------- */
 
-const STILLE = { ambienceId: null, uri: null, kind: null, name: '', imageUrl: '', shuffle: true, volume: 45, playing: false, startedAt: null };
+const STILLE = { ambienceId: null, uri: null, webUrl: null, kind: null, name: '', notes: '', seit: null };
 
 export const aktuellerKlang = () => ({ ...STILLE, ...(getState('klang') ?? {}) });
 
-function sendeKlang(klang) {
+function setzeKlang(werte) {
+  const klang = setState('klang', { ...STILLE, ...werte });
   broadcast('klang', klang);
   return klang;
 }
 
-/**
- * Den Klangteppich setzen. `playing: false` heißt Pause, `uri: null` Stille.
- * Beides geht an alle Fenster – auch an das auslösende, denn der DM hört ja
- * selbst mit.
- */
-function setzeKlang(werte) {
-  return sendeKlang(setState('klang', { ...aktuellerKlang(), ...werte }));
-}
-
-/** Wird von anderen Zweigen gebraucht: Eine Karte bringt ihre Ambiente mit. */
+/** Wird von der Kartenbibliothek gebraucht: Eine Karte bringt ihre Ambiente mit. */
 export function klangAuflegen(ambienceId) {
   const row = holen(ambienceId);
   if (!row) return null;
@@ -121,30 +115,17 @@ export function klangAuflegen(ambienceId) {
   return setzeKlang({
     ambienceId: eintrag.id,
     uri: eintrag.uri,
+    webUrl: eintrag.webUrl,
     kind: eintrag.kind,
     name: eintrag.name,
-    imageUrl: eintrag.imageUrl,
-    shuffle: eintrag.shuffle,
-    volume: eintrag.volume,
-    playing: true,
-    startedAt: new Date().toISOString(),
+    notes: eintrag.notes,
+    seit: new Date().toISOString(),
   });
 }
 
 /* --- Zweige -------------------------------------------------------------- */
 
-/**
- * GET /api/ambience/einrichtung
- *
- * Die Kennung der Spotify-Anwendung. Sie ist nicht geheim – bei der
- * Anmeldung mit PKCE steht sie ohnehin in der Adresszeile –, aber sie sagt
- * der Oberfläche, ob überhaupt etwas eingerichtet ist.
- */
-router.get('/einrichtung', (req, res) => {
-  res.json({ clientId: ZUGANG, eingerichtet: !!ZUGANG });
-});
-
-// GET /api/ambience/aktiv – die ganze Runde darf wissen, was läuft.
+// GET /api/ambience/aktiv – die ganze Runde darf wissen, was dran ist.
 router.get('/aktiv', (req, res) => {
   res.json(aktuellerKlang());
 });
@@ -169,17 +150,13 @@ router.post('/', requireDm, (req, res) => {
 
   const id = randomUUID();
   db.prepare(
-    `INSERT INTO ambience (id, name, uri, kind, image_url, tags, shuffle, volume, notes, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO ambience (id, name, uri, kind, tags, notes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`
   ).run(
     id,
     body.name.trim().slice(0, 120),
     adresse.uri,
     adresse.kind,
-    typeof body.imageUrl === 'string' ? body.imageUrl.slice(0, 500) : '',
     JSON.stringify(schlagworte(body.tags)),
-    body.shuffle === false ? 0 : 1,
-    clamp(Math.round(zahl(body.volume, 45)), 0, 100),
     typeof body.notes === 'string' ? body.notes.slice(0, 2000) : '',
     new Date().toISOString()
   );
@@ -202,26 +179,20 @@ router.put('/:id', requireDm, (req, res) => {
     kind = adresse.kind;
   }
 
-  db.prepare(
-    `UPDATE ambience SET name = ?, uri = ?, kind = ?, image_url = ?, tags = ?, shuffle = ?, volume = ?, notes = ?
-       WHERE id = ?`
-  ).run(
+  db.prepare('UPDATE ambience SET name = ?, uri = ?, kind = ?, tags = ?, notes = ? WHERE id = ?').run(
     sauber(body.name) ? body.name.trim().slice(0, 120) : row.name,
     uri,
     kind,
-    typeof body.imageUrl === 'string' ? body.imageUrl.slice(0, 500) : row.image_url,
     'tags' in body ? JSON.stringify(schlagworte(body.tags)) : row.tags,
-    'shuffle' in body ? (body.shuffle ? 1 : 0) : row.shuffle,
-    'volume' in body ? clamp(Math.round(zahl(body.volume, row.volume)), 0, 100) : row.volume,
     typeof body.notes === 'string' ? body.notes.slice(0, 2000) : row.notes,
     row.id
   );
 
   const frisch = rowToKlang(holen(row.id));
-  // Läuft gerade genau dieses Stück, wandert die Änderung sofort mit – sonst
-  // stünde in der Leiste der Runde noch der alte Name oder die alte Lautstärke.
+  // Liegt gerade genau dieses auf, wandert die Änderung sofort mit – sonst
+  // stünde am Tisch noch der alte Name oder der alte Verweis.
   if (aktuellerKlang().ambienceId === frisch.id) {
-    setzeKlang({ uri: frisch.uri, kind: frisch.kind, name: frisch.name, imageUrl: frisch.imageUrl, volume: frisch.volume });
+    setzeKlang({ ...aktuellerKlang(), uri: frisch.uri, webUrl: frisch.webUrl, kind: frisch.kind, name: frisch.name, notes: frisch.notes });
   }
   res.json(frisch);
 });
@@ -232,8 +203,8 @@ router.delete('/:id', requireDm, (req, res) => {
 
   db.prepare('DELETE FROM ambience WHERE id = ?').run(row.id);
   db.prepare('UPDATE maps SET ambience_id = NULL WHERE ambience_id = ?').run(row.id);
-  // Was gelöscht ist, soll nicht weiterlaufen.
-  if (aktuellerKlang().ambienceId === row.id) setzeKlang({ ...STILLE });
+  // Was gelöscht ist, soll auch nicht mehr am Tisch stehen.
+  if (aktuellerKlang().ambienceId === row.id) setzeKlang({});
   res.status(204).end();
 });
 
@@ -244,33 +215,10 @@ router.post('/:id/auflegen', requireDm, (req, res) => {
   res.json(klang);
 });
 
-// POST /api/ambience/pause | /weiter | /stille
-router.post('/pause', requireDm, (req, res) => res.json(setzeKlang({ playing: false })));
-
-router.post('/weiter', requireDm, (req, res) => {
-  const jetzt = aktuellerKlang();
-  if (!jetzt.uri) return res.status(409).json({ code: 'nichts_aufgelegt', error: 'Es ist nichts aufgelegt.' });
-  res.json(setzeKlang({ playing: true }));
-});
-
+// POST /api/ambience/stille – nichts liegt mehr auf.
 router.post('/stille', requireDm, (req, res) => {
   chronik.log({ kind: 'klang', text: 'Die Musik verstummt.' });
-  res.json(setzeKlang({ ...STILLE }));
-});
-
-/**
- * POST /api/ambience/lautstaerke – die Lautstärke *dieser Auflage*.
- *
- * Sie ist ein Vorschlag des DM, mit dem er Kampfmusik gegen Schankraum
- * abstimmt. Wie laut es am Ende wird, entscheidet jeder für sich in der
- * eigenen Klangleiste.
- */
-router.post('/lautstaerke', requireDm, (req, res) => {
-  const jetzt = aktuellerKlang();
-  const volume = clamp(Math.round(zahl(req.body?.volume, jetzt.volume)), 0, 100);
-  // Wo die Ambiente herkommt, merkt sie sich den neuen Pegel gleich mit.
-  if (jetzt.ambienceId) db.prepare('UPDATE ambience SET volume = ? WHERE id = ?').run(volume, jetzt.ambienceId);
-  res.json(setzeKlang({ volume }));
+  res.json(setzeKlang({}));
 });
 
 export default router;

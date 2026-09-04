@@ -342,9 +342,6 @@ try {
 
   // --- Klangteppich ------------------------------------------------------
   {
-    const einrichtung = (await spieler.ruf('/ambience/einrichtung')).daten;
-    pruefe(typeof einrichtung?.eingerichtet === 'boolean', 'Die Runde erfährt, ob Spotify eingerichtet ist');
-
     gleich((await spieler.ruf('/ambience')).status, 403, 'Die Klangbibliothek bleibt hinter dem Schirm');
 
     const murks = await sl.ruf('/ambience', {
@@ -362,30 +359,36 @@ try {
           name: 'Schankraum am Abend',
           uri: 'https://open.spotify.com/intl-de/playlist/37i9dQZF1DX4sWSpwq3LiO?si=abc123',
           tags: ['Taverne', 'ruhig'],
-          volume: 30,
+          notes: 'leise, viel Gemurmel',
         },
       })
     ).daten;
     gleich(klang.uri, 'spotify:playlist:37i9dQZF1DX4sWSpwq3LiO', 'Aus dem Teilen-Link wird eine saubere Adresse');
     gleich(klang.kind, 'playlist', 'Die Art steht mit dabei');
+    gleich(
+      klang.webUrl,
+      'https://open.spotify.com/playlist/37i9dQZF1DX4sWSpwq3LiO',
+      'Und ein Verweis zum Anklicken, der nur zu Spotify führt'
+    );
 
-    gleich((await spieler.ruf('/ambience/aktiv')).daten?.uri, null, 'Vor dem Auflegen ist es still');
+    gleich((await spieler.ruf('/ambience/aktiv')).daten?.uri, null, 'Vor dem Auflegen liegt nichts auf');
+
+    gleich(
+      (await spieler.ruf(`/ambience/${klang.id}/auflegen`, { methode: 'POST' })).status,
+      403,
+      'Auflegen darf nur die Spielleitung'
+    );
 
     await sl.ruf(`/ambience/${klang.id}/auflegen`, { methode: 'POST' });
     const gehoert = (await spieler.ruf('/ambience/aktiv')).daten;
     gleich(gehoert.uri, klang.uri, 'Die Runde erfährt, was aufliegt');
-    gleich(gehoert.playing, true, 'Und dass es läuft');
-    gleich(gehoert.volume, 30, 'Der Pegel der Ambiente wandert mit');
+    gleich(gehoert.name, 'Schankraum am Abend', 'Mit Namen');
+    gleich(gehoert.webUrl, klang.webUrl, 'Und mit dem Verweis zum Öffnen');
 
-    gleich((await spieler.ruf('/ambience/pause', { methode: 'POST' })).status, 403, 'Auflegen darf nur die Spielleitung');
-
-    await sl.ruf('/ambience/pause', { methode: 'POST' });
-    gleich((await spieler.ruf('/ambience/aktiv')).daten.playing, false, 'Pause kommt bei allen an');
-    await sl.ruf('/ambience/weiter', { methode: 'POST' });
-    gleich((await spieler.ruf('/ambience/aktiv')).daten.playing, true, 'Weiter auch');
+    await sl.ruf('/ambience/stille', { methode: 'POST' });
+    gleich((await spieler.ruf('/ambience/aktiv')).daten.uri, null, 'Stille kommt bei allen an');
 
     // Eine Karte bringt ihre Ambiente mit auf den Tisch.
-    await sl.ruf('/ambience/stille', { methode: 'POST' });
     const ort = (
       await sl.ruf('/maps', { methode: 'POST', koerper: { name: 'Zum Grinsenden Troll', width: 800, height: 600 } })
     ).daten;
@@ -398,7 +401,7 @@ try {
     );
 
     await sl.ruf(`/ambience/${klang.id}`, { methode: 'DELETE' });
-    gleich((await spieler.ruf('/ambience/aktiv')).daten.uri, null, 'Was gelöscht ist, läuft nicht weiter');
+    gleich((await spieler.ruf('/ambience/aktiv')).daten.uri, null, 'Was gelöscht ist, liegt nicht weiter auf');
     gleich(
       (await sl.ruf('/maps')).daten.find((k) => k.id === ort.id)?.ambienceId,
       null,

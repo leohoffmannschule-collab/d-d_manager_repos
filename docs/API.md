@@ -209,41 +209,35 @@ erzwingt eine neue Szene (`neu: true`, `201`). Ein Bild, das noch von einer
 Szene, Figur oder einem Bestiarium-Eintrag gebraucht wird, überlebt das Löschen
 seiner Karte.
 
-### /api/ambience   (Bibliothek [SL], `aktiv` und `einrichtung` für alle)
+### /api/ambience   (Bibliothek [SL], `aktiv` für alle)
 
-    GET    /api/ambience/einrichtung   { clientId, eingerichtet }
     GET    /api/ambience/aktiv         was gerade aufliegt (auch für die Runde)
     GET    /api/ambience               [SL] die Sammlung
-    POST   /api/ambience               [SL] { name, uri|link, tags?, shuffle?, volume?, notes? }
+    POST   /api/ambience               [SL] { name, uri|link, tags?, notes? }
     PUT    /api/ambience/:id           [SL]
     DELETE /api/ambience/:id           [SL]
     POST   /api/ambience/:id/auflegen  [SL]
-    POST   /api/ambience/pause         [SL]
-    POST   /api/ambience/weiter        [SL]
     POST   /api/ambience/stille        [SL]
-    POST   /api/ambience/lautstaerke   [SL] { volume }
 
-Der Server spielt nichts ab und kennt kein Spotify-Konto. Er hält allein fest,
-*was* laufen soll:
+Hier liegen Spotify-Links, sonst nichts. Der Server spielt nichts ab und kennt
+kein Spotify-Konto; er sagt der Runde nur, was gerade dran ist:
 
 ```json
-{ "ambienceId": "…", "uri": "spotify:playlist:…", "kind": "playlist",
-  "name": "Schankraum am Abend", "imageUrl": "…", "shuffle": true,
-  "volume": 30, "playing": true, "startedAt": "2026-09-04T19:12:00.000Z" }
+{ "ambienceId": "…", "uri": "spotify:playlist:…",
+  "webUrl": "https://open.spotify.com/playlist/…", "kind": "playlist",
+  "name": "Schankraum am Abend", "notes": "…",
+  "seit": "2026-09-04T19:12:00.000Z" }
 ```
 
 `uri` wird beim Anlegen aus dem Teilen-Link normalisiert (Sprachkürzel und
 `?si=…` fallen weg) und auf `playlist`, `album`, `track` oder `artist` mit
 22-stelliger Kennung geprüft – alles andere wird mit `keine_spotify_adresse`
-abgewiesen. `volume` ist der Pegel *dieser Auflage*, mit dem der DM Stücke
-gegeneinander abstimmt; wie laut es beim Einzelnen wird, entscheidet dessen
-eigener Regler. Ein `startedAt` ändert sich nur bei einer neuen Auflage – daran
-erkennt ein Zuhörer, ob er neu starten oder bloß fortsetzen muss.
+abgewiesen. Das ist keine Kosmetik: `webUrl` wird der Runde als Verweis
+vorgelegt, und der soll nirgendwo anders hinführen als zu Spotify.
 
-Der Ton entsteht im Browser jedes Zuhörers (Web Playback SDK, verlangt Spotify
-Premium) oder auf einem anderen Spotify-Gerät. Die Anmeldung läuft mit PKCE
-direkt zwischen Browser und Spotify; die Schlüssel liegen im `localStorage`
-dieses Browsers und erreichen den Almanach nie.
+Jede Änderung geht als `klang` über den Live-Kanal an alle Fenster. Abgespielt
+wird in Spotify selbst, auf dem Gerät des jeweiligen Zuhörers – das braucht
+weder Premium noch eine verschlüsselte Adresse unter eigenem Namen.
 
 ### Weitere Zweige
 
@@ -264,7 +258,6 @@ austauschbar ist:
 | Schicht | Ort | beim Umbau |
 | ------- | --- | ---------- |
 | Regelwerk | `frontend/src/lib/dnd5e.js`, `rasten.js`, `wuerfeln.js` | bleibt |
-| Spotify | `frontend/src/lib/spotify.js`, `klang.jsx` | bleibt |
 | Zugriff | `frontend/src/lib/api.js` | bleibt |
 | Anmeldung, Live-Kanal | `frontend/src/lib/auth.jsx`, `live.jsx` | bleibt |
 | **Daten** | `frontend/src/lib/daten.jsx` | bleibt |
@@ -282,7 +275,7 @@ const { kampf } = useKampf();
 const { kiste, laden } = useBeute();
 const { szene, figuren, nebel } = useSzene();
 const { karten } = useKarten();      // leer, solange die Rolle nicht stimmt
-const { klang, bereit } = useKlang();
+const { klang } = useKlang();       // was gerade über dem Tisch liegt
 ```
 
 Wer die Oberfläche neu gestaltet, wirft `pages/` und `components/` weg und

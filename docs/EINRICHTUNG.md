@@ -3,9 +3,12 @@
 Vom nackten Raspberry Pi bis zur Runde, die am Freitagabend aus fünf
 Wohnzimmern am selben Tisch sitzt.
 
-Für den ganzen Weg brauchst du **etwa zwei Stunden**, davon die meiste Zeit
+Für den ganzen Weg brauchst du **etwa eine Stunde**, davon die meiste Zeit
 Wartezeit. Du musst kein Fachmann sein: Jeder Befehl steht hier zum Abtippen
 oder Kopieren, und hinter jedem steht, was er tut.
+
+**Es kostet nichts.** Keine Domain, kein Abonnement, kein Konto irgendwo –
+außer dem Strom für den Pi.
 
 ---
 
@@ -16,8 +19,8 @@ oder Kopieren, und hinter jedem steht, was er tut.
 3. [Docker installieren](#3-docker-installieren)
 4. [Den Almanach holen und starten](#4-den-almanach-holen-und-starten)
 5. [Erster Blick und das Konto der Spielleitung](#5-erster-blick-und-das-konto-der-spielleitung)
-6. [Von außen erreichbar: der Cloudflare-Tunnel](#6-von-außen-erreichbar-der-cloudflare-tunnel)
-7. [Musik: Spotify einrichten](#7-musik-spotify-einrichten)
+6. [Von außen erreichbar: der Tunnel](#6-von-außen-erreichbar-der-tunnel)
+7. [Musik: Spotify-Links hinterlegen](#7-musik-spotify-links-hinterlegen)
 8. [Sicherung einrichten](#8-sicherung-einrichten)
 9. [Die Runde einladen](#9-die-runde-einladen)
 10. [Aktualisieren](#10-aktualisieren)
@@ -39,16 +42,20 @@ oder Kopieren, und hinter jedem steht, was er tut.
 
 **Konten**
 
-| Was | Kosten | Wofür |
-| --- | --- | --- |
-| Cloudflare-Konto | kostenlos | Der Tunnel nach außen, ohne Portfreigabe im Router. |
-| Eine eigene Domain | **etwa 10 € im Jahr** | Nötig für den Tunnel. Ohne Domain gibt es keine feste Adresse und kein HTTPS – und ohne HTTPS keine Musik. |
-| Spotify Premium | falls schon vorhanden | Nur für den Klangteppich, und nur für die, die zuhören wollen. Der Rest der Runde spielt ohne. |
+Keins. Der Weg nach außen läuft über den **Schnelltunnel** von Cloudflare, und
+der verlangt weder Anmeldung noch Domain. Für die Musik hinterlegst du
+Spotify-Links – auch dafür braucht der Almanach nichts von dir.
 
-> **Zur Domain.** Das ist der einzige Posten, der wirklich Geld kostet. Eine
-> `.de`- oder `.eu`-Adresse gibt es bei den üblichen Anbietern für rund
-> 10 € im Jahr; Cloudflare selbst verkauft sie zum Einkaufspreis. Der Name
-> ist egal – `wuerfelturm.de` tut es genauso wie etwas Seriöses.
+> **Was dich der Verzicht auf eine Domain kostet.** Die Adresse, unter der
+> deine Runde spielt, ist geliehen und sieht aus wie
+> `https://zufaellige-worte.trycloudflare.com`. Sie **wechselt, wenn der
+> Tunnel neu startet** – also nach einem Neustart des Pi oder einer
+> Aktualisierung. Dann schickst du deiner Runde einmal die neue Adresse. Im
+> Alltag passiert das selten.
+>
+> Wenn dich das später stört, zeigt
+> [Schritt 6.5](#65-wenn-die-wechselnde-adresse-stört) zwei Wege zu einer
+> festen Adresse – beide jederzeit nachrüstbar.
 
 ---
 
@@ -130,14 +137,7 @@ cd d-d_manager_repos
 > Solange die Arbeit noch auf einem Zweig liegt und nicht im Hauptzweig:
 > `git checkout claude/dnd-platform-architecture-wbwul3`
 
-Jetzt die Einstellungsdatei anlegen:
-
-```bash
-cp .env.example .env
-```
-
-Die Datei kannst du vorerst so lassen – die Werte tragen wir in Schritt 6
-und 7 nach. Und dann:
+Und starten – es ist nichts einzustellen:
 
 ```bash
 docker compose up -d --build
@@ -180,79 +180,63 @@ Spielleitung** – das ist deins. Name und Passwort vergeben, fertig.
 > kann sich also niemand einfach ein Konto anlegen.
 
 Schau dich ruhig um. Was jetzt schon geht: Charakterblätter, Spieltisch,
-Bestiarium, Würfel, Kompendium. Was noch nicht geht: die Runde von außen
-erreichen (Schritt 6) und Musik (Schritt 7).
+Bestiarium, Würfel, Kompendium, Musik. Was noch nicht geht: die Runde von
+außen erreichen – das ist Schritt 6.
 
 ---
 
-## 6. Von außen erreichbar: der Cloudflare-Tunnel
+## 6. Von außen erreichbar: der Tunnel
 
 Das ist der Schritt, der aus einem Kasten im Regal eine Runde macht, die von
 überall spielt. Der Trick: Der Pi ruft bei Cloudflare **von innen nach außen**
-an und hält die Leitung offen. Du brauchst keine Portfreigabe im Router, und
-dein Anschluss steht nicht offen im Netz.
+an und hält die Leitung offen. Du brauchst keine Portfreigabe im Router, dein
+Anschluss steht nicht offen im Netz – und für den Schnelltunnel brauchst du
+nicht einmal ein Konto.
 
-### 6.1 Domain zu Cloudflare bringen
-
-1. Konto anlegen auf [dash.cloudflare.com](https://dash.cloudflare.com).
-2. Domain hinzufügen. Hast du schon eine, folgt Cloudflare dich durch den
-   Umzug der Nameserver (dauert ein paar Stunden). Hast du noch keine, kaufst
-   du sie unter *Domain Registration* gleich dort.
-3. Warten, bis die Domain in der Übersicht als **Active** geführt wird.
-
-### 6.2 Tunnel anlegen
-
-1. Auf [one.dash.cloudflare.com](https://one.dash.cloudflare.com) wechseln
-   (das ist der Zero-Trust-Bereich).
-2. **Networks → Tunnels → Create a tunnel**
-3. Als Art **Cloudflared** wählen, Name z. B. `almanach`.
-4. Cloudflare zeigt dir jetzt Installationsbefehle. **Die brauchst du nicht** –
-   der Tunnel läuft bei uns im Container. Du brauchst nur das lange
-   **Token** aus dem angezeigten Befehl (die Zeichenkette hinter
-   `--token`). Kopieren.
-5. Weiter zu **Public Hostname** und eintragen:
-
-   | Feld | Wert |
-   | --- | --- |
-   | Subdomain | `almanach` (oder was du magst) |
-   | Domain | deine Domain |
-   | Type | `HTTP` |
-   | URL | `dnd-manager:3001` |
-
-   > `dnd-manager` ist der Name des Containers. Der Tunnel läuft im selben
-   > Docker-Netz und erreicht ihn unter diesem Namen. **Nicht** `localhost`
-   > eintragen – das wäre der Tunnel selbst.
-
-6. Speichern.
-
-### 6.3 Token eintragen und starten
-
-Zurück auf dem Pi:
+### 6.1 Starten
 
 ```bash
-nano .env
-```
-
-Die Zeile `CLOUDFLARE_TUNNEL_TOKEN=` mit dem kopierten Token füllen, also
-`CLOUDFLARE_TUNNEL_TOKEN=eyJhIjoi…`. Speichern mit `Strg+O`, `Enter`,
-schließen mit `Strg+X`.
-
-Dann den Tunnel dazuschalten:
-
-```bash
+cd ~/d-d_manager_repos
 docker compose --profile tunnel up -d
 ```
 
-Nach einer Minute ist deine Runde erreichbar unter:
+Zehn bis zwanzig Sekunden warten, dann:
 
+```bash
+./scripts/adresse.sh
 ```
-https://almanach.deine-domain.de
-```
+
+Das Skript sagt dir, unter welcher Adresse deine Runde den Almanach erreicht –
+etwa `https://zufaellige-worte.trycloudflare.com`. Die schickst du in eure
+Gruppe.
 
 Das `https` kommt von Cloudflare und kostet dich nichts. Ab jetzt ist **das**
-die Adresse, die deine Runde benutzt.
+die Adresse, die deine Runde benutzt; im Heimnetz gilt weiterhin
+`http://almanach.local:3001`.
 
-> **Merke dir diese Adresse.** Schritt 7 braucht sie ganz genau.
+### 6.2 Die Adresse wechselt
+
+Sie ist geliehen. Startet der Tunnel neu – nach einem Neustart des Pi, nach
+einer Aktualisierung –, bekommt er eine neue. Dann:
+
+```bash
+./scripts/adresse.sh
+```
+
+… und die neue Adresse in die Gruppe schicken. Das ist der Preis dafür, keine
+Domain zu bezahlen.
+
+> **Wichtig zu wissen:** Die alte Adresse führt danach ins Leere. Wer den
+> Almanach auf dem Telefon zum Home-Bildschirm gelegt hat, muss ihn nach einem
+> Wechsel neu ablegen. Die **Anmeldung** bleibt davon unberührt: Sie hängt am
+> Browser, nicht an der Adresse – aber unter einer neuen Adresse ist es für
+> den Browser eine neue Seite, also melden sich alle einmal neu an.
+
+### 6.3 Umzug inklusive
+
+Weil der Tunnel von innen nach außen aufgebaut wird, funktioniert er überall.
+Nimmst du den Pi zur Runde bei Freunden mit, steckst du ihn dort einfach ins
+Netz – neue Adresse holen, fertig.
 
 ### 6.4 Wenn du es noch fester zumachen willst
 
@@ -260,104 +244,67 @@ Der Almanach schützt sich selbst: Passwörter liegen nur als scrypt-Hash in
 der Datenbank, nach acht Fehlversuchen ist zehn Minuten Ruhe, und ohne
 Einladungscode kommt niemand hinein. Für eine private Runde reicht das.
 
-Wer mehr will, legt in Cloudflare unter *Access → Applications* eine zweite
-Tür davor. Bedenke aber: Deine Mitspieler müssen sich dann **zweimal**
-anmelden, und die Live-Verbindung zum Spieltisch verträgt sich nicht mit
-jeder Access-Einstellung. Für den Anfang: lass es.
+Bedenke aber: Eine `trycloudflare.com`-Adresse ist zwar unwahrscheinlich zu
+erraten, aber nicht geheim. Wer sie hat, sieht die Anmeldeseite – mehr nicht,
+solange die Passwörter etwas taugen. Vergib also ordentliche.
 
----
+### 6.5 Wenn die wechselnde Adresse stört
 
-## 7. Musik: Spotify einrichten
+Zwei Wege zu einer festen Adresse, beide später jederzeit nachrüstbar:
 
-Freiwillig. Ohne diesen Schritt funktioniert alles andere, es ist nur still.
+| Weg | Kosten | Haken |
+| --- | --- | --- |
+| **Eigene Domain** bei Cloudflare, dann statt des Schnelltunnels einen *benannten* Tunnel anlegen (Zero Trust → Networks → Tunnels), Public Hostname auf `dnd-manager:3001` | ~10 €/Jahr | einmalige Einrichtung, danach nie wieder |
+| **[Tailscale](https://tailscale.com/)** – feste Adresse auf `*.ts.net`, echtes HTTPS, alles privat im eigenen Netz | kostenlos | **jeder Mitspieler muss Tailscale installieren** |
 
-**Wie es funktioniert:** Der Almanach spielt selbst keine Musik und speichert
-niemandes Spotify-Zugangsdaten. Er merkt sich nur, *welche* Wiedergabeliste
-gerade laufen soll. Der Ton entsteht im Browser jedes Einzelnen – anders
-ginge es nicht, wenn ihr in fünf verschiedenen Wohnzimmern sitzt.
+Der Schnelltunnel braucht bei deinen Mitspielern nur einen Browser. Das ist
+der Grund, warum er hier der voreingestellte Weg ist.
 
-### 7.1 Eine Spotify-Anwendung anlegen
+## 7. Musik: Spotify-Links hinterlegen
 
-1. Auf [developer.spotify.com/dashboard](https://developer.spotify.com/dashboard)
-   mit deinem Spotify-Konto anmelden.
-2. **Create app**
-3. Ausfüllen:
+Freiwillig, aber schnell: Es ist nichts einzurichten. Keine Anwendung bei
+Spotify, keine Kennung, keine Freischaltliste, kein Premium.
 
-   | Feld | Wert |
-   | --- | --- |
-   | App name | `Abenteuer-Almanach` |
-   | App description | irgendwas |
-   | Redirect URI | `https://almanach.deine-domain.de/spotify` |
-   | Which API/SDKs are you planning to use? | **Web API** *und* **Web Playback SDK** ankreuzen |
+**Wie es funktioniert:** Der Almanach spielt keine Musik. Er sammelt
+Spotify-Links, und wenn du einen auflegst, steht bei allen am Tisch, was jetzt
+dran ist – mit einem Knopf, der es in ihrem Spotify öffnet. Jeder hört auf
+seinem eigenen Gerät und dreht so laut auf, wie er mag.
 
-   > Die Redirect-URI muss **auf das Zeichen genau** stimmen – mit `https://`,
-   > ohne Schrägstrich am Ende, und mit `/spotify` dahinter. Spotify weist
-   > sonst die Anmeldung ab. Den fertigen Text zum Kopieren findest du auch
-   > im Almanach selbst unter *Spielleitung → Klang*, sobald Schritt 6 steht.
-
-4. Speichern, dann **Settings** öffnen und die **Client ID** kopieren.
-
-### 7.2 Die Kennung eintragen
-
-Auf dem Pi:
-
-```bash
-nano .env
-```
-
-Bei `SPOTIFY_CLIENT_ID=` die kopierte Kennung eintragen, speichern, und dann:
-
-```bash
-docker compose --profile tunnel up -d
-```
-
-Docker merkt, dass sich etwas geändert hat, und startet den Almanach neu.
-
-### 7.3 Deine Mitspieler freischalten — **nicht überspringen**
-
-Eine frisch angelegte Spotify-Anwendung läuft im *Development mode*. Darin
-darf sie **nur Konten bedienen, die du ausdrücklich einträgst** – bis zu 25
-Stück. Wer nicht auf der Liste steht, bekommt bei der Anmeldung eine
-Fehlermeldung, und zwar eine, die nicht verrät, woran es liegt.
-
-Also im Dashboard:
-
-1. Deine App öffnen → **Settings → User Management**
-2. Für jeden aus der Runde **Name und die E-Mail-Adresse des Spotify-Kontos**
-   eintragen (nicht irgendeine Adresse – die, mit der sie bei Spotify
-   angemeldet sind).
-3. Speichern.
-
-25 Plätze reichen für jede Spielrunde. So handhabt Spotify das derzeit; sollte
-sich das ändern, steht es in deren Dashboard.
-
-### 7.4 Ausprobieren
+### 7.1 Eine Ambiente hinterlegen
 
 Im Almanach unter *Spielleitung → Klang*:
 
-1. **Neue Ambiente** → einen Spotify-Link einfügen (in Spotify: Rechtsklick auf
-   eine Wiedergabeliste → *Teilen* → *Link kopieren*), benennen, speichern.
-2. **Auflegen**
-3. Unten rechts erscheint die **Klangleiste**. Dort *Mit Spotify verbinden*,
-   danach **Zuhören** drücken.
+1. **Neue Ambiente**
+2. In Spotify die Wiedergabeliste suchen → *Teilen* → *Link kopieren* →
+   im Almanach ins erste Feld einfügen.
+3. Benennen (*„Schankraum am Abend“*), verschlagworten (*Taverne, ruhig*), und
+   in die Notiz, was die Runde wissen soll (*„leise, viel Gemurmel“*).
+4. Speichern.
 
-Der Knopf „Zuhören“ ist keine Schikane: Browser geben Ton erst nach einem
-Klick frei. Einmal pro Sitzung, dann läuft es.
+Wiedergabelisten, Alben, einzelne Stücke und Künstler gehen alle. Andere Links
+weist der Almanach ab – was er der Runde vorlegt, soll nirgendwo anders
+hinführen als zu Spotify.
 
-**Was jeder Mitspieler selbst regelt:** die eigene Lautstärke, Stummschalten
-(merkt niemand), und ob der Ton aus dem Browserfenster kommt oder aus einem
-anderen Spotify-Gerät – Handy, Rechner, Anlage.
+### 7.2 Auflegen
 
-**Zwei Grenzen, die von Spotify kommen:**
+**Auflegen** zeigt der ganzen Runde, was jetzt dran ist: unten links erscheint
+eine kleine Leiste mit dem Namen und einem Knopf zum Öffnen. **Stille** nimmt
+sie wieder weg.
 
-- Abspielen im Browser verlangt **Spotify Premium**. Ohne Premium leitet man
-  den Ton auf ein anderes Gerät um, auf dem Spotify ohnehin läuft.
-- Es geht **nur über die HTTPS-Adresse** aus Schritt 6. Über
-  `http://almanach.local:3001` gibt der Browser keinen Ton frei und lässt
-  auch die Anmeldung nicht zu. Auf dem iPad spielt der Browser gar nicht –
-  dort nimmt man den Umweg über ein anderes Gerät.
+Wer nicht mithören will, klickt einfach nicht – niemand merkt es.
 
----
+### 7.3 An eine Karte hängen
+
+Der schöne Teil: Unter *Spielleitung → Karten* kannst du einer Karte eine
+Ambiente zuweisen. Wer die Karte auflegt, legt die Musik mit auf. Der
+Schankraum bringt seine Schankraum-Musik selbst mit.
+
+> **Warum nicht mehr?** Spotify kann Musik auch direkt im Browser abspielen
+> und über alle Fenster gleichschalten – das verlangt aber eine verschlüsselte
+> Adresse unter *eigenem* Namen, ein Premium-Konto für jeden Zuhörer und eine
+> Freischaltliste im Entwickler-Dashboard. Ohne eigene Domain ist davon nichts
+> zu erfüllen. Ein hinterlegter Link funktioniert dagegen für jeden, sofort
+> und mit jedem Konto.
 
 ## 8. Sicherung einrichten
 
@@ -528,9 +475,8 @@ docker compose logs --tail=50 cloudflared
 | Von außen **502**, obwohl der Tunnel läuft | Der Almanach war beim Start des Tunnels noch nicht bereit. `docker compose --profile tunnel restart` |
 | Anmeldung sagt „Zu viele Versuche“ | Acht Fehlversuche, dann zehn Minuten Ruhe. Kein Fehler, sondern Absicht. Warten. |
 | Spieler sehen den Spieltisch leer | Es liegt noch keine Szene auf. *Spielleitung → Karten → Auflegen* |
-| Musik: „Mit Spotify verbinden“ tut nichts | Läuft die Seite über `https://`? Über `http://…local` gibt der Browser weder Anmeldung noch Ton frei. |
-| Musik: Spotify meldet einen Fehler beim Anmelden | Meist Schritt 7.3 – das Konto steht nicht in der User-Management-Liste. Zweithäufigst: Redirect-URI stimmt nicht aufs Zeichen. |
-| Musik: Alles verbunden, aber still | „Zuhören“ gedrückt? Und: Wiedergabe im Browser verlangt Premium. |
+| Musik: Der Link lässt sich nicht speichern | Es muss ein Spotify-Link sein (Wiedergabeliste, Album, Stück oder Künstler). In Spotify: *Teilen → Link kopieren*. |
+| Musik: Knopf öffnet nichts | Bei installierter Spotify-App öffnet der Link die App, sonst den Web-Spieler. Blockt der Browser das Aufgehen neuer Tabs, den Knopf mit der rechten Maustaste anklicken. |
 | Karte lässt sich nicht hochladen | Über 20 MB je Bild geht nicht. Große Scans vorher verkleinern – der Almanach rechnet ohnehin auf 4096 Pixel herunter. |
 | Alles ist zäh | `docker stats`. Falls die Karte am Anschlag ist: alte Sicherungen wegräumen. |
 | Zurückgespielt, aber der alte Stand ist immer noch da | Die WAL-Begleitdateien lagen noch daneben und haben sich darübergelegt. Siehe [8.3](#83-zurückspielen) – sie müssen mit gelöscht werden. |
@@ -557,12 +503,14 @@ ist der einzige gefährliche in diesem Handbuch.**
 
 ## 12. Anhang: alle Stellschrauben
 
-### Umgebungsvariablen (in `.env` oder `docker-compose.yml`)
+### Umgebungsvariablen
+
+Für den normalen Betrieb ist **nichts** einzustellen; die folgenden Werte
+stehen schon passend in der `docker-compose.yml`. Eine `.env` brauchst du nur
+für den erzählenden Rückblick in der Chronik.
 
 | Variable | Vorgabe | Bedeutung |
 | --- | --- | --- |
-| `CLOUDFLARE_TUNNEL_TOKEN` | – | Token des Tunnels. Nur nötig mit `--profile tunnel`. |
-| `SPOTIFY_CLIENT_ID` | leer | Kennung der Spotify-Anwendung. Leer = Klangleiste bleibt verborgen. |
 | `PORT` | `3001` | Port des Servers. |
 | `DATA_DIR` | `/app/data` | Wo Datenbank und Bilder liegen. Im Container das Volume. |
 | `TRUST_PROXY` | `1` (Compose) | Sagt dem Almanach, dass der Tunnel davorsteht – nötig für sichere Cookies. |
@@ -575,7 +523,7 @@ ist der einzige gefährliche in diesem Handbuch.**
 
 ```
 ~/d-d_manager_repos/          der Quellcode, hierhin geht `git pull`
-~/d-d_manager_repos/.env      deine Geheimnisse – nicht weitergeben
+~/d-d_manager_repos/.env      freiwillig, nur für den KI-Rückblick
 Docker-Volume dnd-manager-data
   ├── manager.sqlite3         alles: Konten, Charaktere, Karten, Chronik
   ├── medien/                 hochgeladene Karten und Bildnisse
@@ -601,7 +549,7 @@ curl -s localhost:3001/api/health        # Lebenszeichen
 | Fehlversuche bei der Anmeldung | 8, dann 10 Minuten Sperre je Name und Herkunft |
 | Anmeldung gilt | 30 Tage |
 | Protokolle | 3 × 10 MB je Dienst, danach überschreibt Docker die ältesten |
-| Spotify-Konten je Anwendung | 25 (Vorgabe von Spotify im Development mode) |
+
 
 ---
 

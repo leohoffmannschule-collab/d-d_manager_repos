@@ -307,7 +307,7 @@ export function useKarten() {
 /* --- Klangteppich -------------------------------------------------------- */
 
 /**
- * Die gespeicherten Ambienten des DM. Wie die Kartenbibliothek gehört sie zur
+ * Die hinterlegten Ambienten des DM. Wie die Kartenbibliothek gehört sie zur
  * Vorbereitung und lädt deshalb nur hinter dem Schirm.
  */
 export function useKlangbibliothek() {
@@ -315,4 +315,12 @@ export function useKlangbibliothek() {
   const holen = useCallback(() => (isDm ? ambienceApi.list() : Promise.resolve([])), [isDm]);
   const { daten, laden, fehler, laedt } = useDaten(holen, []);
   return { ambienten: daten ?? [], laden, fehler, laedt };
+}
+
+/** Was gerade über dem Tisch liegt – das sieht die ganze Runde. */
+export function useKlang() {
+  const holen = useCallback(() => ambienceApi.aktiv(), []);
+  const { daten, setDaten, laden, fehler, laedt } = useDaten(holen, null);
+  useLive('klang', (neu) => setDaten(neu));
+  return { klang: daten, laden, fehler, laedt };
 }

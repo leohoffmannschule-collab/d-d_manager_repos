@@ -5,7 +5,7 @@ services:
     container_name: dnd-manager
     restart: unless-stopped
     ports:
-      # Nur im Heimnetz erreichbar. Von außen kommt niemand über diesen Port,
+      # Im Heimnetz erreichbar. Von außen kommt niemand über diesen Port,
       # sondern über den Tunnel unten – der braucht keine Portfreigabe.
       - "3001:3001"
     volumes:
@@ -17,9 +17,6 @@ services:
       - DND5E_API_BASE=https://www.dnd5eapi.co/api/2014
       # Der Tunnel unten ist der erste Zwischenschritt vor dem Almanach.
       - TRUST_PROXY=1
-      # Ambiente über Spotify – leer lassen, dann bleibt der Klangteppich
-      # verborgen. Siehe .env.example.
-      - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID:-}
       # Freiwillig: erzählender Rückblick in der Chronik.
       - CHRONIK_KI_URL=${CHRONIK_KI_URL:-}
       - CHRONIK_KI_MODELL=${CHRONIK_KI_MODELL:-}
@@ -32,16 +29,17 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  # Der Weg von außen, ganz ohne Portfreigabe im Router: cloudflared baut
-  # eine Verbindung von innen nach außen auf. Nur mit Tunnel-Kennwort
-  # aktiv – siehe .env.example und docs/EINRICHTUNG.md.
+  # Der Weg von außen, ganz ohne Portfreigabe im Router und ohne eigene
+  # Domain: cloudflared baut eine Verbindung von innen nach außen auf und
+  # bekommt dafür eine Adresse auf trycloudflare.com geliehen.
+  #
+  # Der Haken: Die Adresse ist geliehen und wechselt bei jedem Neustart des
+  # Tunnels. Welche gerade gilt, sagt `scripts/adresse.sh`.
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: dnd-manager-tunnel
     restart: unless-stopped
-    command: tunnel --no-autoupdate run
-    environment:
-      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN:?In .env fehlt CLOUDFLARE_TUNNEL_TOKEN}
+    command: tunnel --no-autoupdate --url http://dnd-manager:3001
     depends_on:
       dnd-manager:
         # Erst aufmachen, wenn der Almanach wirklich antwortet – sonst sieht

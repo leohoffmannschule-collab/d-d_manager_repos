@@ -245,17 +245,14 @@ db.exec(`
     created_at TEXT NOT NULL
   );
 
-  /* --- Klangteppich: gespeicherte Spotify-Ambienten ----------------------- */
+  /* --- Klangteppich: hinterlegte Spotify-Links ---------------------------- */
 
   CREATE TABLE IF NOT EXISTS ambience (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     uri TEXT NOT NULL,
     kind TEXT NOT NULL,
-    image_url TEXT NOT NULL DEFAULT '',
     tags TEXT NOT NULL DEFAULT '[]',
-    shuffle INTEGER NOT NULL DEFAULT 1,
-    volume INTEGER NOT NULL DEFAULT 45,
     notes TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL
   );
