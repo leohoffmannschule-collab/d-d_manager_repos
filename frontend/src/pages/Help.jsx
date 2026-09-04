@@ -9,6 +9,10 @@ export default function Help() {
       <div>
         <h1 className="font-display text-2xl font-semibold tracking-[0.08em] text-ink uppercase sm:text-[27px]">Hilfe</h1>
         <p className="mt-1 text-sepia italic">Kurze Anleitung für den Gebrauch am Spieltisch</p>
+        <p className="mt-3 border-l-[3px] border-gold bg-gold/10 px-3.5 py-2.5 text-sepia">
+          Die Oberfläche der Charakterblätter wird gerade neu gebaut. Die Charaktere selbst sind unberührt –
+          Kampfliste, Spieltisch und Beutekiste arbeiten wie gewohnt mit ihnen weiter.
+        </p>
       </div>
 
       <Card title="Über den Abenteuer-Almanach">
@@ -24,9 +28,9 @@ export default function Help() {
         <p className="leading-relaxed text-ink">
           Das erste angelegte Konto führt die <span className="font-display">Spielleitung</span>. Alle weiteren treten
           mit einem Einladungscode bei, den die Spielleitung unter <span className="font-display">Spielleitung →
-          Runde</span> erzeugt. Wer zur Runde gehört, sieht sein eigenes Charakterblatt, die Blätter der Mitspieler
-          zum Lesen, den Spieltisch und die ausgeteilten Handzettel. Bestiarium, geheime Notizen und verborgene
-          Figuren bleiben hinter dem Schirm der Spielleitung.
+          Runde</span> erzeugt. Wer zur Runde gehört, sieht den Spieltisch, die Kampfliste, die Beutekiste und die
+          ausgeteilten Handzettel. Bestiarium, geheime Notizen und verborgene Figuren bleiben hinter dem Schirm der
+          Spielleitung.
         </p>
       </Card>
 
@@ -35,6 +39,10 @@ export default function Help() {
           <li>Mit einem Finger oder der gedrückten Maustaste wird die Karte geschoben, mit dem Mausrad oder zwei Fingern gezoomt.</li>
           <li>Die eigene Figur lässt sich ziehen; beim Loslassen schnappt sie auf das Raster ein. Fremde Figuren bewegt nur die Spielleitung.</li>
           <li>Ein <span className="font-display">Alt+Klick</span> lässt eine Stelle für alle kurz aufleuchten – praktisch statt „da vorne links, nein, weiter unten“.</li>
+          <li>
+            Beginnt ein Kampf, würfelst du deine <span className="font-display">Initiative</span> in der Kampfliste
+            selbst; sie steht sofort bei der Spielleitung.
+          </li>
           <li>Jede Bewegung, jeder Wurf und jede Änderung der Trefferpunkte steht sofort bei allen anderen auf dem Schirm.</li>
         </ul>
       </Card>
@@ -75,47 +83,6 @@ export default function Help() {
         </Card>
       )}
 
-      <Card title="Dein Charakterblatt">
-        <ul className="flex list-disc flex-col gap-1.5 pl-5 leading-relaxed text-ink marker:text-rubric">
-          <li>
-            Jeder Wert ist zugleich ein Würfelknopf: Tippe auf den Bonus neben einer Fertigkeit, einem Rettungswurf
-            oder einem Attribut, und der Wurf steht sofort bei allen am Tisch.
-          </li>
-          <li>
-            Im Reiter <span className="font-display">Kampf</span> stehen Zustände, Erschöpfung, Konzentration,
-            Widerstände und Sinne. Was deine Klasse zählen muss – Wut, Ki, bardische Inspiration – trägst du unter
-            <span className="font-display"> Klassenressourcen</span> ein.
-          </li>
-          <li>
-            <span className="font-display">Kurze</span> und <span className="font-display">lange Rast</span> füllen
-            auf, was sich erneuert. Trefferwürfel gibst du einzeln aus; der Wurf wird gleich gutgeschrieben.
-          </li>
-          <li>Die Erfahrung verrät, welche Stufe dir zusteht – ein Knopf setzt sie.</li>
-        </ul>
-      </Card>
-
-      <Card title="Zauber, Rasten und der letzte Atemzug">
-        <ul className="flex list-disc flex-col gap-1.5 pl-5 leading-relaxed text-ink marker:text-rubric">
-          <li>
-            Im Reiter <span className="font-display">Zauber</span> genügt ein Tipp auf den Namen, und der ganze
-            Zaubertext steht da – Reichweite, Komponenten, Wirkungsdauer und Beschreibung. Kein Blättern ins
-            Kompendium mitten im Zug.
-          </li>
-          <li>
-            Der <span className="font-display">Rettungswurf gegen den Tod</span> trägt sich selbst ein: Eine 20
-            richtet dich mit einem Trefferpunkt wieder auf, eine 1 zählt doppelt.
-          </li>
-          <li>
-            Läuft eine <span className="font-display">Konzentration</span> und du wirst getroffen, trag den Schaden
-            ein – der Schwierigkeitsgrad ergibt sich daraus, und der Wurf sagt dir, ob der Zauber hält.
-          </li>
-          <li>
-            Beginnt ein Kampf, würfelst du deine <span className="font-display">Initiative</span> am Spieltisch
-            selbst; sie steht sofort in der Liste der Spielleitung.
-          </li>
-        </ul>
-      </Card>
-
       <Card title="Die Beutekiste">
         <p className="leading-relaxed text-ink">
           Am Spieltisch liegt unter <span className="font-display">Beute</span> die gemeinsame Kiste der Runde:
@@ -126,27 +93,15 @@ export default function Help() {
         </p>
       </Card>
 
-      <Card title="Das Blatt mitnehmen">
-        <p className="leading-relaxed text-ink">
-          Oben auf deinem Blatt liegt der Knopf <span className="font-display">Mitnehmen</span>. Er sichert dein
-          Blatt als einzelne Datei auf dein Gerät – mit Bildnis, Figur und allem, was darauf steht. Diese Datei
-          braucht weder Netz noch Server: Ein Doppelklick genügt, auf jedem Rechner, Tablet oder Telefon. Gedruckt
-          sieht sie aus wie ein Charakterbogen.
-        </p>
-        <p className="mt-3 leading-relaxed text-ink">
-          Das ist gedacht für die Vorbereitung, wenn der Almanach gerade nicht läuft – oder für den Zug zur Runde.
-          Ändern lässt sich in der Datei nichts, was zurückwandert: Am Spieltisch gilt das Blatt im Almanach. Ganz
-          hinten in der Datei steckt außerdem der vollständige Datensatz, sie ist also zugleich eine Sicherung.
-        </p>
-      </Card>
-
       <Card title="Die Figurenschmiede">
         <p className="leading-relaxed text-ink">
-          Im Reiter <span className="font-display">Figur</span> stellst du deine Miniatur zusammen: Volk, Statur,
-          Rüstung, Waffe, Haar, Bart und Farben. Die Figur dreht sich, wenn du sie mit dem Finger ziehst;{' '}
-          <span className="font-display">Auswürfeln</span> macht auf Zuruf einen Vorschlag. Beim{' '}
-          <span className="font-display">Gießen</span> entsteht daraus das Bildnis für dein Blatt und die Figur, mit
-          der du über die Karte ziehst – die Spielleitung legt sie beim nächsten Kampf von selbst aus.
+          Miniaturen werden aus Volk, Statur, Rüstung, Waffe, Haar, Bart und Farben zusammengestellt; die Figur
+          dreht sich, wenn man sie mit dem Finger zieht. Beim <span className="font-display">Gießen</span> entsteht
+          daraus die Figur, die auf der Karte steht.
+        </p>
+        <p className="mt-3 leading-relaxed text-sepia italic">
+          Die Schmiede erreicht derzeit nur die Spielleitung über das Bestiarium – der Weg dorthin lag auf dem
+          Charakterblatt, dessen Oberfläche gerade neu gebaut wird.
         </p>
       </Card>
 

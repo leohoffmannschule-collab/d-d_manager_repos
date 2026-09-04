@@ -1,8 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout.jsx';
-import Dashboard from './pages/Dashboard.jsx';
-import NewCharacter from './pages/NewCharacter.jsx';
-import CharacterSheet from './pages/CharacterSheet.jsx';
 import Compendium from './pages/Compendium.jsx';
 import Tabletop from './pages/Tabletop.jsx';
 import DmBoard from './pages/DmBoard.jsx';
@@ -24,7 +21,7 @@ function Ladeblatt() {
 /** Der Spielleitung vorbehaltene Seiten. */
 function NurSpielleitung({ children }) {
   const { isDm } = useAuth();
-  return isDm ? children : <Navigate to="/" replace />;
+  return isDm ? children : <Navigate to="/tisch" replace />;
 }
 
 export default function App() {
@@ -37,9 +34,10 @@ export default function App() {
     <LiveProvider>
       <Routes>
         <Route element={<Layout />}>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/neu" element={<NewCharacter />} />
-          <Route path="/charaktere/:id" element={<CharacterSheet />} />
+          {/* Die Blattoberfläche wird neu gebaut; bis dahin beginnt der
+              Almanach am Spieltisch. Charaktere selbst gibt es weiterhin –
+              Datenbank, Schnittstelle und Datenschicht sind unberührt. */}
+          <Route path="/" element={<Navigate to="/tisch" replace />} />
           <Route path="/tisch" element={<Tabletop />} />
           <Route path="/kompendium" element={<Compendium />} />
           <Route path="/chronik" element={<Chronicle />} />

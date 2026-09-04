@@ -16,14 +16,12 @@ import {
   IconLogout,
   IconMap,
   IconQuill,
-  IconScroll,
   IconSun,
   IconUsers,
 } from './icons.jsx';
 
 function navItems(isDm) {
   return [
-    { to: '/', label: 'Charaktere', Icon: IconScroll, end: true },
     { to: '/tisch', label: 'Spieltisch', Icon: IconMap },
     { to: '/kompendium', label: 'Kompendium', Icon: IconBook },
     { to: '/chronik', label: 'Chronik', Icon: IconQuill },
@@ -201,7 +199,7 @@ export default function Layout() {
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-30 border-b-2 border-gold bg-leather">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-          <NavLink to="/" className="flex items-center gap-3 text-leather-ink">
+          <NavLink to="/tisch" className="flex items-center gap-3 text-leather-ink">
             <IconD20 size={26} className="text-gold-soft" />
             <span className="font-display text-base tracking-[0.16em] uppercase sm:text-lg">Abenteuer-Almanach</span>
           </NavLink>

@@ -5,11 +5,17 @@ Handschrift – Pergament, Eisengallustinte, Rubrikrot und Blattgold. Alles läu
 Gerät, etwa einem **Raspberry Pi 5**, und wird von überall im Browser benutzt: vom Sofa, vom iPad am
 Spieltisch oder aus dem Wohnzimmer der Mitspieler, drei Städte weiter.
 
+> **Die Oberfläche der Charakterblätter wird gerade neu gebaut.** Entfernt wurde nur die Darstellung – die
+> Charaktere selbst, ihre Datenbank, die Schnittstelle unter `/api/characters` und die Datenschicht
+> (`useCharaktere`) sind unberührt. Kampfliste, Spieltisch, Beutekiste und Chronik arbeiten unverändert mit ihnen
+> weiter. Was eine neue Blattoberfläche dafür braucht, steht in [docs/API.md](docs/API.md), und
+> `npm run vertrag` weist nach, dass der Unterbau steht.
+
 Der Almanach besteht aus drei Teilen, die sich eine Anmeldung, eine Datenbank und einen Live-Kanal teilen:
 
 | Teil                | Für wen           | Was darin steckt                                                             |
 | ------------------- | ----------------- | ---------------------------------------------------------------------------- |
-| **Charaktere**      | alle              | vollständige 5e-Charakterblätter, freies Blatt für andere Systeme, Kompendium |
+| **Charaktere**      | alle              | Daten und Schnittstelle stehen; die Blattoberfläche wird neu gebaut           |
 | **Spieltisch**      | alle              | Karten, Figuren, Nebel des Krieges, Lineal, Zeigefinger, Initiative, Handzettel |
 | **Spielleitung**    | nur die Leitung   | Initiative-Tracker, Bestiarium, Begegnungen, geheime Notizen, Konten          |
 | **Chronik**         | alle              | Protokoll des Abends, aus dem entstanden, was am Tisch wirklich geschah       |
@@ -231,7 +237,7 @@ Compress-Archive backend\data $env:USERPROFILE\Desktop\almanach-sicherung.zip
 
 ```
 frontend/   React 19 + Vite, Tailwind CSS v4, PWA
-            src/pages/       Charaktere, Spieltisch, Spielleitung, Chronik, Kompendium, Anmeldung
+            src/pages/       Spieltisch, Spielleitung, Chronik, Kompendium, Hilfe, Anmeldung
             src/components/  Spieltisch (Brett, Werkzeuge, Figuren), Spielleitung (Bestiarium,
                              Begegnungen, Notizen, Runde), Figurenschmiede, Initiativliste,
                              Würfelbeutel, Blattbausteine
@@ -266,6 +272,7 @@ Der Almanach ist so geschnitten, dass die Oberfläche austauschbar ist – ohne 
 | Schicht                  | Ort                                                        | beim Umbau |
 | ------------------------ | ---------------------------------------------------------- | ---------- |
 | Regelwerk                | `frontend/src/lib/dnd5e.js`, `rasten.js`, `wuerfeln.js`     | bleibt     |
+| Blatt-Ausfuhr            | `frontend/src/lib/blattAusfuhr.js`, `setPath.js`            | bleibt     |
 | Zugriff auf den Server   | `frontend/src/lib/api.js`                                   | bleibt     |
 | Anmeldung und Live-Kanal | `frontend/src/lib/auth.jsx`, `live.jsx`                     | bleibt     |
 | **Datenschicht**         | `frontend/src/lib/daten.jsx`                                | bleibt     |

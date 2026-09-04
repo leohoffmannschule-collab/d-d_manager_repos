@@ -143,6 +143,11 @@ gesamten Zweigs.
 
 ### /api/characters   (Standard: angemeldet)
 
+> Die mitgelieferte Blattoberfläche wurde entfernt und wird neu gebaut. Dieser Zweig ist davon **unberührt** und
+> vollständig in Betrieb: Kampf, Spieltisch und Beutekiste arbeiten weiter mit Charakteren. Wer eine neue
+> Blattoberfläche schreibt, findet hier alles Nötige; die Regel- und Ausfuhrbausteine dafür liegen weiterhin unter
+> `frontend/src/lib/` (`dnd5e.js`, `rasten.js`, `blattAusfuhr.js`, `setPath.js`).
+
     GET    /api/characters               eigene und geteilte, als Kurzfassung
     GET    /api/characters/:id           samt `editable`
     POST   /api/characters               { name, system?, data }
