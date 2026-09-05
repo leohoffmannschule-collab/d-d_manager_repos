@@ -4,7 +4,7 @@ import { db, getState, setState } from '../db.js';
 import { isDm, requireAuth, requireDm } from '../auth.js';
 import { broadcast, originClient, presence } from '../events.js';
 import * as chronik from '../chronicle.js';
-import { figurenFeld, sichtFelder } from '../sicht.js';
+import { alsBitkarte, figurenFeld, rasterBereich, sichtFelder } from '../sicht.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -27,10 +27,20 @@ function rowToScene(row) {
     gridVisible: !!row.grid_visible,
     fogEnabled: !!row.fog_enabled,
     dark: !!row.dark,
+    unit: row.unit ?? 'fuss',
+    scale: Number(row.scale) > 0 ? Number(row.scale) : 5,
     mapId: row.map_id,
-    fog: JSON.parse(row.fog),
     createdAt: row.created_at,
   };
+}
+
+/** Die aufgedeckten Felder einer Szene, roh aus der Datenbank. */
+function offeneFelder(row) {
+  try {
+    return new Set(JSON.parse(row.fog));
+  } catch {
+    return new Set();
+  }
 }
 
 function rowToToken(row) {
@@ -113,11 +123,17 @@ function szenenSicht(user) {
 
   const szene = rowToScene(row);
   const alle = figuren(szene.id);
-  const offen = new Set(szene.fog);
+  const offen = offeneFelder(row);
+  const bereich = rasterBereich(szene);
   const durchAugen = durchAugenVon(user, alle);
 
+  // Nebel und Sicht wandern als Bitkarte, ein Bit je Feld. Bei einer Karte
+  // über zweihundert Meter wären es als Liste von "x,y" 348 KB je Person
+  // und Zug – siehe sicht.js.
+  const grundlage = { ...szene, fogBits: alsBitkarte(offen, bereich), aktiv: true };
+
   if (isDm(user) && !durchAugen) {
-    return { ...szene, tokens: alle, sicht: null, nscSicht: null, aktiv: true };
+    return { ...grundlage, tokens: alle, sichtBits: null, nscSicht: null };
   }
 
   const eigene = durchAugen ? [durchAugen] : meineFiguren(user, alle);
@@ -131,11 +147,10 @@ function szenenSicht(user) {
   });
 
   return {
-    ...szene,
+    ...grundlage,
     tokens: sichtbar,
-    sicht: sicht ? [...sicht] : null,
+    sichtBits: sicht ? alsBitkarte(sicht, bereich) : null,
     nscSicht: durchAugen?.id ?? null,
-    aktiv: true,
   };
 }
 
@@ -256,8 +271,8 @@ router.post('/', requireDm, (req, res) => {
   const id = randomUUID();
   db.prepare(
     `INSERT INTO scenes (id, name, media_id, width, height, grid_size, grid_offset_x, grid_offset_y,
-                         grid_visible, fog_enabled, fog, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, 0, 0, 1, ?, '[]', ?)`
+                         grid_visible, fog_enabled, fog, unit, scale, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, 0, 0, 1, ?, '[]', ?, ?, ?)`
   ).run(
     id,
     body.name.trim().slice(0, 100),
@@ -266,6 +281,8 @@ router.post('/', requireDm, (req, res) => {
     toNumber(body.height, 0),
     clamp(toNumber(body.gridSize, 70), 10, 500),
     body.fogEnabled === false ? 0 : 1,
+    body.unit === 'meter' ? 'meter' : 'fuss',
+    clamp(toNumber(body.scale, body.unit === 'meter' ? 1 : 5), 0.1, 1000),
     new Date().toISOString()
   );
   // Die erste Szene kommt gleich auf den Tisch.
@@ -281,7 +298,8 @@ router.put('/:id', requireDm, (req, res) => {
 
   db.prepare(
     `UPDATE scenes SET name = ?, media_id = ?, width = ?, height = ?, grid_size = ?,
-            grid_offset_x = ?, grid_offset_y = ?, grid_visible = ?, fog_enabled = ?, dark = ?
+            grid_offset_x = ?, grid_offset_y = ?, grid_visible = ?, fog_enabled = ?, dark = ?,
+            unit = ?, scale = ?
        WHERE id = ?`
   ).run(
     typeof body.name === 'string' && body.name.trim() ? body.name.trim().slice(0, 100) : row.name,
@@ -294,6 +312,8 @@ router.put('/:id', requireDm, (req, res) => {
     'gridVisible' in body ? (body.gridVisible ? 1 : 0) : row.grid_visible,
     'fogEnabled' in body ? (body.fogEnabled ? 1 : 0) : row.fog_enabled,
     'dark' in body ? (body.dark ? 1 : 0) : row.dark,
+    body.unit === 'meter' || body.unit === 'fuss' ? body.unit : row.unit,
+    'scale' in body ? clamp(toNumber(body.scale, row.scale), 0.1, 1000) : row.scale,
     row.id
   );
   sendeSzene();
@@ -355,7 +375,10 @@ router.post('/nsc-sicht', requireDm, (req, res) => {
 
 /* --- Nebel des Krieges --------------------------------------------------- */
 
-const MAX_FELDER = 40000;
+// 200 x 200 Felder sind 40 000 – bei einem Meter je Feld also die
+// zweihundert Meter, die eine große Außenkarte braucht. Etwas Kopfraum
+// darüber, damit ein leicht verschobenes Raster nicht schon anstößt.
+const MAX_FELDER = 65536;
 
 // POST /api/scenes/:id/nebel  { cells: ['3,4', …], revealed: true }
 router.post('/:id/nebel', requireDm, (req, res) => {

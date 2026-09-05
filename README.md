@@ -32,7 +32,11 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
 - **Eigene Blätter bearbeiten, fremde lesen** – wer in der Runde ist, sieht die Werte der Gefährten,
   schreiben darf nur die Besitzerin (und die Spielleitung).
 - **Spieltisch**: Karte schieben und zoomen, die eigene Figur ziehen (sie schnappt aufs Raster ein),
-  mit `Alt`+Klick eine Stelle für alle aufleuchten lassen, Entfernungen in Feldern und Fuß messen.
+  mit `Alt`+Klick eine Stelle für alle aufleuchten lassen, Entfernungen messen.
+- **Große Karten**: bis zu **200 × 200 Meter** am Stück, scrollbar und zoombar. Der Maßstab ist frei –
+  ein Feld sind 5 Fuß nach Regelwerk oder ein Meter, wie du magst; Lineal, Größenangaben und
+  Sichtweiten rechnen damit. Nebel und Sicht wandern dabei als Bitkarte über den Draht: 6,5 KB statt
+  348 KB, sonst wäre ein Schritt zur Seite auf so einer Karte 1,7 MB für die Runde.
 - **Nebel des Krieges** – was die Spielleitung noch nicht aufgedeckt hat, bleibt schwarz, samt der
   Figuren, die darin lauern. Was du nicht sehen darfst, steht nicht in der Nutzlast, sondern kommt
   gar nicht erst an.

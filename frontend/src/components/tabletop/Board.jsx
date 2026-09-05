@@ -1,18 +1,17 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { mediaApi } from '../../lib/api.js';
+import { hatStelle, rasterBereich, weiteText } from '../../lib/rasterkarte.js';
 
+// Der Zoom-Boden ist keine feste Zahl mehr: Eine Karte über zweihundert
+// Meter ist zwölftausend Bildpunkte breit und passt bei 0,12 nicht auf den
+// Schirm. Der Boden richtet sich deshalb nach der Karte – man darf immer so
+// weit heraus, bis das Ganze zu sehen ist, aber nicht weiter.
 const MIN_SCALE = 0.12;
 const MAX_SCALE = 4;
 
-/** Rasterfelder, die eine Karte umfasst – auch bei verschobenem Raster. */
-export function rasterBereich(scene) {
-  const g = Math.max(4, scene.gridSize);
-  const minX = Math.floor((0 - scene.gridOffsetX) / g);
-  const minY = Math.floor((0 - scene.gridOffsetY) / g);
-  const maxX = Math.floor((Math.max(1, scene.width) - 1 - scene.gridOffsetX) / g);
-  const maxY = Math.floor((Math.max(1, scene.height) - 1 - scene.gridOffsetY) / g);
-  return { g, minX, minY, cols: maxX - minX + 1, rows: maxY - minY + 1 };
-}
+// Unter dieser Kantenlänge auf dem Schirm sind Rasterlinien kein Raster mehr,
+// sondern ein Grauschleier.
+const RASTER_AB = 5;
 
 /**
  * Der Nebel als Bildpunkte: ein Punkt je Rasterfeld, hochskaliert vom
@@ -44,19 +43,19 @@ function Nebel({ scene, fog, sicht, dm }) {
     const zu = dm ? 130 : 255;
     const erinnert = dm ? 70 : 168;
 
-    for (let j = 0; j < rows; j++) {
-      for (let i = 0; i < cols; i++) {
-        const feld = `${minX + i},${minY + j}`;
-        const offen = fog.has(feld);
-        const p = (j * cols + i) * 4;
-        bild.data[p] = 12;
-        bild.data[p + 1] = 9;
-        bild.data[p + 2] = 6;
-        bild.data[p + 3] = !offen ? zu : sicht && !sicht.has(feld) ? erinnert : 0;
-      }
+    // Beide Karten liegen im selben Raster wie dieses Bild, Stelle für Stelle.
+    // Deshalb genügt ein laufender Zähler statt einer Rechnung je Feld – bei
+    // 40 000 Feldern ist das der Unterschied zwischen flüssig und ruckelig.
+    for (let stelle = 0; stelle < cols * rows; stelle++) {
+      const offen = hatStelle(fog, stelle);
+      const p = stelle * 4;
+      bild.data[p] = 12;
+      bild.data[p + 1] = 9;
+      bild.data[p + 2] = 6;
+      bild.data[p + 3] = !offen ? zu : sicht && !hatStelle(sicht, stelle) ? erinnert : 0;
     }
     ctx.putImageData(bild, 0, 0);
-  }, [cols, rows, minX, minY, fog, sicht, dm]);
+  }, [cols, rows, fog, sicht, dm]);
 
   if (cols <= 0 || rows <= 0) return null;
 
@@ -157,6 +156,7 @@ export default function Board({
 }) {
   const huelle = useRef(null);
   const [ansicht, setAnsicht] = useState({ scale: 1, tx: 0, ty: 0 });
+  const [boden, setBoden] = useState(MIN_SCALE);
   const [ziehen, setZiehen] = useState(null);
   const [lineal, setLineal] = useState(null);
   const zeiger = useRef(new Map());
@@ -186,9 +186,15 @@ export default function Board({
     if (gepasst.current === scene.id || !huelle.current || !scene.width) return;
     gepasst.current = scene.id;
     const box = huelle.current.getBoundingClientRect();
-    const scale = Math.min(box.width / scene.width, box.height / scene.height, 1);
+    const passend = Math.min(box.width / scene.width, box.height / scene.height, 1);
+    // Etwas Luft unter dem Einpassen, damit man den Rand noch sieht.
+    const boden = Math.min(MIN_SCALE, passend * 0.85);
+    setBoden(boden);
+
+    // Mit dem *geklemmten* Maßstab rechnen, sonst sitzt die Karte versetzt.
+    const scale = Math.max(boden, passend);
     setAnsicht({
-      scale: Math.max(MIN_SCALE, scale),
+      scale,
       tx: (box.width - scene.width * scale) / 2,
       ty: (box.height - scene.height * scale) / 2,
     });
@@ -196,7 +202,7 @@ export default function Board({
 
   const zoomen = useCallback((faktor, punktX, punktY) => {
     setAnsicht((a) => {
-      const scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, a.scale * faktor));
+      const scale = Math.max(boden, Math.min(MAX_SCALE, a.scale * faktor));
       const wirklich = scale / a.scale;
       return {
         scale,
@@ -204,13 +210,28 @@ export default function Board({
         ty: punktY - (punktY - a.ty) * wirklich,
       };
     });
-  }, []);
+  }, [boden]);
 
-  function beiRad(e) {
-    e.preventDefault();
-    const box = huelle.current.getBoundingClientRect();
-    zoomen(e.deltaY < 0 ? 1.12 : 1 / 1.12, e.clientX - box.left, e.clientY - box.top);
-  }
+  /**
+   * Zoomen mit dem Rad – von Hand angemeldet, nicht über `onWheel`.
+   *
+   * React meldet Rad-Ereignisse als „passiv“ an; darin darf man das Blättern
+   * der Seite nicht unterdrücken, und der Browser schimpft. Auf einer Karte
+   * über zweihundert Meter ist das Rad aber der Hauptweg durch die Gegend,
+   * und dann soll unter dem Zeiger gezoomt und nicht die Seite gescrollt
+   * werden.
+   */
+  useEffect(() => {
+    const el = huelle.current;
+    if (!el) return undefined;
+    const beiRad = (e) => {
+      e.preventDefault();
+      const box = el.getBoundingClientRect();
+      zoomen(e.deltaY < 0 ? 1.12 : 1 / 1.12, e.clientX - box.left, e.clientY - box.top);
+    };
+    el.addEventListener('wheel', beiRad, { passive: false });
+    return () => el.removeEventListener('wheel', beiRad);
+  }, [zoomen]);
 
   function beiZeigerAb(e) {
     huelle.current.setPointerCapture(e.pointerId);
@@ -326,7 +347,6 @@ export default function Board({
   return (
     <div
       ref={huelle}
-      onWheel={beiRad}
       onPointerDown={beiZeigerAb}
       onPointerMove={beiZeigerBewegung}
       onPointerUp={beiZeigerAuf}
@@ -355,7 +375,7 @@ export default function Board({
           <div className="absolute inset-0 bg-[#241c12]" />
         )}
 
-        {scene.gridVisible && (
+        {scene.gridVisible && g * ansicht.scale >= RASTER_AB && (
           <div
             className="pointer-events-none absolute inset-0"
             style={{
@@ -408,7 +428,7 @@ export default function Board({
               stroke="#14100a"
               strokeWidth={Math.max(2, 4 / ansicht.scale)}
             >
-              {felder} Felder · {felder * 5} Fuß
+              {felder} Felder · {weiteText(scene, felder)}
             </text>
           </svg>
         )}

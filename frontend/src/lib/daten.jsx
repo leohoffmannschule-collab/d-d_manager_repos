@@ -14,6 +14,7 @@ import {
   stashApi,
 } from './api.js';
 import { useAuth } from './auth.jsx';
+import { ausBase64, mitFeldern, rasterBereich } from './rasterkarte.js';
 import { useLive, useLiveAlle, useLiveStatus } from './live.jsx';
 
 /**
@@ -121,11 +122,11 @@ export function useSzene() {
   const holen = useCallback(() => scenesApi.active(), []);
   const { daten: szene, setDaten: setSzene, laden, fehler, laedt } = useDaten(holen, null);
   const [figuren, setFiguren] = useState([]);
-  const [nebel, setNebel] = useState(() => new Set());
+  const [nebel, setNebel] = useState(null);
 
   useEffect(() => {
     setFiguren(szene?.tokens ?? []);
-    setNebel(new Set(szene?.fog ?? []));
+    setNebel(szene ? ausBase64(szene.fogBits ?? '', rasterBereich(szene)) : null);
   }, [szene]);
 
   /**
@@ -134,7 +135,10 @@ export function useSzene() {
    * was aufgedeckt ist“: helle Szene, kein Nebel, oder keine eigene Figur
    * auf der Karte.
    */
-  const sicht = useMemo(() => (szene?.sicht ? new Set(szene.sicht) : null), [szene?.sicht]);
+  const sicht = useMemo(
+    () => (szene?.sichtBits ? ausBase64(szene.sichtBits, rasterBereich(szene)) : null),
+    [szene]
+  );
 
   useLive('szene', (neu) => setSzene(neu));
 
@@ -153,28 +157,16 @@ export function useSzene() {
 
   useLive('figur:entfernt', ({ id }) => setFiguren((alle) => alle.filter((t) => t.id !== id)));
 
+  // Einzelne Pinselstriche wandern weiterhin als "x,y" – ein Strich ist klein,
+  // dafür lohnt kein Umpacken.
   useLive('nebel', ({ sceneId, cells, revealed }) => {
     if (szene && sceneId !== szene.id) return;
-    setNebel((alt) => {
-      const naechste = new Set(alt);
-      for (const feld of cells) {
-        if (revealed) naechste.add(feld);
-        else naechste.delete(feld);
-      }
-      return naechste;
-    });
+    setNebel((alt) => mitFeldern(alt, cells, revealed));
   });
 
   /** Nebel malen: erst örtlich, damit es sich flüssig anfühlt. */
   const nebelSetzen = useCallback((felder, offen) => {
-    setNebel((alt) => {
-      const naechste = new Set(alt);
-      for (const feld of felder) {
-        if (offen) naechste.add(feld);
-        else naechste.delete(feld);
-      }
-      return naechste;
-    });
+    setNebel((alt) => mitFeldern(alt, felder, offen));
   }, []);
 
   /** Figur bewegen: ebenfalls erst örtlich, dann zum Server. */

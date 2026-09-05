@@ -195,9 +195,42 @@ Trefferpunkte wandern in beide Richtungen zwischen Kampf und Charakterblatt.
     POST   /api/scenes/ping                  { x, y }
     POST   /api/scenes/nsc-sicht             [SL] { tokenId | null }
 
-Der Nebel ist eine Liste von Rasterfeldern als `"x,y"`. Übers Netz wandern nur
-die geänderten Felder. Eine Szene, die aus einer Karte der Bibliothek entstanden
-ist, trägt deren `mapId`.
+Eine Szene, die aus einer Karte der Bibliothek entstanden ist, trägt deren
+`mapId` und erbt ihren Maßstab.
+
+### Maßstab
+
+Ein Rasterfeld steht für eine Spielweite, und die muss nicht 5 Fuß sein:
+
+| Feld | Bedeutung |
+| ---- | --------- |
+| `unit` | `"fuss"` (Vorgabe) oder `"meter"` |
+| `scale` | Spielweite je Feld, 0,1 bis 1000. Vorgabe 5 für Fuß, 1 für Meter. |
+
+Damit lässt sich eine Karte in Metern anlegen: 200 × 200 Felder zu einem Meter
+sind zweihundert Meter Kantenlänge. Lineal, Größenangaben und die
+Sichtweiten rechnen damit – die Sinne stehen auf dem Blatt weiter in Fuß, weil
+das Regelwerk in Fuß geschrieben ist, und werden umgerechnet: 30 Fuß
+Dunkelsicht reichen auf einer Meterkarte neun Felder weit statt sechs.
+
+### Nebel und Sicht als Bitkarte
+
+`fogBits` und `sichtBits` sind base64 verpackte Bitfolgen, ein Bit je
+Rasterfeld, zeilenweise über den Rasterbereich der Szene (`rasterBereich` in
+`sicht.js` und `frontend/src/lib/rasterkarte.js` rechnen ihn identisch aus).
+`sichtBits: null` heißt weiterhin „keine Sichtgrenze“.
+
+Der Grund ist Arithmetik: Eine Karte über zweihundert Meter hat bei einem
+Meter je Feld 40 000 Felder. Als Liste von `"x,y"` wären das **348 KB** – und
+die Szene geht bei jedem Zug an jede Person neu hinaus, macht bei fünf
+Spielern 1,7 MB für einen Schritt zur Seite. Als Bitkarte sind es **6,5 KB**.
+Die Bitkarte ist dabei immer gleich groß, egal wie viel aufgedeckt ist; auch
+bei kleinen Karten bleibt sie die sparsamere Form.
+
+Die einzelnen Pinselstriche wandern weiterhin als `"x,y"` (im `nebel`-Ereignis
+und in `POST /nebel`) – ein Strich ist klein, dafür lohnt kein Umpacken. Die
+Szenenliste (`GET /api/scenes`) trägt gar keinen Nebel mehr; sie braucht ihn
+nicht.
 
 ### Wer sieht was
 
@@ -207,7 +240,7 @@ Spielleitung aufgedeckt hat) trägt sie:
 | Feld | Bedeutung |
 | ---- | --------- |
 | `dark` | Dunkle Szene: Erst dann greifen Licht und Sinne. |
-| `sicht` | Die Felder, die *diese* Person gerade sieht. `null` heißt „alles Aufgedeckte“ – helle Szene, kein Nebel, oder keine eigene Figur auf der Karte. |
+| `sichtBits` | Die Felder, die *diese* Person gerade sieht, als Bitkarte. `null` heißt „alles Aufgedeckte“ – helle Szene, kein Nebel, oder keine eigene Figur auf der Karte. |
 | `nscSicht` | Nur für die Spielleitung: durch welche Figur sie gerade schaut, sonst `null`. |
 
 Eine Figur trägt dazu `lightBright` und `lightDim` in Fuß – was sie an Licht

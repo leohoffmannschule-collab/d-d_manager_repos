@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { mapsApi, mediaApi, scenesApi } from '../../lib/api.js';
 import { useKarten, useSzenenListe } from '../../lib/daten.jsx';
 import { bildUndVorschau } from '../../lib/bilder.js';
+import { EINHEIT, rasterBereich, weite } from '../../lib/rasterkarte.js';
 import {
   IconCandle,
   IconCheck,
@@ -54,9 +55,19 @@ export default function SceneBar({ scene, laedtSzene, tokens = [], mode, onMode,
   }, [laedtSzene, scene]);
   const [raster, setRaster] = useState(false);
   const [name, setName] = useState('');
+  const [breit, setBreit] = useState(30);
+  const [tief, setTief] = useState(20);
   const [laedt, setLaedt] = useState(false);
   const [fehler, setFehler] = useState('');
   const datei = useRef(null);
+
+  // Wie groß ist diese Karte im Spiel? Aus dem Raster, nicht aus dem Bildmaß.
+  const masse = useMemo(() => {
+    if (!scene) return { spalten: 0, zeilen: 0, breite: 0, tiefe: 0 };
+    const { cols, rows } = rasterBereich(scene);
+    const rund = (wert) => (Number.isInteger(wert) ? wert : Math.round(wert * 10) / 10);
+    return { spalten: cols, zeilen: rows, breite: rund(weite(scene, cols)), tiefe: rund(weite(scene, rows)) };
+  }, [scene]);
 
   /**
    * Eine hochgeladene Karte geht den Umweg über die Bibliothek: dort bleibt
@@ -219,8 +230,39 @@ export default function SceneBar({ scene, laedtSzene, tokens = [], mode, onMode,
               <IconCheck size={13} /> Raster in der Bibliothek merken
             </Knopf>
           )}
+          <label className="block">
+            <span className="mb-1 block font-display text-[10px] tracking-[0.16em] text-faint uppercase">
+              Ein Feld ist
+            </span>
+            <div className="flex items-center gap-1.5">
+              <input
+                type="number"
+                min={0.1}
+                step={0.5}
+                value={scene.scale}
+                onChange={(e) => rasterAendern('scale', Number(e.target.value) || 1)}
+                className="field-box w-20 font-display"
+                aria-label="Weite je Feld"
+              />
+              <select
+                value={scene.unit}
+                onChange={(e) => rasterAendern('unit', e.target.value)}
+                className="field-box font-display"
+                aria-label="Einheit"
+              >
+                <option value="fuss">Fuß</option>
+                <option value="meter">Meter</option>
+              </select>
+            </div>
+          </label>
+
           <p className="text-[15px] text-sepia italic">
-            Ein Feld entspricht 5 Fuß. Die Feldgröße so einstellen, dass die Linien auf der Karte liegen.
+            {masse.spalten} × {masse.zeilen} Felder – das sind{' '}
+            <span className="text-ink">
+              {masse.breite} × {masse.tiefe} {EINHEIT[scene.unit] ?? 'Fuß'}
+            </span>
+            . Die Feldgröße so einstellen, dass die Linien auf der Karte liegen; die Weite je Feld sagt,
+            wofür ein Feld im Spiel steht.
           </p>
         </div>
       )}
@@ -251,7 +293,17 @@ export default function SceneBar({ scene, laedtSzene, tokens = [], mode, onMode,
             </button>
             <button
               onClick={async () => {
-                await scenesApi.create({ name: name.trim() || 'Leere Szene', width: 2100, height: 1400, gridSize: 70 });
+                // Reines Raster ohne Bild: Die Größe steht in Feldern, das
+                // Bildmaß rechnet sich daraus. 60 Bildpunkte je Feld sind
+                // auch bei zweihundert Feldern noch flüssig.
+                const felder = Math.max(1, Math.min(250, Number(breit) || 30));
+                const hoch = Math.max(1, Math.min(250, Number(tief) || 20));
+                await scenesApi.create({
+                  name: name.trim() || 'Leere Szene',
+                  width: felder * 60,
+                  height: hoch * 60,
+                  gridSize: 60,
+                });
                 setName('');
                 await laden();
                 onChanged?.();
@@ -260,6 +312,28 @@ export default function SceneBar({ scene, laedtSzene, tokens = [], mode, onMode,
             >
               <IconPlus size={16} /> ohne Karte
             </button>
+            <label className="flex items-center gap-1.5 text-[14px] text-faint">
+              <input
+                type="number"
+                min={1}
+                max={250}
+                value={breit}
+                onChange={(e) => setBreit(e.target.value)}
+                className="field-box w-16 font-display"
+                aria-label="Felder breit"
+              />
+              ×
+              <input
+                type="number"
+                min={1}
+                max={250}
+                value={tief}
+                onChange={(e) => setTief(e.target.value)}
+                className="field-box w-16 font-display"
+                aria-label="Felder hoch"
+              />
+              Felder
+            </label>
           </div>
 
           {fehler && <p className="mb-3 text-rubric">{fehler}</p>}

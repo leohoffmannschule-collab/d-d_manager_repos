@@ -2,11 +2,14 @@
  * Ein Bild aus dem Dateiwähler in eine data:-URL verwandeln – so wandert es
  * durch die gewöhnliche JSON-API und es braucht kein Datei-Upload-Paket.
  *
- * Sehr große Karten werden vorher verkleinert: Ein Handyfoto mit 8000 Pixeln
- * Kantenlänge bringt am Spieltisch nichts, kostet aber Speicher auf dem Pi
- * und Ladezeit auf dem iPad.
+ * Sehr große Karten werden vorher verkleinert. Die Grenze liegt bei 8192
+ * Bildpunkten Kantenlänge – genug, dass auch eine Karte über zweihundert
+ * Meter noch vierzig Bildpunkte je Meter behält. Darüber bringt es am
+ * Spieltisch nichts mehr, kostet aber Speicher auf dem Pi und Ladezeit auf
+ * dem iPad. Wird die Datei dabei größer als 20 MB, weist der Server sie ab;
+ * dann hilft ein kleineres Bild oder eine geteilte Karte.
  */
-export async function bildLesen(file, maxSeite = 4096) {
+export async function bildLesen(file, maxSeite = 8192) {
   const rohDatenUrl = await new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
@@ -50,7 +53,7 @@ export async function bildLesen(file, maxSeite = 4096) {
  * beschäftigt und das iPad mit dem Scrollen. Beides entsteht hier aus einem
  * einzigen Lesevorgang – die Datei wandert nur einmal durch den Speicher.
  */
-export async function bildUndVorschau(file, maxSeite = 4096, vorschauSeite = 480) {
+export async function bildUndVorschau(file, maxSeite = 8192, vorschauSeite = 480) {
   const voll = await bildLesen(file, maxSeite);
 
   const img = await new Promise((resolve, reject) => {

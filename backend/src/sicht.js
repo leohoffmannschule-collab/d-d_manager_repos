@@ -24,10 +24,24 @@
  * Regelwerk steht.
  */
 
-const FUSS_JE_FELD = 5;
+const FUSS_JE_METER = 3.280839895;
 
-/** Fuß in Rasterfelder. 30 Fuß Dunkelsicht sind sechs Felder. */
-export const inFelder = (fuss) => Math.max(0, Math.floor((Number(fuss) || 0) / FUSS_JE_FELD));
+/**
+ * Wie viel Spielweite steckt in einem Feld – in Fuß gerechnet?
+ *
+ * Die Sinne stehen auf dem Charakterblatt in Fuß, weil das Regelwerk in Fuß
+ * geschrieben ist. Der Maßstab der Karte darf trotzdem metrisch sein: Ein
+ * Feld von einem Meter fasst 3,28 Fuß, und dreißig Fuß Dunkelsicht reichen
+ * dann neun Felder weit statt sechs.
+ */
+export function fussJeFeld(scene) {
+  const weite = Number(scene?.scale) > 0 ? Number(scene.scale) : 5;
+  return scene?.unit === 'meter' ? weite * FUSS_JE_METER : weite;
+}
+
+/** Fuß in Rasterfelder, im Maßstab dieser Karte. */
+export const inFelder = (fuss, scene) =>
+  Math.max(0, Math.floor((Number(fuss) || 0) / fussJeFeld(scene)));
 
 /** In welchem Rasterfeld steht der Mittelpunkt dieser Figur? */
 export function figurenFeld(token, scene) {
@@ -78,7 +92,7 @@ export function beleuchteteFelder(scene, tokens) {
   const bereich = rasterBereich(scene);
   const felder = new Set();
   for (const token of tokens) {
-    const reichweite = inFelder((token.lightBright ?? 0) + (token.lightDim ?? 0));
+    const reichweite = inFelder((token.lightBright ?? 0) + (token.lightDim ?? 0), scene);
     if (reichweite <= 0) continue;
     scheibe(figurenFeld(token, scene), reichweite, bereich, felder);
   }
@@ -118,9 +132,42 @@ export function sichtFelder(scene, alleTokens, eigeneTokens, sinneJeToken) {
     const mitte = figurenFeld(token, scene);
     // Das eigene Feld sieht man immer, und sei es durch Tasten.
     sichtbar.add(`${mitte.fx},${mitte.fy}`);
-    const reichweite = inFelder(sinnesReichweite(sinneJeToken.get(token.id)));
+    const reichweite = inFelder(sinnesReichweite(sinneJeToken.get(token.id)), scene);
     if (reichweite > 0) scheibe(mitte, reichweite, bereich, sichtbar);
   }
 
   return sichtbar;
+}
+
+/* --- Übertragung --------------------------------------------------------- */
+
+/**
+ * Eine Feldmenge als Bitkarte, ein Bit je Rasterfeld, base64 verpackt.
+ *
+ * Der Grund ist schlichte Arithmetik. Eine Karte über zweihundert Meter hat
+ * bei einem Meter je Feld 40 000 Felder. Als Liste von `"x,y"` sind das
+ * 348 KB – und die Szene geht bei jedem Zug an jede Person neu hinaus, macht
+ * bei fünf Spielern 1,7 MB für einen Schritt zur Seite. Als Bitkarte sind es
+ * 6,5 KB, also das Fünfzigfache weniger, und der Browser liest sie beim Malen
+ * des Nebels sogar schneller als eine Menge.
+ *
+ * Die einzelnen Pinselstriche wandern weiterhin als `"x,y"` – ein Strich ist
+ * klein, und dafür lohnt kein Umpacken.
+ */
+export function alsBitkarte(felder, bereich) {
+  const spalten = bereich.maxX - bereich.minX + 1;
+  const zeilen = bereich.maxY - bereich.minY + 1;
+  if (spalten <= 0 || zeilen <= 0) return '';
+
+  const bytes = new Uint8Array(Math.ceil((spalten * zeilen) / 8));
+  for (const feld of felder) {
+    const trenner = feld.indexOf(',');
+    if (trenner < 0) continue;
+    const x = Number(feld.slice(0, trenner));
+    const y = Number(feld.slice(trenner + 1));
+    if (x < bereich.minX || x > bereich.maxX || y < bereich.minY || y > bereich.maxY) continue;
+    const stelle = (y - bereich.minY) * spalten + (x - bereich.minX);
+    bytes[stelle >> 3] |= 1 << (stelle & 7);
+  }
+  return Buffer.from(bytes).toString('base64');
 }

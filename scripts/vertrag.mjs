@@ -439,13 +439,14 @@ try {
 
     // Solange es hell ist, sieht sie beide.
     let tisch = (await spieler.ruf('/scenes/aktiv')).daten;
-    gleich(tisch.sicht, null, 'In heller Szene gibt es keine Sichtgrenze');
+    gleich(tisch.sichtBits, null, 'In heller Szene gibt es keine Sichtgrenze');
     gleich(tisch.tokens.length, 2, 'Und die Runde sieht, was auf dem Tisch steht');
 
     // Licht aus.
     await sl.ruf(`/scenes/${dunkel.id}`, { methode: 'PUT', koerper: { dark: true } });
     tisch = (await spieler.ruf('/scenes/aktiv')).daten;
-    pruefe(Array.isArray(tisch.sicht), 'In dunkler Szene rechnet der Server eine Sicht aus');
+    pruefe(typeof tisch.sichtBits === 'string' && tisch.sichtBits.length > 0,
+      'In dunkler Szene rechnet der Server eine Sicht aus');
     gleich(tisch.tokens.length, 1, 'Das Ungetüm im Dunkeln fehlt in der Nutzlast – nicht nur im Bild');
     gleich(tisch.tokens[0].id, ihre.id, 'Die eigene Figur bleibt');
 
@@ -483,7 +484,7 @@ try {
     await sl.ruf(`/scenes/${dunkel.id}/nebel/alles`, { methode: 'POST', koerper: { revealed: true } });
     let slTisch = (await sl.ruf('/scenes/aktiv')).daten;
     gleich(slTisch.tokens.length, 2, 'Die Spielleitung sieht das ganze Brett');
-    gleich(slTisch.sicht, null, 'Und hat keine Sichtgrenze');
+    gleich(slTisch.sichtBits, null, 'Und hat keine Sichtgrenze');
     gleich(slTisch.nscSicht, null, 'Solange sie nicht durch fremde Augen schaut');
 
     gleich(
@@ -502,6 +503,64 @@ try {
     gleich((await sl.ruf('/scenes/aktiv')).daten.tokens.length, 2, 'Zurück in der Vogelperspektive');
 
     await sl.ruf(`/scenes/${dunkel.id}`, { methode: 'DELETE' });
+  }
+
+  // --- Maßstab und große Karten -------------------------------------------
+  {
+    const gross = (
+      await sl.ruf('/scenes', {
+        methode: 'POST',
+        // 200 x 200 Felder bei 60 Bildpunkten je Feld.
+        koerper: { name: 'Das weite Land', width: 12000, height: 12000, gridSize: 60, unit: 'meter', scale: 1 },
+      })
+    ).daten;
+    gleich(gross.unit, 'meter', 'Eine Szene darf metrisch sein');
+    gleich(gross.scale, 1, 'Mit einem Meter je Feld');
+    await sl.ruf(`/scenes/${gross.id}/aktivieren`, { methode: 'POST' });
+
+    // Zweihundert mal zweihundert Meter, ganz aufgedeckt.
+    const alles = await sl.ruf(`/scenes/${gross.id}/nebel/alles`, { methode: 'POST', koerper: { revealed: true } });
+    gleich(alles.daten.offen, 40000, '200 x 200 Felder passen vollständig in den Nebel');
+
+    const tisch = (await sl.ruf('/scenes/aktiv')).daten;
+    pruefe(typeof tisch.fogBits === 'string', 'Der Nebel wandert als Bitkarte');
+    pruefe(
+      tisch.fogBits.length < 12000,
+      'Und bleibt dabei klein',
+      `${(tisch.fogBits.length / 1024).toFixed(1)} KB statt der 348 KB einer Feldliste`
+    );
+    pruefe(tisch.fog === undefined, 'Die alte Feldliste ist aus der Nutzlast verschwunden');
+
+    // Die ganze Antwort darf einen Zug lang nicht schmerzen.
+    const groesse = JSON.stringify(tisch).length;
+    pruefe(groesse < 20000, 'Die ganze Szene bleibt unter 20 KB', `${(groesse / 1024).toFixed(1)} KB`);
+
+    // Sichtweiten rechnen im Maßstab der Karte: 30 Fuß sind neun Meterfelder.
+    const held = (await spieler.ruf('/characters')).daten.find((c) => c.ownerId);
+    const blatt = (await sl.ruf(`/characters/${held.id}`)).daten;
+    blatt.data.combat.senses = { ...blatt.data.combat.senses, darkvision: 30 };
+    await sl.ruf(`/characters/${held.id}`, { methode: 'PUT', koerper: { data: blatt.data } });
+    await sl.ruf(`/scenes/${gross.id}/figuren`, {
+      methode: 'POST',
+      koerper: { name: 'Elara', x: 3000, y: 3000, size: 1, characterId: held.id },
+    });
+    // Eine Figur genau neun Felder weiter – gerade noch in Reichweite.
+    await sl.ruf(`/scenes/${gross.id}/figuren`, {
+      methode: 'POST',
+      koerper: { name: 'Nah', x: 3000 + 9 * 60, y: 3000, size: 1 },
+    });
+    // Und eine zehn Felder weiter – gerade nicht mehr.
+    await sl.ruf(`/scenes/${gross.id}/figuren`, {
+      methode: 'POST',
+      koerper: { name: 'Fern', x: 3000 + 11 * 60, y: 3000, size: 1 },
+    });
+    await sl.ruf(`/scenes/${gross.id}`, { methode: 'PUT', koerper: { dark: true } });
+
+    const namen = (await spieler.ruf('/scenes/aktiv')).daten.tokens.map((t) => t.name);
+    pruefe(namen.includes('Nah'), '30 Fuß Dunkelsicht reichen auf einer Meterkarte neun Felder weit');
+    pruefe(!namen.includes('Fern'), 'Aber keine elf – der Maßstab rechnet mit');
+
+    await sl.ruf(`/scenes/${gross.id}`, { methode: 'DELETE' });
   }
 
   // --- NSC-Blätter --------------------------------------------------------

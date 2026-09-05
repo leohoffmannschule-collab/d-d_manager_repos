@@ -27,6 +27,8 @@ function rowToMap(row) {
     gridSize: row.grid_size,
     gridOffsetX: row.grid_offset_x,
     gridOffsetY: row.grid_offset_y,
+    unit: row.unit ?? 'fuss',
+    scale: Number(row.scale) > 0 ? Number(row.scale) : 5,
     ambienceId: row.ambience_id,
     tags: JSON.parse(row.tags),
     notes: row.notes,
@@ -79,8 +81,8 @@ router.post('/', (req, res) => {
   const id = randomUUID();
   db.prepare(
     `INSERT INTO maps (id, name, media_id, thumb_media_id, width, height, grid_size,
-                       grid_offset_x, grid_offset_y, tags, notes, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?, ?)`
+                       grid_offset_x, grid_offset_y, unit, scale, tags, notes, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?, ?)`
   ).run(
     id,
     body.name.trim().slice(0, 120),
@@ -89,6 +91,8 @@ router.post('/', (req, res) => {
     toNumber(body.width, 0),
     toNumber(body.height, 0),
     clamp(toNumber(body.gridSize, 70), 10, 500),
+    body.unit === 'meter' ? 'meter' : 'fuss',
+    clamp(toNumber(body.scale, body.unit === 'meter' ? 1 : 5), 0.1, 1000),
     JSON.stringify(schlagworte(body.tags)),
     typeof body.notes === 'string' ? body.notes.slice(0, 2000) : '',
     new Date().toISOString()
@@ -104,7 +108,7 @@ router.put('/:id', (req, res) => {
 
   db.prepare(
     `UPDATE maps SET name = ?, tags = ?, notes = ?, grid_size = ?, grid_offset_x = ?, grid_offset_y = ?,
-                     ambience_id = ?
+                     unit = ?, scale = ?, ambience_id = ?
        WHERE id = ?`
   ).run(
     typeof body.name === 'string' && body.name.trim() ? body.name.trim().slice(0, 120) : row.name,
@@ -113,6 +117,8 @@ router.put('/:id', (req, res) => {
     'gridSize' in body ? clamp(toNumber(body.gridSize, row.grid_size), 10, 500) : row.grid_size,
     'gridOffsetX' in body ? clamp(toNumber(body.gridOffsetX, row.grid_offset_x), -500, 500) : row.grid_offset_x,
     'gridOffsetY' in body ? clamp(toNumber(body.gridOffsetY, row.grid_offset_y), -500, 500) : row.grid_offset_y,
+    body.unit === 'meter' || body.unit === 'fuss' ? body.unit : row.unit,
+    'scale' in body ? clamp(toNumber(body.scale, row.scale), 0.1, 1000) : row.scale,
     'ambienceId' in body ? (body.ambienceId || null) : row.ambience_id,
     row.id
   );
@@ -164,8 +170,8 @@ router.post('/:id/auflegen', (req, res) => {
 
   db.prepare(
     `INSERT INTO scenes (id, name, media_id, width, height, grid_size, grid_offset_x, grid_offset_y,
-                         grid_visible, fog_enabled, fog, map_id, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, '[]', ?, ?)`
+                         grid_visible, fog_enabled, fog, unit, scale, map_id, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, '[]', ?, ?, ?, ?)`
   ).run(
     id,
     name.slice(0, 100),
@@ -176,6 +182,8 @@ router.post('/:id/auflegen', (req, res) => {
     row.grid_offset_x,
     row.grid_offset_y,
     req.body?.fogEnabled === false ? 0 : 1,
+    row.unit,
+    row.scale,
     row.id,
     new Date().toISOString()
   );

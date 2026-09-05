@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { mapsApi, mediaApi } from '../../lib/api.js';
 import { useKarten, useKlangbibliothek } from '../../lib/daten.jsx';
+import { EINHEIT, rasterBereich, weite } from '../../lib/rasterkarte.js';
 import { bildUndVorschau } from '../../lib/bilder.js';
 import { Rubric } from '../ui.jsx';
 import { IconCheck, IconMap, IconSearch, IconTrash, IconUpload } from '../icons.jsx';
@@ -63,11 +64,22 @@ function Kartenblatt({ karte, onGespeichert, onSchliessen, onMelden }) {
     gridSize: karte.gridSize,
     gridOffsetX: karte.gridOffsetX,
     gridOffsetY: karte.gridOffsetY,
+    unit: karte.unit ?? 'fuss',
+    scale: karte.scale ?? 5,
     ambienceId: karte.ambienceId ?? '',
   });
   const [laedt, setLaedt] = useState(false);
 
   const setzen = (feld) => (wert) => setEntwurf((v) => ({ ...v, [feld]: wert }));
+
+  // Wie groß ist diese Karte im Spiel? Aus dem Raster des Entwurfs gerechnet,
+  // damit die Zahl schon beim Schieben der Regler mitläuft.
+  const feldMasse = useMemo(() => {
+    const probe = { ...karte, ...entwurf };
+    const { cols, rows } = rasterBereich(probe);
+    const rund = (wert) => (Number.isInteger(wert) ? wert : Math.round(wert * 10) / 10);
+    return { spalten: cols, zeilen: rows, breite: rund(weite(probe, cols)), tiefe: rund(weite(probe, rows)) };
+  }, [karte, entwurf]);
 
   async function speichern() {
     setLaedt(true);
@@ -79,6 +91,8 @@ function Kartenblatt({ karte, onGespeichert, onSchliessen, onMelden }) {
         gridSize: entwurf.gridSize,
         gridOffsetX: entwurf.gridOffsetX,
         gridOffsetY: entwurf.gridOffsetY,
+        unit: entwurf.unit,
+        scale: entwurf.scale,
         ambienceId: entwurf.ambienceId || null,
       });
       await onGespeichert();
@@ -145,9 +159,38 @@ function Kartenblatt({ karte, onGespeichert, onSchliessen, onMelden }) {
               </label>
             ))}
           </div>
+          <label className="block">
+            <span className="mb-1 block font-display text-[10px] tracking-[0.16em] text-faint uppercase">
+              Ein Feld ist
+            </span>
+            <div className="flex items-center gap-1.5">
+              <input
+                type="number"
+                min={0.1}
+                step={0.5}
+                value={entwurf.scale}
+                onChange={(e) => setzen('scale')(Number(e.target.value) || 1)}
+                className="field-box w-20 font-display"
+                aria-label="Weite je Feld"
+              />
+              <select
+                value={entwurf.unit}
+                onChange={(e) => setzen('unit')(e.target.value)}
+                className="field-box font-display"
+                aria-label="Einheit"
+              >
+                <option value="fuss">Fuß</option>
+                <option value="meter">Meter</option>
+              </select>
+            </div>
+          </label>
+
           <p className="text-[15px] text-sepia italic">
-            Ein Feld sind 5 Fuß. Einmal hier ausgerichtet, kommt jede Szene aus dieser Karte schon passend
-            auf den Tisch.
+            {feldMasse.spalten} × {feldMasse.zeilen} Felder, also{' '}
+            <span className="text-ink">
+              {feldMasse.breite} × {feldMasse.tiefe} {EINHEIT[entwurf.unit] ?? 'Fuß'}
+            </span>
+            . Einmal hier ausgerichtet, kommt jede Szene aus dieser Karte schon passend auf den Tisch.
           </p>
 
           {ambienten.length > 0 && (

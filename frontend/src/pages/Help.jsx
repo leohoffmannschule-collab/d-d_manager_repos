@@ -32,7 +32,11 @@ export default function Help() {
 
       <Card title="Der Spieltisch">
         <ul className="flex list-disc flex-col gap-1.5 pl-5 leading-relaxed text-ink marker:text-rubric">
-          <li>Mit einem Finger oder der gedrückten Maustaste wird die Karte geschoben, mit dem Mausrad oder zwei Fingern gezoomt.</li>
+          <li>
+            Mit einem Finger oder der gedrückten Maustaste wird die Karte geschoben, mit dem Mausrad oder
+            zwei Fingern gezoomt. Auch eine Karte über zweihundert Meter lässt sich so ganz herauszoomen –
+            dann verschwinden die Rasterlinien, weil sie bei der Größe nur noch ein Grauschleier wären.
+          </li>
           <li>Die eigene Figur lässt sich ziehen; beim Loslassen schnappt sie auf das Raster ein. Fremde Figuren bewegt nur die Spielleitung.</li>
           <li>Ein <span className="font-display">Alt+Klick</span> lässt eine Stelle für alle kurz aufleuchten – praktisch statt „da vorne links, nein, weiter unten“.</li>
           <li>Jede Bewegung, jeder Wurf und jede Änderung der Trefferpunkte steht sofort bei allen anderen auf dem Schirm.</li>
@@ -66,6 +70,12 @@ export default function Help() {
               <span className="font-display">Aufdecken</span> und <span className="font-display">Verhüllen</span> malen
               den Nebel des Krieges. Vor dem Spiel einmal „alles verhüllen“, dann Raum für Raum öffnen. Was du nie
               aufgedeckt hast, wird der Runde gar nicht erst geschickt – auch die Figuren nicht, die dort stehen.
+            </li>
+            <li>
+              Unter „Raster“ stellst du auch den <span className="font-display">Maßstab</span> ein: wofür ein
+              Feld im Spiel steht. Fünf Fuß nach Regelwerk oder ein Meter – darunter steht dann, wie groß die
+              Karte insgesamt ist. Eine leere Szene legst du mit „ohne Karte“ in der gewünschten Feldzahl an,
+              bis zu 250 × 250; bei einem Meter je Feld sind das zweihundertfünfzig Meter.
             </li>
             <li>
               Unter „Raster“ steht <span className="font-display">Dunkle Szene</span>. Ab dann sieht jeder nur so
