@@ -236,13 +236,36 @@ Charakterblatt sichert es als einzelne Datei, die ohne Server, ohne Netz und ohn
 verlässliche Weg, sich auf eine Runde vorzubereiten, während der Pi aus ist – der Zwischenspeicher des Browsers
 ist immer nur so gut wie das, was zuletzt geöffnet war.
 
-## Entwickeln unter Windows mit VS Code
+## Alles in VS Code
+
+Der Almanach lässt sich vollständig aus dem eingebauten Terminal betreiben – spielen wie entwickeln.
+Terminal öffnen mit `Strg` + `Ö` (deutsche Tastatur) bzw. ``Strg`` + `` ` ``.
 
 1. **Projekt holen** – `Strg` + `Umschalt` + `P`, dann „Git: Clone“.
-2. **Abhängigkeiten installieren** – im Terminal (`Strg` + `Ö`): `npm run setup`
-3. **Starten** – `npm run dev`, oder `F5` → **„Almanach starten (Server + Oberfläche)“**,
-   oder `Strg` + `Umschalt` + `P` → „Tasks: Run Task“ → **„2 · Entwicklung starten“**.
-4. **Öffnen** – <http://localhost:5173>. Änderungen am Code sind sofort sichtbar.
+2. **Starten** – `npm start`. Beim ersten Mal holt der Befehl die Bausteine und baut die Oberfläche.
+3. **Öffnen** – <http://localhost:3001>. Das Terminal bleibt offen; `Strg` + `C` beendet.
+
+Fürs Entwickeln stattdessen `npm run dev` (Server 3001 + Oberfläche 5173 mit sofortigem Nachladen),
+oder `F5` → **„Almanach starten (Server + Oberfläche)“**.
+
+**Mitgelieferte Aufgaben** (`Strg` + `Umschalt` + `P` → „Tasks: Run Task“):
+
+| Aufgabe | Wofür |
+| --- | --- |
+| 1 · Abhängigkeiten installieren | einmalig, falls du sie getrennt haben willst |
+| 2 · Entwicklung starten | Server und Oberfläche mit Nachladen |
+| 3 · Fertige Fassung bauen und starten | der Spielabend-Modus (`npm start`) |
+| 4 · Adresse anzeigen | wer kommt woher heran? |
+| 5 · Tunnel nach außen aufmachen | für Mitspieler außerhalb des WLANs |
+
+**Mehrere Fenster nebeneinander:** Server und Tunnel brauchen je ein eigenes Terminal. Das Symbol
+zum **Teilen** rechts oben in der Terminalleiste (oder `Strg` + `Umschalt` + `5`) legt sie
+nebeneinander; über die Liste rechts wechselst du zwischen ihnen.
+
+> **PowerShell und `npm`:** Auf verwalteten Windows-Rechnern sperrt die Ausführungsrichtlinie oft das
+> Laden von `npm.ps1` – dann bricht `npm` mit „… kann nicht geladen werden“ ab, obwohl nichts kaputt
+> ist. Dieses Projekt stellt das VS-Code-Terminal deshalb auf die **Eingabeaufforderung** um, die
+> diese Regel nicht kennt. Wer lieber PowerShell benutzt, schreibt `npm.cmd` statt `npm`.
 
 > **Windows-Firewall:** Beim ersten Start fragt Windows, ob Node.js im Netzwerk erreichbar sein darf.
 > Für den Zugriff vom iPad muss das für **private Netzwerke** erlaubt werden.

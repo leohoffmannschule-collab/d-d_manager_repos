@@ -1,5 +1,10 @@
 {
   "files.eol": "\n",
+  // Unter Windows sperrt die Ausführungsrichtlinie auf verwalteten Rechnern
+  // gern das Laden von npm.ps1 – dann bricht "npm" in der PowerShell ab, ohne
+  // dass etwas kaputt wäre. Die Eingabeaufforderung kennt diese Regel nicht.
+  // Wer lieber PowerShell benutzt, schreibt einfach "npm.cmd" statt "npm".
+  "terminal.integrated.defaultProfile.windows": "Command Prompt",
   "search.exclude": {
     "**/node_modules": true,
     "backend/public": true,

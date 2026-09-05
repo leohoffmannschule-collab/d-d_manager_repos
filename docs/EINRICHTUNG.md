@@ -751,6 +751,7 @@ npm run adresse          # unter welchen Adressen er zu erreichen ist
 | Bild | Woran es meist liegt |
 | --- | --- |
 | `npm` oder `node` wird nicht gefunden | Node ist nicht installiert oder das Terminal war schon offen, als es installiert wurde. Fenster schließen, neues öffnen. Sonst [4.1](#41-nodejs-holen). |
+| „npm.ps1 kann nicht geladen werden, da die Ausführung von Skripts deaktiviert ist“ | Die PowerShell-Ausführungsrichtlinie, nicht der Almanach. In der **Eingabeaufforderung** statt der PowerShell arbeiten – in VS Code ist sie für dieses Projekt schon voreingestellt – oder `npm.cmd` statt `npm` schreiben. |
 | „Dieses Node bringt SQLite noch nicht mit“ | Node ist älter als 22.5. `node --version` prüfen, neuere Fassung holen. |
 | `EADDRINUSE` oder „Port belegt“ | Der Almanach läuft schon in einem anderen Fenster. Entweder das benutzen oder ihn dort mit `Strg+C` beenden. Ein zweiter darf auf einen anderen Port: `PORT=3002 npm start` |
 | Andere im WLAN kommen nicht heran | Die Firewall hat beim ersten Start gefragt und ein „Nein“ bekommen. In den Windows-Firewall-Einstellungen Node.js für **private** Netzwerke erlauben. |

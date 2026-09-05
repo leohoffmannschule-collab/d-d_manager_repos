@@ -30,6 +30,14 @@
       "command": "npm run adresse",
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "5 · Tunnel nach außen aufmachen",
+      "type": "shell",
+      "command": "npm run tunnel",
+      "problemMatcher": [],
+      "isBackground": true,
+      "presentation": { "reveal": "always", "panel": "dedicated" }
     }
   ]
 }
