@@ -2,7 +2,8 @@
 
 Eine selbst gehostete Runde für D&D 5e (und andere Pen-&-Paper-Systeme) im Gewand einer illuminierten
 Handschrift – Pergament, Eisengallustinte, Rubrikrot und Blattgold. Alles läuft auf einem einzigen
-Gerät, etwa einem **Raspberry Pi 5**, und wird von überall im Browser benutzt: vom Sofa, vom iPad am
+Gerät – einem **Raspberry Pi 5**, der durchläuft, oder einfach dem **Laptop**, der am Spielabend
+ohnehin auf dem Tisch steht – und wird von überall im Browser benutzt: vom Sofa, vom iPad am
 Spieltisch oder aus dem Wohnzimmer der Mitspieler, drei Städte weiter.
 
 Der Almanach besteht aus drei Teilen, die sich eine Anmeldung, eine Datenbank und einen Live-Kanal teilen:
@@ -18,9 +19,12 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
 
 > **Du willst ihn aufsetzen?** Das
 > **[Einrichtungs-Handbuch](docs/EINRICHTUNG.md)** führt dich Schritt für
-> Schritt vom nackten Raspberry Pi bis zur Runde, die von überall spielt –
-> samt Cloudflare-Tunnel, Spotify, Sicherung und Störungssuche. Rechne mit
-> zwei Stunden, davon die meiste Zeit Wartezeit.
+> Schritt bis zur Runde, die von überall spielt – samt Cloudflare-Tunnel,
+> Spotify, Sicherung und Störungssuche. Es beschreibt **zwei Wege**: den
+> [Raspberry Pi mit Docker](docs/EINRICHTUNG.md#3-weg-a-der-raspberry-pi-mit-docker)
+> (eine Stunde) und den
+> [Laptop ganz ohne Docker](docs/EINRICHTUNG.md#4-weg-b-laptop-oder-pc-ganz-ohne-docker)
+> (zehn Minuten, und es genügt Node.js).
 
 ## Funktionen
 
@@ -137,16 +141,21 @@ Einstellung fehlt nichts – das Protokoll entsteht so oder so.
 - [Git](https://git-scm.com/) zum Herunterladen des Projekts
 - [Visual Studio Code](https://code.visualstudio.com/) (optional, aber unten beschrieben)
 
-## Der erste Start
+## Der erste Start – ohne Docker, auf jedem Rechner
 
 ```bash
 git clone <URL>
 cd d-d_manager_repos
-npm run setup
 npm start
 ```
 
-Danach <http://localhost:3001> öffnen. Beim ersten Aufruf steht dort **„Den Almanach eröffnen“**:
+Mehr ist es nicht: `npm start` holt beim ersten Mal die Bausteine, baut die Oberfläche und startet
+den Server. Danach startet derselbe Befehl in Sekunden, denn gebaut wird nur, wenn sich wirklich
+etwas geändert hat. Wer lieber klickt: **`starten.cmd`** doppelklicken (Windows) oder
+`./starten.sh` ausführen (macOS, Linux).
+
+Danach <http://localhost:3001> öffnen. `npm run adresse` nennt dir die Adresse, unter der die
+anderen im selben WLAN mitspielen. Beim ersten Aufruf steht dort **„Den Almanach eröffnen“**:
 
 1. Das **erste angelegte Konto führt die Spielleitung** – kein Einladungscode nötig.
 2. Unter **Spielleitung → Runde** einen Einladungscode je Mitspieler erzeugen und weitergeben.
@@ -173,7 +182,7 @@ Neustarts und Updates (`git pull && docker compose up -d --build`).
 Ohne Docker geht es genauso wie oben; für den Autostart bietet sich `pm2` an:
 
 ```bash
-npm run build
+npm run build   # pm2 startet den Server unmittelbar, baut also nicht selbst
 sudo npm install -g pm2
 pm2 start src/server.js --name almanach --cwd /pfad/zu/d-d_manager_repos/backend
 pm2 save && pm2 startup
@@ -188,16 +197,19 @@ Cloudflare baut die Verbindung von innen nach außen auf und leiht sich dafür e
 `trycloudflare.com` – ohne Konto, ohne Anmeldung, mit gültigem HTTPS.
 
 ```bash
-docker compose --profile tunnel up -d
-./scripts/adresse.sh
+docker compose --profile tunnel up -d   # mit Docker
+npm run tunnel                          # ohne Docker, in einem zweiten Fenster
+npm run adresse                         # welche Adresse gilt gerade?
 ```
 
-Das Skript sagt dir, welche Adresse gerade gilt. Die schickst du deiner Runde.
+`npm run adresse` sagt dir, welche Adresse gerade gilt – und findet sie auf beiden Wegen. Die
+schickst du deiner Runde. Fehlt `cloudflared`, sagt `npm run tunnel` dir, welche einzelne Datei du
+wohin legen musst; installiert wird dabei nichts.
 
 > **Der Haken:** Die Adresse ist geliehen und **wechselt, wenn der Tunnel neu startet** – nach einem
-> Neustart des Pi oder einer Aktualisierung. Dann noch einmal `./scripts/adresse.sh` und die neue
+> Neustart des Geräts oder einer Aktualisierung. Dann noch einmal `npm run adresse` und die neue
 > Adresse in die Gruppe schicken. Im Alltag passiert das selten; im Heimnetz gilt ohnehin durchgehend
-> `http://<IP-des-Pi>:3001`.
+> die Adresse aus `npm run adresse`.
 
 > **Umzug inklusive:** Weil der Tunnel von innen nach außen aufgebaut wird, funktioniert er überall.
 > Nimmst du den Pi zur Runde bei Freunden mit, steckst du ihn dort einfach ins Netz.
@@ -243,6 +255,7 @@ ist immer nur so gut wie das, was zuletzt geöffnet war.
 | `DATA_DIR`       | `backend/data`                     | Ablageort von Datenbank und hochgeladenen Bildern                 |
 | `DND5E_API_BASE` | `https://www.dnd5eapi.co/api/2014` | Basis-URL der D&D-5e-API (Regelwerk-Version)                      |
 | `TRUST_PROXY`    | `loopback`                         | `1`, wenn ein Tunnel im eigenen Container davorsteht (siehe Compose) |
+| `CLOUDFLARED`    | leer                               | Pfad zu `cloudflared`, falls es nicht im Suchpfad liegt (nur `npm run tunnel`) |
 
 Für den Klangteppich ist nichts einzustellen: Die Spielleitung hinterlegt Spotify-Links, und der
 Almanach zeigt der Runde, welcher gerade dran ist. Abgespielt wird in Spotify selbst.
@@ -266,10 +279,12 @@ Das mitgelieferte Skript zieht stattdessen einen in sich stimmigen Stand, währe
 weiterspielt:
 
 ```bash
-# Datenbank sichern (klein, taugt für jede Nacht)
-docker compose exec -T dnd-manager node scripts/sicherung.mjs /app/data/sicherungen
+# ohne Docker – sichert nach backend/data/sicherungen
+npm run sicherung
+npm run sicherung -- --medien        # samt Karten und Bildnissen
 
-# Alles, samt Karten und Bildnissen
+# mit Docker
+docker compose exec -T dnd-manager node scripts/sicherung.mjs /app/data/sicherungen
 docker compose exec -T dnd-manager node scripts/sicherung.mjs /app/data/sicherungen --medien
 ```
 
@@ -305,18 +320,29 @@ backend/    Node.js + Express, SQLite über das eingebaute node:sqlite
                              Kompendium-Zwischenspeicher
 design/     Die Design-Entwürfe (Artboards) zum mittelalterlichen Erscheinungsbild
 scripts/    Hilfsskripte, plattformunabhängig in Node geschrieben
+            start.mjs        prüfen, bauen, starten – der Weg ohne Docker
+            adresse.mjs      unter welchen Adressen der Almanach erreichbar ist
+            tunnel.mjs       den Schnelltunnel ohne Docker aufmachen
+            vertrag.mjs      die Schnittstelle gegen einen eigenen Testserver prüfen
+starten.cmd / starten.sh     zum Doppelklicken, für alle ohne Terminal
 ```
 
 Nützliche Befehle im Projektstamm:
 
-| Befehl          | Wirkung                                                       |
-| --------------- | ------------------------------------------------------------- |
-| `npm run setup` | Abhängigkeiten für Backend und Frontend installieren          |
-| `npm run dev`   | Entwicklung: Server (3001) und Oberfläche (5173) gleichzeitig  |
-| `npm run build` | Oberfläche bauen und ins Backend kopieren                      |
-| `npm start`     | Bauen und fertige Fassung starten (3001)                       |
-| `npm run serve` | Nur den Server starten (ohne neu zu bauen)                     |
-| `npm run vertrag` | Die Schnittstelle gegen einen eigenen Testserver prüfen      |
+| Befehl              | Wirkung                                                              |
+| ------------------- | -------------------------------------------------------------------- |
+| `npm start`         | Alles in einem: nachinstallieren, bauen (falls nötig), starten (3001) |
+| `npm run pruefen`   | Nur nachsehen: Node, Bausteine, Bau, Datenordner, Port                |
+| `npm run adresse`   | Unter welchen Adressen der Almanach gerade erreichbar ist             |
+| `npm run tunnel`    | Den Weg von außen aufmachen, ohne Docker (`Strg+C` schließt ihn)      |
+| `npm run sicherung` | Datenbank sichern; `-- --medien` nimmt Karten und Bildnisse mit       |
+| `npm run setup`     | Abhängigkeiten für Backend und Frontend installieren                  |
+| `npm run dev`       | Entwicklung: Server (3001) und Oberfläche (5173) gleichzeitig         |
+| `npm run build`     | Oberfläche bauen und ins Backend kopieren                             |
+| `npm run serve`     | Nur den Server starten (ohne zu bauen)                                |
+| `npm run vertrag`   | Die Schnittstelle gegen einen eigenen Testserver prüfen               |
+
+`npm start` nimmt außerdem `-- --neu-bauen` (Bau erzwingen) und `-- --ohne-bau` (Bau überspringen).
 
 ## Die Oberfläche umbauen
 

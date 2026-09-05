@@ -16,11 +16,11 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import db, { mediaDir } from '../src/db.js';
+import db, { dataDir, mediaDir } from '../src/db.js';
 
 const argumente = process.argv.slice(2);
 const schalter = argumente.filter((a) => a.startsWith('--'));
-const ziel = argumente.find((a) => !a.startsWith('--')) ?? path.join(process.env.DATA_DIR || 'data', 'sicherungen');
+const ziel = argumente.find((a) => !a.startsWith('--')) ?? path.join(dataDir, 'sicherungen');
 
 const mitMedien = schalter.includes('--medien');
 const behalten = Number(schalter.find((a) => a.startsWith('--behalten='))?.split('=')[1] ?? 14);

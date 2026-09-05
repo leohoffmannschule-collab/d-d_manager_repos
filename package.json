@@ -13,8 +13,12 @@
     "dev:backend": "npm run dev --prefix backend",
     "dev:frontend": "npm run dev --prefix frontend",
     "build": "npm run build --prefix frontend && node scripts/copy-frontend.mjs",
-    "start": "npm run build && npm start --prefix backend",
+    "start": "node scripts/start.mjs",
+    "pruefen": "node scripts/start.mjs --pruefen",
     "serve": "npm start --prefix backend",
+    "adresse": "node scripts/adresse.mjs",
+    "tunnel": "node scripts/tunnel.mjs",
+    "sicherung": "node backend/scripts/sicherung.mjs",
     "vertrag": "node scripts/vertrag.mjs"
   },
   "devDependencies": {

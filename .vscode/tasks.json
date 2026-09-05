@@ -23,6 +23,13 @@
       "command": "npm start",
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "4 · Adresse anzeigen (wer kommt woher heran?)",
+      "type": "shell",
+      "command": "npm run adresse",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
     }
   ]
 }

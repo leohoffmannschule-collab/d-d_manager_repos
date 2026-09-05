@@ -5,7 +5,10 @@ import { fileURLToPath } from 'node:url';
 
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dataDir = process.env.DATA_DIR || path.join(__dirname, '..', 'data');
+// Auch nach außen sichtbar: Skripte wie die Sicherung sollen denselben
+// Ordner treffen wie der Server – und ihn nicht aus dem Arbeitsverzeichnis
+// raten müssen, das je nach Aufrufort ein anderer wäre.
+export const dataDir = process.env.DATA_DIR || path.join(__dirname, '..', 'data');
 fs.mkdirSync(dataDir, { recursive: true });
 
 export const mediaDir = path.join(dataDir, 'medien');

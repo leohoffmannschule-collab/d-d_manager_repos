@@ -3,3 +3,8 @@
 *.jpg binary
 *.ico binary
 *.woff2 binary
+
+# Stapeldateien für Windows brauchen Zeilenenden im Windows-Stil. Mit reinen
+# LF-Enden stolpert cmd.exe über mehrzeilige Blöcke und Sprungmarken.
+*.cmd text eol=crlf
+*.bat text eol=crlf
