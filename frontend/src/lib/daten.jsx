@@ -124,10 +124,15 @@ export function useSzene() {
   const [figuren, setFiguren] = useState([]);
   const [nebel, setNebel] = useState(null);
 
+  // Hinter dem Vorhang kommt nur `{ vorhang: true }` an – keine Maße, kein
+  // Raster, nichts zum Rechnen. Die Szene gilt dann als nicht vorhanden.
+  const vorhang = szene?.vorhang === true;
+  const gelegt = szene?.id ? szene : null;
+
   useEffect(() => {
-    setFiguren(szene?.tokens ?? []);
-    setNebel(szene ? ausBase64(szene.fogBits ?? '', rasterBereich(szene)) : null);
-  }, [szene]);
+    setFiguren(gelegt?.tokens ?? []);
+    setNebel(gelegt ? ausBase64(gelegt.fogBits ?? '', rasterBereich(gelegt)) : null);
+  }, [gelegt]);
 
   /**
    * Was gerade wirklich zu sehen ist – gerechnet hat das der Server, aus
@@ -136,8 +141,8 @@ export function useSzene() {
    * auf der Karte.
    */
   const sicht = useMemo(
-    () => (szene?.sichtBits ? ausBase64(szene.sichtBits, rasterBereich(szene)) : null),
-    [szene]
+    () => (gelegt?.sichtBits ? ausBase64(gelegt.sichtBits, rasterBereich(gelegt)) : null),
+    [gelegt]
   );
 
   useLive('szene', (neu) => setSzene(neu));
@@ -174,7 +179,7 @@ export function useSzene() {
     setFiguren((alle) => alle.map((t) => (t.id === id ? { ...t, x, y } : t)));
   }, []);
 
-  return { szene, figuren, nebel, sicht, nebelSetzen, figurSetzen, laden, fehler, laedt };
+  return { szene: gelegt, vorhang, figuren, nebel, sicht, nebelSetzen, figurSetzen, laden, fehler, laedt };
 }
 
 /** Alle Szenen der Spielleitung, samt Vermerk, welche aufliegt. */

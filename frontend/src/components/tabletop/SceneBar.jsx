@@ -38,7 +38,7 @@ function Knopf({ aktiv, children, ...rest }) {
 }
 
 /** Werkzeugleiste und Szenenverwaltung – nur für die Spielleitung. */
-export default function SceneBar({ scene, laedtSzene, tokens = [], mode, onMode, onChanged, onFogAll, onTokensFromEncounter }) {
+export default function SceneBar({ scene, vorhang, laedtSzene, tokens = [], mode, onMode, onChanged, onFogAll, onTokensFromEncounter }) {
   const { szenen, laden } = useSzenenListe();
   const { karten, laden: kartenLaden } = useKarten();
   const [offen, setOffen] = useState(false);
@@ -118,7 +118,34 @@ export default function SceneBar({ scene, laedtSzene, tokens = [], mode, onMode,
 
   return (
     <div className="border-b border-rule bg-panel-soft">
+      {/* Der Vorhang steht vorn und ist rot, wenn er zu ist: Wer ihn vergisst,
+          spielt vor einer Runde, die nichts sieht. */}
+      {vorhang && (
+        <button
+          onClick={async () => {
+            await scenesApi.vorhang(false);
+            onChanged?.();
+          }}
+          className="flex w-full items-center justify-center gap-2.5 border-b border-rubric bg-rubric px-3 py-2.5 font-display text-[12px] tracking-[0.14em] text-rubric-ink uppercase"
+        >
+          <IconFog size={15} />
+          Der Vorhang ist zu – die Runde sieht nichts. Jetzt öffnen
+        </button>
+      )}
+
       <div className="flex flex-wrap items-center gap-1.5 px-3 py-2">
+        {!vorhang && (
+          <Knopf
+            onClick={async () => {
+              await scenesApi.vorhang(true);
+              onChanged?.();
+            }}
+            title="Der Runde den Tisch verdecken, um in Ruhe aufzubauen"
+          >
+            <IconFog size={14} /> Vorhang zu
+          </Knopf>
+        )}
+
         {scene &&
           WERKZEUGE.map(({ id, label, Icon, hinweis }) => (
             <Knopf key={id} aktiv={mode === id} onClick={() => onMode(id)} title={hinweis}>
@@ -417,16 +444,29 @@ export default function SceneBar({ scene, laedtSzene, tokens = [], mode, onMode,
                 </div>
                 <div className="flex flex-col gap-1">
                   {!s.aktiv && (
-                    <button
-                      onClick={async () => {
-                        await scenesApi.activate(s.id);
-                        await laden();
-                        onChanged?.();
-                      }}
-                      className="min-h-9 px-1 font-display text-[11px] tracking-[0.08em] text-rubric uppercase"
-                    >
-                      auflegen
-                    </button>
+                    <>
+                      <button
+                        onClick={async () => {
+                          await scenesApi.activate(s.id);
+                          await laden();
+                          onChanged?.();
+                        }}
+                        className="min-h-9 px-1 font-display text-[11px] tracking-[0.08em] text-rubric uppercase"
+                      >
+                        auflegen
+                      </button>
+                      <button
+                        onClick={async () => {
+                          await scenesApi.activate(s.id, true);
+                          await laden();
+                          onChanged?.();
+                        }}
+                        title="Hinter dem Vorhang auflegen – die Runde sieht erst, wenn du öffnest"
+                        className="min-h-9 px-1 font-display text-[11px] tracking-[0.08em] text-sepia uppercase hover:text-ink"
+                      >
+                        verdeckt
+                      </button>
+                    </>
                   )}
                   <button
                     onClick={async () => {

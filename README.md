@@ -89,6 +89,10 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
   Hinterhalt zuschnappt.
 - **Szenen**: Karten hochladen, Raster einstellen, Szene auf den Tisch legen, Figuren aus dem laufenden
   Kampf auslegen, Figuren benennen, einfärben, vergrößern, mit einem Bildnis versehen oder verbergen.
+- **Vorhang**: Ein Griff, und die Runde sieht vom Tisch gar nichts mehr – kein Bild, keine Figuren, nicht
+  einmal den Namen der Szene. Dahinter wechselst du in Ruhe die Karte, stellst die Gegner und malst den
+  Nebel; die Runde sieht erst, wenn du öffnest. Kampfliste, Beute und Handzettel laufen daneben weiter,
+  und die Chronik führt den neuen Ort erst, wenn der Vorhang aufgeht.
 - **NSC-Blätter**: vollständige Charakterblätter, die nur die Spielleitung sieht – der Wirt, der
   Räuberhauptmann, der Drache. Sie stehen in einem eigenen Abschnitt „Hinter dem Schirm“, tauchen bei
   der Runde nirgends auf und werden beim Holen der Runde in den Kampf übergangen.

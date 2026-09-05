@@ -143,7 +143,8 @@ router.delete('/:id', (req, res) => {
 /**
  * POST /api/maps/:id/auflegen
  *
- * Bringt die Karte auf den Tisch. Gab es aus ihr schon eine Szene, kommt
+ * Bringt die Karte auf den Tisch. Mit `verdeckt` hinter dem Vorhang, damit
+ * die Spielleitung erst in Ruhe aufbauen kann. Gab es aus ihr schon eine Szene, kommt
  * diese zurück – samt Nebel, den die Runde sich erspielt hat. Wer wirklich
  * von vorn anfangen will, schickt `frisch: true`; sonst würde zweimaliges
  * Auflegen die Bibliothek mit halbaufgedeckten Zwillingen zumüllen.
@@ -159,7 +160,7 @@ router.post('/:id/auflegen', (req, res) => {
       .prepare('SELECT * FROM scenes WHERE map_id = ? ORDER BY created_at DESC LIMIT 1')
       .get(row.id);
     if (vorhanden) {
-      aktiviereSzene(vorhanden);
+      aktiviereSzene(vorhanden, { verdeckt: req.body?.verdeckt === true });
       if (row.ambience_id) klangAuflegen(row.ambience_id);
       return res.json({ sceneId: vorhanden.id, name: vorhanden.name, neu: false });
     }
@@ -189,7 +190,7 @@ router.post('/:id/auflegen', (req, res) => {
   );
 
   const szene = db.prepare('SELECT * FROM scenes WHERE id = ?').get(id);
-  aktiviereSzene(szene);
+  aktiviereSzene(szene, { verdeckt: req.body?.verdeckt === true });
   // Hängt an der Karte eine Ambiente, legt sie sich mit auf.
   if (row.ambience_id) klangAuflegen(row.ambience_id);
   res.status(201).json({ sceneId: id, name: szene.name, neu: true });

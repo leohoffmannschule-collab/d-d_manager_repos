@@ -8,7 +8,7 @@ import { scenesApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
 import { useCharaktere, useKampf, useNotizen, usePings, useSzene } from '../lib/daten.jsx';
 import { useLive } from '../lib/live.jsx';
-import { IconHeart, IconMap, IconPlus, IconScroll, IconSwords } from '../components/icons.jsx';
+import { IconFog, IconHeart, IconMap, IconPlus, IconScroll, IconSwords } from '../components/icons.jsx';
 
 /** Nebel-Änderungen werden gebündelt gesendet, nicht Feld für Feld. */
 const PINSEL_MS = 120;
@@ -46,6 +46,7 @@ export default function Tabletop() {
 
   const {
     szene: scene,
+    vorhang,
     figuren: tokens,
     nebel: fog,
     sicht,
@@ -130,6 +131,7 @@ export default function Tabletop() {
         {isDm && (
           <SceneBar
             scene={scene}
+            vorhang={vorhang}
             laedtSzene={laedtSzene}
             tokens={tokens}
             mode={mode}
@@ -172,12 +174,28 @@ export default function Tabletop() {
             />
           ) : (
             <div className="flex h-full flex-col items-center justify-center gap-3 bg-[#14100a] px-6 text-center">
-              <IconMap size={34} className="text-[#5a4526]" />
-              <p className="max-w-sm text-[#a89372] italic">
-                {isDm
-                  ? 'Noch liegt keine Karte auf dem Tisch. Lade eine hoch – bis dahin lässt sich rechts trotzdem kämpfen, teilen und lesen.'
-                  : 'Die Spielleitung hat noch keine Karte aufgelegt. Kampf, Beute und Handzettel stehen rechts trotzdem bereit.'}
-              </p>
+              {vorhang ? (
+                <>
+                  <IconFog size={36} className="text-[#7a5f2c]" />
+                  <p className="font-display text-[15px] tracking-[0.14em] text-[#c9b189] uppercase">
+                    Der Vorhang ist zu
+                  </p>
+                  <p className="max-w-sm text-[#a89372] italic">
+                    {isDm
+                      ? 'Die Runde sieht gerade nichts vom Tisch. Leg in Ruhe auf, stell die Gegner, mal den Nebel – und öffne oben, wenn du so weit bist.'
+                      : 'Die Spielleitung baut auf. Gleich geht es weiter – Kampf, Beute und Handzettel stehen rechts schon bereit.'}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <IconMap size={34} className="text-[#5a4526]" />
+                  <p className="max-w-sm text-[#a89372] italic">
+                    {isDm
+                      ? 'Noch liegt keine Karte auf dem Tisch. Lade eine hoch – bis dahin lässt sich rechts trotzdem kämpfen, teilen und lesen.'
+                      : 'Die Spielleitung hat noch keine Karte aufgelegt. Kampf, Beute und Handzettel stehen rechts trotzdem bereit.'}
+                  </p>
+                </>
+              )}
             </div>
           )}
 

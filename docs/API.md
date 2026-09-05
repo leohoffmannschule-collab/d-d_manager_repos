@@ -185,7 +185,8 @@ Trefferpunkte wandern in beide Richtungen zwischen Kampf und Charakterblatt.
     POST   /api/scenes                       [SL]
     PUT    /api/scenes/:id                   [SL]
     DELETE /api/scenes/:id                   [SL]
-    POST   /api/scenes/:id/aktivieren        [SL]
+    POST   /api/scenes/:id/aktivieren        [SL] { verdeckt? }
+    POST   /api/scenes/vorhang               [SL] { zu }
     POST   /api/scenes/:id/nebel             [SL]  { cells, revealed }
     POST   /api/scenes/:id/nebel/alles       [SL]  { revealed }
     POST   /api/scenes/:id/figuren           [SL]
@@ -231,6 +232,29 @@ Die einzelnen Pinselstriche wandern weiterhin als `"x,y"` (im `nebel`-Ereignis
 und in `POST /nebel`) – ein Strich ist klein, dafür lohnt kein Umpacken. Die
 Szenenliste (`GET /api/scenes`) trägt gar keinen Nebel mehr; sie braucht ihn
 nicht.
+
+### Der Vorhang
+
+Ist er zu (`POST /api/scenes/vorhang { zu: true }`), bekommt die Runde von
+`/scenes/aktiv` und aus dem `szene`-Ereignis **nur noch** dies:
+
+```json
+{ "vorhang": true }
+```
+
+Kein Bild, keine Figuren, kein Nebel, nicht einmal der Name der Szene. Das ist
+kein Ausblenden im Browser, sondern eine Nutzlast, die nichts enthält – die
+Spielleitung kann dahinter die Karte wechseln, Gegner stellen und Nebel malen,
+ohne dass ein Schnipsel davon herausgeht. Sie selbst sieht ihren Tisch weiter,
+mit `vorhang: true` als Vermerk.
+
+`aktivieren` und `maps/:id/auflegen` nehmen `verdeckt: true` und ziehen den
+Vorhang in einem Zug mit zu. Der Chronikeintrag zur Szene entsteht dabei
+nicht beim Auflegen, sondern erst, wenn der Vorhang aufgeht – im Protokoll
+soll kein Ort stehen, den am Tisch niemand gesehen hat.
+
+Kampfliste, Beute und Handzettel laufen daneben weiter. Verdeckt wird der
+Tisch, nicht der ganze Abend.
 
 ### Wer sieht was
 

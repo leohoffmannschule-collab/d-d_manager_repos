@@ -66,6 +66,19 @@ const holeSzene = (id) => db.prepare('SELECT * FROM scenes WHERE id = ?').get(id
 const holeFigur = (id) => db.prepare('SELECT * FROM tokens WHERE id = ?').get(id);
 const aktiveSzeneId = () => getState('szene', null);
 
+/**
+ * Der Vorhang über dem Spieltisch.
+ *
+ * Ist er zu, bekommt die Runde *nichts* – kein Bild, keine Figuren, nicht
+ * einmal den Namen der Szene. Das ist der Sinn der Sache: Die Spielleitung
+ * baut dahinter auf, wechselt die Karte, stellt Gegner, malt Nebel, und die
+ * Runde sieht davon keinen Schnipsel, bis der Vorhang aufgeht.
+ *
+ * Er hängt am Tisch, nicht an der Szene – sonst müsste man ihn für jede neue
+ * Karte neu zuziehen, und genau in dem Moment sähe die Runde alles.
+ */
+const vorhangZu = () => getState('vorhang', false) === true;
+
 function figuren(sceneId) {
   return db.prepare('SELECT * FROM tokens WHERE scene_id = ? ORDER BY created_at').all(sceneId).map(rowToToken);
 }
@@ -117,10 +130,15 @@ function figurSichtbar(token, szene, offen, sicht) {
  * diese eine Stelle, an der Sicht entsteht.
  */
 function szenenSicht(user) {
+  // Für die Runde endet es hier, wenn der Vorhang zu ist. Nicht gefiltert,
+  // nicht ausgeblendet – es wird schlicht nichts geschickt.
+  if (!isDm(user) && vorhangZu()) return { vorhang: true };
+
+  // Auch ohne aufgelegte Szene muss die Spielleitung sehen, dass der Vorhang
+  // zu ist – sonst zöge sie ihn zu und hätte kein Zeichen mehr davon.
   const id = aktiveSzeneId();
-  if (!id) return null;
-  const row = holeSzene(id);
-  if (!row) return null;
+  const row = id ? holeSzene(id) : null;
+  if (!row) return vorhangZu() ? { vorhang: true } : null;
 
   const szene = rowToScene(row);
   const alle = figuren(szene.id);
@@ -131,7 +149,7 @@ function szenenSicht(user) {
   // Nebel und Sicht wandern als Bitkarte, ein Bit je Feld. Bei einer Karte
   // über zweihundert Meter wären es als Liste von "x,y" 348 KB je Person
   // und Zug – siehe sicht.js.
-  const grundlage = { ...szene, fogBits: alsBitkarte(offen, bereich), aktiv: true };
+  const grundlage = { ...szene, fogBits: alsBitkarte(offen, bereich), vorhang: vorhangZu(), aktiv: true };
 
   if (isDm(user) && !durchAugen) {
     return { ...grundlage, tokens: alle, sichtBits: null, nscSicht: null };
@@ -334,9 +352,19 @@ router.delete('/:id', requireDm, (req, res) => {
 });
 
 /** Eine Szene auf den Tisch legen – auch aus der Kartenbibliothek heraus. */
-export function aktiviereSzene(row) {
+/**
+ * Eine Szene auf den Tisch legen. Mit `verdeckt` geht vorher der Vorhang zu –
+ * dann baut die Spielleitung dahinter auf, und die Runde merkt nichts davon.
+ */
+export function aktiviereSzene(row, optionen = {}) {
+  if (optionen.verdeckt) setState('vorhang', true);
   setState('szene', row.id);
-  chronik.log({ kind: 'szene', text: `Die Runde erreicht: ${row.name}.`, meta: { sceneId: row.id, name: row.name } });
+  // Hinter dem Vorhang ist die Runde noch nirgends angekommen. Der Eintrag in
+  // der Chronik wartet, bis er aufgeht – sonst stünde im Protokoll ein Ort,
+  // den am Tisch niemand gesehen hat.
+  if (!vorhangZu()) {
+    chronik.log({ kind: 'szene', text: `Die Runde erreicht: ${row.name}.`, meta: { sceneId: row.id, name: row.name } });
+  }
   sendeSzene();
 }
 
@@ -344,8 +372,40 @@ export function aktiviereSzene(row) {
 router.post('/:id/aktivieren', requireDm, (req, res) => {
   const row = holeSzene(req.params.id);
   if (!row) return res.status(404).json({ code: 'szene_nicht_gefunden', error: 'Szene nicht gefunden.' });
-  aktiviereSzene(row);
-  res.json(rowToScene(row));
+  aktiviereSzene(row, { verdeckt: req.body?.verdeckt === true });
+  res.json({ ...rowToScene(row), vorhang: vorhangZu() });
+});
+
+/**
+ * POST /api/scenes/vorhang  { zu: true|false }
+ *
+ * Der Vorhang über dem Tisch. Zu heißt: Die Runde bekommt keine Szene mehr,
+ * und zwar wirklich keine – der Server schickt nichts, statt im Browser etwas
+ * zu verdecken. Auf heißt: Bühne frei.
+ *
+ * Kampfliste, Beute und Handzettel laufen daneben weiter. Verdeckt wird der
+ * Tisch, nicht der ganze Abend.
+ */
+router.post('/vorhang', requireDm, (req, res) => {
+  const zu = req.body?.zu === true;
+  const warZu = vorhangZu();
+  setState('vorhang', zu);
+
+  // Erst jetzt erreicht die Runde den Ort – also steht er jetzt im Protokoll.
+  if (warZu && !zu) {
+    const id = aktiveSzeneId();
+    const row = id ? holeSzene(id) : null;
+    if (row) {
+      chronik.log({
+        kind: 'szene',
+        text: `Der Vorhang hebt sich: ${row.name}.`,
+        meta: { sceneId: row.id, name: row.name },
+      });
+    }
+  }
+
+  sendeSzene();
+  res.json({ vorhang: zu });
 });
 
 /**

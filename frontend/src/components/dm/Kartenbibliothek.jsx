@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { mapsApi, mediaApi } from '../../lib/api.js';
-import { useKarten, useKlangbibliothek } from '../../lib/daten.jsx';
+import { mapsApi, mediaApi, scenesApi } from '../../lib/api.js';
+import { useKarten, useKlangbibliothek, useSzene } from '../../lib/daten.jsx';
 import { EINHEIT, rasterBereich, weite } from '../../lib/rasterkarte.js';
 import { bildUndVorschau } from '../../lib/bilder.js';
 import { Rubric } from '../ui.jsx';
-import { IconCheck, IconMap, IconSearch, IconTrash, IconUpload } from '../icons.jsx';
+import { IconCheck, IconFog, IconMap, IconSearch, IconTrash, IconUpload } from '../icons.jsx';
 
 /**
  * Ein Rasternetz über der Vorschau. Damit lässt sich die Feldgröße
@@ -234,6 +234,9 @@ function Kartenblatt({ karte, onGespeichert, onSchliessen, onMelden }) {
  */
 export default function Kartenbibliothek() {
   const { karten, laden, laedt } = useKarten();
+  // Der Vorhang gehört zum Tisch, nicht zur einzelnen Karte – aber wer hier
+  // eine auflegt, will ihn von hier aus zuziehen können.
+  const { vorhang } = useSzene();
   const [suche, setSuche] = useState('');
   const [meldung, setMeldung] = useState('');
   const [fortschritt, setFortschritt] = useState(null);
@@ -282,10 +285,11 @@ export default function Kartenbibliothek() {
     try {
       const antwort = await mapsApi.auflegen(karte.id, { frisch });
       await laden();
+      const wie = antwort.neu ? 'unter frischem Nebel' : 'so wie ihr sie verlassen habt';
       setMeldung(
-        antwort.neu
-          ? `„${antwort.name}“ liegt auf dem Tisch – unter frischem Nebel.`
-          : `„${antwort.name}“ liegt auf dem Tisch, so wie ihr sie verlassen habt.`
+        vorhang
+          ? `„${antwort.name}“ liegt bereit, ${wie} – hinter dem Vorhang. Die Runde sieht noch nichts.`
+          : `„${antwort.name}“ liegt auf dem Tisch, ${wie}.`
       );
     } catch (err) {
       setMeldung(err.message);
@@ -330,6 +334,20 @@ export default function Kartenbibliothek() {
           className="btn btn-seal disabled:opacity-60"
         >
           <IconUpload size={16} /> {fortschritt ? 'lädt …' : 'Karten hochladen'}
+        </button>
+        <button
+          onClick={async () => {
+            await scenesApi.vorhang(!vorhang);
+            setMeldung(
+              vorhang
+                ? 'Der Vorhang ist offen – die Runde sieht den Tisch.'
+                : 'Der Vorhang ist zu. Leg auf, was du magst; die Runde sieht nichts davon.'
+            );
+          }}
+          className={`btn ${vorhang ? 'btn-seal' : 'btn-plate'}`}
+          title="Liegt der Vorhang zu, kannst du in Ruhe Karten wechseln und aufbauen"
+        >
+          <IconFog size={16} /> {vorhang ? 'Vorhang öffnen' : 'Vorhang zu'}
         </button>
       </div>
 

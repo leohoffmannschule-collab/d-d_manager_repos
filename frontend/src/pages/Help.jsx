@@ -75,6 +75,13 @@ export default function Help() {
               beginnt sie neu unter geschlossenem Nebel.
             </li>
             <li>
+              Mit <span className="font-display">Vorhang zu</span> siehst nur noch du den Tisch – die Runde
+              bekommt kein Bild, keine Figuren, nicht einmal den Namen. Dahinter wechselst du in Ruhe die
+              Karte, stellst die Gegner und malst den Nebel; ein Klick auf das rote Band öffnet wieder. In
+              der Szenenlade legt <span className="font-display">verdeckt</span> eine Szene gleich hinter dem
+              Vorhang auf. Kampf, Beute und Handzettel laufen daneben weiter.
+            </li>
+            <li>
               <span className="font-display">Aufdecken</span> und <span className="font-display">Verhüllen</span> malen
               den Nebel des Krieges. Vor dem Spiel einmal „alles verhüllen“, dann Raum für Raum öffnen. Was du nie
               aufgedeckt hast, wird der Runde gar nicht erst geschickt – auch die Figuren nicht, die dort stehen.
