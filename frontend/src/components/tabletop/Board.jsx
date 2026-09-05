@@ -18,8 +18,18 @@ export function rasterBereich(scene) {
  * Der Nebel als Bildpunkte: ein Punkt je Rasterfeld, hochskaliert vom
  * Browser. Das ist um Größenordnungen billiger, als tausend Rechtecke zu
  * malen, und läuft auch auf einem iPad flüssig.
+ *
+ * Drei Zustände, wie man es von einer Karte erwartet, auf der man schon war:
+ *
+ *   unerkundet   – schwarz. Da war noch niemand.
+ *   erkundet     – gedämpft. Man weiß, wie es dort aussieht, sieht aber
+ *                  gerade nicht hin: das Gelände bleibt, wer dort steht nicht.
+ *   im Blick     – klar. Hier reicht Licht oder Dunkelsicht hin.
+ *
+ * Die mittlere Stufe entsteht nur, wenn der Server eine Sicht mitgeschickt
+ * hat; sonst bleibt es beim alten Zweiklang aus auf und zu.
  */
-function Nebel({ scene, fog, dm }) {
+function Nebel({ scene, fog, sicht, dm }) {
   const canvasRef = useRef(null);
   const { g, minX, minY, cols, rows } = useMemo(() => rasterBereich(scene), [scene]);
 
@@ -31,20 +41,22 @@ function Nebel({ scene, fog, dm }) {
     const ctx = canvas.getContext('2d');
     const bild = ctx.createImageData(cols, rows);
     // Die Spielleitung schaut durch den Nebel hindurch, die Runde nicht.
-    const deckung = dm ? 130 : 255;
+    const zu = dm ? 130 : 255;
+    const erinnert = dm ? 70 : 168;
 
     for (let j = 0; j < rows; j++) {
       for (let i = 0; i < cols; i++) {
-        const offen = fog.has(`${minX + i},${minY + j}`);
+        const feld = `${minX + i},${minY + j}`;
+        const offen = fog.has(feld);
         const p = (j * cols + i) * 4;
         bild.data[p] = 12;
         bild.data[p + 1] = 9;
         bild.data[p + 2] = 6;
-        bild.data[p + 3] = offen ? 0 : deckung;
+        bild.data[p + 3] = !offen ? zu : sicht && !sicht.has(feld) ? erinnert : 0;
       }
     }
     ctx.putImageData(bild, 0, 0);
-  }, [cols, rows, minX, minY, fog, dm]);
+  }, [cols, rows, minX, minY, fog, sicht, dm]);
 
   if (cols <= 0 || rows <= 0) return null;
 
@@ -129,6 +141,7 @@ function Figur({ token, scene, hp, aktiv, beweglich, ziehend }) {
 export default function Board({
   scene,
   fog,
+  sicht,
   tokens,
   combatants = [],
   activeCombatantId = null,
@@ -374,7 +387,7 @@ export default function Board({
           <SelectionRing token={tokens.find((t) => t.id === selectedTokenId)} scene={scene} />
         )}
 
-        {scene.fogEnabled && <Nebel scene={scene} fog={fog} dm={dm} />}
+        {scene.fogEnabled && <Nebel scene={scene} fog={fog} sicht={sicht} dm={dm} />}
 
         {lineal && (
           <svg className="pointer-events-none absolute inset-0 overflow-visible">

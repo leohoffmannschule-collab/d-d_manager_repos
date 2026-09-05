@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { db } from '../db.js';
 import { isDm, requireAuth, requireDm } from '../auth.js';
 import { broadcast, originClient } from '../events.js';
+import { sendeSzene } from './scenes.js';
 
 const router = Router();
 
@@ -17,6 +18,7 @@ function rowToCharacter(row) {
     ownerId: row.owner_id,
     ownerName: row.owner_name ?? null,
     shared: !!row.shared,
+    npc: !!row.npc,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -34,6 +36,7 @@ function summary(row) {
     ownerId: character.ownerId,
     ownerName: character.ownerName,
     shared: character.shared,
+    npc: character.npc,
     createdAt: character.createdAt,
     updatedAt: character.updatedAt,
     classLevel: [className, className && level ? level : ''].filter(Boolean).join(' '),
@@ -54,7 +57,27 @@ const holen = (id) => db.prepare(`${SELECT} WHERE c.id = ?`).get(id);
 // Charaktere ohne Besitzer stammen aus der Zeit vor den Konten – sie gehören
 // der Spielleitung, bis sie jemandem zugewiesen werden.
 const darfBearbeiten = (user, row) => isDm(user) || row.owner_id === user.id;
-const darfSehen = (user, row) => darfBearbeiten(user, row) || !!row.shared;
+
+/**
+ * NSC-Blätter sind der Zettel der Spielleitung hinter dem Schirm: die Werte
+ * des Wirts, des Räuberhauptmanns, des Drachen. Sie bleiben dort, auch wenn
+ * das Blatt versehentlich als „geteilt“ markiert ist – deshalb wird das hier
+ * *vor* allen anderen Regeln geprüft, nicht danach.
+ */
+const darfSehen = (user, row) => {
+  if (isDm(user)) return true;
+  if (row.npc) return false;
+  return row.owner_id === user.id || !!row.shared;
+};
+
+/** Die Sinne aus einem gespeicherten Blatt, ohne dass ein Fehler alles reißt. */
+function sinneAus(rohesJson) {
+  try {
+    return JSON.parse(rohesJson)?.combat?.senses ?? null;
+  } catch {
+    return null;
+  }
+}
 
 function meldeAenderung(row, req) {
   broadcast('charakter:aktualisiert', summary(row), { exceptClient: originClient(req) });
@@ -65,7 +88,7 @@ router.get('/', (req, res) => {
   const rows = isDm(req.user)
     ? db.prepare(`${SELECT} ORDER BY c.updated_at DESC`).all()
     : db
-        .prepare(`${SELECT} WHERE c.owner_id = ? OR c.shared = 1 ORDER BY c.updated_at DESC`)
+        .prepare(`${SELECT} WHERE c.npc = 0 AND (c.owner_id = ? OR c.shared = 1) ORDER BY c.updated_at DESC`)
         .all(req.user.id);
   res.json(rows.map(summary));
 });
@@ -84,12 +107,14 @@ router.post('/', (req, res) => {
   if (!name || typeof name !== 'string' || !name.trim()) {
     return res.status(400).json({ code: 'name_fehlt', error: 'Name ist erforderlich' });
   }
+  // Ein NSC-Blatt ist nie geteilt – sonst wäre es keins.
+  const npc = isDm(req.user) && req.body?.npc === true;
   const id = randomUUID();
   const now = new Date().toISOString();
   db.prepare(
-    `INSERT INTO characters (id, name, system, data, owner_id, shared, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, 1, ?, ?)`
-  ).run(id, name.trim(), system, JSON.stringify(data), req.user.id, now, now);
+    `INSERT INTO characters (id, name, system, data, owner_id, shared, npc, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(id, name.trim(), system, JSON.stringify(data), req.user.id, npc ? 0 : 1, npc ? 1 : 0, now, now);
   const row = holen(id);
   meldeAenderung(row, req);
   res.status(201).json(rowToCharacter(row));
@@ -107,6 +132,13 @@ router.put('/:id', (req, res) => {
   const nextName = typeof name === 'string' && name.trim() ? name.trim() : existing.name;
   const nextData = data !== undefined ? JSON.stringify(data) : existing.data;
   const now = new Date().toISOString();
+
+  // Die Sinne stehen auf dem Blatt, aber sie entscheiden, was am Spieltisch
+  // im Dunkeln sichtbar ist. Wer sich Dunkelsicht einträgt, soll nicht erst
+  // die Seite neu laden müssen. Verglichen wird, weil das Blatt bei jedem
+  // Tastendruck speichert – und eine ganze Szene je Buchstabe wäre unsinnig.
+  const sinneVorher = JSON.stringify(sinneAus(existing.data));
+  const sinneNachher = JSON.stringify(sinneAus(nextData));
 
   db.prepare('UPDATE characters SET name = ?, data = ?, updated_at = ? WHERE id = ?').run(
     nextName,
@@ -131,6 +163,8 @@ router.put('/:id', (req, res) => {
     if (linked.length) broadcast('kampf:aktualisiert', {});
   }
 
+  if (sinneVorher !== sinneNachher) sendeSzene();
+
   meldeAenderung(row, req);
   res.json(rowToCharacter(row));
 });
@@ -143,7 +177,7 @@ router.patch('/:id', (req, res) => {
     return res.status(403).json({ code: 'blatt_fremd', error: 'Dieses Blatt gehört jemand anderem.' });
   }
 
-  const { ownerId, shared } = req.body ?? {};
+  const { ownerId, shared, npc } = req.body ?? {};
 
   if (ownerId !== undefined) {
     // Nur die Spielleitung teilt Charaktere zu.
@@ -155,6 +189,12 @@ router.patch('/:id', (req, res) => {
   }
   if (shared !== undefined) {
     db.prepare('UPDATE characters SET shared = ? WHERE id = ?').run(shared ? 1 : 0, existing.id);
+  }
+  if (npc !== undefined) {
+    // Ein Blatt hinter den Schirm holen darf nur die Spielleitung – und wer
+    // dort liegt, ist nicht mehr geteilt.
+    if (!isDm(req.user)) return res.status(403).json({ code: 'nur_spielleitung', error: 'Das darf nur die Spielleitung.' });
+    db.prepare('UPDATE characters SET npc = ?, shared = ? WHERE id = ?').run(npc ? 1 : 0, npc ? 0 : 1, existing.id);
   }
 
   const row = holen(existing.id);

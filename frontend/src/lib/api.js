@@ -164,6 +164,7 @@ export const scenesApi = {
   removeToken: (tokenId) => del(`/scenes/figuren/${tokenId}`),
   tokensFromEncounter: (id) => post(`/scenes/${id}/figuren/aus-kampf`),
   ping: (x, y) => post('/scenes/ping', { x, y }),
+  nscSicht: (tokenId) => post('/scenes/nsc-sicht', { tokenId }),
 };
 
 export const mediaApi = {

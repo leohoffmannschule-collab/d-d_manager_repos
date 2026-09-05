@@ -54,6 +54,7 @@ export function LiveProvider({ children }) {
       'kampf',
       'szene',
       'figur',
+      'figuren',
       'figur:entfernt',
       'nebel',
       'ping',

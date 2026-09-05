@@ -48,6 +48,7 @@ export default function Tabletop() {
     szene: scene,
     figuren: tokens,
     nebel: fog,
+    sicht,
     nebelSetzen,
     figurSetzen,
     laden: ladeSzene,
@@ -130,6 +131,7 @@ export default function Tabletop() {
           <SceneBar
             scene={scene}
             laedtSzene={laedtSzene}
+            tokens={tokens}
             mode={mode}
             onMode={setMode}
             onChanged={ladeSzene}
@@ -155,6 +157,7 @@ export default function Tabletop() {
               combatants={combatants}
               activeCombatantId={activeCombatantId}
               dm={isDm}
+              sicht={sicht}
               mode={mode}
               canMoveToken={darfBewegen}
               onMoveToken={figurBewegen}

@@ -34,7 +34,13 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
 - **Spieltisch**: Karte schieben und zoomen, die eigene Figur ziehen (sie schnappt aufs Raster ein),
   mit `Alt`+Klick eine Stelle für alle aufleuchten lassen, Entfernungen in Feldern und Fuß messen.
 - **Nebel des Krieges** – was die Spielleitung noch nicht aufgedeckt hat, bleibt schwarz, samt der
-  Figuren, die darin lauern.
+  Figuren, die darin lauern. Was du nicht sehen darfst, steht nicht in der Nutzlast, sondern kommt
+  gar nicht erst an.
+- **Licht und Dunkelsicht**: Die Spielleitung kann eine Szene auf **dunkel** stellen. Dann reicht
+  dein Blick genau so weit, wie es auf deinem Blatt steht – Dunkelsicht, Blindsicht, Erschütterungssinn –
+  oder so weit, wie eine Fackel trägt. Figuren führen ihr eigenes Licht mit (Fackel, Laterne, Zauber)
+  und erhellen damit die Karte für alle. Erkundetes Gelände bleibt gedämpft stehen; wer gerade dort
+  steht, sieht man nur im Licht.
 - **Gemeinsamer Würfelbeutel**: W4–W100, Anzahl und Modifikator, Vorteil/Nachteil, eigene Ausdrücke wie
   `2W6+3`. Gewürfelt wird auf dem Server, jeder Wurf steht sofort bei allen in der Chronik.
 - **Initiativliste** und **Handzettel** der Spielleitung, live am Tisch.
@@ -72,6 +78,12 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
   Hinterhalt zuschnappt.
 - **Szenen**: Karten hochladen, Raster einstellen, Szene auf den Tisch legen, Figuren aus dem laufenden
   Kampf auslegen, Figuren benennen, einfärben, vergrößern, mit einem Bildnis versehen oder verbergen.
+- **NSC-Blätter**: vollständige Charakterblätter, die nur die Spielleitung sieht – der Wirt, der
+  Räuberhauptmann, der Drache. Sie stehen in einem eigenen Abschnitt „Hinter dem Schirm“, tauchen bei
+  der Runde nirgends auf und werden beim Holen der Runde in den Kampf übergangen.
+- **NSC-Steuerung**: Die Spielleitung sieht das Brett standardmäßig ganz. Mit einem Griff schaut sie
+  durch die Augen einer ihrer Figuren und sieht genau das, was diese sieht – gerechnet auf dem Server,
+  mit derselben Rechnung wie für die Runde. Praktisch, bevor man den Späher losschickt.
 - **Kartenbibliothek**: ganze Stapel Battlemaps auf einmal hochladen, mit Schlagworten versehen und
   durchsuchen. Das Raster wird einmal an der Vorschau ausgerichtet und vererbt sich an jede Szene aus
   dieser Karte. Ein Klick legt die Karte auf – samt dem Nebel, den die Runde sich schon erspielt hat,

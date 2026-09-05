@@ -128,7 +128,18 @@ export function useSzene() {
     setNebel(new Set(szene?.fog ?? []));
   }, [szene]);
 
+  /**
+   * Was gerade wirklich zu sehen ist – gerechnet hat das der Server, aus
+   * Lichtquellen und den Sinnen der eigenen Figuren. `null` heißt „alles,
+   * was aufgedeckt ist“: helle Szene, kein Nebel, oder keine eigene Figur
+   * auf der Karte.
+   */
+  const sicht = useMemo(() => (szene?.sicht ? new Set(szene.sicht) : null), [szene?.sicht]);
+
   useLive('szene', (neu) => setSzene(neu));
+
+  // Ein Nebelstrich hat eine Figur auf- oder zugedeckt.
+  useLive('figuren', (liste) => setFiguren(liste ?? []));
 
   useLive('figur', (figur) => {
     setFiguren((alle) => {
@@ -171,7 +182,7 @@ export function useSzene() {
     setFiguren((alle) => alle.map((t) => (t.id === id ? { ...t, x, y } : t)));
   }, []);
 
-  return { szene, figuren, nebel, nebelSetzen, figurSetzen, laden, fehler, laedt };
+  return { szene, figuren, nebel, sicht, nebelSetzen, figurSetzen, laden, fehler, laedt };
 }
 
 /** Alle Szenen der Spielleitung, samt Vermerk, welche aufliegt. */

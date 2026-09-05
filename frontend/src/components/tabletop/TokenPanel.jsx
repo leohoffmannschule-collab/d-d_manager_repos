@@ -105,6 +105,56 @@ export default function TokenPanel({ token, onChanged, onRemoved }) {
         )}
       </div>
 
+      {/* Was diese Figur an Licht mit sich trägt. In einer dunklen Szene
+          erhellt es die Umgebung – für alle, nicht nur für sie selbst. */}
+      <div>
+        <span className="mb-1.5 block font-display text-[10px] tracking-[0.16em] text-faint uppercase">
+          Lichtquelle
+        </span>
+        <div className="mb-2 flex flex-wrap gap-1.5">
+          {[
+            ['aus', 0, 0],
+            ['Fackel', 20, 20],
+            ['Laterne', 30, 30],
+            ['Licht', 20, 20],
+            ['Tageslicht', 60, 60],
+          ].map(([label, hell, dim]) => (
+            <button
+              key={label}
+              onClick={() => aendern({ lightBright: hell, lightDim: dim })}
+              className={`min-h-11 border px-2.5 font-display text-[11px] tracking-[0.08em] uppercase ${
+                (token.lightBright ?? 0) === hell && (token.lightDim ?? 0) === dim
+                  ? 'border-gold bg-gold/20 text-ink'
+                  : 'border-rule text-sepia hover:text-ink'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-2.5">
+          {[
+            ['hell (Fuß)', 'lightBright'],
+            ['dämmrig (Fuß)', 'lightDim'],
+          ].map(([label, feld]) => (
+            <label key={feld} className="block flex-1">
+              <span className="mb-1 block font-display text-[10px] tracking-[0.16em] text-faint uppercase">
+                {label}
+              </span>
+              <input
+                type="number"
+                min={0}
+                max={200}
+                step={5}
+                value={token[feld] ?? 0}
+                onChange={(e) => aendern({ [feld]: Number(e.target.value) || 0 })}
+                className="field-box w-full font-display"
+              />
+            </label>
+          ))}
+        </div>
+      </div>
+
       <button
         onClick={() => aendern({ hidden: !token.hidden })}
         className={`btn w-full ${token.hidden ? 'btn-seal' : 'btn-plate'}`}

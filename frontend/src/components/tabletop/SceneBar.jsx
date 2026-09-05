@@ -3,6 +3,7 @@ import { mapsApi, mediaApi, scenesApi } from '../../lib/api.js';
 import { useKarten, useSzenenListe } from '../../lib/daten.jsx';
 import { bildUndVorschau } from '../../lib/bilder.js';
 import {
+  IconCandle,
   IconCheck,
   IconEye,
   IconFog,
@@ -36,7 +37,7 @@ function Knopf({ aktiv, children, ...rest }) {
 }
 
 /** Werkzeugleiste und Szenenverwaltung – nur für die Spielleitung. */
-export default function SceneBar({ scene, laedtSzene, mode, onMode, onChanged, onFogAll, onTokensFromEncounter }) {
+export default function SceneBar({ scene, laedtSzene, tokens = [], mode, onMode, onChanged, onFogAll, onTokensFromEncounter }) {
   const { szenen, laden } = useSzenenListe();
   const { karten, laden: kartenLaden } = useKarten();
   const [offen, setOffen] = useState(false);
@@ -133,6 +134,32 @@ export default function SceneBar({ scene, laedtSzene, mode, onMode, onChanged, o
         <span className="flex-1" />
 
         {scene && (
+          <label
+            className={`flex min-h-11 items-center gap-1.5 border px-2 font-display text-[11px] tracking-[0.10em] uppercase ${
+              scene.nscSicht ? 'border-rubric bg-rubric/15 text-rubric' : 'border-rule text-sepia'
+            }`}
+            title="Sehen, was diese Figur sieht. Sonst sieht die Spielleitung alles."
+          >
+            <IconEye size={14} />
+            <select
+              value={scene.nscSicht ?? ''}
+              onChange={async (e) => {
+                await scenesApi.nscSicht(e.target.value || null);
+                onChanged?.();
+              }}
+              className="min-h-9 max-w-[9rem] bg-transparent font-display text-[11px] tracking-[0.10em] text-inherit uppercase outline-none"
+            >
+              <option value="">alles sehen</option>
+              {tokens.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name || 'Figur'}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+
+        {scene && (
           <Knopf aktiv={raster} onClick={() => setRaster((r) => !r)}>
             Raster
           </Knopf>
@@ -168,6 +195,13 @@ export default function SceneBar({ scene, laedtSzene, mode, onMode, onChanged, o
           </Knopf>
           <Knopf aktiv={scene.fogEnabled} onClick={() => rasterAendern('fogEnabled', !scene.fogEnabled)}>
             <IconFog size={13} /> Nebel benutzen
+          </Knopf>
+          <Knopf
+            aktiv={scene.dark}
+            onClick={() => rasterAendern('dark', !scene.dark)}
+            title="In einer dunklen Szene sieht jeder nur so weit, wie Licht und Dunkelsicht reichen"
+          >
+            <IconCandle size={13} /> Dunkle Szene
           </Knopf>
           {scene.mapId && (
             <Knopf

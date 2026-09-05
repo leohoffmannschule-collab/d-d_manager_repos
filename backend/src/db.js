@@ -311,6 +311,18 @@ addColumnIfMissing('scenes', 'map_id', 'TEXT');
 // zugleich die Musik auf, die zu diesem Ort gehört.
 addColumnIfMissing('maps', 'ambience_id', 'TEXT');
 
+// NSC-Blätter: Statblöcke, die nur die Spielleitung sieht. Sie tauchen weder
+// in den Listen der Runde auf noch beim Holen der Runde in den Kampf.
+addColumnIfMissing('characters', 'npc', 'INTEGER NOT NULL DEFAULT 0');
+
+// Eine dunkle Szene: Wer nichts sieht, sieht nichts. Erst hier greifen
+// Lichtquellen und Dunkelsicht – bei Tageslicht wäre das nur Rechnerei.
+addColumnIfMissing('scenes', 'dark', 'INTEGER NOT NULL DEFAULT 0');
+
+// Was eine Figur an Licht mit sich trägt, in Fuß (Fackel: 20 hell, 20 dämmrig).
+addColumnIfMissing('tokens', 'light_bright', 'INTEGER NOT NULL DEFAULT 0');
+addColumnIfMissing('tokens', 'light_dim', 'INTEGER NOT NULL DEFAULT 0');
+
 /** Kleiner Schlüssel-Wert-Speicher für Einzelwerte (aktive Szene, Kampfrunde …). */
 export function getState(key, fallback = null) {
   const row = db.prepare('SELECT value FROM app_state WHERE key = ?').get(key);

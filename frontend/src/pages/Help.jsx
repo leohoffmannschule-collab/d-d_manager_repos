@@ -36,6 +36,12 @@ export default function Help() {
           <li>Die eigene Figur lässt sich ziehen; beim Loslassen schnappt sie auf das Raster ein. Fremde Figuren bewegt nur die Spielleitung.</li>
           <li>Ein <span className="font-display">Alt+Klick</span> lässt eine Stelle für alle kurz aufleuchten – praktisch statt „da vorne links, nein, weiter unten“.</li>
           <li>Jede Bewegung, jeder Wurf und jede Änderung der Trefferpunkte steht sofort bei allen anderen auf dem Schirm.</li>
+          <li>
+            Ist die Szene <span className="font-display">dunkel</span>, reicht dein Blick genau so weit, wie es
+            auf deinem Blatt steht (unter <span className="font-display">Kampf → Widerstand und Sinne</span>) –
+            oder so weit, wie eine Fackel trägt. Wo du schon warst, bleibt gedämpft sichtbar; wer dort gerade
+            steht, siehst du nur im Licht.
+          </li>
         </ul>
       </Card>
 
@@ -58,7 +64,24 @@ export default function Help() {
             </li>
             <li>
               <span className="font-display">Aufdecken</span> und <span className="font-display">Verhüllen</span> malen
-              den Nebel des Krieges. Vor dem Spiel einmal „alles verhüllen“, dann Raum für Raum öffnen.
+              den Nebel des Krieges. Vor dem Spiel einmal „alles verhüllen“, dann Raum für Raum öffnen. Was du nie
+              aufgedeckt hast, wird der Runde gar nicht erst geschickt – auch die Figuren nicht, die dort stehen.
+            </li>
+            <li>
+              Unter „Raster“ steht <span className="font-display">Dunkle Szene</span>. Ab dann sieht jeder nur so
+              weit, wie sein Blatt und das Licht es hergeben. Einer Figur gibst du im Figurenfeld eine
+              <span className="font-display"> Lichtquelle</span> – Fackel, Laterne, Zauber –, und sie erhellt die
+              Karte für alle.
+            </li>
+            <li>
+              Du selbst siehst immer alles. Willst du wissen, was dein Späher sieht, bevor du ihn losschickst,
+              wähle ihn oben rechts unter <span className="font-display">alles sehen</span> aus – dann
+              siehst du genau seine Sicht. Zurück geht es über denselben Weg.
+            </li>
+            <li>
+              Zwei Grenzen, damit du nicht suchst: Es gibt <span className="font-display">keine Wände</span> –
+              Licht und Blick gehen hindurch, dagegen hilft nur der Nebel. Und dämmriges Licht zählt wie helles;
+              der Nachteil auf Wahrnehmung ist eine Regel für den Wurf, nicht für den Nebel.
             </li>
             <li>
               Im <span className="font-display">Bestiarium</span> genügt ein Klick, um „3 Goblins“ samt gewürfelter
@@ -80,6 +103,12 @@ export default function Help() {
               Unter <span className="font-display">Klang</span> hinterlegst du Spotify-Links als Ambiente: Link
               einfügen, benennen, verschlagworten. <span className="font-display">Auflegen</span> zeigt der ganzen
               Runde, was jetzt dran ist. Hängst du eine Ambiente an eine Karte, legt sie sich mit der Karte auf.
+            </li>
+            <li>
+              Ein <span className="font-display">NSC-Blatt</span> legst du unter „Neuer Charakter“ an. Es ist ein
+              vollständiges Blatt – für den Wirt, den Räuberhauptmann, den Drachen –, aber nur du siehst es. Es
+              steht bei dir unter „Hinter dem Schirm“, taucht bei der Runde nirgends auf und wird beim Holen der
+              Runde in den Kampf übergangen. Verknüpfst du eine Figur damit, gelten dessen Sinne für ihre Sicht.
             </li>
             <li>Notizen lassen sich als Handzettel austeilen; die Runde sieht sie dann am Spieltisch.</li>
             <li>

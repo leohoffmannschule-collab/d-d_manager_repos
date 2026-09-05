@@ -145,15 +145,22 @@ gesamten Zweigs.
 
     GET    /api/characters               eigene und geteilte, als Kurzfassung
     GET    /api/characters/:id           samt `editable`
-    POST   /api/characters               { name, system?, data }
+    POST   /api/characters               { name, system?, data, npc? }   npc nur [SL]
     PUT    /api/characters/:id           { name?, data? }
-    PATCH  /api/characters/:id           { ownerId?, shared? }   ownerId nur [SL]
+    PATCH  /api/characters/:id           { ownerId?, shared?, npc? }   ownerId und npc nur [SL]
     DELETE /api/characters/:id
     POST   /api/characters/:id/duplicate
     GET    /api/characters/verwaltung/alle   [SL]
 
 Die Kurzfassung enthält vorgerechnet `hp`, `ac` und `initiative`, damit eine
 Übersicht nicht jedes Blatt einzeln laden muss.
+
+**NSC-Blätter** (`npc: true`) sind der Zettel der Spielleitung hinter dem
+Schirm. Sie liefern einer Spielerin `403`, tauchen in ihrer Übersicht nicht auf
+und werden beim Holen der Runde in den Kampf übergangen. Geprüft wird das
+*vor* allen anderen Regeln – auch ein versehentlich als „geteilt“ markiertes
+NSC-Blatt bleibt hinter dem Schirm. Ein NSC-Blatt lässt sich mit einer Figur
+auf dem Spieltisch verknüpfen; dann gelten dessen Sinne für ihre Sicht.
 
 ### /api/encounter   (Standard: angemeldet)
 
@@ -186,10 +193,42 @@ Trefferpunkte wandern in beide Richtungen zwischen Kampf und Charakterblatt.
     DELETE /api/scenes/figuren/:id           [SL]
     POST   /api/scenes/:id/figuren/aus-kampf [SL]
     POST   /api/scenes/ping                  { x, y }
+    POST   /api/scenes/nsc-sicht             [SL] { tokenId | null }
 
 Der Nebel ist eine Liste von Rasterfeldern als `"x,y"`. Übers Netz wandern nur
 die geänderten Felder. Eine Szene, die aus einer Karte der Bibliothek entstanden
 ist, trägt deren `mapId`.
+
+### Wer sieht was
+
+Die Szene geht **je Person** hinaus, nicht je Rolle. Neben `fog` (was die
+Spielleitung aufgedeckt hat) trägt sie:
+
+| Feld | Bedeutung |
+| ---- | --------- |
+| `dark` | Dunkle Szene: Erst dann greifen Licht und Sinne. |
+| `sicht` | Die Felder, die *diese* Person gerade sieht. `null` heißt „alles Aufgedeckte“ – helle Szene, kein Nebel, oder keine eigene Figur auf der Karte. |
+| `nscSicht` | Nur für die Spielleitung: durch welche Figur sie gerade schaut, sonst `null`. |
+
+Eine Figur trägt dazu `lightBright` und `lightDim` in Fuß – was sie an Licht
+mit sich führt, erhellt die Karte für alle.
+
+Gerechnet wird das auf dem Server, in `backend/src/sicht.js`, und zwar für die
+Runde und für die NSC-Steuerung der Spielleitung mit **derselben** Funktion.
+Entscheidend: **Figuren außerhalb der Sicht stehen nicht in der Nutzlast.** Sie
+werden nicht im Browser weggeblendet – sie kommen gar nicht erst an. Das gilt
+auch für den Nebel: Was nie aufgedeckt wurde, verbirgt keine Figur mehr bloß
+optisch.
+
+Sichtweiten kommen aus `combat.senses` des verknüpften Charakterblatts
+(`darkvision`, `blindsight`, `tremorsense`, `truesight`, in Fuß); das Weiteste
+gewinnt. Radien werden auf Feldmittelpunkten euklidisch ausgelegt, wie die
+Regeln einen Radius auf dem Raster meinen.
+
+Zwei bewusste Grenzen: **keine Wände** (Licht und Blick gehen hindurch – der
+von Hand gemalte Nebel bleibt das Werkzeug dagegen) und **kein Unterschied
+zwischen hell und dämmrig** (wer in Dämmerung steht, sieht; er würfelt nur mit
+Nachteil, und das ist eine Regel für den Wurf).
 
 ### /api/maps   (ganz [SL])
 

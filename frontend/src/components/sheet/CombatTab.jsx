@@ -459,19 +459,33 @@ export default function CombatTab({ data, update, replace }) {
             onChange={(v) => update('combat.defenses.vulnerabilities', v)}
           />
         </div>
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <NumberField
-            label="Dunkelsicht (Fuß)"
-            value={data.combat.senses.darkvision}
-            min={0}
-            onChange={(v) => update('combat.senses.darkvision', v)}
-          />
+        <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {[
+            ['Dunkelsicht', 'darkvision'],
+            ['Blindsicht', 'blindsight'],
+            ['Erschütterung', 'tremorsense'],
+            ['Wahrer Blick', 'truesight'],
+          ].map(([label, feld]) => (
+            <NumberField
+              key={feld}
+              label={`${label} (Fuß)`}
+              value={data.combat.senses[feld] ?? 0}
+              min={0}
+              step={5}
+              onChange={(v) => update(`combat.senses.${feld}`, v)}
+            />
+          ))}
+        </div>
+        <p className="mt-2 text-[15px] text-sepia italic">
+          In einer dunklen Szene reicht dein Blick genau so weit, wie hier steht – der Spieltisch rechnet
+          damit, was du siehst.
+        </p>
+        <div className="mt-4">
           <TextField
             label="Weitere Sinne"
             value={data.combat.senses.notes}
             onChange={(v) => update('combat.senses.notes', v)}
-            className="sm:col-span-2"
-            placeholder="Blindsicht 10 Fuß, Erschütterungssinn …"
+            placeholder="Sinnesschärfe, besondere Wahrnehmung …"
           />
         </div>
       </Card>

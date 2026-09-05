@@ -357,7 +357,7 @@ router.post('/party', requireDm, (req, res) => {
   const vorhanden = new Set(
     db.prepare('SELECT character_id FROM combatants WHERE character_id IS NOT NULL').all().map((r) => r.character_id)
   );
-  const charaktere = db.prepare('SELECT * FROM characters WHERE shared = 1').all();
+  const charaktere = db.prepare('SELECT * FROM characters WHERE shared = 1 AND npc = 0').all();
   const now = new Date().toISOString();
 
   for (const row of charaktere) {
