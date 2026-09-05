@@ -404,10 +404,27 @@ Fenster; öffne ein **zweites** Terminal im selben Ordner:
 npm run tunnel
 ```
 
-Beim ersten Mal wird `cloudflared` fehlen. Das Skript sagt dir dann genau,
-welche Datei du wohin legen musst – eine einzige, die nichts installiert. Wo
-gar keine Programme geladen werden dürfen, hilft
-[Schritt 4.4](#44-wenn-der-rechner-keine-exe-herunterladen-darf) weiter.
+Das Skript probiert dabei **drei Wege** durch und nimmt den ersten, der auf
+dem Gerät da ist:
+
+| Weg | Braucht | Haken |
+| --- | --- | --- |
+| `cloudflared` | eine heruntergeladene Programmdatei (unter Windows eine `.exe`) | am robustesten |
+| SSH zu `localhost.run` | nichts zusätzlich – SSH bringt fast jedes Windows, macOS, Linux schon mit | ausgehendes Port 22, das mancher Firmenrechner sperrt |
+| `npx localtunnel` | nur npm, das ohnehin da ist | zeigt Mitspielern beim ersten Aufruf eine Zwischenseite; der freie Dienst ist manchmal überlastet |
+
+Fehlt `cloudflared`, sagt das Skript, welche einzelne Datei du wohin legen
+müsstest – nötig ist das aber nicht, denn die beiden anderen Wege laden
+nichts Kompiliertes nach. Wer einen bestimmten Weg erzwingen will:
+
+```bash
+TUNNEL_ANBIETER=ssh npm run tunnel
+```
+
+(statt `ssh` auch `cloudflared` oder `localtunnel`). Wo gar keine Programme
+geladen werden dürfen, hilft
+[Schritt 4.4](#44-wenn-der-rechner-keine-exe-herunterladen-darf) weiter – SSH
+selbst lädt nichts herunter, es muss nur schon da sein.
 
 Dann, auf beiden Wegen, zehn bis zwanzig Sekunden warten und:
 
@@ -792,6 +809,7 @@ für den erzählenden Rückblick in der Chronik.
 | `DATA_DIR` | `/app/data` im Container, sonst `backend/data` | Wo Datenbank und Bilder liegen. |
 | `TRUST_PROXY` | `1` (Compose), sonst `loopback` | Sagt dem Almanach, dass der Tunnel davorsteht – nötig für sichere Cookies. |
 | `CLOUDFLARED` | leer | Pfad zu `cloudflared`, falls es nicht im Suchpfad liegt (nur für `npm run tunnel`). |
+| `TUNNEL_ANBIETER` | leer (automatisch) | `cloudflared`, `ssh` oder `localtunnel` erzwingen (nur für `npm run tunnel`). |
 | `DND5E_API_BASE` | `…/api/2014` | Regelwerk-Fassung. `…/api/2024` für die neuen Regeln. |
 | `CHRONIK_KI_URL` | leer | Freiwillig: Adresse eines Sprachmodells für den erzählenden Rückblick. |
 | `CHRONIK_KI_MODELL` | `gpt-4o-mini` | Name des Modells. |

@@ -203,8 +203,20 @@ npm run adresse                         # welche Adresse gilt gerade?
 ```
 
 `npm run adresse` sagt dir, welche Adresse gerade gilt – und findet sie auf beiden Wegen. Die
-schickst du deiner Runde. Fehlt `cloudflared`, sagt `npm run tunnel` dir, welche einzelne Datei du
-wohin legen musst; installiert wird dabei nichts.
+schickst du deiner Runde.
+
+**Ohne Docker probiert `npm run tunnel` drei Wege durch, in dieser Reihenfolge:**
+
+| Weg | Braucht | Haken |
+| --- | --- | --- |
+| `cloudflared` | eine heruntergeladene Programmdatei (unter Windows eine `.exe`) | am robustesten |
+| SSH zu `localhost.run` | nichts – SSH bringt fast jedes Windows, macOS, Linux schon mit | ausgehendes Port 22, das mancher Firmenrechner sperrt |
+| `npx localtunnel` | nur npm, das ohnehin da ist | Zwischenseite beim ersten Aufruf, freier Dienst mal launisch |
+
+Das Skript nimmt den ersten Weg, der auf dem Gerät da ist, und sagt beim Fehlschlag, ob ein anderer
+zur Verfügung stünde. Einen bestimmten Weg erzwingen: `TUNNEL_ANBIETER=ssh npm run tunnel` (oder
+`cloudflared` / `localtunnel`). Fehlt `cloudflared` und will man es doch, sagt `npm run tunnel` dir,
+welche einzelne Datei du wohin legen musst; installiert wird dabei nichts.
 
 > **Der Haken:** Die Adresse ist geliehen und **wechselt, wenn der Tunnel neu startet** – nach einem
 > Neustart des Geräts oder einer Aktualisierung. Dann noch einmal `npm run adresse` und die neue
@@ -279,6 +291,7 @@ nebeneinander; über die Liste rechts wechselst du zwischen ihnen.
 | `DND5E_API_BASE` | `https://www.dnd5eapi.co/api/2014` | Basis-URL der D&D-5e-API (Regelwerk-Version)                      |
 | `TRUST_PROXY`    | `loopback`                         | `1`, wenn ein Tunnel im eigenen Container davorsteht (siehe Compose) |
 | `CLOUDFLARED`    | leer                               | Pfad zu `cloudflared`, falls es nicht im Suchpfad liegt (nur `npm run tunnel`) |
+| `TUNNEL_ANBIETER`| leer (automatisch)                 | `cloudflared`, `ssh` oder `localtunnel` erzwingen (nur `npm run tunnel`)      |
 
 Für den Klangteppich ist nichts einzustellen: Die Spielleitung hinterlegt Spotify-Links, und der
 Almanach zeigt der Runde, welcher gerade dran ist. Abgespielt wird in Spotify selbst.

@@ -24,7 +24,8 @@ import { fileURLToPath } from 'node:url';
 const wurzel = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = Number(process.env.PORT) || 3001;
 const datenordner = process.env.DATA_DIR || path.join(wurzel, 'backend', 'data');
-const MUSTER = /https:\/\/[a-z0-9-]+\.trycloudflare\.com/g;
+// Drei mögliche Anbieter, drei Domains – siehe scripts/tunnel.mjs.
+const MUSTER = /https:\/\/[a-z0-9-]+\.(trycloudflare\.com|lhr\.life|localhost\.run|loca\.lt)/g;
 
 const sagen = (text = '') => console.log(text);
 
