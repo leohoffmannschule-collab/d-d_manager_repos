@@ -1,9 +1,14 @@
 import { Fleuron } from './icons.jsx';
+import { SRD_FELD } from '../lib/beschriftung.js';
 
 const SKIP_KEYS = new Set(['index', 'url', 'updated_at', 'name', 'desc', '_id']);
 
+// Die Feldnamen der SRD-API sind englisch ("casting_time", "armor_class") –
+// reine Strukturbezeichner, keine Regelwerkstexte. SRD_FELD trägt die
+// deutschen Bezeichnungen dafür; seltene, dort nicht gelistete Schlüssel
+// fallen auf die alte Notlösung zurück (Unterstriche weg, Wörter groß).
 function humanizeKey(key) {
-  return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  return SRD_FELD[key] ?? key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function renderValue(value) {
