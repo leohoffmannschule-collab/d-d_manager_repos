@@ -12,9 +12,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.png', 'icons/apple-touch-icon.png'],
       manifest: {
-        name: 'Abenteuer-Almanach – Pen & Paper Charaktermanager',
+        name: 'Abenteuer-Almanach – Spieltisch, Charaktere und Spielleitung',
         short_name: 'Almanach',
-        description: 'Charaktermanager für D&D 5e und andere Pen & Paper Systeme',
+        description: 'Selbst gehostete Runde für D&D 5e: Charakterblätter, Spieltisch mit Nebel des Krieges und Spielleitungs-Board',
         theme_color: '#382718',
         background_color: '#e6d7b0',
         display: 'standalone',
@@ -45,6 +45,16 @@ export default defineConfig({
             options: {
               cacheName: 'characters-cache',
               networkTimeoutSeconds: 3,
+            },
+          },
+          {
+            // Karten und Bildnisse ändern sich unter einer Kennung nie –
+            // einmal geladen, bleiben sie auf dem Gerät.
+            urlPattern: ({ url }) => url.pathname.startsWith('/api/media/'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'medien-cache',
+              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 60 },
             },
           },
         ],

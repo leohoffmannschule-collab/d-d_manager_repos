@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { ABILITIES, SPELL_LEVELS, abilityModifier, formatModifier, proficiencyBonus } from '../../lib/dnd5e.js';
 import { compendiumApi } from '../../lib/api.js';
 import { Card, FieldLabel, Stepper, Toggle } from '../ui.jsx';
-import { IconPlus, IconSearch } from '../icons.jsx';
+import CompendiumDetail from '../CompendiumDetail.jsx';
+import { IconBook, IconPlus, IconSearch } from '../icons.jsx';
 import { newId } from '../../lib/id.js';
 
 function SpellSearch({ onAdd }) {
@@ -69,6 +70,25 @@ function SpellSearch({ onAdd }) {
 
 export default function SpellsTab({ data, update }) {
   const spellcasting = data.spellcasting;
+  // Nachgeschlagene Zauber bleiben im Gedächtnis, solange das Blatt offen ist.
+  const [aufgeschlagen, setAufgeschlagen] = useState(null);
+  const [texte, setTexte] = useState({});
+  const [laedt, setLaedt] = useState(null);
+
+  async function aufschlagen(spell) {
+    if (aufgeschlagen === spell.id) return setAufgeschlagen(null);
+    setAufgeschlagen(spell.id);
+    if (texte[spell.id] !== undefined || !spell.index) return;
+    setLaedt(spell.id);
+    try {
+      const detail = await compendiumApi.detail('spells', spell.index);
+      setTexte((alle) => ({ ...alle, [spell.id]: detail }));
+    } catch {
+      setTexte((alle) => ({ ...alle, [spell.id]: null }));
+    } finally {
+      setLaedt(null);
+    }
+  }
   const pb = proficiencyBonus(data.level);
   const abilityMod = abilityModifier(data.abilities[spellcasting.ability]);
   const saveDC = spellcasting.manualSaveDC ?? 8 + pb + abilityMod;
@@ -162,16 +182,23 @@ export default function SpellsTab({ data, update }) {
         ) : (
           <ul>
             {sortedSpells.map((spell) => (
-              <li
-                key={spell.id}
-                className="flex items-center justify-between gap-3 border-b border-dotted border-rule py-1.5"
-              >
-                <div className="flex min-w-0 items-center gap-3">
+              <li key={spell.id} className="border-b border-dotted border-rule py-1.5">
+                <div className="flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={() => aufschlagen(spell)}
+                  className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                  title="Zauber aufschlagen"
+                >
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center border border-rule font-display text-[13px] text-rubric">
                     {spell.level === 0 ? 'T' : spell.level}
                   </span>
                   <span className="truncate text-ink">{spell.name}</span>
-                </div>
+                  <IconBook
+                    size={14}
+                    className={aufgeschlagen === spell.id ? 'shrink-0 text-rubric' : 'shrink-0 text-faint'}
+                  />
+                </button>
                 <div className="flex shrink-0 items-center gap-3">
                   <Toggle
                     checked={spell.prepared}
@@ -195,6 +222,22 @@ export default function SpellsTab({ data, update }) {
                     Entfernen
                   </button>
                 </div>
+                </div>
+
+                {aufgeschlagen === spell.id && (
+                  <div className="mt-2 mb-1 border-l-[3px] border-gold bg-panel-soft/70 px-4 py-3">
+                    {laedt === spell.id ? (
+                      <p className="text-sepia italic">Der Zauber wird nachgeschlagen …</p>
+                    ) : texte[spell.id] ? (
+                      <CompendiumDetail item={texte[spell.id]} />
+                    ) : (
+                      <p className="text-sepia italic">
+                        Zu diesem Zauber liegt kein Eintrag vor – er wurde von Hand eingetragen oder das Kompendium
+                        ist nicht erreichbar.
+                      </p>
+                    )}
+                  </div>
+                )}
               </li>
             ))}
           </ul>

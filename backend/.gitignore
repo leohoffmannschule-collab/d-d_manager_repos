@@ -2,3 +2,6 @@ node_modules/
 data/*.sqlite3
 data/*.sqlite3-*
 public/
+data/medien/
+data/sicherungen/
+data/tunnel.log

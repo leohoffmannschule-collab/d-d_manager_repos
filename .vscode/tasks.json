@@ -23,6 +23,21 @@
       "command": "npm start",
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "4 · Adresse anzeigen (wer kommt woher heran?)",
+      "type": "shell",
+      "command": "npm run adresse",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "5 · Tunnel nach außen aufmachen",
+      "type": "shell",
+      "command": "npm run tunnel",
+      "problemMatcher": [],
+      "isBackground": true,
+      "presentation": { "reveal": "always", "panel": "dedicated" }
     }
   ]
 }

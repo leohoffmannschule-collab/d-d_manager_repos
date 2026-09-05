@@ -34,7 +34,7 @@ router.get(/.*/, async (req, res) => {
 
   // Keine Ausbrüche aus dem API-Pfad zulassen.
   if (subPath.split('/').includes('..')) {
-    return res.status(400).json({ error: 'Ungültiger Pfad' });
+    return res.status(400).json({ code: 'ungueltiger_pfad', error: 'Ungültiger Pfad' });
   }
 
   const cacheKey = subPath || 'index';

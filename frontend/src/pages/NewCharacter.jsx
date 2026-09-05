@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../lib/auth.jsx';
 import { charactersApi, compendiumApi } from '../lib/api.js';
 import { defaultCharacterData, defaultFreeformData } from '../lib/dnd5e.js';
 import { Card, FieldLabel } from '../components/ui.jsx';
@@ -7,7 +8,11 @@ import { Card, FieldLabel } from '../components/ui.jsx';
 export default function NewCharacter() {
   const navigate = useNavigate();
   const [name, setName] = useState('');
+  const { isDm } = useAuth();
   const [system, setSystem] = useState('dnd5e');
+  // NSC-Blätter sind der Zettel hinter dem Schirm: Werte für den Wirt, den
+  // Räuberhauptmann, den Drachen. Die Runde bekommt sie nie zu Gesicht.
+  const [npc, setNpc] = useState(false);
   const [race, setRace] = useState('');
   const [className, setClassName] = useState('');
   const [races, setRaces] = useState([]);
@@ -45,7 +50,7 @@ export default function NewCharacter() {
       } else {
         data = defaultFreeformData();
       }
-      const character = await charactersApi.create({ name: name.trim(), system, data });
+      const character = await charactersApi.create({ name: name.trim(), system, data, npc });
       navigate(`/charaktere/${character.id}`);
     } catch (err) {
       setError(err.message);
@@ -68,6 +73,29 @@ export default function NewCharacter() {
             className="field-line font-display text-2xl"
           />
         </Card>
+
+        {isDm && (
+          <Card title="Für wen">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {[
+                [false, 'Spielercharakter', 'Gehört jemandem aus der Runde. Alle sehen das Blatt, schreiben darf die Besitzerin.'],
+                [true, 'NSC-Blatt', 'Nur für dich. Taucht bei der Runde nirgends auf – nicht in den Listen, nicht im Kampf.'],
+              ].map(([wert, titel, text]) => (
+                <button
+                  key={titel}
+                  type="button"
+                  onClick={() => setNpc(wert)}
+                  className={`flex flex-col gap-1 border p-4 text-left ${
+                    npc === wert ? 'border-gold bg-gold/12' : 'border-rule bg-panel-soft'
+                  }`}
+                >
+                  <span className="font-display text-[15px] text-ink">{titel}</span>
+                  <span className="text-[15px] text-sepia">{text}</span>
+                </button>
+              ))}
+            </div>
+          </Card>
+        )}
 
         <Card title="Regelwerk">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

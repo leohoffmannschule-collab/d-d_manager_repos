@@ -1,9 +1,39 @@
-import { ABILITIES, SKILLS, abilityModifier, formatModifier, proficiencyBonus } from '../../lib/dnd5e.js';
+import {
+  ABILITIES,
+  SKILLS,
+  abilityModifier,
+  experienceToNextLevel,
+  formatModifier,
+  levelFromExperience,
+  proficiencyBonus,
+} from '../../lib/dnd5e.js';
+import { blattWurf } from '../../lib/wuerfeln.js';
 import { Card, TextField, NumberField, Toggle } from '../ui.jsx';
+import { IconD20 } from '../icons.jsx';
+
+/**
+ * Jeder Wert auf dem Blatt ist zugleich ein Würfelknopf: antippen, und der
+ * Wurf steht bei allen am Tisch.
+ */
+function Wurfwert({ name, modifier, betont = false }) {
+  return (
+    <button
+      type="button"
+      onClick={() => blattWurf(name, modifier)}
+      title={`${name} würfeln`}
+      className={`flex min-h-9 items-center gap-1 border border-transparent px-1.5 font-display font-semibold hover:border-gold ${
+        betont ? 'text-rubric' : 'text-sepia'
+      }`}
+    >
+      <IconD20 size={12} className="text-faint" />
+      {formatModifier(modifier)}
+    </button>
+  );
+}
 
 const SHORT_ABILITY = { str: 'STÄ', dex: 'GES', con: 'KON', int: 'INT', wis: 'WEI', cha: 'CHA' };
 
-function AbilityShield({ label, score, modifier, onChange }) {
+function AbilityShield({ label, score, modifier, onChange, name }) {
   const strong = modifier >= 3;
   return (
     <div className="flex flex-col items-center gap-1.5">
@@ -26,7 +56,14 @@ function AbilityShield({ label, score, modifier, onChange }) {
             className="w-12 border-0 bg-transparent p-0 text-center font-display text-2xl font-bold text-ink focus:outline-none"
             aria-label={label}
           />
-          <span className="font-display text-[15px] text-rubric">{formatModifier(modifier)}</span>
+          <button
+            type="button"
+            onClick={() => blattWurf(`${name}-Probe`, modifier)}
+            title={`${name}-Probe würfeln`}
+            className="font-display text-[15px] text-rubric hover:underline"
+          >
+            {formatModifier(modifier)}
+          </button>
         </div>
       </div>
     </div>
@@ -35,6 +72,8 @@ function AbilityShield({ label, score, modifier, onChange }) {
 
 export default function OverviewTab({ data, update }) {
   const pb = proficiencyBonus(data.level);
+  const stufeAusErfahrung = levelFromExperience(data.experience);
+  const fehlend = experienceToNextLevel(data.experience);
   const perception = data.skills.perception ?? { proficient: false, expertise: false };
   const passivePerception =
     10 +
@@ -55,9 +94,25 @@ export default function OverviewTab({ data, update }) {
           <TextField label="Spieler:in" value={data.playerName} onChange={(v) => update('playerName', v)} />
           <NumberField label="Erfahrung" min={0} value={data.experience} onChange={(v) => update('experience', v)} />
         </div>
-        <p className="mt-4 border-t border-dashed border-rule pt-3 text-sepia italic">
-          Übungsbonus <span className="font-display font-semibold text-rubric not-italic">{formatModifier(pb)}</span>
-        </p>
+        <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-1 border-t border-dashed border-rule pt-3 text-sepia italic">
+          <span>
+            Übungsbonus <span className="font-display font-semibold text-rubric not-italic">{formatModifier(pb)}</span>
+          </span>
+          <span>
+            Erfahrung trägt Stufe{' '}
+            <span className="font-display font-semibold text-ink not-italic">{stufeAusErfahrung}</span>
+            {fehlend !== null && ` · noch ${fehlend.toLocaleString('de-DE')} bis zur nächsten`}
+          </span>
+          {stufeAusErfahrung !== data.level && (
+            <button
+              type="button"
+              onClick={() => update('level', stufeAusErfahrung)}
+              className="btn-plate min-h-9 px-2.5 text-[13px] not-italic"
+            >
+              auf Stufe {stufeAusErfahrung} setzen
+            </button>
+          )}
+        </div>
       </Card>
 
       <Card title="Attribute">
@@ -66,6 +121,7 @@ export default function OverviewTab({ data, update }) {
             <AbilityShield
               key={a.key}
               label={a.label}
+              name={a.label}
               score={data.abilities[a.key]}
               modifier={abilityModifier(data.abilities[a.key])}
               onChange={(v) => update(`abilities.${a.key}`, v)}
@@ -86,7 +142,7 @@ export default function OverviewTab({ data, update }) {
                   onChange={(v) => update(`savingThrows.${a.key}`, v)}
                   label={a.label}
                 />
-                <span className="font-display font-semibold text-rubric">{formatModifier(mod)}</span>
+                <Wurfwert name={`Rettungswurf ${a.label}`} modifier={mod} betont />
               </div>
             );
           })}
@@ -125,13 +181,7 @@ export default function OverviewTab({ data, update }) {
                       Exp
                     </button>
                   )}
-                  <span
-                    className={`w-9 text-right font-display font-semibold ${
-                      state.proficient ? 'text-rubric' : 'text-sepia'
-                    }`}
-                  >
-                    {formatModifier(mod)}
-                  </span>
+                  <Wurfwert name={s.label} modifier={mod} betont={state.proficient} />
                 </div>
               </div>
             );
