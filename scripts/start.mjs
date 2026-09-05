@@ -114,7 +114,11 @@ function installieren(teil, ohneOptionale = false) {
   // nicht – und auf einem verwalteten Rechner, der genau solche Dateien
   // sperrt, wäre sie das Erste, was klemmt.
   const befehle = ['install', '--prefix', teil, ...(ohneOptionale ? ['--omit=optional'] : [])];
-  const lauf = spawnSync(NPM, befehle, { cwd: wurzel, stdio: 'inherit' });
+  // Unter Windows ist npm selbst ein .cmd – das lässt sich ohne eine Shell
+  // dazwischen nicht zuverlässig starten (schlägt sonst lautlos fehl, ganz
+  // ohne npms eigene Fehlermeldung, besonders wenn der Pfad ein Leerzeichen
+  // enthält).
+  const lauf = spawnSync(NPM, befehle, { cwd: wurzel, stdio: 'inherit', shell: process.platform === 'win32' });
   if (lauf.status !== 0) {
     sagen('');
     sagen(`  Das Nachinstallieren für ${teil} ist fehlgeschlagen.`);
@@ -177,7 +181,7 @@ function bauNoetig() {
 
 function bauen() {
   sagen('  Baue die Oberfläche … (auf einem Pi dauert das ein paar Minuten)');
-  const lauf = spawnSync(NPM, ['run', 'build'], { cwd: wurzel, stdio: 'inherit' });
+  const lauf = spawnSync(NPM, ['run', 'build'], { cwd: wurzel, stdio: 'inherit', shell: process.platform === 'win32' });
   if (lauf.status !== 0) {
     sagen('');
     sagen('  Der Bau der Oberfläche ist fehlgeschlagen.');

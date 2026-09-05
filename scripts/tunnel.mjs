@@ -120,6 +120,7 @@ const ANBIETER = [
     starten: (npx) =>
       spawn(npx, ['--yes', 'localtunnel', '--port', String(PORT)], {
         stdio: ['ignore', 'pipe', 'pipe'],
+        shell: process.platform === 'win32',
       }),
     muster: /https:\/\/[a-z0-9-]+\.loca\.lt/g,
     hinweis: [
