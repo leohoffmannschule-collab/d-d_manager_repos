@@ -263,18 +263,30 @@ in Fuß. Zwei Dinge, die auseinandergehalten gehören:
 | `darkvision`, `blindsight`, `tremorsense`, `truesight` | Was **ohne Licht** wahrgenommen wird; zählt nur in einer dunklen Szene. Das Weiteste gewinnt. |
 
 Die Rechnung in einem Satz: **Sichtbar ist, was innerhalb der eigenen
-Reichweite liegt und dort auch wahrzunehmen ist.**
+Reichweite liegt und dort auch wahrzunehmen ist.** Wie weit die Reichweite
+geht, hängt vom Licht ab:
 
-    reichweite = min(senses.sight, scene.sight)        // 0 heißt unbegrenzt
-    helle Szene : Scheibe(figur, reichweite)
-    dunkle Szene: Scheibe(figur, min(dunkelsinne, reichweite))
+    eigenesLicht = figur.lightBright + figur.lightDim
+    wetter       = scene.sight            // 0 heißt: keine Grenze
+
+    helle Szene : reichweite = min(senses.sight, wetter)
+                  Scheibe(figur, reichweite)
+
+    dunkle Szene: reichweite = min(max(senses.sight, eigenesLicht), wetter)
+                  Scheibe(figur, min(dunkelsinne, reichweite))
                   ∪ { beleuchtete Felder innerhalb reichweite }
 
-Der wichtige Teil ist das `∪ … innerhalb reichweite`: Fremdes Licht kann
-innerhalb der eigenen Reichweite etwas sichtbar machen, aber es kann das
-Fenster nicht aufziehen. Die Fackel am anderen Kartenrand geht dich nichts an
-– und damit bewegt sich der offene Bereich ausschließlich dann, wenn die
-eigene Figur sich bewegt.
+Zwei Stellen tragen die eigentliche Bedeutung:
+
+**`max(senses.sight, eigenesLicht)`** – im Dunkeln trägt die eigene Fackel den
+Blick über die eingetragene Sichtweite hinaus. Wer sich im Finstern ein Licht
+anzündet, sieht damit auch weiter; das ist der ganze Zweck einer Fackel. Das
+`wetter` deckelt trotzdem: Nebel bleibt Nebel, auch mit Laterne.
+
+**`∪ … innerhalb reichweite`** – fremdes Licht kann innerhalb der eigenen
+Reichweite etwas sichtbar machen, aber es kann das Fenster nicht *aufziehen*.
+Die Fackel am anderen Kartenrand geht dich nichts an; sonst wanderte der
+offene Bereich, ohne dass die eigene Figur einen Schritt getan hätte.
 
 Ist nichts eingetragen und die Szene hell, gibt es keine Grenze und
 `sichtBits` bleibt `null`: eine Szene ohne Sichtweiten bleibt, wie sie war.

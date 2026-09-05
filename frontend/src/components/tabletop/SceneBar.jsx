@@ -279,6 +279,18 @@ export default function SceneBar({ scene, laedtSzene, tokens = [], mode, onMode,
             wofür ein Feld im Spiel steht. Die <span className="text-ink">Sichtweite hier</span> deckelt für
             alle, was ihr Blatt hergibt – für Nebelbänke, Schneetreiben oder dichten Wald. 0 hebt den Deckel.
           </p>
+
+          {/* Dunkel ohne jedes Licht heißt: Die Runde sieht ihr eigenes Feld und
+              sonst nichts. Das ist richtig, aber überraschend – also sagen wir es
+              dort, wo es passiert. */}
+          {scene.dark && !tokens.some((t) => (t.lightBright ?? 0) + (t.lightDim ?? 0) > 0) && (
+            <p className="w-full border-l-[3px] border-rubric bg-rubric/10 px-3.5 py-2 text-[15px] text-sepia">
+              Es ist dunkel, und niemand trägt ein Licht. Wer keine Dunkelsicht hat, sieht gerade nur das
+              Feld, auf dem er steht. Eine Figur anklicken und ihr unter{' '}
+              <span className="font-display text-ink">Lichtquelle</span> eine Fackel geben – das erweitert
+              ihr Sichtfeld auch über ihre eingetragene Sichtweite hinaus.
+            </p>
+          )}
         </div>
       )}
 

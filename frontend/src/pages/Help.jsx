@@ -48,9 +48,11 @@ export default function Help() {
             Eintrag siehst du wie bisher alles Aufgedeckte.
           </li>
           <li>
-            Ist die Szene <span className="font-display">dunkel</span>, zählt zusätzlich, was du ohne Licht
-            wahrnimmst – Dunkelsicht, Blindsicht – oder wie weit eine Fackel trägt. Fremdes Licht hilft dir
-            nur, soweit dein eigener Blick hinreicht.
+            Ist die Szene <span className="font-display">dunkel</span>, reicht dein Blick so weit, wie deine
+            Sichtweite <span className="font-display">oder deine eigene Lichtquelle</span> trägt – was von
+            beidem weiter ist. Eine Fackel erweitert dein Sichtfeld also wirklich. Innerhalb davon siehst du,
+            was beleuchtet ist und was deine Dunkelsicht erfasst; fremdes Licht hilft dir nur so weit, wie
+            dein eigener Blick ohnehin hinreicht.
           </li>
         </ul>
       </Card>
@@ -87,7 +89,8 @@ export default function Help() {
               Unter „Raster“ steht <span className="font-display">Dunkle Szene</span>. Ab dann zählt, was ohne
               Licht wahrgenommen wird. Einer Figur gibst du im Figurenfeld eine{' '}
               <span className="font-display">Lichtquelle</span> – Fackel, Laterne, Zauber –, und sie erhellt die
-              Karte für alle, aber immer nur, soweit deren eigener Blick hinreicht. Daneben steht{' '}
+              Karte für alle. Wer selbst ein Licht trägt, sieht damit auch weiter als seine eingetragene
+              Sichtweite – dafür ist eine Fackel da. Daneben steht{' '}
               <span className="font-display">Sichtweite hier</span>: eine obere Grenze für alle in dieser Szene,
               für Nebelbänke oder dichten Wald. 0 hebt sie auf.
             </li>

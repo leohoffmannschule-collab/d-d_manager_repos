@@ -115,21 +115,24 @@ export function sinnesReichweite(sinne) {
 }
 
 /**
- * Wie weit sieht diese Figur überhaupt, in Fuß – die äußere Schranke.
+ * Wie weit sieht diese Figur überhaupt, in Fuß – bei genug Licht.
  *
  * Das ist etwas anderes als die Dunkelsicht. Bei Tageslicht sieht man bis zum
  * Horizont; auf einer Karte heißt das „unbegrenzt“, und genau dafür steht die
  * Null. Wer stattdessen einen Wert einträgt, bekommt ein Nebelfenster, das
  * an seiner Figur hängt: So weit reicht der Blick, nicht weiter.
- *
- * Die Szene darf das zusätzlich deckeln – für Nebelbänke, Schneetreiben oder
- * einen Wald, in dem niemand weit sieht.
  */
-export function sichtweite(sinne, scene) {
-  const eigen = Number(sinne?.sight) > 0 ? Number(sinne.sight) : Infinity;
-  const szene = Number(scene?.sight) > 0 ? Number(scene.sight) : Infinity;
-  return Math.min(eigen, szene);
-}
+export const eigeneSichtweite = (sinne) => (Number(sinne?.sight) > 0 ? Number(sinne.sight) : Infinity);
+
+/**
+ * Was die Szene allen aufzwingt, in Fuß – Nebelbank, Schneetreiben, dichter
+ * Wald. Das ist die harte Grenze: Auch eine Fackel leuchtet nicht durch
+ * Nebel hindurch.
+ */
+export const szenenSichtweite = (scene) => (Number(scene?.sight) > 0 ? Number(scene.sight) : Infinity);
+
+/** Fuß in Felder, aber „unbegrenzt“ bleibt unbegrenzt. */
+const grenzeInFelder = (fuss, scene) => (fuss === Infinity ? Infinity : inFelder(fuss, scene));
 
 /** Abstand zweier Felder in Feldern, euklidisch – wie die Scheiben oben. */
 function abstandFelder(ax, ay, bx, by) {
@@ -145,11 +148,22 @@ function abstandFelder(ax, ay, bx, by) {
  * und eine helle Szene ohne eingetragene Sichtweite bleibt, wie sie war.
  *
  * Der Aufbau in einem Satz: **Sichtbar ist, was innerhalb der eigenen
- * Reichweite liegt und dort auch wahrzunehmen ist.** Die Reichweite ist eine
- * Scheibe um die eigene Figur – deshalb wandert das Fenster mit ihr und mit
- * sonst nichts. Fremdes Licht kann darin etwas sichtbar machen, aber es kann
- * das Fenster nicht aufziehen: Die Fackel am anderen Kartenrand geht dich
- * nichts an.
+ * Reichweite liegt und dort auch wahrzunehmen ist.**
+ *
+ * Wie weit die Reichweite geht, hängt vom Licht ab:
+ *
+ *   hell   – so weit der Blick trägt (`senses.sight`).
+ *   dunkel – so weit der Blick trägt **oder die eigene Fackel leuchtet**,
+ *            was von beidem weiter ist. Wer sich im Finstern ein Licht
+ *            anzündet, sieht damit auch weiter; das ist der ganze Zweck
+ *            einer Fackel.
+ *
+ * Die Szene deckelt beides. Nebel bleibt Nebel, auch mit Laterne.
+ *
+ * Innerhalb der Reichweite ist sichtbar, was beleuchtet ist – auch von
+ * fremdem Licht. Aber fremdes Licht kann die Reichweite nicht *aufziehen*:
+ * Die Fackel am anderen Kartenrand geht dich nichts an, sonst wanderte dein
+ * Nebelfenster, ohne dass du einen Schritt getan hättest.
  */
 export function sichtFelder(scene, alleTokens, eigeneTokens, sinneJeToken) {
   if (!scene.fogEnabled) return null;
@@ -157,39 +171,44 @@ export function sichtFelder(scene, alleTokens, eigeneTokens, sinneJeToken) {
 
   const bereich = rasterBereich(scene);
   const beleuchtet = scene.dark ? beleuchteteFelder(scene, alleTokens) : null;
+  const wetter = grenzeInFelder(szenenSichtweite(scene), scene);
   const sichtbar = new Set();
   let begrenzt = false;
 
   for (const token of eigeneTokens) {
     const sinne = sinneJeToken.get(token.id);
     const mitte = figurenFeld(token, scene);
-    const weite = sichtweite(sinne, scene);
-    const aussen = weite === Infinity ? Infinity : inFelder(weite, scene);
+    const ausAugen = grenzeInFelder(eigeneSichtweite(sinne), scene);
 
     // Das eigene Feld sieht man immer, und sei es durch Tasten.
     sichtbar.add(`${mitte.fx},${mitte.fy}`);
 
     if (!scene.dark) {
       // Helle Szene: Es zählt allein, wie weit der Blick reicht.
-      if (aussen === Infinity) return null;
+      const reichweite = Math.min(ausAugen, wetter);
+      if (reichweite === Infinity) return null;
       begrenzt = true;
-      scheibe(mitte, aussen, bereich, sichtbar);
+      scheibe(mitte, reichweite, bereich, sichtbar);
       continue;
     }
 
     begrenzt = true;
-    // Dunkel: die eigenen Sinne, aber nie weiter als der Blick reicht.
-    const eigeneSinne = Math.min(inFelder(sinnesReichweite(sinne), scene), aussen);
-    if (eigeneSinne > 0) scheibe(mitte, eigeneSinne, bereich, sichtbar);
+    // Dunkel: Die eigene Fackel trägt den Blick über die Sichtweite hinaus.
+    const ausLicht = inFelder((token.lightBright ?? 0) + (token.lightDim ?? 0), scene);
+    const reichweite = Math.min(Math.max(ausAugen, ausLicht), wetter);
 
-    // Dazu, was beleuchtet ist – aber nur, soweit der Blick hinreicht.
+    // Was ohne jedes Licht wahrgenommen wird, aber nie über die Reichweite.
+    const dunkelSinne = Math.min(inFelder(sinnesReichweite(sinne), scene), reichweite);
+    if (dunkelSinne > 0) scheibe(mitte, dunkelSinne, bereich, sichtbar);
+
+    // Dazu, was beleuchtet ist – soweit der Blick hinreicht.
     for (const feld of beleuchtet) {
       if (sichtbar.has(feld)) continue;
-      if (aussen !== Infinity) {
+      if (reichweite !== Infinity) {
         const trenner = feld.indexOf(',');
         const x = Number(feld.slice(0, trenner));
         const y = Number(feld.slice(trenner + 1));
-        if (abstandFelder(x, y, mitte.fx, mitte.fy) > aussen) continue;
+        if (abstandFelder(x, y, mitte.fx, mitte.fy) > reichweite) continue;
       }
       sichtbar.add(feld);
     }

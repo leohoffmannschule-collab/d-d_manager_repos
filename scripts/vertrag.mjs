@@ -580,6 +580,27 @@ try {
       'Innerhalb der Reichweite schon'
     );
 
+    // Und die eigene Fackel trägt den Blick über die Sichtweite hinaus –
+    // dafür zündet man sie ja an.
+    await sl.ruf(`/scenes/figuren/${wesen.id}`, {
+      methode: 'PATCH',
+      koerper: { x: 700, y: 70, lightBright: 0, lightDim: 0 },
+    });
+    gleich(
+      (await spieler.ruf('/scenes/aktiv')).daten.tokens.length,
+      1,
+      'Neun Felder weit reicht der Blick im Dunkeln nicht'
+    );
+    await sl.ruf(`/scenes/figuren/${ihre.id}`, {
+      methode: 'PATCH',
+      koerper: { lightBright: 30, lightDim: 30 },
+    });
+    gleich(
+      (await spieler.ruf('/scenes/aktiv')).daten.tokens.length,
+      2,
+      'Mit eigener Laterne (60 Fuß) sehr wohl – Licht erweitert das Sichtfeld'
+    );
+
     // Die Szene darf für alle deckeln – Nebelbank, Schneetreiben, dichter Wald.
     await sl.ruf(`/scenes/${feld.id}`, { methode: 'PUT', koerper: { dark: false, sight: 10 } });
     const eng = (await sl.ruf('/scenes/aktiv')).daten;
@@ -590,6 +611,15 @@ try {
       'Und deckelt, was das Blatt hergibt'
     );
 
+    // Auch die Laterne kommt durch eine Nebelbank nicht weiter.
+    await sl.ruf(`/scenes/${feld.id}`, { methode: 'PUT', koerper: { dark: true, sight: 20 } });
+    gleich(
+      (await spieler.ruf('/scenes/aktiv')).daten.tokens.length,
+      1,
+      'Nebel bleibt Nebel, auch mit Laterne'
+    );
+
+    await sl.ruf(`/scenes/figuren/${ihre.id}`, { methode: 'PATCH', koerper: { lightBright: 0, lightDim: 0 } });
     await sl.ruf(`/scenes/${feld.id}`, { methode: 'DELETE' });
     blatt.data.combat.senses = { sight: 0, darkvision: 0, blindsight: 0, tremorsense: 0, truesight: 0 };
     await sl.ruf(`/characters/${held.id}`, { methode: 'PUT', koerper: { data: blatt.data } });

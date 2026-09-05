@@ -468,7 +468,7 @@ export default function CombatTab({ data, update, replace }) {
             onChange={(v) => update('combat.senses.sight', v)}
           />
           <p className="text-[15px] text-sepia italic sm:col-span-2 sm:self-end sm:pb-2">
-            Wie weit dein Blick überhaupt reicht. <span className="font-display">0 heißt unbegrenzt</span> –
+            Wie weit dein Blick bei Licht reicht. <span className="font-display">0 heißt unbegrenzt</span> –
             bei Tageslicht sieht man bis zum Horizont. Trägst du etwas ein, bekommst du am Spieltisch ein
             Nebelfenster, das an deiner Figur hängt und sich nur bewegt, wenn sie sich bewegt.
           </p>
@@ -493,7 +493,9 @@ export default function CombatTab({ data, update, replace }) {
         </div>
         <p className="mt-2 text-[15px] text-sepia italic">
           Diese vier zählen erst, wenn die Szene <span className="font-display">dunkel</span> ist: Dann nimmst
-          du so weit wahr, wie hier steht, auch ohne jedes Licht – aber nie weiter als deine Sichtweite oben.
+          du so weit wahr, wie hier steht, auch ohne jedes Licht. Im Dunkeln reicht dein Blick so weit, wie
+          deine Sichtweite <span className="font-display">oder deine eigene Fackel</span> trägt – was von
+          beidem weiter ist. Dafür zündet man sie schließlich an.
         </p>
         <div className="mt-4">
           <TextField

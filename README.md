@@ -45,11 +45,13 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
   der Figur und bewegt sich nur, wenn sie sich bewegt**; verlassenes Gelände fällt zurück ins Gedämpfte.
   Ohne Eintrag bleibt alles wie bisher: Bei Tageslicht sieht man bis zum Horizont. Die Spielleitung kann
   für eine ganze Szene deckeln – Nebelbank, Schneetreiben, dichter Wald.
-- **Licht und Dunkelsicht**: Die Spielleitung kann eine Szene auf **dunkel** stellen. Dann zählt, was
-  ohne Licht wahrgenommen wird – Dunkelsicht, Blindsicht, Erschütterungssinn – oder wie weit eine Fackel
-  trägt. Figuren führen ihr eigenes Licht mit (Fackel, Laterne, Zauber) und erhellen damit die Karte für
-  alle, aber immer nur, soweit der eigene Blick hinreicht: Die Fackel am anderen Kartenrand geht dich
-  nichts an.
+- **Licht und Dunkelsicht**: Die Spielleitung kann eine Szene auf **dunkel** stellen. Dann reicht dein
+  Blick so weit, wie deine Sichtweite **oder deine eigene Lichtquelle** trägt – was von beidem weiter ist.
+  Eine Fackel erweitert dein Sichtfeld also wirklich; dafür ist sie da. Figuren führen ihr Licht selbst mit
+  (Fackel 20/20, Laterne 30/30, Tageslicht 60/60 oder freie Werte) und erhellen die Karte auch für die
+  anderen – aber fremdes Licht hilft nur so weit, wie der eigene Blick ohnehin hinreicht, sonst zöge die
+  Fackel am anderen Kartenrand dein Nebelfenster auf. Zusätzlich zählt im Dunkeln, was ganz ohne Licht
+  wahrgenommen wird: Dunkelsicht, Blindsicht, Erschütterungssinn.
 - **Gemeinsamer Würfelbeutel**: W4–W100, Anzahl und Modifikator, Vorteil/Nachteil, eigene Ausdrücke wie
   `2W6+3`. Gewürfelt wird auf dem Server, jeder Wurf steht sofort bei allen in der Chronik.
 - **Initiativliste** und **Handzettel** der Spielleitung, live am Tisch.
