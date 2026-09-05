@@ -41,10 +41,16 @@ export default function Help() {
           <li>Ein <span className="font-display">Alt+Klick</span> lässt eine Stelle für alle kurz aufleuchten – praktisch statt „da vorne links, nein, weiter unten“.</li>
           <li>Jede Bewegung, jeder Wurf und jede Änderung der Trefferpunkte steht sofort bei allen anderen auf dem Schirm.</li>
           <li>
-            Ist die Szene <span className="font-display">dunkel</span>, reicht dein Blick genau so weit, wie es
-            auf deinem Blatt steht (unter <span className="font-display">Kampf → Widerstand und Sinne</span>) –
-            oder so weit, wie eine Fackel trägt. Wo du schon warst, bleibt gedämpft sichtbar; wer dort gerade
-            steht, siehst du nur im Licht.
+            Trägst du unter <span className="font-display">Kampf → Widerstand und Sinne</span> eine{' '}
+            <span className="font-display">Sichtweite</span> ein, bekommst du einen offenen Bereich um deine
+            Figur – so weit, wie dein Blick reicht. Er hängt an ihr und bewegt sich nur, wenn sie sich bewegt.
+            Wo du schon warst, bleibt gedämpft sichtbar; wer dort gerade steht, siehst du nicht mehr. Ohne
+            Eintrag siehst du wie bisher alles Aufgedeckte.
+          </li>
+          <li>
+            Ist die Szene <span className="font-display">dunkel</span>, zählt zusätzlich, was du ohne Licht
+            wahrnimmst – Dunkelsicht, Blindsicht – oder wie weit eine Fackel trägt. Fremdes Licht hilft dir
+            nur, soweit dein eigener Blick hinreicht.
           </li>
         </ul>
       </Card>
@@ -78,10 +84,12 @@ export default function Help() {
               bis zu 250 × 250; bei einem Meter je Feld sind das zweihundertfünfzig Meter.
             </li>
             <li>
-              Unter „Raster“ steht <span className="font-display">Dunkle Szene</span>. Ab dann sieht jeder nur so
-              weit, wie sein Blatt und das Licht es hergeben. Einer Figur gibst du im Figurenfeld eine
-              <span className="font-display"> Lichtquelle</span> – Fackel, Laterne, Zauber –, und sie erhellt die
-              Karte für alle.
+              Unter „Raster“ steht <span className="font-display">Dunkle Szene</span>. Ab dann zählt, was ohne
+              Licht wahrgenommen wird. Einer Figur gibst du im Figurenfeld eine{' '}
+              <span className="font-display">Lichtquelle</span> – Fackel, Laterne, Zauber –, und sie erhellt die
+              Karte für alle, aber immer nur, soweit deren eigener Blick hinreicht. Daneben steht{' '}
+              <span className="font-display">Sichtweite hier</span>: eine obere Grenze für alle in dieser Szene,
+              für Nebelbänke oder dichten Wald. 0 hebt sie auf.
             </li>
             <li>
               Du selbst siehst immer alles. Willst du wissen, was dein Späher sieht, bevor du ihn losschickst,

@@ -214,6 +214,20 @@ export default function SceneBar({ scene, laedtSzene, tokens = [], mode, onMode,
           >
             <IconCandle size={13} /> Dunkle Szene
           </Knopf>
+          <label className="block">
+            <span className="mb-1 block font-display text-[10px] tracking-[0.16em] text-faint uppercase">
+              Sichtweite hier
+            </span>
+            <input
+              type="number"
+              min={0}
+              step={5}
+              value={scene.sight}
+              onChange={(e) => rasterAendern('sight', Number(e.target.value) || 0)}
+              className="field-box w-24 font-display"
+              title="Obere Grenze für alle in dieser Szene, in Fuß. 0 = so weit das Blatt hergibt."
+            />
+          </label>
           {scene.mapId && (
             <Knopf
               onClick={async () => {
@@ -262,7 +276,8 @@ export default function SceneBar({ scene, laedtSzene, tokens = [], mode, onMode,
               {masse.breite} × {masse.tiefe} {EINHEIT[scene.unit] ?? 'Fuß'}
             </span>
             . Die Feldgröße so einstellen, dass die Linien auf der Karte liegen; die Weite je Feld sagt,
-            wofür ein Feld im Spiel steht.
+            wofür ein Feld im Spiel steht. Die <span className="text-ink">Sichtweite hier</span> deckelt für
+            alle, was ihr Blatt hergibt – für Nebelbänke, Schneetreiben oder dichten Wald. 0 hebt den Deckel.
           </p>
         </div>
       )}

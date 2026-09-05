@@ -100,8 +100,9 @@ export function beleuchteteFelder(scene, tokens) {
 }
 
 /**
- * Die eigenen Sinne einer Figur, in Fuß. Was davon zählt, ist das Weiteste:
- * Wer dreißig Fuß Dunkelsicht und zehn Fuß Blindsicht hat, sieht dreißig.
+ * Die Sinne einer Figur für die *Dunkelheit*, in Fuß. Was davon zählt, ist
+ * das Weiteste: Wer dreißig Fuß Dunkelsicht und zehn Fuß Blindsicht hat,
+ * nimmt dreißig Fuß weit wahr, auch ohne jedes Licht.
  */
 export function sinnesReichweite(sinne) {
   if (!sinne) return 0;
@@ -114,29 +115,87 @@ export function sinnesReichweite(sinne) {
 }
 
 /**
+ * Wie weit sieht diese Figur überhaupt, in Fuß – die äußere Schranke.
+ *
+ * Das ist etwas anderes als die Dunkelsicht. Bei Tageslicht sieht man bis zum
+ * Horizont; auf einer Karte heißt das „unbegrenzt“, und genau dafür steht die
+ * Null. Wer stattdessen einen Wert einträgt, bekommt ein Nebelfenster, das
+ * an seiner Figur hängt: So weit reicht der Blick, nicht weiter.
+ *
+ * Die Szene darf das zusätzlich deckeln – für Nebelbänke, Schneetreiben oder
+ * einen Wald, in dem niemand weit sieht.
+ */
+export function sichtweite(sinne, scene) {
+  const eigen = Number(sinne?.sight) > 0 ? Number(sinne.sight) : Infinity;
+  const szene = Number(scene?.sight) > 0 ? Number(scene.sight) : Infinity;
+  return Math.min(eigen, szene);
+}
+
+/** Abstand zweier Felder in Feldern, euklidisch – wie die Scheiben oben. */
+function abstandFelder(ax, ay, bx, by) {
+  return Math.hypot(ax - bx, ay - by);
+}
+
+/**
  * Was sehen diese Figuren zusammen?
  *
- * `null` heißt „alles, was aufgedeckt ist“ – bei Tageslicht, ohne Nebel, oder
- * wenn jemand gar keine Figur auf der Karte hat. Letzteres ist Absicht: Wer
- * nicht mitspielt, soll nicht vor einem schwarzen Blatt sitzen.
+ * `null` heißt „alles, was aufgedeckt ist“: kein Nebel, keine eigene Figur
+ * auf der Karte, oder schlicht nichts, das den Blick begrenzt. Letzteres ist
+ * Absicht – wer nicht mitspielt, soll nicht vor einem schwarzen Blatt sitzen,
+ * und eine helle Szene ohne eingetragene Sichtweite bleibt, wie sie war.
+ *
+ * Der Aufbau in einem Satz: **Sichtbar ist, was innerhalb der eigenen
+ * Reichweite liegt und dort auch wahrzunehmen ist.** Die Reichweite ist eine
+ * Scheibe um die eigene Figur – deshalb wandert das Fenster mit ihr und mit
+ * sonst nichts. Fremdes Licht kann darin etwas sichtbar machen, aber es kann
+ * das Fenster nicht aufziehen: Die Fackel am anderen Kartenrand geht dich
+ * nichts an.
  */
 export function sichtFelder(scene, alleTokens, eigeneTokens, sinneJeToken) {
-  if (!scene.fogEnabled || !scene.dark) return null;
+  if (!scene.fogEnabled) return null;
   if (!eigeneTokens || eigeneTokens.length === 0) return null;
 
   const bereich = rasterBereich(scene);
-  // Licht scheint für jeden, der hinsieht – auch die Fackel des Nachbarn.
-  const sichtbar = new Set(beleuchteteFelder(scene, alleTokens));
+  const beleuchtet = scene.dark ? beleuchteteFelder(scene, alleTokens) : null;
+  const sichtbar = new Set();
+  let begrenzt = false;
 
   for (const token of eigeneTokens) {
+    const sinne = sinneJeToken.get(token.id);
     const mitte = figurenFeld(token, scene);
+    const weite = sichtweite(sinne, scene);
+    const aussen = weite === Infinity ? Infinity : inFelder(weite, scene);
+
     // Das eigene Feld sieht man immer, und sei es durch Tasten.
     sichtbar.add(`${mitte.fx},${mitte.fy}`);
-    const reichweite = inFelder(sinnesReichweite(sinneJeToken.get(token.id)), scene);
-    if (reichweite > 0) scheibe(mitte, reichweite, bereich, sichtbar);
+
+    if (!scene.dark) {
+      // Helle Szene: Es zählt allein, wie weit der Blick reicht.
+      if (aussen === Infinity) return null;
+      begrenzt = true;
+      scheibe(mitte, aussen, bereich, sichtbar);
+      continue;
+    }
+
+    begrenzt = true;
+    // Dunkel: die eigenen Sinne, aber nie weiter als der Blick reicht.
+    const eigeneSinne = Math.min(inFelder(sinnesReichweite(sinne), scene), aussen);
+    if (eigeneSinne > 0) scheibe(mitte, eigeneSinne, bereich, sichtbar);
+
+    // Dazu, was beleuchtet ist – aber nur, soweit der Blick hinreicht.
+    for (const feld of beleuchtet) {
+      if (sichtbar.has(feld)) continue;
+      if (aussen !== Infinity) {
+        const trenner = feld.indexOf(',');
+        const x = Number(feld.slice(0, trenner));
+        const y = Number(feld.slice(trenner + 1));
+        if (abstandFelder(x, y, mitte.fx, mitte.fy) > aussen) continue;
+      }
+      sichtbar.add(feld);
+    }
   }
 
-  return sichtbar;
+  return begrenzt ? sichtbar : null;
 }
 
 /* --- Übertragung --------------------------------------------------------- */

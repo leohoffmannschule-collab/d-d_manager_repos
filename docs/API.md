@@ -239,7 +239,8 @@ Spielleitung aufgedeckt hat) trägt sie:
 
 | Feld | Bedeutung |
 | ---- | --------- |
-| `dark` | Dunkle Szene: Erst dann greifen Licht und Sinne. |
+| `dark` | Dunkle Szene: Erst dann greifen Licht und Dunkelsicht. |
+| `sight` | Obere Sichtgrenze für alle in dieser Szene, in Fuß. `0` = keine – Nebelbank, Schneetreiben, dichter Wald. |
 | `sichtBits` | Die Felder, die *diese* Person gerade sieht, als Bitkarte. `null` heißt „alles Aufgedeckte“ – helle Szene, kein Nebel, oder keine eigene Figur auf der Karte. |
 | `nscSicht` | Nur für die Spielleitung: durch welche Figur sie gerade schaut, sonst `null`. |
 
@@ -253,10 +254,33 @@ werden nicht im Browser weggeblendet – sie kommen gar nicht erst an. Das gilt
 auch für den Nebel: Was nie aufgedeckt wurde, verbirgt keine Figur mehr bloß
 optisch.
 
-Sichtweiten kommen aus `combat.senses` des verknüpften Charakterblatts
-(`darkvision`, `blindsight`, `tremorsense`, `truesight`, in Fuß); das Weiteste
-gewinnt. Radien werden auf Feldmittelpunkten euklidisch ausgelegt, wie die
-Regeln einen Radius auf dem Raster meinen.
+Sichtweiten kommen aus `combat.senses` des verknüpften Charakterblatts, alle
+in Fuß. Zwei Dinge, die auseinandergehalten gehören:
+
+| Feld | Bedeutung |
+| ---- | --------- |
+| `sight` | Wie weit der Blick **überhaupt** reicht. `0` = unbegrenzt (bei Tageslicht sieht man bis zum Horizont). Wer etwas einträgt, bekommt ein Nebelfenster um seine Figur. |
+| `darkvision`, `blindsight`, `tremorsense`, `truesight` | Was **ohne Licht** wahrgenommen wird; zählt nur in einer dunklen Szene. Das Weiteste gewinnt. |
+
+Die Rechnung in einem Satz: **Sichtbar ist, was innerhalb der eigenen
+Reichweite liegt und dort auch wahrzunehmen ist.**
+
+    reichweite = min(senses.sight, scene.sight)        // 0 heißt unbegrenzt
+    helle Szene : Scheibe(figur, reichweite)
+    dunkle Szene: Scheibe(figur, min(dunkelsinne, reichweite))
+                  ∪ { beleuchtete Felder innerhalb reichweite }
+
+Der wichtige Teil ist das `∪ … innerhalb reichweite`: Fremdes Licht kann
+innerhalb der eigenen Reichweite etwas sichtbar machen, aber es kann das
+Fenster nicht aufziehen. Die Fackel am anderen Kartenrand geht dich nichts an
+– und damit bewegt sich der offene Bereich ausschließlich dann, wenn die
+eigene Figur sich bewegt.
+
+Ist nichts eingetragen und die Szene hell, gibt es keine Grenze und
+`sichtBits` bleibt `null`: eine Szene ohne Sichtweiten bleibt, wie sie war.
+
+Radien werden auf Feldmittelpunkten euklidisch ausgelegt, wie die Regeln einen
+Radius auf dem Raster meinen.
 
 Zwei bewusste Grenzen: **keine Wände** (Licht und Blick gehen hindurch – der
 von Hand gemalte Nebel bleibt das Werkzeug dagegen) und **kein Unterschied

@@ -459,6 +459,21 @@ export default function CombatTab({ data, update, replace }) {
             onChange={(v) => update('combat.defenses.vulnerabilities', v)}
           />
         </div>
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <NumberField
+            label="Sichtweite (Fuß)"
+            value={data.combat.senses.sight ?? 0}
+            min={0}
+            step={5}
+            onChange={(v) => update('combat.senses.sight', v)}
+          />
+          <p className="text-[15px] text-sepia italic sm:col-span-2 sm:self-end sm:pb-2">
+            Wie weit dein Blick überhaupt reicht. <span className="font-display">0 heißt unbegrenzt</span> –
+            bei Tageslicht sieht man bis zum Horizont. Trägst du etwas ein, bekommst du am Spieltisch ein
+            Nebelfenster, das an deiner Figur hängt und sich nur bewegt, wenn sie sich bewegt.
+          </p>
+        </div>
+
         <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
           {[
             ['Dunkelsicht', 'darkvision'],
@@ -477,8 +492,8 @@ export default function CombatTab({ data, update, replace }) {
           ))}
         </div>
         <p className="mt-2 text-[15px] text-sepia italic">
-          In einer dunklen Szene reicht dein Blick genau so weit, wie hier steht – der Spieltisch rechnet
-          damit, was du siehst.
+          Diese vier zählen erst, wenn die Szene <span className="font-display">dunkel</span> ist: Dann nimmst
+          du so weit wahr, wie hier steht, auch ohne jedes Licht – aber nie weiter als deine Sichtweite oben.
         </p>
         <div className="mt-4">
           <TextField

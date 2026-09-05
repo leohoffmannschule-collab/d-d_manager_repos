@@ -40,11 +40,16 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
 - **Nebel des Krieges** – was die Spielleitung noch nicht aufgedeckt hat, bleibt schwarz, samt der
   Figuren, die darin lauern. Was du nicht sehen darfst, steht nicht in der Nutzlast, sondern kommt
   gar nicht erst an.
-- **Licht und Dunkelsicht**: Die Spielleitung kann eine Szene auf **dunkel** stellen. Dann reicht
-  dein Blick genau so weit, wie es auf deinem Blatt steht – Dunkelsicht, Blindsicht, Erschütterungssinn –
-  oder so weit, wie eine Fackel trägt. Figuren führen ihr eigenes Licht mit (Fackel, Laterne, Zauber)
-  und erhellen damit die Karte für alle. Erkundetes Gelände bleibt gedämpft stehen; wer gerade dort
-  steht, sieht man nur im Licht.
+- **Sichtweite als Nebelfenster**: Trägst du auf deinem Blatt eine Sichtweite ein, bekommst du am
+  Spieltisch einen offenen Bereich um deine Figur – genau so weit, wie dein Blick reicht. Er **hängt an
+  der Figur und bewegt sich nur, wenn sie sich bewegt**; verlassenes Gelände fällt zurück ins Gedämpfte.
+  Ohne Eintrag bleibt alles wie bisher: Bei Tageslicht sieht man bis zum Horizont. Die Spielleitung kann
+  für eine ganze Szene deckeln – Nebelbank, Schneetreiben, dichter Wald.
+- **Licht und Dunkelsicht**: Die Spielleitung kann eine Szene auf **dunkel** stellen. Dann zählt, was
+  ohne Licht wahrgenommen wird – Dunkelsicht, Blindsicht, Erschütterungssinn – oder wie weit eine Fackel
+  trägt. Figuren führen ihr eigenes Licht mit (Fackel, Laterne, Zauber) und erhellen damit die Karte für
+  alle, aber immer nur, soweit der eigene Blick hinreicht: Die Fackel am anderen Kartenrand geht dich
+  nichts an.
 - **Gemeinsamer Würfelbeutel**: W4–W100, Anzahl und Modifikator, Vorteil/Nachteil, eigene Ausdrücke wie
   `2W6+3`. Gewürfelt wird auf dem Server, jeder Wurf steht sofort bei allen in der Chronik.
 - **Initiativliste** und **Handzettel** der Spielleitung, live am Tisch.

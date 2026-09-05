@@ -147,7 +147,7 @@ export function defaultCharacterData() {
       exhaustion: 0,
       concentration: { active: false, spell: '' },
       defenses: { resistances: '', immunities: '', vulnerabilities: '' },
-      senses: { darkvision: 0, blindsight: 0, tremorsense: 0, truesight: 0, notes: '' },
+      senses: { sight: 0, darkvision: 0, blindsight: 0, tremorsense: 0, truesight: 0, notes: '' },
     },
     inspiration: false,
     // Wut, Ki, Zauberkraft, Bardische Inspiration … – statt für jede Klasse

@@ -27,6 +27,7 @@ function rowToScene(row) {
     gridVisible: !!row.grid_visible,
     fogEnabled: !!row.fog_enabled,
     dark: !!row.dark,
+    sight: Number(row.sight) || 0,
     unit: row.unit ?? 'fuss',
     scale: Number(row.scale) > 0 ? Number(row.scale) : 5,
     mapId: row.map_id,
@@ -299,7 +300,7 @@ router.put('/:id', requireDm, (req, res) => {
   db.prepare(
     `UPDATE scenes SET name = ?, media_id = ?, width = ?, height = ?, grid_size = ?,
             grid_offset_x = ?, grid_offset_y = ?, grid_visible = ?, fog_enabled = ?, dark = ?,
-            unit = ?, scale = ?
+            sight = ?, unit = ?, scale = ?
        WHERE id = ?`
   ).run(
     typeof body.name === 'string' && body.name.trim() ? body.name.trim().slice(0, 100) : row.name,
@@ -312,6 +313,7 @@ router.put('/:id', requireDm, (req, res) => {
     'gridVisible' in body ? (body.gridVisible ? 1 : 0) : row.grid_visible,
     'fogEnabled' in body ? (body.fogEnabled ? 1 : 0) : row.fog_enabled,
     'dark' in body ? (body.dark ? 1 : 0) : row.dark,
+    'sight' in body ? clamp(toNumber(body.sight, row.sight), 0, 100000) : row.sight,
     body.unit === 'meter' || body.unit === 'fuss' ? body.unit : row.unit,
     'scale' in body ? clamp(toNumber(body.scale, row.scale), 0.1, 1000) : row.scale,
     row.id

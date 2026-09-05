@@ -326,6 +326,10 @@ addColumnIfMissing('tokens', 'light_dim', 'INTEGER NOT NULL DEFAULT 0');
 // Der Maßstab: Wofür steht ein Rasterfeld? Vorgabe bleiben die 5 Fuß aus dem
 // Regelwerk. Wer in Metern denkt – und eine Karte über zweihundert Meter
 // legen will –, stellt hier ein Feld auf einen Meter.
+// Eine obere Schranke für alle in dieser Szene, in Fuß – Nebelbank,
+// Schneetreiben, dichter Wald. 0 heißt: Der Blick reicht bis zum Rand.
+addColumnIfMissing('scenes', 'sight', 'REAL NOT NULL DEFAULT 0');
+
 addColumnIfMissing('scenes', 'unit', "TEXT NOT NULL DEFAULT 'fuss'");
 addColumnIfMissing('scenes', 'scale', 'REAL NOT NULL DEFAULT 5');
 addColumnIfMissing('maps', 'unit', "TEXT NOT NULL DEFAULT 'fuss'");
