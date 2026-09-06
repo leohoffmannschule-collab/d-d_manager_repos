@@ -19,6 +19,7 @@
     "adresse": "node scripts/adresse.mjs",
     "tunnel": "node scripts/tunnel.mjs",
     "sicherung": "node backend/scripts/sicherung.mjs",
+    "drucksatz": "node scripts/drucksatz.mjs",
     "vertrag": "node scripts/vertrag.mjs"
   },
   "devDependencies": {
