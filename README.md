@@ -382,6 +382,7 @@ Nützliche Befehle im Projektstamm:
 | `npm run adresse`   | Unter welchen Adressen der Almanach gerade erreichbar ist             |
 | `npm run tunnel`    | Den Weg von außen aufmachen, ohne Docker (`Strg+C` schließt ihn)      |
 | `npm run sicherung` | Datenbank sichern; `-- --medien` nimmt Karten und Bildnisse mit       |
+| `npm run drucksatz` | Die Handbücher druckfertig setzen (`docs/druck/`, dann Strg+P → PDF)  |
 | `npm run setup`     | Abhängigkeiten für Backend und Frontend installieren                  |
 | `npm run dev`       | Entwicklung: Server (3001) und Oberfläche (5173) gleichzeitig         |
 | `npm run build`     | Oberfläche bauen und ins Backend kopieren                             |

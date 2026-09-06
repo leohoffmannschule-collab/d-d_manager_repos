@@ -6,3 +6,6 @@ design/*.html
 
 # Eigene Umgebung (Tunnel-Kennwort)
 .env
+
+# Druckfassung der Handbücher (entsteht neu aus den .md-Dateien)
+docs/druck/
