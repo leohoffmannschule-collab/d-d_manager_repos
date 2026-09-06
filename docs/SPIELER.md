@@ -14,11 +14,12 @@ genügt, auf Telefon, Tablet oder Rechner.
 4. [Das Blatt bedienen](#4-das-blatt-bedienen)
 5. [Am Spieltisch](#5-am-spieltisch)
 6. [Würfeln](#6-würfeln)
-7. [Was du siehst – und was nicht](#7-was-du-siehst--und-was-nicht)
-8. [Beute](#8-beute)
-9. [Musik](#9-musik)
-10. [Dein Blatt mitnehmen](#10-dein-blatt-mitnehmen)
-11. [Wenn etwas klemmt](#11-wenn-etwas-klemmt)
+7. [Der Chat am Tisch](#7-der-chat-am-tisch)
+8. [Was du siehst – und was nicht](#8-was-du-siehst--und-was-nicht)
+9. [Beute](#9-beute)
+10. [Musik](#10-musik)
+11. [Dein Blatt mitnehmen](#11-dein-blatt-mitnehmen)
+12. [Wenn etwas klemmt](#12-wenn-etwas-klemmt)
 
 ---
 
@@ -67,15 +68,11 @@ die Wahl für sich.
 Für andere Systeme als D&D 5e gibt es das **freie Blatt** – eine leere Seite
 ohne 5e-Mechanik, die nur trägt, was du hineinschreibst.
 
-### Die Figurenschmiede
+### Dein Bildnis
 
-Im Reiter **Figur** stellst du deine Miniatur zusammen: Volk, Statur,
-Rüstung, Waffe, Haar, Bart, Farben. Sie dreht sich, wenn du sie mit dem
-Finger ziehst; **Auswürfeln** macht auf Zuruf einen Vorschlag.
-
-**Gießen** macht daraus zweierlei: das Bildnis auf deinem Blatt und die
-Figur, mit der du über die Karte ziehst. Die Spielleitung legt sie beim
-nächsten Kampf von selbst aus.
+Oben auf dem Blatt lässt sich ein Bild hochladen – es steht danach auf deinem
+Blatt und in der Übersicht der Runde. Auf der Karte bist du eine Figur in
+deiner Farbe mit deinem Namen.
 
 ---
 
@@ -96,7 +93,6 @@ abtippen.
 | **Zauber** | Zauberplätze, vorbereitete Zauber – ein Tipp auf den Namen holt den ganzen Zaubertext ans Blatt |
 | **Ausrüstung** | Gegenstände, Münzen, Traglast |
 | **Hintergrund** | Herkunft, Bindungen, Merkmale, freier Text |
-| **Figur** | die Figurenschmiede |
 
 ### Was das Blatt für dich mitdenkt
 
@@ -144,7 +140,33 @@ und Modifikator eintragen, Würfel antippen, fertig.
 
 ---
 
-## 7. Was du siehst – und was nicht
+## 7. Der Chat am Tisch
+
+Unten rechts, neben dem Würfelbeutel, liegt der Chat. Was du dort schreibst,
+lesen **alle am Tisch**. Die Zahl am Knopf zeigt, wie viel seit deinem letzten
+Blick hereingekommen ist.
+
+### Flüstern
+
+Über **An** wählst du statt „alle am Tisch“ eine einzelne Person. Dann wird
+geflüstert – und **das liest wirklich nur sie**, auch die Spielleitung nicht.
+Der Server schickt die Zeile den übrigen Fenstern gar nicht erst. Umgekehrt
+gilt dasselbe: Was dir jemand zuflüstert, sieht sonst niemand.
+
+> **Gedacht ist das fürs Spiel**, nicht fürs Heimlichtun hinter dem Rücken
+> der Spielleitung – aber der Almanach hält sich daran, was „flüstern“
+> bedeutet, statt heimlich mitzuhören.
+
+### Was der Chat nicht ist
+
+Ein Archiv. Die letzten dreihundert Zeilen bleiben, ältere fallen hinten
+heraus, und in der Chronik steht davon nichts – dort soll stehen, was am
+Tisch geschah, nicht jede Nachfrage nach dem Pizzadienst. Die Spielleitung
+kann den Chat vor der nächsten Runde leeren.
+
+---
+
+## 8. Was du siehst – und was nicht
 
 ### Der Nebel des Krieges
 
@@ -184,7 +206,7 @@ suchen lohnt sich nicht.
 
 ---
 
-## 8. Beute
+## 9. Beute
 
 Unter **Beute** liegt die gemeinsame Kiste der Runde: Münzen und Gefundenes,
 für alle sichtbar. **Jede und jeder darf eintragen** – am besten gleich, wenn
@@ -197,7 +219,7 @@ Beutel schreiben lassen.
 
 ---
 
-## 9. Musik
+## 10. Musik
 
 Legt die Spielleitung eine Ambiente auf, erscheint unten die **Klangleiste**
 mit dem Namen und einem Knopf *In Spotify öffnen*.
@@ -209,7 +231,7 @@ einfach nicht.
 
 ---
 
-## 10. Dein Blatt mitnehmen
+## 11. Dein Blatt mitnehmen
 
 Oben auf deinem Blatt liegt der Knopf **Mitnehmen**. Er sichert dein Blatt
 als **einzelne Datei** auf dein Gerät – mit Bildnis, Figur und allem, was
@@ -224,7 +246,7 @@ zurück** – am Spieltisch gilt das Blatt im Almanach.
 
 ---
 
-## 11. Wenn etwas klemmt
+## 12. Wenn etwas klemmt
 
 | Bild | Was zu tun ist |
 | --- | --- |

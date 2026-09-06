@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
+import Chat from './Chat.jsx';
 import DiceRoller from './DiceRoller.jsx';
 import Klangleiste from './Klangleiste.jsx';
 import Wurfmeldung from './Wurfmeldung.jsx';
@@ -247,6 +248,7 @@ export default function Layout() {
       </main>
 
       <Wurfmeldung />
+      <Chat />
       <DiceRoller />
       <Klangleiste />
 

@@ -125,9 +125,6 @@ export default function Help() {
               mit <span className="font-display">Laufenden Kampf sichern</span> für das nächste Mal.
             </li>
             <li>
-              Auch Gegner bekommen im Bestiarium eine gegossene Figur; sie steht dann mit auf dem Spieltisch.
-            </li>
-            <li>
               Unter <span className="font-display">Klang</span> hinterlegst du Spotify-Links als Ambiente: Link
               einfügen, benennen, verschlagworten. <span className="font-display">Auflegen</span> zeigt der ganzen
               Runde, was jetzt dran ist. Hängst du eine Ambiente an eine Karte, legt sie sich mit der Karte auf.
@@ -223,13 +220,19 @@ export default function Help() {
         </p>
       </Card>
 
-      <Card title="Die Figurenschmiede">
+      <Card title="Der Chat am Tisch">
         <p className="leading-relaxed text-ink">
-          Im Reiter <span className="font-display">Figur</span> stellst du deine Miniatur zusammen: Volk, Statur,
-          Rüstung, Waffe, Haar, Bart und Farben. Die Figur dreht sich, wenn du sie mit dem Finger ziehst;{' '}
-          <span className="font-display">Auswürfeln</span> macht auf Zuruf einen Vorschlag. Beim{' '}
-          <span className="font-display">Gießen</span> entsteht daraus das Bildnis für dein Blatt und die Figur, mit
-          der du über die Karte ziehst – die Spielleitung legt sie beim nächsten Kampf von selbst aus.
+          Unten rechts, neben dem Würfelbeutel, liegt der Chat. Was du dort sagst, lesen alle am Tisch; die Zahl am
+          Knopf zeigt, wie viel seit deinem letzten Blick hereingekommen ist.
+        </p>
+        <p className="mt-3 leading-relaxed text-ink">
+          Über <span className="font-display">An</span> wählst du stattdessen eine einzelne Person – dann wird
+          geflüstert. <strong>Das liest wirklich nur sie</strong>, auch die Spielleitung nicht: Der Server schickt
+          die Zeile den übrigen Fenstern gar nicht erst. Umgekehrt gilt dasselbe, wenn dir jemand zuflüstert.
+        </p>
+        <p className="mt-3 leading-relaxed text-ink">
+          Der Chat ist ein Gespräch, kein Archiv: Die letzten dreihundert Zeilen bleiben, ältere fallen hinten
+          heraus, und in der Chronik steht davon nichts. Die Spielleitung kann ihn vor der nächsten Runde leeren.
         </p>
       </Card>
 

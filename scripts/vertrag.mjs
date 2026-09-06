@@ -138,6 +138,15 @@ try {
     gleich(status, 201, 'Mit Einladung geht es');
     gleich(daten?.user?.role, 'spieler', 'Weitere Konten gehören zur Runde');
   }
+  const zweite = klient();
+  {
+    const code = (await sl.ruf('/auth/invites', { methode: 'POST', koerper: {} })).daten;
+    const { status } = await zweite.ruf('/auth/register', {
+      methode: 'POST',
+      koerper: { name: 'Vertrag-Zweite', password: 'ausreichend-lang', invite: code.code },
+    });
+    gleich(status, 201, 'Auch ein zweiter Platz in der Runde lässt sich vergeben');
+  }
   {
     const { status, daten } = await fremd.ruf('/characters');
     gleich(status, 401, 'Ohne Anmeldung kein Zugriff');
@@ -257,6 +266,59 @@ try {
     pruefe(!rundenChronik.some((w) => w.label === 'Geheim'), 'Verdeckte Würfe bleiben verdeckt');
     const slChronik = (await sl.ruf('/dice/history')).daten;
     pruefe(slChronik.some((w) => w.label === 'Geheim'), 'Die Spielleitung sieht ihren verdeckten Wurf');
+  }
+
+  // --- Chat: an alle und geflüstert ---------------------------------------
+  {
+    const { status, daten } = await spieler.ruf('/chat', {
+      methode: 'POST',
+      koerper: { text: 'Wer öffnet die Tür?' },
+    });
+    gleich(status, 201, 'Eine Nachricht lässt sich sagen');
+    pruefe(daten?.toUserId === null, 'Ohne Empfänger geht sie an alle');
+
+    const beiDerSl = (await sl.ruf('/chat')).daten;
+    pruefe(beiDerSl.some((z) => z.text === 'Wer öffnet die Tür?'), 'Gesagtes erreicht die Spielleitung');
+    const beiDerZweiten = (await zweite.ruf('/chat')).daten;
+    pruefe(beiDerZweiten.some((z) => z.text === 'Wer öffnet die Tür?'), 'Gesagtes erreicht die ganze Runde');
+  }
+  {
+    // Die Spielerin flüstert der zweiten Spielerin zu – die Spielleitung
+    // steht ausdrücklich daneben und darf davon nichts mitbekommen.
+    const wer = (await spieler.ruf('/chat/wer')).daten;
+    const ziel = wer.find((p) => p.name === 'Vertrag-Zweite');
+    pruefe(!!ziel, 'Die Liste der Empfänger nennt die Mitspieler');
+    pruefe(!wer.some((p) => p.name === 'Vertrag-Spielerin'), 'Man selbst steht nicht darin');
+
+    const { status } = await spieler.ruf('/chat', {
+      methode: 'POST',
+      koerper: { text: 'Ich nehme heimlich den Ring.', an: ziel.id },
+    });
+    gleich(status, 201, 'Flüstern geht');
+
+    const beiDerZweiten = (await zweite.ruf('/chat')).daten;
+    pruefe(beiDerZweiten.some((z) => z.text === 'Ich nehme heimlich den Ring.'), 'Die Gemeinte liest es');
+    const beiDerSprecherin = (await spieler.ruf('/chat')).daten;
+    pruefe(beiDerSprecherin.some((z) => z.text === 'Ich nehme heimlich den Ring.'), 'Und die Sprecherin auch');
+    const beiDerSl = (await sl.ruf('/chat')).daten;
+    pruefe(
+      !beiDerSl.some((z) => z.text === 'Ich nehme heimlich den Ring.'),
+      'Geflüstertes erreicht nicht einmal die Spielleitung'
+    );
+  }
+  {
+    const { status, daten } = await spieler.ruf('/chat', { methode: 'POST', koerper: { text: '   ' } });
+    gleich(status, 400, 'Leeres wird abgewiesen');
+    gleich(daten?.code, 'nachricht_leer', 'Auch das trägt einen Schlüssel');
+  }
+  {
+    const { status, daten } = await spieler.ruf('/chat', { methode: 'DELETE' });
+    gleich(status, 403, 'Leeren darf nur die Spielleitung');
+    gleich(daten?.code, 'nur_spielleitung', 'Mit Schlüssel');
+  }
+  {
+    gleich((await sl.ruf('/chat', { methode: 'DELETE' })).status, 200, 'Die Spielleitung darf leeren');
+    gleich((await sl.ruf('/chat')).daten.length, 0, 'Danach ist der Tisch still');
   }
 
   // --- Spieltisch --------------------------------------------------------

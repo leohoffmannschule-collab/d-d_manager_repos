@@ -109,6 +109,8 @@ springt eine gezogene Figur kurz an ihren alten Platz.
 | `ping`                  | `{ x, y, color, name, at }`                |
 | `wurf`                  | ein Würfelwurf                             |
 | `wuerfe:geleert`        | `{}`                                       |
+| `chat`                  | eine Nachricht (geflüsterte nur an die beiden) |
+| `chat:geleert`          | `{}`                                       |
 | `charakter:aktualisiert`| Kurzfassung eines Charakters               |
 | `charakter:entfernt`    | `{ id }`                                   |
 | `beute`                 | `{ items, coins }`                         |
@@ -340,6 +342,28 @@ wird diese samt Nebel wieder aktiviert (`neu: false`, `200`); `frisch: true`
 erzwingt eine neue Szene (`neu: true`, `201`). Ein Bild, das noch von einer
 Szene, Figur oder einem Bestiarium-Eintrag gebraucht wird, überlebt das Löschen
 seiner Karte.
+
+### /api/chat   (angemeldet)
+
+    GET    /api/chat?limit=100   der eigene Verlauf, jüngste zuerst
+    GET    /api/chat/wer         an wen sich flüstern lässt
+    POST   /api/chat             { text, an? }  ->  201
+    DELETE /api/chat             leeren                          [SL]
+
+Eine Nachricht ohne `an` geht an alle. Steht dort eine Kontokennung, wird
+geflüstert: Die Zeile erreicht **nur die beiden Beteiligten** – auch nicht die
+Spielleitung.
+
+Gefiltert wird an beiden Stellen, an denen etwas herausgeht:
+
+    GET   WHERE to_user_id IS NULL OR to_user_id = ich OR user_id = ich
+    Live  broadcast('chat', …, { userIds: [absender, empfänger] })
+
+Der Verlauf ist auf die letzten 300 Zeilen begrenzt, eine Nachricht auf 2000
+Zeichen. **In der Chronik steht nichts davon**: Gerede ist kein Ereignis, und
+das Protokoll soll nach dem Abend lesbar bleiben.
+
+    Fehlerschlüssel   nachricht_leer, empfaenger_unbekannt, empfaenger_selbst
 
 ### /api/ambience   (Bibliothek [SL], `aktiv` für alle)
 
