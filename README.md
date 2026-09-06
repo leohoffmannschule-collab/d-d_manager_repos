@@ -6,7 +6,7 @@ Gerät – einem **Raspberry Pi 5**, der durchläuft, oder einfach dem **Laptop*
 ohnehin auf dem Tisch steht – und wird von überall im Browser benutzt: vom Sofa, vom iPad am
 Spieltisch oder aus dem Wohnzimmer der Mitspieler, drei Städte weiter.
 
-Der Almanach besteht aus drei Teilen, die sich eine Anmeldung, eine Datenbank und einen Live-Kanal teilen:
+Der Almanach besteht aus vier Teilen, die sich eine Anmeldung, eine Datenbank und einen Live-Kanal teilen:
 
 | Teil                | Für wen           | Was darin steckt                                                             |
 | ------------------- | ----------------- | ---------------------------------------------------------------------------- |
@@ -25,6 +25,16 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
 > (eine Stunde) und den
 > [Laptop ganz ohne Docker](docs/EINRICHTUNG.md#4-weg-b-laptop-oder-pc-ganz-ohne-docker)
 > (zehn Minuten, und es genügt Node.js).
+
+**Alle Anleitungen auf einen Blick:**
+
+| Dokument | Für wen |
+| --- | --- |
+| [Einrichtungs-Handbuch](docs/EINRICHTUNG.md) | wer den Almanach aufsetzt – Pi oder Laptop, Tunnel, Sicherung |
+| [Handbuch](docs/HANDBUCH.md) | die vollständige Beschreibung: alle Funktionen, Sicht und Nebel, Technik, Grenzen |
+| [Betriebsanleitung Spielleitung](docs/SPIELLEITUNG.md) | den Abend führen: vorbereiten, Vorhang, Kampf, Licht, Chronik |
+| [Betriebsanleitung Runde](docs/SPIELER.md) | mitspielen: beitreten, Blatt, Spieltisch, Würfeln, Beute |
+| [API.md](docs/API.md) | wer die Oberfläche umbaut oder austauscht |
 
 ## Funktionen
 
