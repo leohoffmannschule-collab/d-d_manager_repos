@@ -329,6 +329,15 @@ export function IconNote(props) {
   );
 }
 
+export function IconChat(props) {
+  return (
+    <Icon {...props}>
+      <path d="M20 12.6c0 3.4-3.6 6.2-8 6.2-1 0-2-.15-2.9-.4L4 20l1.4-3.5C4.2 15.4 3.5 14.1 3.5 12.6c0-3.4 3.6-6.2 8-6.2s8.5 2.8 8.5 6.2z" />
+      <path d="M8.6 12.4h6.8M8.6 9.8h4.4" />
+    </Icon>
+  );
+}
+
 export function IconPlay(props) {
   return (
     <Icon {...props}>

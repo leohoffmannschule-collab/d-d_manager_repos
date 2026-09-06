@@ -150,6 +150,13 @@ export const diceApi = {
   clear: () => del('/dice/history'),
 };
 
+export const chatApi = {
+  history: (limit = 100) => request(`/chat?limit=${limit}`),
+  send: (text, an = null) => post('/chat', an ? { text, an } : { text }),
+  wer: () => request('/chat/wer'),
+  clear: () => del('/chat'),
+};
+
 export const scenesApi = {
   list: () => request('/scenes'),
   active: () => request('/scenes/aktiv'),

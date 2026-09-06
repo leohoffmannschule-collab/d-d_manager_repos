@@ -11,6 +11,7 @@ import ambienceRouter from './routes/ambience.js';
 import authRouter from './routes/auth.js';
 import chronicleRouter from './routes/chronicle.js';
 import charactersRouter from './routes/characters.js';
+import chatRouter from './routes/chat.js';
 import compendiumRouter from './routes/compendium.js';
 import diceRouter from './routes/dice.js';
 import encounterRouter from './routes/encounter.js';
@@ -89,6 +90,7 @@ app.get('/api/anwesenheit', requireAuth, (req, res) => {
 app.use('/api/ambience', ambienceRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/characters', charactersRouter);
+app.use('/api/chat', chatRouter);
 app.use('/api/compendium', requireAuth, compendiumRouter);
 app.use('/api/dice', diceRouter);
 app.use('/api/chronicle', chronicleRouter);

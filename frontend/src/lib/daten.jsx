@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  ambienceApi,
   authApi,
   charactersApi,
+  chatApi,
   chronicleApi,
   diceApi,
   encounterApi,
   encountersApi,
-  ambienceApi,
   libraryApi,
   mapsApi,
   notesApi,
@@ -222,6 +223,42 @@ export function useWuerfe(anzahl = 40) {
   useLive('wuerfe:geleert', () => setDaten([]));
 
   return { wuerfe: daten ?? [], aufnehmen, ungelesen, gelesen: () => setUngelesen(false), laden, fehler, laedt };
+}
+
+/* --- Chat ---------------------------------------------------------------- */
+
+/**
+ * Der Chat am Tisch. Wie beim Würfelbeutel: Eigene Zeilen landen sofort in
+ * der Liste, das Echo über den Live-Kanal erkennt sie an der Kennung wieder.
+ * Geflüstertes kommt gar nicht erst an, wenn es einen nichts angeht – das
+ * entscheidet der Server, nicht diese Datei.
+ */
+export function useChat(anzahl = 100) {
+  const holen = useCallback(() => chatApi.history(anzahl), [anzahl]);
+  const { daten, setDaten, laden, fehler, laedt } = useDaten(holen, []);
+  const [ungelesen, setUngelesen] = useState(0);
+
+  const aufnehmen = useCallback(
+    (zeile) =>
+      setDaten((liste) => (liste.some((n) => n.id === zeile.id) ? liste : [zeile, ...liste].slice(0, anzahl))),
+    [setDaten, anzahl]
+  );
+
+  useLive('chat', (zeile) => {
+    aufnehmen(zeile);
+    setUngelesen((n) => n + 1);
+  });
+  useLive('chat:geleert', () => setDaten([]));
+
+  return {
+    zeilen: daten ?? [],
+    aufnehmen,
+    ungelesen,
+    gelesen: () => setUngelesen(0),
+    laden,
+    fehler,
+    laedt,
+  };
 }
 
 /* --- Beute --------------------------------------------------------------- */

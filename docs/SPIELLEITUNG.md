@@ -32,6 +32,7 @@ kurz vorkommen, stehen ausführlich im [Handbuch](HANDBUCH.md).
 | Gegner stellen | *Spielleitung → Bestiarium* oder *Begegnungen* |
 | Verdeckt würfeln | Würfelbeutel → Haken **Nur die Spielleitung sieht diesen Wurf** |
 | Handzettel austeilen | *Spielleitung → Notizen* → austeilen |
+| Etwas sagen oder zuflüstern | Chat unten rechts, neben dem Würfelbeutel |
 | Musik ankündigen | *Spielleitung → Klang* → **Auflegen** |
 | Sehen, was ein NSC sieht | Spieltisch, oben rechts → **alles sehen** → Figur wählen |
 | Runde einladen | *Spielleitung → Runde* → Einladungscode |
@@ -89,8 +90,7 @@ kommt dann schon passend auf den Tisch – du musst nie wieder justieren.
 ### 3.2 Gegner vorbereiten
 
 - **Bestiarium:** Monster aus dem Kompendium übernehmen oder von Hand
-  anlegen. Schlagworte helfen beim Wiederfinden; jedes Monster kann eine
-  gegossene Figur bekommen, die dann auf dem Spieltisch steht.
+  anlegen. Schlagworte helfen beim Wiederfinden.
 - **Begegnungen:** Stell Gruppen zusammen, die du öfter brauchst – „Hinterhalt
   am Wegkreuz“, „Wachen der Stadtmauer“. Am Abend stehen sie mit einem Klick,
   samt gewürfelter Initiative.
@@ -150,6 +150,23 @@ vorne links – nein, weiter unten“.
 
 *Notizen → austeilen.* Die Runde sieht den Zettel am Spieltisch. Alles
 andere in deinen Notizen bleibt, wo es ist.
+
+### 4.5 Der Chat
+
+Unten rechts, neben dem Würfelbeutel. Was du dort sagst, lesen alle; über
+**An** wählst du eine einzelne Person und flüsterst ihr zu.
+
+Zwei Dinge solltest du wissen:
+
+- **Geflüstertes zwischen zwei Spielern siehst du nicht.** „Flüstern“ heißt
+  im Almanach, was es sagt – der Server schickt die Zeile nur den beiden
+  Beteiligten. Wenn am Tisch etwas anderes gelten soll, vereinbart es am
+  Tisch.
+- **Der Chat steht nicht in der Chronik.** Für Geheimes, das nachher
+  auffindbar sein soll, nimm einen **Handzettel** – der ist zum Austeilen
+  gedacht und wird protokolliert.
+
+Vor einer neuen Runde lässt sich der Chat leeren (Mülleimer im Chatfenster).
 
 ---
 

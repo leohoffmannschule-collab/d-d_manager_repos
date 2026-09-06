@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { charactersApi } from '../lib/api.js';
 import { setPath, fileToResizedDataUrl } from '../lib/setPath.js';
@@ -13,17 +13,12 @@ import SpellsTab from '../components/sheet/SpellsTab.jsx';
 import BackgroundTab from '../components/sheet/BackgroundTab.jsx';
 import FreeformSheet from '../components/sheet/FreeformSheet.jsx';
 
-// Die Figurenschmiede bringt three.js mit. Das lädt erst, wenn jemand den
-// Reiter aufschlägt – wer nur sein Blatt führt, wartet nicht darauf.
-const MiniTab = lazy(() => import('../components/sheet/MiniTab.jsx'));
-
 const DND_TABS = [
   { key: 'overview', label: 'Übersicht', Component: OverviewTab },
   { key: 'combat', label: 'Kampf', Component: CombatTab },
   { key: 'inventory', label: 'Inventar', Component: InventoryTab },
   { key: 'spells', label: 'Zauber', Component: SpellsTab },
   { key: 'background', label: 'Hintergrund', Component: BackgroundTab },
-  { key: 'mini', label: 'Figur', Component: MiniTab },
 ];
 
 export default function CharacterSheet() {
@@ -239,14 +234,12 @@ export default function CharacterSheet() {
             ))}
           </div>
           <fieldset disabled={!schreibbar} className="min-w-0 border-0 p-0">
-            <Suspense fallback={<p className="text-sepia italic">Die Schmiede wird angeheizt …</p>}>
-              {DND_TABS.map(
-                (t) =>
-                  tab === t.key && (
-                    <t.Component key={t.key} data={character.data} update={updateData} replace={replaceData} />
-                  )
-              )}
-            </Suspense>
+            {DND_TABS.map(
+              (t) =>
+                tab === t.key && (
+                  <t.Component key={t.key} data={character.data} update={updateData} replace={replaceData} />
+                )
+            )}
           </fieldset>
         </>
       ) : (

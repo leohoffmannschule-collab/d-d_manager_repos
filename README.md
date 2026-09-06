@@ -84,8 +84,9 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
 - **Vollständige Spielführung**: Zustände, Erschöpfung in sechs Stufen, Konzentration, Inspiration, Resistenzen und
   Sinne, eingestimmte Gegenstände, frei benannte Klassenressourcen (Wut, Ki, bardische Inspiration …), Trefferwürfel
   sowie **kurze und lange Rast**, die auffüllen, was sich erneuert.
-- **Figurenschmiede**: eine eigene Miniatur zusammenstellen – Volk, Statur, Rüstung, Waffe, Haar, Bart, Farben –,
-  drehen und gießen. Daraus entstehen Bildnis und Spielfigur.
+- **Chat am Tisch**: sagen, was alle lesen sollen – oder über *An* einer einzelnen Person zuflüstern. Geflüstertes
+  bekommt sonst niemand, auch die Spielleitung nicht: Der Server schickt es den übrigen Fenstern gar nicht erst.
+  Der Chat ist ein Gespräch, kein Archiv – die letzten 300 Zeilen bleiben, und in der Chronik steht davon nichts.
 - **Blatt mitnehmen**: Ein Knopf sichert das eigene Blatt als einzelne HTML-Datei – mit Bildnis, Figur und den
   vollständigen Zaubertexten, ohne Verweis nach draußen. Sie öffnet sich mit einem Doppelklick auf jedem Gerät, auch wenn der Pi ausgeschaltet ist,
   und druckt sich als Charakterbogen. Der vollständige Datensatz reist am Ende der Datei mit, sie ist also zugleich
@@ -351,11 +352,11 @@ Wie beides zusammen als Nacht- und Wochenaufgabe eingerichtet wird, steht im
 frontend/   React 19 + Vite, Tailwind CSS v4, PWA
             src/pages/       Charaktere, Spieltisch, Spielleitung, Chronik, Kompendium, Anmeldung
             src/components/  Spieltisch (Brett, Werkzeuge, Figuren), Spielleitung (Bestiarium,
-                             Begegnungen, Karten, Klang, Notizen, Runde), Figurenschmiede,
-                             Initiativliste, Würfelbeutel, Klangleiste, Blattbausteine
+                             Begegnungen, Karten, Klang, Notizen, Runde),
+                             Initiativliste, Würfelbeutel, Chat, Klangleiste, Blattbausteine
             src/lib/         daten.jsx (Datenschicht), api.js, auth.jsx, live.jsx,
                              klang.jsx + spotify.js (Ambiente), beschriftung.js,
-                             Regelwerk, Rasten, Miniaturen
+                             Regelwerk, Rasten
 backend/    Node.js + Express, SQLite über das eingebaute node:sqlite
             src/auth.js      Passwörter (scrypt), Anmeldungen, Rollen
             src/events.js    Live-Kanal (Server-Sent Events)
@@ -448,10 +449,9 @@ bricht, worauf sich eine Oberfläche verlässt.
   das bleibt auch auf einem iPad flüssig, und übers Netz wandern nur die geänderten Felder.
 - **Bilder** werden als `data:`-URL hochgeladen, auf der Platte abgelegt und unter einer Kennung
   ausgeliefert, die sich nie ändert – der Browser behält sie also.
-- **Die Miniaturen** sind keine geladenen Modelle, sondern werden aus einfachen Körpern zusammengesetzt: Kugeln,
-  Kästen, Kegel. So muss keine Modelldatei auf den Pi, jede Figur steht in Sekundenbruchteilen neu da, und beim
-  Gießen entsteht daraus ein PNG mit durchsichtigem Grund. three.js wird erst geladen, wenn jemand die Schmiede
-  aufschlägt – wer nur sein Blatt führt, wartet nicht darauf.
+- **Der Chat** trennt öffentlich und geflüstert über eine einzige Spalte: Steht dort ein Empfänger, geht die
+  Zeile nur an die beiden Beteiligten – auch nicht an die Spielleitung. Gefiltert wird beim Senden über den
+  Live-Kanal und beim Nachladen in der Abfrage, nicht im Browser.
 
 ## Erscheinungsbild
 

@@ -24,14 +24,15 @@ man klickt, sondern warum der Almanach sich verhält, wie er sich verhält.
 5. [Sicht, Licht und Nebel](#5-sicht-licht-und-nebel)
 6. [Hinter dem Schirm der Spielleitung](#6-hinter-dem-schirm-der-spielleitung)
 7. [Würfeln](#7-würfeln)
-8. [Beute](#8-beute)
-9. [Klang](#9-klang)
-10. [Chronik](#10-chronik)
-11. [Kompendium](#11-kompendium)
-12. [Wie die Technik dahinter arbeitet](#12-wie-die-technik-dahinter-arbeitet)
-13. [Daten, Sicherung und Umzug](#13-daten-sicherung-und-umzug)
-14. [Grenzen, die eingebaut sind](#14-grenzen-die-eingebaut-sind)
-15. [Was der Almanach bewusst nicht tut](#15-was-der-almanach-bewusst-nicht-tut)
+8. [Chat](#8-chat)
+9. [Beute](#9-beute)
+10. [Klang](#10-klang)
+11. [Chronik](#11-chronik)
+12. [Kompendium](#12-kompendium)
+13. [Wie die Technik dahinter arbeitet](#13-wie-die-technik-dahinter-arbeitet)
+14. [Daten, Sicherung und Umzug](#14-daten-sicherung-und-umzug)
+15. [Grenzen, die eingebaut sind](#15-grenzen-die-eingebaut-sind)
+16. [Was der Almanach bewusst nicht tut](#16-was-der-almanach-bewusst-nicht-tut)
 
 ---
 
@@ -47,7 +48,7 @@ Live-Kanal teilen:
 
 | Teil | Für wen | Was darin steckt |
 | --- | --- | --- |
-| **Charaktere** | alle | vollständige 5e-Blätter, freies Blatt für andere Systeme, Figurenschmiede |
+| **Charaktere** | alle | vollständige 5e-Blätter, freies Blatt für andere Systeme, Bildnis |
 | **Spieltisch** | alle | Karten, Figuren, Nebel des Krieges, Lineal, Zeigefinger, Initiative, Beute, Handzettel |
 | **Spielleitung** | nur die Leitung | Kampfliste, Bestiarium, Begegnungen, Karten- und Klangbibliothek, Notizen, Runde |
 | **Chronik** | alle | Protokoll des Abends, aus dem entstanden, was wirklich geschah |
@@ -129,7 +130,6 @@ Ein vergessenes Spieler-Passwort setzt die Spielleitung unter *Runde* neu.
 | **Zauber** | Zauberplätze, vorbereitete Zauber, Zaubertext auf Tipp |
 | **Ausrüstung** | Gegenstände, Münzen, Traglast |
 | **Hintergrund** | Herkunft, Bindungen, Merkmale, freier Text |
-| **Figur** | die Figurenschmiede (siehe unten) |
 
 Für andere Systeme als 5e gibt es das **freie Blatt**: ein leeres Blatt ohne
 5e-Mechanik, das nur trägt, was man hineinschreibt.
@@ -153,13 +153,17 @@ Abtippen, kein Vorlesen.
 - **Zauber.** Ein Tipp auf den Namen holt den ganzen Zaubertext ans Blatt.
   Kein Blättern ins Kompendium mitten im Zug.
 
-### 3.4 Die Figurenschmiede
+### 3.4 Bildnis und Figur
 
-Im Reiter *Figur* entsteht die Miniatur: Volk, Statur, Rüstung, Waffe, Haar,
-Bart, Farben. Sie dreht sich am Finger, **Auswürfeln** macht einen Vorschlag.
-Beim **Gießen** entsteht daraus zweierlei: das Bildnis fürs Blatt und die
-Figur, mit der man über die Karte zieht. Auch Monster im Bestiarium bekommen
-so eine Figur.
+Oben auf dem Blatt lässt sich ein Bild hochladen; es steht danach auf dem
+Blatt und in der Übersicht der Runde. Auf der Karte ist jede Figur ein
+Plättchen in der Farbe ihrer Besitzerin, mit dem Namen daneben.
+
+> Bis zu einer früheren Fassung gab es dafür eine **Figurenschmiede**, die
+> aus Volk, Statur, Rüstung und Farben eine kleine 3D-Miniatur zusammensetzte
+> und daraus Bildnis und Spielfigur goss. Sie ist entfernt – samt der
+> 3D-Bibliothek, die sie mitbrachte. **Schon gegossene Figuren bleiben
+> erhalten** und stehen weiter auf dem Tisch; neue entstehen nicht mehr.
 
 ### 3.5 Mitnehmen
 
@@ -357,7 +361,34 @@ und Modifikator eintragen, Würfel antippen, fertig.
 
 ---
 
-## 8. Beute
+## 8. Chat
+
+Unten rechts, neben dem Würfelbeutel, liegt der Chat am Tisch. Er kennt zwei
+Arten von Zeilen, und der Unterschied ist eine Spalte in der Datenbank:
+
+| | Wer liest mit |
+| --- | --- |
+| **an alle** | jede und jeder in der Runde |
+| **geflüstert** | ausschließlich die beiden Beteiligten |
+
+**Geflüstertes erreicht auch die Spielleitung nicht.** Das ist Absicht:
+„flüstern“ soll heißen, was es sagt. Wie überall im Almanach entscheidet das
+der Server – die Zeile wird den übrigen Fenstern gar nicht erst geschickt,
+sie ist dort nicht bloß ausgeblendet.
+
+Wer als Spielleitung etwas Geheimes an die Runde geben will, hat dafür die
+**Handzettel**: Die sind zum Austeilen gedacht und stehen hinterher in der
+Chronik.
+
+**Der Chat ist ein Gespräch, kein Archiv.** Die letzten 300 Zeilen bleiben,
+ältere fallen hinten heraus, und **in der Chronik steht davon nichts** – die
+soll nach dem Abend lesbar bleiben, und das wäre sie nicht, wenn jede
+Nachfrage nach dem Pizzadienst darin stünde. Die Spielleitung kann den Chat
+vor der nächsten Runde leeren.
+
+---
+
+## 9. Beute
 
 Am Spieltisch liegt unter **Beute** die gemeinsame Kiste: Münzen und
 Gefundenes, für alle sichtbar, und jede und jeder darf eintragen.
@@ -369,7 +400,7 @@ Anteile mit einem Knopf in die Beutel schreiben lassen.
 
 ---
 
-## 9. Klang
+## 10. Klang
 
 Unter *Spielleitung → Klang* werden **Spotify-Links** als Ambiente
 hinterlegt: Link einfügen, benennen, verschlagworten. **Auflegen** zeigt der
@@ -386,7 +417,7 @@ klickt einfach nicht.
 
 ---
 
-## 10. Chronik
+## 11. Chronik
 
 Der Almanach schreibt mit, was am Tisch geschieht: Würfe, Wunden, wer zu
 Boden geht, welche Gegner auftreten, wohin die Runde zieht, was ausgeteilt
@@ -405,7 +436,7 @@ Knopf verborgen.
 
 ---
 
-## 11. Kompendium
+## 12. Kompendium
 
 Völker, Klassen, Hintergründe, Talente, Zauber, Ausrüstung, magische
 Gegenstände, Monster und Zustände – aus der offenen D&D-5e-API
@@ -425,12 +456,12 @@ Mit `DND5E_API_BASE` lässt sich auf eine andere Fassung umstellen, etwa
 
 ---
 
-## 12. Wie die Technik dahinter arbeitet
+## 13. Wie die Technik dahinter arbeitet
 
 Für alle, die darunter schauen wollen. Die genaue Beschreibung der
 Schnittstelle steht in [API.md](API.md).
 
-### 12.1 Der Aufbau
+### 13.1 Der Aufbau
 
 ```
 frontend/   React 19, Vite, Tailwind CSS v4, PWA
@@ -441,7 +472,7 @@ backend/    Node.js, Express, SQLite über das eingebaute node:sqlite
 SQLite steckt seit Node 22.5 in Node selbst – nichts muss kompiliert werden,
 kein node-gyp, keine Bauwerkzeuge.
 
-### 12.2 Der Live-Kanal
+### 13.2 Der Live-Kanal
 
 **Server-Sent Events**, keine WebSockets. Gründe:
 
@@ -456,7 +487,7 @@ Fassung, weil jeder eine andere Sicht hat.
 Blinkt der Punkt neben dem Namen rot, ist die Verbindung gerade unterbrochen;
 leuchtet er golden, laufen die Änderungen wieder ein.
 
-### 12.3 Darstellung und Daten sind getrennt
+### 13.3 Darstellung und Daten sind getrennt
 
 Der Server schickt **unveränderliche Kennungen** – `schwer_verwundet`,
 `einladung_verbraucht`, `handzettel`. Wie das am Bildschirm heißt, entscheidet
@@ -466,7 +497,7 @@ allein die Oberfläche, und zwar an einer einzigen Stelle:
 Wer den Almanach neu gestaltet, übersetzt oder in eine ganz andere Anwendung
 überführt, tauscht diese Datei aus und muss keine Zeile im Server anfassen.
 
-### 12.4 Der Vertrag
+### 13.4 Der Vertrag
 
 `npm run vertrag` startet einen eigenen Almanach auf einem freien Port mit
 frischer Datenbank, spielt eine Runde durch und prüft in **144 Prüfungen**,
@@ -478,9 +509,9 @@ blieb. Wer am Server schraubt, merkt sofort, wenn er etwas bricht.
 
 ---
 
-## 13. Daten, Sicherung und Umzug
+## 14. Daten, Sicherung und Umzug
 
-### 13.1 Wo alles liegt
+### 14.1 Wo alles liegt
 
 Der **ganze Almanach** steckt in einem Ordner:
 
@@ -493,7 +524,7 @@ backend/data/                (oder das Docker-Volume dnd-manager-data)
 
 Umziehen heißt: diesen Ordner kopieren. Mehr nicht.
 
-### 13.2 Sichern
+### 14.2 Sichern
 
 ```bash
 npm run sicherung                 # nur die Datenbank
@@ -505,7 +536,7 @@ schreibt im WAL-Verfahren, und eine Kopie mitten im Spiel erwischt womöglich
 einen halben Schreibvorgang. Das Skript zieht mit `VACUUM INTO` einen in sich
 stimmigen Stand, während weitergespielt wird.
 
-### 13.3 Die eine Falle beim Zurückspielen
+### 14.3 Die eine Falle beim Zurückspielen
 
 Neben `manager.sqlite3` liegen im Betrieb `manager.sqlite3-wal` und
 `manager.sqlite3-shm`. Darin steht, was zuletzt geschrieben wurde. Legt man
@@ -517,7 +548,7 @@ Alle drei müssen weg. Ausführlich steht das in
 
 ---
 
-## 14. Grenzen, die eingebaut sind
+## 15. Grenzen, die eingebaut sind
 
 | | Wert |
 | --- | --- |
@@ -527,12 +558,13 @@ Alle drei müssen weg. Ausführlich steht das in
 | Anmeldung | gilt 30 Tage |
 | Fehlversuche | 8, dann 10 Minuten Sperre je Name und Herkunft |
 | JSON je Anfrage | 2 MB (Karten gehen einen eigenen Weg) |
+| Chat | die letzten 300 Zeilen, 2000 Zeichen je Nachricht |
 | Kompendium-Cache | 30 Tage, danach neu geholt – alter Stand als Rückfallebene |
 | Protokolle (Docker) | 3 × 10 MB je Dienst |
 
 ---
 
-## 15. Was der Almanach bewusst nicht tut
+## 16. Was der Almanach bewusst nicht tut
 
 Damit niemand danach sucht:
 
@@ -542,7 +574,9 @@ Damit niemand danach sucht:
   Spotify.
 - **Er würfelt nicht heimlich für die Runde.** Verdeckte Würfe kann nur die
   Spielleitung auslösen.
-- **Er hört nichts mit.** Die Chronik kennt nur, was ohnehin durch ihn läuft.
+- **Er hört nichts mit.** Die Chronik kennt nur, was ohnehin durch ihn läuft –
+  der Chat gehört ausdrücklich nicht dazu.
+- **Er liest Geflüstertes nicht mit.** Auch die Spielleitung nicht.
 - **Er schickt nichts nach außen.** Ausnahme sind die zwei Dinge, die man
   ausdrücklich einrichtet: das Kompendium holt Regeldaten, und ein
   freiwilliges Sprachmodell bekommt den Chronik-Text.

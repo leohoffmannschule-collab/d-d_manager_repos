@@ -61,6 +61,8 @@ export function LiveProvider({ children }) {
       'klang',
       'wurf',
       'wuerfe:geleert',
+      'chat',
+      'chat:geleert',
       'charakter:aktualisiert',
       'charakter:entfernt',
       'notizen:aktualisiert',

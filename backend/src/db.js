@@ -160,6 +160,23 @@ db.exec(`
     created_at TEXT NOT NULL
   );
 
+  /* --- Der Chat am Tisch -------------------------------------------------
+     to_user_id ist leer, wenn die Nachricht an alle geht; steht dort ein
+     Konto, wurde geflüstert und nur die beiden Beteiligten bekommen sie.  */
+
+  CREATE TABLE IF NOT EXISTS messages (
+    id TEXT PRIMARY KEY,
+    user_id TEXT,
+    user_name TEXT NOT NULL DEFAULT '',
+    color TEXT,
+    text TEXT NOT NULL,
+    to_user_id TEXT,
+    to_user_name TEXT,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_messages_zeit ON messages (created_at DESC);
+
   /* --- Spieltisch: Szenen, Figuren, Nebel -------------------------------- */
 
   CREATE TABLE IF NOT EXISTS scenes (
@@ -298,7 +315,9 @@ function addColumnIfMissing(table, column, definition) {
 addColumnIfMissing('characters', 'owner_id', 'TEXT');
 addColumnIfMissing('characters', 'shared', 'INTEGER NOT NULL DEFAULT 1');
 
-// Bestiarium-Einträge tragen jetzt eine eigene Miniatur.
+// Aus der Zeit der Figurenschmiede. Die ist entfernt, aber schon gegossene
+// Figuren sollen weiter auf dem Tisch stehen – deshalb bleibt die Spalte.
+// Neue Einträge lassen sie leer.
 addColumnIfMissing('library', 'mini', "TEXT NOT NULL DEFAULT '{}'");
 addColumnIfMissing('library', 'media_id', 'TEXT');
 
