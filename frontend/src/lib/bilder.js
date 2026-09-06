@@ -6,7 +6,7 @@
  * Bildpunkten Kantenlänge – genug, dass auch eine Karte über zweihundert
  * Meter noch vierzig Bildpunkte je Meter behält. Darüber bringt es am
  * Spieltisch nichts mehr, kostet aber Speicher auf dem Pi und Ladezeit auf
- * dem iPad. Wird die Datei dabei größer als 20 MB, weist der Server sie ab;
+ * dem iPad. Wird die Datei dabei größer als 12 MB, weist der Server sie ab;
  * dann hilft ein kleineres Bild oder eine geteilte Karte.
  */
 export async function bildLesen(file, maxSeite = 8192) {

@@ -758,7 +758,7 @@ npm run adresse          # unter welchen Adressen er zu erreichen ist
 | Spieler sehen den Spieltisch leer | Es liegt noch keine Szene auf. *Spielleitung → Karten → Auflegen* |
 | Musik: Der Link lässt sich nicht speichern | Es muss ein Spotify-Link sein (Wiedergabeliste, Album, Stück oder Künstler). In Spotify: *Teilen → Link kopieren*. |
 | Musik: Knopf öffnet nichts | Bei installierter Spotify-App öffnet der Link die App, sonst den Web-Spieler. Blockt der Browser das Aufgehen neuer Tabs, den Knopf mit der rechten Maustaste anklicken. |
-| Karte lässt sich nicht hochladen | Über 20 MB je Bild geht nicht. Große Scans vorher verkleinern – der Almanach rechnet ohnehin auf 4096 Pixel herunter. |
+| Karte lässt sich nicht hochladen | Über 12 MB je Bild geht nicht. Große Scans vorher verkleinern – der Browser rechnet ohnehin auf 8192 Bildpunkte Kantenlänge herunter. |
 | Alles ist zäh | `docker stats`. Falls die Karte am Anschlag ist: alte Sicherungen wegräumen. |
 | Zurückgespielt, aber der alte Stand ist immer noch da | Die WAL-Begleitdateien lagen noch daneben und haben sich darübergelegt. Siehe [8.3](#83-zurückspielen) – sie müssen mit gelöscht werden. |
 | Nach dem Zurückspielen: „datenbank_unerreichbar“ | Die zurückgespielte Datei gehört noch `root`. `docker run --rm -v dnd-manager-data:/data alpine chown -R 1000:1000 /data` |
@@ -876,7 +876,7 @@ npm run vertrag           # prüfen, ob Server und Oberfläche zusammenpassen
 
 | | |
 | --- | --- |
-| Bild-Upload | 20 MB je Datei, wird auf 4096 Pixel Kantenlänge gerechnet |
+| Bild-Upload | 12 MB je Datei; der Browser verkleinert vorher auf 8192 Bildpunkte Kantenlänge |
 | Fehlversuche bei der Anmeldung | 8, dann 10 Minuten Sperre je Name und Herkunft |
 | Anmeldung gilt | 30 Tage |
 | Protokolle | 3 × 10 MB je Dienst, danach überschreibt Docker die ältesten |
@@ -886,8 +886,16 @@ npm run vertrag           # prüfen, ob Server und Oberfläche zusammenpassen
 
 ## Und dann?
 
-Das Handbuch endet hier, das Spiel fängt an. Was der Almanach am Tisch alles
-kann, steht in der [README](../README.md) und – kürzer und an der richtigen
-Stelle – unter *Hilfe* im Almanach selbst.
+Die Einrichtung endet hier, das Spiel fängt an. Für den Abend selbst gibt es
+zwei kurze Anleitungen zum Weitergeben:
+
+- **[Betriebsanleitung für die Spielleitung](SPIELLEITUNG.md)** – vorbereiten,
+  den Tisch führen, Vorhang, Kampf, Licht, Chronik.
+- **[Betriebsanleitung für die Runde](SPIELER.md)** – die schickst du deinen
+  Mitspielern zusammen mit dem Einladungscode.
+
+Alles im Einzelnen – jede Funktion, die Sicht- und Nebelrechnung, die Technik
+dahinter – steht im **[Handbuch](HANDBUCH.md)**. Und kürzer, an der richtigen
+Stelle, unter *Hilfe* im Almanach selbst.
 
 Viel Freude an der Runde.
