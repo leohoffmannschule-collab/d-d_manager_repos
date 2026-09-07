@@ -27,7 +27,7 @@ import {
  * Das Blatt zum Mitnehmen.
  *
  * Erzeugt eine einzelne HTML-Datei, die alles enthält, was auf dem Blatt
- * steht – samt Bildnis und Figur als eingebettete Bilder. Sie braucht keinen
+ * steht – samt Bildnis als eingebettetem Bild. Sie braucht keinen
  * Server, kein Netz und keine App: doppelklicken genügt, auf jedem Rechner,
  * Tablet oder Telefon. Gedruckt sieht sie aus wie ein Charakterbogen.
  *
@@ -480,7 +480,6 @@ function dnd5eKoerper(character, data, bilder, texte) {
     ${tafel('Merkmale & Eigenschaften', merkmale(data))}
     ${tafel('Aussehen & Person', erscheinung(data))}
     ${tafel('Hintergrund', hintergrund(data))}
-    ${bilder.mini ? tafel('Figur', `<img class="figur" src="${bilder.mini}" alt="">`) : ''}
   `;
 }
 
@@ -551,7 +550,6 @@ const STIL = `
   .klein{font-size:14px;color:var(--sepia)}
   .fliesstext{margin-top:10px}
   .fliesstext p{margin:2px 0 0;white-space:normal}
-  .figur{max-width:220px;display:block;margin:0 auto}
   .hinweis{margin:8px 0 0;color:var(--blass);font-size:15px;font-style:italic}
   .zauberblock{margin-bottom:14px;padding-bottom:10px;border-bottom:1px dotted var(--linie);break-inside:avoid}
   .zauberblock:last-child{border-bottom:0}
@@ -579,16 +577,13 @@ export async function blattAlsHtml(character) {
   const istDnd = character.system === 'dnd5e';
   const data = istDnd ? withDefaults(character.data) : character.data;
 
-  const [portrait, mini] = await Promise.all([
-    alsDatenUrl(data.portrait),
-    alsDatenUrl(data.miniMediaId ? `/api/media/${data.miniMediaId}` : null),
-  ]);
+  const portrait = await alsDatenUrl(data.portrait);
 
   const stand = new Date().toLocaleString('de-DE');
   const texte = istDnd ? await zaubertexte(data.spellcasting?.spells) : {};
   const koerper = istDnd
-    ? dnd5eKoerper(character, data, { portrait, mini }, texte)
-    : freiKoerper(character, data, { portrait, mini });
+    ? dnd5eKoerper(character, data, { portrait }, texte)
+    : freiKoerper(character, data, { portrait });
 
   // Der Datensatz reist mit, damit die Datei zugleich eine Sicherung ist.
   // `<` wird maskiert, sonst könnte ein Text im Blatt das Skript beenden.

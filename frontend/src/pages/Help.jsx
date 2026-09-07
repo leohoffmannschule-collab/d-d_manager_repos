@@ -209,7 +209,7 @@ export default function Help() {
       <Card title="Das Blatt mitnehmen">
         <p className="leading-relaxed text-ink">
           Oben auf deinem Blatt liegt der Knopf <span className="font-display">Mitnehmen</span>. Er sichert dein
-          Blatt als einzelne Datei auf dein Gerät – mit Bildnis, Figur und allem, was darauf steht. Diese Datei
+          Blatt als einzelne Datei auf dein Gerät – mit Bildnis und allem, was darauf steht. Diese Datei
           braucht weder Netz noch Server: Ein Doppelklick genügt, auf jedem Rechner, Tablet oder Telefon. Gedruckt
           sieht sie aus wie ein Charakterbogen.
         </p>
