@@ -68,6 +68,13 @@ die Wahl für sich.
 Für andere Systeme als D&D 5e gibt es das **freie Blatt** – eine leere Seite
 ohne 5e-Mechanik, die nur trägt, was du hineinschreibst.
 
+### Keine Lust zu bauen?
+
+Deine Spielleitung hat hinter ihrem Schirm **zwölf fertige Charaktere** liegen –
+je einen für jede Klasse und jede Spezies, mit Ausrüstung, Zaubern und einer
+eigenen Vorgeschichte. Frag danach: Sie gibt dir eine Abschrift, und die gehört
+dann dir. Umbenennen und umschreiben darfst du alles daran.
+
 ### Dein Bildnis
 
 Oben auf dem Blatt lässt sich ein Bild hochladen – es steht danach auf deinem

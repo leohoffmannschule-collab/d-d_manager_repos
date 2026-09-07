@@ -161,13 +161,49 @@ Spezies, Talent, Hintergrund) sowie **Quelle und Seite**. Unter der Liste
 stehen sie danach geordnet – erst was die Klasse gibt, dann die Spezies, dann
 Talente. Wer am Tisch nachschlägt, sucht genau so.
 
-### 3.5 Jeder Wert ist ein Würfelknopf
+### 3.5 Die zwölf Vorlagen
+
+Beim **allerersten Start** legt der Almanach zwölf fertige Charaktere an – je
+einen für jede Klasse und jede Spezies, alle auf Stufe 1 und mit vollständiger
+Startausrüstung:
+
+| | | | |
+| --- | --- | --- | --- |
+| Brunhild Erzhammer | Zwerg | Kämpfer | Wache |
+| Kaskar Steinatem | Goliath | Barbar | Soldat |
+| Lysandre Abendlied | Halbelf | Barde | Gaukler |
+| Seraphine Morgenlicht | Aasimar | Kleriker | Akolyth |
+| Fibbel Wurzelbart | Gnom | Druide | Einsiedler |
+| Pip Sommerfeld | Halbling | Mönch | Weltenbummler |
+| Vaskir Goldschuppe | Drachenblütiger | Paladin | Adliger |
+| Naelith Silberpfeil | Elf | Waldläufer | Fährtensucher |
+| Zaira Kesselflick | Tiefling | Schurke | Verbrecher |
+| Ghorza Sturmader | Ork | Zauberer | Händler |
+| Mek Halbmond | Halbork | Hexenmeister | Scharlatan |
+| Aldric Fenn | Mensch | Magier | Gelehrter |
+
+Sie liegen als **NSC-Blätter hinter dem Schirm**: Die Spielleitung sieht sie,
+die Runde nicht. Wer eine davon spielen will, lässt sich von der Spielleitung
+eine **Abschrift** geben – die gehört danach ihr, ist kein NSC-Blatt mehr, und
+die Vorlage bleibt für die nächste liegen.
+
+Gebaut sind sie nach dem Standardwertesatz mit den Attributsboni des
+Hintergrunds, wie es das Regelwerk von 2024 vorsieht. Jede trägt Angriffe,
+Aktionen, Merkmale mit Quelle und Seite, Zauber mit allen Spalten, Aussehen
+und eine eigene Vorgeschichte – sie zeigen also zugleich, was ein Blatt im
+Almanach alles fassen kann.
+
+> **Gesät wird genau einmal.** Wer eine Vorlage löscht, hat sie gelöscht; sie
+> wächst beim nächsten Start nicht nach. Zurückholen lassen sie sich mit
+> `npm run vorlagen` – das legt nur an, was fehlt.
+
+### 3.6 Jeder Wert ist ein Würfelknopf
 
 Ein Tipp auf den Bonus neben einer Fertigkeit, einem Rettungswurf oder einem
 Attribut würfelt – und der Wurf steht sofort bei allen am Tisch. Kein
 Abtippen, kein Vorlesen.
 
-### 3.6 Was das Blatt selbst rechnet
+### 3.7 Was das Blatt selbst rechnet
 
 - **Rasten.** Kurze und lange Rast füllen auf, was sich erneuert.
   Trefferwürfel gibt man einzeln aus; der Wurf wird gleich gutgeschrieben.
@@ -180,7 +216,7 @@ Abtippen, kein Vorlesen.
 - **Zauber.** Ein Tipp auf den Namen holt den ganzen Zaubertext ans Blatt.
   Kein Blättern ins Kompendium mitten im Zug.
 
-### 3.7 Bildnis und Figur
+### 3.8 Bildnis und Figur
 
 Oben auf dem Blatt lässt sich ein Bild hochladen; es steht danach auf dem
 Blatt und in der Übersicht der Runde. Auf der Karte ist jede Figur ein
@@ -192,7 +228,7 @@ Plättchen in der Farbe ihrer Besitzerin, mit dem Namen daneben.
 > 3D-Bibliothek, die sie mitbrachte. **Schon gegossene Figuren bleiben
 > erhalten** und stehen weiter auf dem Tisch; neue entstehen nicht mehr.
 
-### 3.8 Mitnehmen
+### 3.9 Mitnehmen
 
 Der Knopf **Mitnehmen** sichert das Blatt als **eine einzelne Datei** aufs
 Gerät – mit Bildnis und allem, was darauf steht. Diese Datei braucht
