@@ -1,14 +1,18 @@
 import {
   ABILITIES,
+  MASSSYSTEME,
+  PASSIVE_FERTIGKEITEN,
   SKILLS,
   abilityModifier,
   experienceToNextLevel,
   formatModifier,
   levelFromExperience,
+  passiverWert,
   proficiencyBonus,
+  saveModifier,
 } from '../../lib/dnd5e.js';
 import { blattWurf } from '../../lib/wuerfeln.js';
-import { Card, TextField, NumberField, Toggle } from '../ui.jsx';
+import { Card, TextField, TextAreaField, NumberField, SelectField, Toggle } from '../ui.jsx';
 import { IconD20 } from '../icons.jsx';
 
 /**
@@ -74,11 +78,7 @@ export default function OverviewTab({ data, update }) {
   const pb = proficiencyBonus(data.level);
   const stufeAusErfahrung = levelFromExperience(data.experience);
   const fehlend = experienceToNextLevel(data.experience);
-  const perception = data.skills.perception ?? { proficient: false, expertise: false };
-  const passivePerception =
-    10 +
-    abilityModifier(data.abilities.wis) +
-    (perception.expertise ? 2 * pb : perception.proficient ? pb : 0);
+  const nachPunkten = data.experienceMode !== 'meilenstein';
 
   return (
     <div className="flex flex-col gap-4">
@@ -92,25 +92,43 @@ export default function OverviewTab({ data, update }) {
           <TextField label="Hintergrund" value={data.background} onChange={(v) => update('background', v)} />
           <TextField label="Gesinnung" value={data.alignment} onChange={(v) => update('alignment', v)} />
           <TextField label="Spieler:in" value={data.playerName} onChange={(v) => update('playerName', v)} />
-          <NumberField label="Erfahrung" min={0} value={data.experience} onChange={(v) => update('experience', v)} />
+          <SelectField
+            label="Aufstieg"
+            value={data.experienceMode}
+            onChange={(v) => update('experienceMode', v)}
+            options={[
+              ['punkte', 'Erfahrungspunkte'],
+              ['meilenstein', 'Meilensteine'],
+            ]}
+          />
+          {nachPunkten && (
+            <NumberField label="Erfahrung" min={0} value={data.experience} onChange={(v) => update('experience', v)} />
+          )}
+          <SelectField label="Maße" value={data.units} onChange={(v) => update('units', v)} options={MASSSYSTEME} />
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-1 border-t border-dashed border-rule pt-3 text-sepia italic">
           <span>
             Übungsbonus <span className="font-display font-semibold text-rubric not-italic">{formatModifier(pb)}</span>
           </span>
-          <span>
-            Erfahrung trägt Stufe{' '}
-            <span className="font-display font-semibold text-ink not-italic">{stufeAusErfahrung}</span>
-            {fehlend !== null && ` · noch ${fehlend.toLocaleString('de-DE')} bis zur nächsten`}
-          </span>
-          {stufeAusErfahrung !== data.level && (
-            <button
-              type="button"
-              onClick={() => update('level', stufeAusErfahrung)}
-              className="btn-plate min-h-9 px-2.5 text-[13px] not-italic"
-            >
-              auf Stufe {stufeAusErfahrung} setzen
-            </button>
+          {nachPunkten ? (
+            <>
+              <span>
+                Erfahrung trägt Stufe{' '}
+                <span className="font-display font-semibold text-ink not-italic">{stufeAusErfahrung}</span>
+                {fehlend !== null && ` · noch ${fehlend.toLocaleString('de-DE')} bis zur nächsten`}
+              </span>
+              {stufeAusErfahrung !== data.level && (
+                <button
+                  type="button"
+                  onClick={() => update('level', stufeAusErfahrung)}
+                  className="btn-plate min-h-9 px-2.5 text-[13px] not-italic"
+                >
+                  auf Stufe {stufeAusErfahrung} setzen
+                </button>
+              )}
+            </>
+          ) : (
+            <span>Die Stufe steigt, wenn die Geschichte es hergibt – Punkte zählt hier niemand.</span>
           )}
         </div>
       </Card>
@@ -132,20 +150,25 @@ export default function OverviewTab({ data, update }) {
 
       <Card title="Rettungswürfe">
         <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
-          {ABILITIES.map((a) => {
-            const proficient = data.savingThrows[a.key];
-            const mod = abilityModifier(data.abilities[a.key]) + (proficient ? pb : 0);
-            return (
-              <div key={a.key} className="flex items-center justify-between gap-2 border border-rule px-3 py-1">
-                <Toggle
-                  checked={proficient}
-                  onChange={(v) => update(`savingThrows.${a.key}`, v)}
-                  label={a.label}
-                />
-                <Wurfwert name={`Rettungswurf ${a.label}`} modifier={mod} betont />
-              </div>
-            );
-          })}
+          {ABILITIES.map((a) => (
+            <div key={a.key} className="flex items-center justify-between gap-2 border border-rule px-3 py-1">
+              <Toggle
+                checked={data.savingThrows[a.key]}
+                onChange={(v) => update(`savingThrows.${a.key}`, v)}
+                label={a.label}
+              />
+              <Wurfwert name={`Rettungswurf ${a.label}`} modifier={saveModifier(data, a.key)} betont />
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 border-t border-dashed border-rule pt-3">
+          <TextAreaField
+            label="Vermerk"
+            rows={2}
+            value={data.savingThrowNote}
+            onChange={(v) => update('savingThrowNote', v)}
+            placeholder="z. B. Vorteil auf Rettungswürfe, um Bezaubert zu vermeiden oder zu beenden"
+          />
         </div>
       </Card>
 
@@ -187,8 +210,19 @@ export default function OverviewTab({ data, update }) {
             );
           })}
         </div>
-        <p className="mt-4 border-t border-dashed border-rule pt-3 text-sepia italic">
-          Passive Wahrnehmung <span className="font-display font-semibold text-ink not-italic">{passivePerception}</span>
+        <div className="mt-4 grid grid-cols-3 gap-3 border-t border-dashed border-rule pt-4">
+          {PASSIVE_FERTIGKEITEN.map((f) => (
+            <div key={f.key} className="border border-rule bg-panel-soft/60 px-3 py-2 text-center">
+              <p className="font-display text-[10px] leading-tight tracking-[0.12em] text-faint uppercase">
+                {f.label}
+              </p>
+              <p className="font-display text-2xl font-bold text-rubric">{passiverWert(data, f.key)}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-2 text-[15px] text-sepia italic">
+          Passive Werte gelten ohne Wurf – die Spielleitung schlägt sie nach, wenn sie nicht verraten will, dass
+          überhaupt etwas zu bemerken war.
         </p>
       </Card>
     </div>

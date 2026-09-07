@@ -1,23 +1,32 @@
 import { useState } from 'react';
 import {
+  AKTION_ARTEN,
   CONDITIONS,
   EXHAUSTION_STEPS,
+  STANDARD_AKTIONEN,
   abilityModifier,
+  aktionArtLabel,
   formatModifier,
   proficiencyBonus,
 } from '../../lib/dnd5e.js';
 import { kurzeRast, langeRast } from '../../lib/rasten.js';
 import { ausdruckWurf, blattWurf } from '../../lib/wuerfeln.js';
 import { newId } from '../../lib/id.js';
-import { Card, NumberField, Stepper, TextField, TextAreaField, Toggle } from '../ui.jsx';
+import { Card, NumberField, Stepper, TextField, TextAreaField, Toggle, WeiteField } from '../ui.jsx';
 import RepeatingRows from '../RepeatingRows.jsx';
-import { IconCandle, IconD20, IconHeart, IconPlus, IconSun, IconTrash } from '../icons.jsx';
+import { IconBook, IconCandle, IconD20, IconHeart, IconPlus, IconSun, IconTrash } from '../icons.jsx';
 
 const ATTACK_FIELDS = [
   { key: 'name', label: 'Angriff / Zauber', wide: true },
   { key: 'bonus', label: 'Bonus' },
   { key: 'damage', label: 'Schaden / Art' },
   { key: 'notes', label: 'Anmerkungen', wide: true },
+];
+
+const AKTION_FIELDS = [
+  { key: 'name', label: 'Was', wide: true },
+  { key: 'art', label: 'Kostet', type: 'select', options: AKTION_ARTEN },
+  { key: 'description', label: 'Wirkung', type: 'textarea', wide: true },
 ];
 
 const AUFFRISCHUNG = [
@@ -106,6 +115,45 @@ function Trefferwuerfel({ data, update }) {
         <IconHeart size={16} />
         Würfel ausgeben ({uebrig})
       </button>
+    </div>
+  );
+}
+
+/**
+ * Die Handlungen aus dem Grundregelwerk – zum Nachschlagen, nicht zum
+ * Ausfüllen. Zugeklappt, weil sie sich nie ändern; wer sie einmal kennt,
+ * braucht sie nicht jeden Abend vor Augen.
+ */
+function Standardaktionen() {
+  const [offen, setOffen] = useState(false);
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setOffen(!offen)}
+        className="btn btn-plate"
+        aria-expanded={offen}
+      >
+        <IconBook size={16} />
+        {offen ? 'Standardhandlungen zuklappen' : 'Was am Tisch immer geht'}
+      </button>
+
+      {offen && (
+        <ul className="mt-3 divide-y divide-dotted divide-rule border border-rule bg-panel-soft/60">
+          {STANDARD_AKTIONEN.map((a) => (
+            <li key={a.name} className="px-3.5 py-2">
+              <div className="flex flex-wrap items-baseline gap-x-2">
+                <b className="font-display text-ink">{a.name}</b>
+                <span className="border border-rule px-1.5 font-display text-[10px] tracking-[0.12em] text-faint uppercase">
+                  {aktionArtLabel(a.art)}
+                </span>
+              </div>
+              <p className="text-[15px] text-sepia">{a.text}</p>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -262,7 +310,12 @@ export default function CombatTab({ data, update, replace }) {
             value={data.combat.initiativeBonus}
             onChange={(v) => update('combat.initiativeBonus', v)}
           />
-          <NumberField label="Bewegung (Fuß)" value={data.combat.speed} onChange={(v) => update('combat.speed', v)} />
+          <WeiteField
+            label="Bewegung"
+            fuss={data.combat.speed}
+            units={data.units}
+            onChange={(v) => update('combat.speed', v)}
+          />
           <TextField label="Trefferwürfel" value={data.combat.hitDice} onChange={(v) => update('combat.hitDice', v)} />
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-dashed border-rule pt-3">
@@ -460,11 +513,11 @@ export default function CombatTab({ data, update, replace }) {
           />
         </div>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <NumberField
-            label="Sichtweite (Fuß)"
-            value={data.combat.senses.sight ?? 0}
-            min={0}
-            step={5}
+          <WeiteField
+            label="Sichtweite"
+            fuss={data.combat.senses.sight ?? 0}
+            units={data.units}
+            step={data.units === 'imperial' ? 5 : 1}
             onChange={(v) => update('combat.senses.sight', v)}
           />
           <p className="text-[15px] text-sepia italic sm:col-span-2 sm:self-end sm:pb-2">
@@ -481,12 +534,12 @@ export default function CombatTab({ data, update, replace }) {
             ['Erschütterung', 'tremorsense'],
             ['Wahrer Blick', 'truesight'],
           ].map(([label, feld]) => (
-            <NumberField
+            <WeiteField
               key={feld}
-              label={`${label} (Fuß)`}
-              value={data.combat.senses[feld] ?? 0}
-              min={0}
-              step={5}
+              label={label}
+              fuss={data.combat.senses[feld] ?? 0}
+              units={data.units}
+              step={data.units === 'imperial' ? 5 : 1}
               onChange={(v) => update(`combat.senses.${feld}`, v)}
             />
           ))}
@@ -511,21 +564,17 @@ export default function CombatTab({ data, update, replace }) {
         <Ressourcen data={data} update={update} />
       </Card>
 
-      <Card title="Eingestimmte Gegenstände">
-        <p className="mb-3 text-sepia italic">Auf mehr als drei magische Gegenstände lässt sich niemand einstimmen.</p>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {[0, 1, 2].map((platz) => (
-            <TextField
-              key={platz}
-              label={`Platz ${platz + 1}`}
-              value={data.attunement?.[platz] ?? ''}
-              onChange={(v) => {
-                const naechste = [...(data.attunement ?? ['', '', ''])];
-                naechste[platz] = v;
-                update('attunement', naechste);
-              }}
-            />
-          ))}
+      <Card title="Aktionen">
+        <Standardaktionen />
+        <div className="mt-5 border-t border-dashed border-rule pt-4">
+          <p className="mb-3 font-display text-[12px] tracking-[0.14em] text-rubric uppercase">Was du außerdem kannst</p>
+          <RepeatingRows
+            items={data.actions}
+            onChange={(rows) => update('actions', rows)}
+            fields={AKTION_FIELDS}
+            addLabel="Aktion hinzufügen"
+            emptyText="Handauflegen, Zweiter Wind, Wildgestalt – was eine Aktion kostet, steht hier."
+          />
         </div>
       </Card>
 

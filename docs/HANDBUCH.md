@@ -125,22 +125,49 @@ Ein vergessenes Spieler-Passwort setzt die Spielleitung unter *Runde* neu.
 
 | Reiter | Inhalt |
 | --- | --- |
-| **Überblick** | Attribute, Fertigkeiten, Rettungswürfe, Erfahrung, Bildnis |
-| **Kampf** | Trefferpunkte, Rüstungsklasse, Zustände, Erschöpfung, Konzentration, Widerstände, Sinne, Klassenressourcen, Rasten |
-| **Zauber** | Zauberplätze, vorbereitete Zauber, Zaubertext auf Tipp |
-| **Ausrüstung** | Gegenstände, Münzen, Traglast |
-| **Hintergrund** | Herkunft, Bindungen, Merkmale, freier Text |
+| **Übersicht** | Attribute, Fertigkeiten, Rettungswürfe samt Vermerk, die drei passiven Werte, Erfahrung oder Meilensteine, Maßsystem |
+| **Kampf** | Trefferpunkte, Rüstungsklasse, Zustände, Erschöpfung, Konzentration, Widerstände, Sinne, Aktionen, Klassenressourcen, Rasten |
+| **Inventar** | Gegenstände, Münzen, Traglast, angelegte magische Gegenstände |
+| **Zauber** | Zauberplätze, Zauber mit allen Spalten, Zaubertext auf Tipp |
+| **Hintergrund** | Aussehen, Verbündete, Wesenszüge, Übungen, Merkmale nach Herkunft, freier Text |
 
 Für andere Systeme als 5e gibt es das **freie Blatt**: ein leeres Blatt ohne
 5e-Mechanik, das nur trägt, was man hineinschreibt.
 
-### 3.2 Jeder Wert ist ein Würfelknopf
+### 3.2 Fuß oder Meter, Pfund oder Kilogramm
+
+Unter *Übersicht → Maße* stellt man ein, worin das Blatt rechnet. Neue Blätter
+sind metrisch; Blätter aus früheren Fassungen bleiben bei Fuß und Pfund, damit
+über Nacht keine anderen Zahlen dastehen. Umschalten ändert nur die Brille:
+Aus 9 m werden 30 Fuß, aus 18 m Dunkelsicht 60 Fuß – dieselbe Weite, anders
+geschrieben.
+
+Im Blatt selbst liegen Weiten immer in Fuß. Daran hängt der Nebel am
+Spieltisch, der ausrechnet, wie weit eine Figur im Dunkeln sieht; er bekommt
+also dieselbe Zahl, gleich welches Maß auf dem Blatt steht.
+
+### 3.3 Aktionen zum Nachschlagen
+
+Im Reiter *Kampf* steht hinter **„Was am Tisch immer geht“** die Liste der
+Standardhandlungen – Angreifen, Spurt, Ausweichen, Ringen, Stoßen und die
+übrigen – mit je einem Satz dazu. Sie ist zugeklappt, weil sie sich nie
+ändert. Darunter trägt man ein, was der eigene Charakter kann und was es
+kostet: Handauflegen als Bonusaktion, Zweiter Wind, eine Reaktion.
+
+### 3.4 Merkmale nach Herkunft
+
+Merkmale bekommen neben Namen und Beschreibung eine **Herkunft** (Klasse,
+Spezies, Talent, Hintergrund) sowie **Quelle und Seite**. Unter der Liste
+stehen sie danach geordnet – erst was die Klasse gibt, dann die Spezies, dann
+Talente. Wer am Tisch nachschlägt, sucht genau so.
+
+### 3.5 Jeder Wert ist ein Würfelknopf
 
 Ein Tipp auf den Bonus neben einer Fertigkeit, einem Rettungswurf oder einem
 Attribut würfelt – und der Wurf steht sofort bei allen am Tisch. Kein
 Abtippen, kein Vorlesen.
 
-### 3.3 Was das Blatt selbst rechnet
+### 3.6 Was das Blatt selbst rechnet
 
 - **Rasten.** Kurze und lange Rast füllen auf, was sich erneuert.
   Trefferwürfel gibt man einzeln aus; der Wurf wird gleich gutgeschrieben.
@@ -153,7 +180,7 @@ Abtippen, kein Vorlesen.
 - **Zauber.** Ein Tipp auf den Namen holt den ganzen Zaubertext ans Blatt.
   Kein Blättern ins Kompendium mitten im Zug.
 
-### 3.4 Bildnis und Figur
+### 3.7 Bildnis und Figur
 
 Oben auf dem Blatt lässt sich ein Bild hochladen; es steht danach auf dem
 Blatt und in der Übersicht der Runde. Auf der Karte ist jede Figur ein
@@ -165,7 +192,7 @@ Plättchen in der Farbe ihrer Besitzerin, mit dem Namen daneben.
 > 3D-Bibliothek, die sie mitbrachte. **Schon gegossene Figuren bleiben
 > erhalten** und stehen weiter auf dem Tisch; neue entstehen nicht mehr.
 
-### 3.5 Mitnehmen
+### 3.8 Mitnehmen
 
 Der Knopf **Mitnehmen** sichert das Blatt als **eine einzelne Datei** aufs
 Gerät – mit Bildnis, Figur und allem, was darauf steht. Diese Datei braucht

@@ -4,7 +4,7 @@ import { newId } from '../lib/id.js';
 function emptyRow(fields) {
   const row = { id: newId() };
   fields.forEach((f) => {
-    row[f.key] = f.type === 'number' ? 0 : '';
+    row[f.key] = f.type === 'number' ? 0 : f.type === 'select' ? (f.options?.[0]?.[0] ?? '') : '';
   });
   return row;
 }
@@ -43,14 +43,35 @@ export default function RepeatingRows({
                     rows={2}
                     className="field-box resize-y text-[16px] leading-relaxed"
                   />
+                ) : field.type === 'select' ? (
+                  <select
+                    value={row[field.key] ?? field.options?.[0]?.[0] ?? ''}
+                    onChange={(e) => updateRow(row.id, field.key, e.target.value)}
+                    className="field-box text-[16px]"
+                  >
+                    {field.options.map(([wert, text]) => (
+                      <option key={wert} value={wert}>
+                        {text}
+                      </option>
+                    ))}
+                  </select>
                 ) : (
                   <input
                     type={field.type === 'number' ? 'number' : 'text'}
                     inputMode={field.type === 'number' ? 'numeric' : undefined}
-                    value={row[field.key] ?? ''}
-                    onChange={(e) =>
-                      updateRow(row.id, field.key, field.type === 'number' ? Number(e.target.value) || 0 : e.target.value)
-                    }
+                    // `format` und `parse` sind für Felder da, die anders
+                    // gespeichert als angezeigt werden – Gewichte etwa liegen
+                    // in Pfund im Blatt, stehen aber in Kilogramm davor.
+                    value={(field.format ? field.format(row[field.key]) : row[field.key]) ?? ''}
+                    onChange={(e) => {
+                      const roh = e.target.value;
+                      const wert = field.parse
+                        ? field.parse(roh)
+                        : field.type === 'number'
+                          ? Number(roh) || 0
+                          : roh;
+                      updateRow(row.id, field.key, wert);
+                    }}
                     className="field-line text-[17px]"
                   />
                 )}

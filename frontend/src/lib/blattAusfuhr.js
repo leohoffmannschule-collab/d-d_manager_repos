@@ -1,14 +1,25 @@
 import {
   ABILITIES,
+  AUSSEHEN_FELDER,
   EXHAUSTION_STEPS,
+  MERKMAL_ARTEN,
+  PASSIVE_FERTIGKEITEN,
   SKILLS,
   SPELL_LEVELS,
   abilityModifier,
-  carryingCapacity,
+  aktionArtLabel,
   formatModifier,
+  getragenesGewicht,
+  gewichtAnzeigen,
+  gewichtEinheit,
+  gewichtMitEinheit,
+  merkmalArtLabel,
+  passiverWert,
   proficiencyBonus,
   spellAttackBonus,
   spellSaveDC,
+  traglastStufen,
+  weiteMitEinheit,
   withDefaults,
 } from './dnd5e.js';
 
@@ -152,7 +163,37 @@ function rettungswuerfe(data, pb) {
     const mod = abilityModifier(data.abilities[a.key]) + (geuebt ? pb : 0);
     return `<li${geuebt ? ' class="geuebt"' : ''}><span>${esc(a.label)}</span><b>${esc(formatModifier(mod))}</b></li>`;
   }).join('');
-  return `<ul class="werteliste">${reihen}</ul>`;
+  const vermerk = data.savingThrowNote
+    ? `<p class="hinweis"><i>Vermerk:</i> ${escAbsatz(data.savingThrowNote)}</p>`
+    : '';
+  return `<ul class="werteliste">${reihen}</ul>${vermerk}`;
+}
+
+/** Die drei passiven Werte und alles, was auch ohne Licht wahrgenommen wird. */
+function sinne(data) {
+  const passive = PASSIVE_FERTIGKEITEN.map((f) => feld(f.label, passiverWert(data, f.key))).join('');
+  const weiten = [
+    ['Sichtweite', 'sight'],
+    ['Dunkelsicht', 'darkvision'],
+    ['Blindsicht', 'blindsight'],
+    ['Erschütterungssinn', 'tremorsense'],
+    ['Wahrer Blick', 'truesight'],
+  ]
+    .filter(([, key]) => Number(data.combat.senses?.[key]) > 0)
+    .map(([label, key]) => feld(label, weiteMitEinheit(data.combat.senses[key], data.units)))
+    .join('');
+  const weitere = data.combat.senses?.notes ? feld('Weitere Sinne', data.combat.senses.notes) : '';
+  return `<div class="raster">${passive}${weiten}${weitere}</div>`;
+}
+
+/** Was eine Aktion, Bonusaktion oder Reaktion kostet. */
+function aktionen(data) {
+  const liste = (data.actions ?? []).filter((a) => a.name || a.description);
+  if (liste.length === 0) return '';
+  return zeilen(
+    ['Was', 'Kostet', 'Wirkung'],
+    liste.map((a) => [esc(a.name), esc(aktionArtLabel(a.art)), escAbsatz(a.description)])
+  );
 }
 
 function fertigkeiten(data, pb) {
@@ -178,7 +219,7 @@ function kampf(data) {
   return `<div class="raster">
       ${feld('Rüstungsklasse', k.armorClass)}
       ${feld('Initiative', formatModifier(initiative))}
-      ${feld('Bewegung', `${k.speed} Fuß`)}
+      ${feld('Bewegung', weiteMitEinheit(k.speed, data.units))}
       ${feld('Trefferpunkte', `${k.hp.current} / ${k.hp.max}${k.hp.temp ? ` (+${k.hp.temp} temporär)` : ''}`)}
       ${feld('Trefferwürfel', `${uebrig} × W${pool.size} von ${pool.total}`)}
       <div class="feld breit"><span class="label">Rettungswürfe gegen den Tod</span><span class="wert">Erfolge ${kreise(
@@ -197,14 +238,11 @@ function zustand(data) {
   if (k.defenses?.resistances) teile.push(feld('Resistenzen', k.defenses.resistances));
   if (k.defenses?.immunities) teile.push(feld('Immunitäten', k.defenses.immunities));
   if (k.defenses?.vulnerabilities) teile.push(feld('Verwundbarkeiten', k.defenses.vulnerabilities));
-  if (k.senses?.darkvision) teile.push(feld('Dunkelsicht', `${k.senses.darkvision} Fuß`));
-  if (k.senses?.notes) teile.push(feld('Weitere Sinne', k.senses.notes));
   return teile.length ? `<div class="raster">${teile.join('')}</div>` : '';
 }
 
 function ressourcen(data) {
   const liste = (data.resources ?? []).filter((r) => r.name);
-  const eingestimmt = (data.attunement ?? []).filter(Boolean);
   const teile = [];
   if (liste.length) {
     teile.push(
@@ -218,7 +256,6 @@ function ressourcen(data) {
       )
     );
   }
-  if (eingestimmt.length) teile.push(feld('Eingestimmt auf', eingestimmt.join(', ')));
   return teile.join('');
 }
 
@@ -243,17 +280,32 @@ function zauber(data) {
     if (!nachGrad.has(grad)) nachGrad.set(grad, []);
     nachGrad.get(grad).push(s);
   }
+
+  // Die Tabelle des gedruckten Blattes: je Grad ein Abschnitt, und in jeder
+  // Zeile steht alles, was man im Spiel braucht, ohne nachzuschlagen.
   const liste = [...nachGrad.keys()]
     .sort((a, b) => a - b)
     .map((grad) => {
-      const namen = nachGrad
+      const reihen = nachGrad
         .get(grad)
-        .sort((a, b) => a.name.localeCompare(b.name, 'de'))
-        .map((s) => `<span class="zauber${s.prepared ? ' vorbereitet' : ''}">${esc(s.name)}</span>`)
-        .join('');
+        .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '', 'de'))
+        .map((s) => [
+          s.prepared ? '●' : '○',
+          `<b>${esc(s.name)}</b>${s.notes ? `<br><i class="klein">${escAbsatz(s.notes)}</i>` : ''}`,
+          esc(s.source),
+          esc(s.save),
+          esc(s.time),
+          esc(s.range),
+          esc(s.components),
+          esc(s.duration),
+          esc(s.page),
+        ]);
       return `<div class="zaubergrad"><span class="label">${
-        grad === 0 ? 'Zaubertricks' : `Zauber vom ${grad}. Grad`
-      }</span><div>${namen}</div></div>`;
+        grad === 0 ? 'Zaubertricks (nach Belieben)' : `Zauber vom ${grad}. Grad`
+      }</span>${zeilen(
+        ['Vorb.', 'Zaubername', 'Quelle', 'RW/Angr.', 'Zeit', 'Reichweite', 'Komp.', 'Dauer', 'Seite'],
+        reihen
+      )}</div>`;
     })
     .join('');
 
@@ -264,28 +316,77 @@ function zauber(data) {
       ${feld('Angriffsbonus', formatModifier(bonus))}
     </div>
     ${plaetze ? `<div class="raster schmal">${plaetze}</div>` : ''}
-    ${liste ? `<div class="zauberliste">${liste}<p class="hinweis">Hervorgehoben: vorbereitet</p></div>` : ''}`;
+    ${liste ? `<div class="zauberliste">${liste}<p class="hinweis">● vorbereitet &nbsp;·&nbsp; ○ nicht vorbereitet</p></div>` : ''}`;
 }
 
 function inventar(data) {
-  const gewicht = data.inventory.reduce(
-    (summe, g) => summe + (Number(g.weight) || 0) * (Number(g.qty) || 1),
-    0
-  );
+  const getragen = getragenesGewicht(data.inventory);
+  const { ueberladen, schieben } = traglastStufen(data.abilities.str);
+  const einheit = gewichtEinheit(data.units);
   const muenzen = MUENZEN.filter(([k]) => data.currency[k])
     .map(([k, label]) => `${data.currency[k]} ${label}`)
     .join(' · ');
+  const eingestimmt = (data.attunement ?? []).filter(Boolean);
 
   return `${muenzen ? feld('Münzen', muenzen) : ''}
     ${zeilen(
-      ['Gegenstand', 'Anzahl', 'Gewicht', 'Anmerkungen'],
-      data.inventory.map((g) => [esc(g.name), esc(g.qty), esc(g.weight), esc(g.notes)])
+      ['Gegenstand', 'Anzahl', `Gewicht (${einheit})`, 'Anmerkungen'],
+      data.inventory.map((g) => [
+        esc(g.name),
+        esc(g.qty),
+        esc(g.weight ? gewichtAnzeigen(g.weight, data.units) : ''),
+        esc(g.notes),
+      ])
     )}
     ${
       data.inventory.length
-        ? `<p class="hinweis">Getragen: ${gewicht} Pfund · Tragkraft ${carryingCapacity(data.abilities.str)} Pfund</p>`
+        ? `<div class="raster schmal">
+            ${feld('Getragenes Gewicht', gewichtMitEinheit(getragen, data.units))}
+            ${feld('Überladen ab', gewichtMitEinheit(ueberladen, data.units))}
+            ${feld('Schieben / Ziehen / Heben', gewichtMitEinheit(schieben, data.units))}
+          </div>`
         : ''
-    }`;
+    }
+    ${eingestimmt.length ? feld('Angelegte magische Gegenstände', eingestimmt.join(', ')) : ''}`;
+}
+
+/** Geschlecht, Alter, Statur … – und was sonst noch das Bild vollmacht. */
+function erscheinung(data) {
+  const a = data.appearance ?? {};
+  const werte = AUSSEHEN_FELDER.filter((f) => a[f.key])
+    .map((f) => feld(f.label, a[f.key]))
+    .join('');
+  const gesinnung = data.alignment ? feld('Gesinnung', data.alignment) : '';
+  const fliess = [
+    ['Erscheinungsbild', data.traits?.look],
+    ['Verbündete & Organisationen', data.traits?.allies],
+  ]
+    .filter(([, wert]) => wert)
+    .map(([label, wert]) => `<div class="fliesstext"><span class="label">${label}</span><p>${escAbsatz(wert)}</p></div>`)
+    .join('');
+
+  if (!werte && !gesinnung && !fliess) return '';
+  return `${werte || gesinnung ? `<div class="raster">${gesinnung}${werte}</div>` : ''}${fliess}`;
+}
+
+/** Die Merkmale nach Herkunft geordnet, so wie sie gedruckt gehören. */
+function merkmale(data) {
+  const gefuellt = (data.features ?? []).filter((m) => m.name || m.description);
+  if (gefuellt.length === 0) return '';
+
+  return MERKMAL_ARTEN.map(([art]) => {
+    const dieser = gefuellt.filter((m) => (m.category ?? 'sonstiges') === art);
+    if (dieser.length === 0) return '';
+    const eintraege = dieser
+      .map(
+        (m) =>
+          `<div class="merkmal"><b>${esc(m.name)}</b>${
+            m.source || m.page ? ` <i>${esc([m.source, m.page].filter(Boolean).join(' '))}</i>` : ''
+          }<p>${escAbsatz(m.description)}</p></div>`
+      )
+      .join('');
+    return `<div class="merkmalgruppe"><span class="label">${esc(merkmalArtLabel(art))}</span>${eintraege}</div>`;
+  }).join('');
 }
 
 function hintergrund(data) {
@@ -321,11 +422,8 @@ function hintergrund(data) {
 
 function dnd5eKoerper(character, data, bilder, texte) {
   const pb = proficiencyBonus(data.level);
-  const wahrnehmung = data.skills.perception ?? { proficient: false, expertise: false };
-  const passiv =
-    10 +
-    abilityModifier(data.abilities.wis) +
-    (wahrnehmung.expertise ? 2 * pb : wahrnehmung.proficient ? pb : 0);
+  const erfahrung =
+    data.experienceMode === 'meilenstein' ? 'Meilensteine' : data.experience ? String(data.experience) : '';
 
   return `
     <header class="kopf">
@@ -346,15 +444,19 @@ function dnd5eKoerper(character, data, bilder, texte) {
       </div>
       <div class="kopfwerte">
         <div class="feld"><span class="label">Übungsbonus</span><span class="wert gross">${esc(formatModifier(pb))}</span></div>
-        <div class="feld"><span class="label">Passive Wahrnehmung</span><span class="wert gross">${passiv}</span></div>
-        ${data.experience ? `<div class="feld"><span class="label">Erfahrung</span><span class="wert">${esc(data.experience)}</span></div>` : ''}
+        <div class="feld"><span class="label">Passive Wahrnehmung</span><span class="wert gross">${passiverWert(
+          data,
+          'perception'
+        )}</span></div>
+        ${erfahrung ? `<div class="feld"><span class="label">Erfahrung</span><span class="wert">${esc(erfahrung)}</span></div>` : ''}
       </div>
     </header>
 
     ${tafel('Attribute', attribute(data))}
     ${tafel('Kampfwerte', kampf(data))}
-    ${tafel('Zustand', zustand(data))}
+    ${tafel('Verteidigung & Zustand', zustand(data))}
     ${tafel('Rettungswürfe', rettungswuerfe(data, pb))}
+    ${tafel('Sinne', sinne(data))}
     ${tafel('Fertigkeiten', fertigkeiten(data, pb))}
     ${tafel(
       'Angriffe',
@@ -363,6 +465,7 @@ function dnd5eKoerper(character, data, bilder, texte) {
         data.attacks.map((a) => [esc(a.name), esc(a.bonus), esc(a.damage), esc(a.notes)])
       )
     )}
+    ${tafel('Aktionen', aktionen(data))}
     ${tafel('Ressourcen', ressourcen(data))}
     ${tafel('Zauber', zauber(data))}
     ${tafel(
@@ -374,18 +477,8 @@ function dnd5eKoerper(character, data, bilder, texte) {
         .join('')
     )}
     ${tafel('Beutel & Ausrüstung', inventar(data))}
-    ${tafel(
-      'Merkmale & Züge',
-      data.features
-        .filter((m) => m.name || m.description)
-        .map(
-          (m) =>
-            `<div class="merkmal"><b>${esc(m.name)}</b>${m.source ? ` <i>${esc(m.source)}</i>` : ''}<p>${escAbsatz(
-              m.description
-            )}</p></div>`
-        )
-        .join('')
-    )}
+    ${tafel('Merkmale & Eigenschaften', merkmale(data))}
+    ${tafel('Aussehen & Person', erscheinung(data))}
     ${tafel('Hintergrund', hintergrund(data))}
     ${bilder.mini ? tafel('Figur', `<img class="figur" src="${bilder.mini}" alt="">`) : ''}
   `;
@@ -450,8 +543,12 @@ const STIL = `
   .zaubergrad{margin-bottom:8px}
   .zauber{display:inline-block;border:1px solid var(--linie);padding:1px 7px;margin:2px 4px 2px 0;font-size:15px}
   .zauber.vorbereitet{border-color:var(--gold);background:rgba(184,145,47,.18);font-weight:600}
+  .zaubergrad .label{margin-bottom:2px;color:var(--rubrik)}
+  .merkmalgruppe{margin-bottom:12px;break-inside:avoid}
+  .merkmalgruppe>.label{margin-bottom:4px;color:var(--rubrik);letter-spacing:.14em;font-size:12px}
   .merkmal{margin-bottom:10px;break-inside:avoid}
-  .merkmal p{margin:2px 0 0;color:var(--sepia)}
+  .merkmal p{margin:2px 0 0;color:var(--sepia);white-space:pre-line}
+  .klein{font-size:14px;color:var(--sepia)}
   .fliesstext{margin-top:10px}
   .fliesstext p{margin:2px 0 0;white-space:normal}
   .figur{max-width:220px;display:block;margin:0 auto}
