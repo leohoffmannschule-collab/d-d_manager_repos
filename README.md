@@ -91,7 +91,7 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
 - **Chat am Tisch**: sagen, was alle lesen sollen – oder über *An* einer einzelnen Person zuflüstern. Geflüstertes
   bekommt sonst niemand, auch die Spielleitung nicht: Der Server schickt es den übrigen Fenstern gar nicht erst.
   Der Chat ist ein Gespräch, kein Archiv – die letzten 300 Zeilen bleiben, und in der Chronik steht davon nichts.
-- **Blatt mitnehmen**: Ein Knopf sichert das eigene Blatt als einzelne HTML-Datei – mit Bildnis, Figur und den
+- **Blatt mitnehmen**: Ein Knopf sichert das eigene Blatt als einzelne HTML-Datei – mit Bildnis und den
   vollständigen Zaubertexten, ohne Verweis nach draußen. Sie öffnet sich mit einem Doppelklick auf jedem Gerät, auch wenn der Pi ausgeschaltet ist,
   und druckt sich als Charakterbogen. Der vollständige Datensatz reist am Ende der Datei mit, sie ist also zugleich
   eine Sicherung.

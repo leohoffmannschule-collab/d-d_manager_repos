@@ -256,7 +256,7 @@ einfach nicht.
 ## 11. Dein Blatt mitnehmen
 
 Oben auf deinem Blatt liegt der Knopf **Mitnehmen**. Er sichert dein Blatt
-als **einzelne Datei** auf dein Gerät – mit Bildnis, Figur und allem, was
+als **einzelne Datei** auf dein Gerät – mit Bildnis und allem, was
 darauf steht.
 
 Diese Datei braucht weder Netz noch Server: Ein Doppelklick genügt, auf jedem

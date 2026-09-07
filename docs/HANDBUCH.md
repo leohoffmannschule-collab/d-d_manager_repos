@@ -195,7 +195,7 @@ Plättchen in der Farbe ihrer Besitzerin, mit dem Namen daneben.
 ### 3.8 Mitnehmen
 
 Der Knopf **Mitnehmen** sichert das Blatt als **eine einzelne Datei** aufs
-Gerät – mit Bildnis, Figur und allem, was darauf steht. Diese Datei braucht
+Gerät – mit Bildnis und allem, was darauf steht. Diese Datei braucht
 weder Netz noch Server; ein Doppelklick genügt, auf jedem Gerät. Gedruckt
 sieht sie aus wie ein Charakterbogen.
 
