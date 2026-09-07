@@ -1,4 +1,5 @@
 import { Fleuron, IconCheck, IconMinus, IconPlus } from './icons.jsx';
+import { weiteAnzeigen, weiteEinheit, weiteNachFuss } from '../lib/dnd5e.js';
 
 /** Überschrift in Rubrikrot, mit goldenem Stern und durchlaufender Linie. */
 export function Rubric({ children, className = '' }) {
@@ -41,7 +42,7 @@ export function TextField({ label, value, onChange, placeholder, className = '' 
   );
 }
 
-export function TextAreaField({ label, value, onChange, rows = 3, className = '' }) {
+export function TextAreaField({ label, value, onChange, rows = 3, className = '', placeholder }) {
   return (
     <label className={`block ${className}`}>
       {label && <FieldLabel>{label}</FieldLabel>}
@@ -49,6 +50,7 @@ export function TextAreaField({ label, value, onChange, rows = 3, className = ''
         value={value ?? ''}
         onChange={(e) => onChange(e.target.value)}
         rows={rows}
+        placeholder={placeholder}
         className="field-box resize-y leading-relaxed"
       />
     </label>
@@ -66,6 +68,47 @@ export function NumberField({ label, value, onChange, className = '', min, step 
         min={min}
         step={step}
         onChange={(e) => onChange(e.target.value === '' ? 0 : Number(e.target.value))}
+        className="field-line font-display"
+      />
+    </label>
+  );
+}
+
+export function SelectField({ label, value, onChange, options, className = '' }) {
+  return (
+    <label className={`block ${className}`}>
+      {label && <FieldLabel>{label}</FieldLabel>}
+      <select value={value ?? ''} onChange={(e) => onChange(e.target.value)} className="field-box">
+        {options.map(([wert, text]) => (
+          <option key={wert} value={wert}>
+            {text}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+/**
+ * Ein Feld für eine Weite. Auf dem Blatt steht sie in Fuß – daran hängt der
+ * Nebel am Spieltisch –, eingetippt und abgelesen wird sie aber in dem Maß,
+ * das der Charakter führt.
+ */
+export function WeiteField({ label, fuss, units, onChange, className = '', step = 1 }) {
+  return (
+    <label className={`block ${className}`}>
+      {label && (
+        <FieldLabel>
+          {label} ({weiteEinheit(units)})
+        </FieldLabel>
+      )}
+      <input
+        type="number"
+        inputMode="numeric"
+        min={0}
+        step={step}
+        value={weiteAnzeigen(fuss, units)}
+        onChange={(e) => onChange(weiteNachFuss(e.target.value === '' ? 0 : e.target.value, units))}
         className="field-line font-display"
       />
     </label>

@@ -20,7 +20,8 @@
     "tunnel": "node scripts/tunnel.mjs",
     "sicherung": "node backend/scripts/sicherung.mjs",
     "drucksatz": "node scripts/drucksatz.mjs",
-    "vertrag": "node scripts/vertrag.mjs"
+    "vertrag": "node scripts/vertrag.mjs",
+    "blattprobe": "node scripts/blattprobe.mjs"
   },
   "devDependencies": {
     "concurrently": "^10.0.5"

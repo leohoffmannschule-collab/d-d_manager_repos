@@ -1,10 +1,47 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ABILITIES, SPELL_LEVELS, abilityModifier, formatModifier, proficiencyBonus } from '../../lib/dnd5e.js';
 import { compendiumApi } from '../../lib/api.js';
-import { Card, FieldLabel, Stepper, Toggle } from '../ui.jsx';
+import { Card, FieldLabel, Stepper, TextField, TextAreaField, Toggle } from '../ui.jsx';
 import CompendiumDetail from '../CompendiumDetail.jsx';
 import { IconBook, IconPlus, IconSearch } from '../icons.jsx';
 import { newId } from '../../lib/id.js';
+
+/**
+ * Die Spalten, die auf dem gedruckten Blatt neben jedem Zauber stehen.
+ * Wer sie gefüllt hat, muss am Abend nichts mehr nachschlagen: Reichweite,
+ * Wirkzeit und Dauer stehen da, wo der Zauber steht.
+ */
+const ZAUBER_SPALTEN = [
+  { key: 'source', label: 'Quelle', platz: 'w-full sm:w-auto sm:flex-1' },
+  { key: 'save', label: 'RW / Angriff' },
+  { key: 'time', label: 'Zeit' },
+  { key: 'range', label: 'Reichweite' },
+  { key: 'components', label: 'Komponenten' },
+  { key: 'duration', label: 'Dauer' },
+  { key: 'page', label: 'Seite' },
+];
+
+/**
+ * Was der Kompendiumseintrag über einen Zauber verrät, in die Spalten des
+ * Blattes übersetzt. „Quelle“ bleibt leer – die weiß nur, wer den Zauber
+ * bekommen hat: aus der Klasse, aus der Abstammung, aus einem Talent.
+ */
+function spaltenAus(detail) {
+  if (!detail) return {};
+  const komponenten = (detail.components ?? []).join(', ');
+  const rettung = detail.dc?.dc_type?.name
+    ? `${detail.dc.dc_type.name}-RW`
+    : detail.attack_type
+      ? 'Angriff'
+      : '';
+  return {
+    save: rettung,
+    time: detail.casting_time ?? '',
+    range: detail.range ?? '',
+    components: komponenten + (detail.material ? ' (M)' : ''),
+    duration: detail.duration ?? '',
+  };
+}
 
 function SpellSearch({ onAdd }) {
   const [allSpells, setAllSpells] = useState(null);
@@ -25,11 +62,12 @@ function SpellSearch({ onAdd }) {
   }, [allSpells, query]);
 
   async function handleAdd(entry) {
+    const grund = { id: newId(), index: entry.index, name: entry.name, level: 0, prepared: false };
     try {
       const detail = await compendiumApi.detail('spells', entry.index);
-      onAdd({ id: newId(), index: entry.index, name: detail.name, level: detail.level ?? 0, prepared: false });
+      onAdd({ ...grund, name: detail.name, level: detail.level ?? 0, ...spaltenAus(detail) });
     } catch {
-      onAdd({ id: newId(), index: entry.index, name: entry.name, level: 0, prepared: false });
+      onAdd(grund);
     }
     setQuery('');
   }
@@ -68,12 +106,59 @@ function SpellSearch({ onAdd }) {
   );
 }
 
+/** Die Spalten eines Zaubers, wenn er aufgeschlagen ist. */
+function Zauberspalten({ spell, setzen }) {
+  return (
+    <div className="flex flex-wrap gap-x-4 gap-y-2">
+      {ZAUBER_SPALTEN.map((spalte) => (
+        <TextField
+          key={spalte.key}
+          label={spalte.label}
+          value={spell[spalte.key]}
+          onChange={(v) => setzen(spalte.key, v)}
+          className={spalte.platz ?? 'min-w-[7rem] flex-1'}
+        />
+      ))}
+      <TextAreaField
+        label="Notizen"
+        rows={2}
+        value={spell.notes}
+        onChange={(v) => setzen('notes', v)}
+        className="w-full"
+      />
+    </div>
+  );
+}
+
+/** Was von einem Zauber in der Zeile steht, ohne ihn aufzuschlagen. */
+function Kurzzeile({ spell }) {
+  const teile = [spell.time, spell.range, spell.duration, spell.save].filter(Boolean);
+  if (teile.length === 0) return null;
+  return <p className="truncate text-[13px] text-faint">{teile.join(' · ')}</p>;
+}
+
 export default function SpellsTab({ data, update }) {
   const spellcasting = data.spellcasting;
   // Nachgeschlagene Zauber bleiben im Gedächtnis, solange das Blatt offen ist.
   const [aufgeschlagen, setAufgeschlagen] = useState(null);
   const [texte, setTexte] = useState({});
   const [laedt, setLaedt] = useState(null);
+
+  const pb = proficiencyBonus(data.level);
+  const abilityMod = abilityModifier(data.abilities[spellcasting.ability]);
+  const saveDC = spellcasting.manualSaveDC ?? 8 + pb + abilityMod;
+  const attackBonus = spellcasting.manualAttackBonus ?? pb + abilityMod;
+
+  function updateSpellcasting(key, value) {
+    update('spellcasting', { ...spellcasting, [key]: value });
+  }
+
+  function aendereZauber(id, feld, wert) {
+    updateSpellcasting(
+      'spells',
+      spellcasting.spells.map((s) => (s.id === id ? { ...s, [feld]: wert } : s))
+    );
+  }
 
   async function aufschlagen(spell) {
     if (aufgeschlagen === spell.id) return setAufgeschlagen(null);
@@ -89,24 +174,31 @@ export default function SpellsTab({ data, update }) {
       setLaedt(null);
     }
   }
-  const pb = proficiencyBonus(data.level);
-  const abilityMod = abilityModifier(data.abilities[spellcasting.ability]);
-  const saveDC = spellcasting.manualSaveDC ?? 8 + pb + abilityMod;
-  const attackBonus = spellcasting.manualAttackBonus ?? pb + abilityMod;
-
-  function updateSpellcasting(key, value) {
-    update('spellcasting', { ...spellcasting, [key]: value });
-  }
 
   function addSpell(spell) {
     if (spellcasting.spells.some((s) => s.name === spell.name)) return;
     updateSpellcasting('spells', [...spellcasting.spells, spell]);
   }
 
-  const sortedSpells = useMemo(
-    () => [...spellcasting.spells].sort((a, b) => a.level - b.level || a.name.localeCompare(b.name)),
-    [spellcasting.spells]
-  );
+  /** Von Hand eintragen – das Kompendium kennt nicht jeden Zauber. */
+  function eigenerZauber() {
+    updateSpellcasting('spells', [
+      ...spellcasting.spells,
+      { id: newId(), name: '', level: 0, prepared: false, source: '', notes: '' },
+    ]);
+  }
+
+  // Nach Grad geordnet, so wie auf dem gedruckten Blatt: erst die
+  // Zaubertricks, dann Grad für Grad.
+  const nachGrad = useMemo(() => {
+    const gruppen = new Map();
+    for (const s of [...spellcasting.spells].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '', 'de'))) {
+      const grad = s.level ?? 0;
+      if (!gruppen.has(grad)) gruppen.set(grad, []);
+      gruppen.get(grad).push(s);
+    }
+    return [...gruppen.entries()].sort(([a], [b]) => a - b);
+  }, [spellcasting.spells]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -174,73 +266,111 @@ export default function SpellsTab({ data, update }) {
 
       <Card title="Zauber aus dem Kompendium übernehmen">
         <SpellSearch onAdd={addSpell} />
+        <button type="button" onClick={eigenerZauber} className="btn btn-plate mt-3">
+          <IconPlus size={16} /> Eigenen Zauber eintragen
+        </button>
       </Card>
 
       <Card title="Zauberliste">
-        {sortedSpells.length === 0 ? (
+        {nachGrad.length === 0 ? (
           <p className="text-sepia italic">Noch keine Zauber verzeichnet.</p>
         ) : (
-          <ul>
-            {sortedSpells.map((spell) => (
-              <li key={spell.id} className="border-b border-dotted border-rule py-1.5">
-                <div className="flex items-center justify-between gap-3">
-                <button
-                  type="button"
-                  onClick={() => aufschlagen(spell)}
-                  className="flex min-w-0 flex-1 items-center gap-3 text-left"
-                  title="Zauber aufschlagen"
-                >
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center border border-rule font-display text-[13px] text-rubric">
-                    {spell.level === 0 ? 'T' : spell.level}
-                  </span>
-                  <span className="truncate text-ink">{spell.name}</span>
-                  <IconBook
-                    size={14}
-                    className={aufgeschlagen === spell.id ? 'shrink-0 text-rubric' : 'shrink-0 text-faint'}
-                  />
-                </button>
-                <div className="flex shrink-0 items-center gap-3">
-                  <Toggle
-                    checked={spell.prepared}
-                    onChange={(v) =>
-                      updateSpellcasting(
-                        'spells',
-                        spellcasting.spells.map((s) => (s.id === spell.id ? { ...s, prepared: v } : s))
-                      )
-                    }
-                    label={<span className="text-[15px] text-sepia">vorbereitet</span>}
-                  />
-                  <button
-                    onClick={() =>
-                      updateSpellcasting(
-                        'spells',
-                        spellcasting.spells.filter((s) => s.id !== spell.id)
-                      )
-                    }
-                    className="min-h-9 px-1 text-[15px] text-rubric hover:underline"
-                  >
-                    Entfernen
-                  </button>
-                </div>
-                </div>
+          <div className="flex flex-col gap-4">
+            {nachGrad.map(([grad, zauber]) => (
+              <div key={grad}>
+                <p className="mb-1.5 font-display text-[12px] tracking-[0.14em] text-rubric uppercase">
+                  {grad === 0 ? 'Zaubertricks (nach Belieben)' : `Zauber vom ${grad}. Grad`}
+                </p>
+                <ul className="divide-y divide-dotted divide-rule border border-rule">
+                  {zauber.map((spell) => (
+                    <li key={spell.id} className="px-3 py-1.5">
+                      <div className="flex items-center justify-between gap-3">
+                        <button
+                          type="button"
+                          onClick={() => aufschlagen(spell)}
+                          className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                          title="Zauber aufschlagen"
+                        >
+                          <span className="flex h-7 w-7 shrink-0 items-center justify-center border border-rule font-display text-[13px] text-rubric">
+                            {grad === 0 ? 'T' : grad}
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-ink">{spell.name || 'ohne Namen'}</span>
+                            <Kurzzeile spell={spell} />
+                          </span>
+                          <IconBook
+                            size={14}
+                            className={aufgeschlagen === spell.id ? 'shrink-0 text-rubric' : 'shrink-0 text-faint'}
+                          />
+                        </button>
+                        <div className="flex shrink-0 items-center gap-3">
+                          <Toggle
+                            checked={spell.prepared}
+                            onChange={(v) => aendereZauber(spell.id, 'prepared', v)}
+                            label={<span className="text-[15px] text-sepia">vorbereitet</span>}
+                          />
+                          <button
+                            onClick={() =>
+                              updateSpellcasting(
+                                'spells',
+                                spellcasting.spells.filter((s) => s.id !== spell.id)
+                              )
+                            }
+                            className="min-h-9 px-1 text-[15px] text-rubric hover:underline"
+                          >
+                            Entfernen
+                          </button>
+                        </div>
+                      </div>
 
-                {aufgeschlagen === spell.id && (
-                  <div className="mt-2 mb-1 border-l-[3px] border-gold bg-panel-soft/70 px-4 py-3">
-                    {laedt === spell.id ? (
-                      <p className="text-sepia italic">Der Zauber wird nachgeschlagen …</p>
-                    ) : texte[spell.id] ? (
-                      <CompendiumDetail item={texte[spell.id]} />
-                    ) : (
-                      <p className="text-sepia italic">
-                        Zu diesem Zauber liegt kein Eintrag vor – er wurde von Hand eingetragen oder das Kompendium
-                        ist nicht erreichbar.
-                      </p>
-                    )}
-                  </div>
-                )}
-              </li>
+                      {aufgeschlagen === spell.id && (
+                        <div className="mt-2 mb-1 border-l-[3px] border-gold bg-panel-soft/70 px-4 py-3">
+                          <div className="flex flex-wrap gap-x-4 gap-y-2">
+                            <TextField
+                              label="Zaubername"
+                              value={spell.name}
+                              onChange={(v) => aendereZauber(spell.id, 'name', v)}
+                              className="w-full sm:min-w-[12rem] sm:flex-1"
+                            />
+                            <label className="block w-24">
+                              <FieldLabel>Grad</FieldLabel>
+                              <input
+                                type="number"
+                                inputMode="numeric"
+                                min={0}
+                                max={9}
+                                value={spell.level ?? 0}
+                                onChange={(e) =>
+                                  aendereZauber(spell.id, 'level', Math.min(9, Math.max(0, Number(e.target.value) || 0)))
+                                }
+                                className="field-line font-display"
+                              />
+                            </label>
+                          </div>
+                          <div className="mt-2">
+                            <Zauberspalten spell={spell} setzen={(feld, wert) => aendereZauber(spell.id, feld, wert)} />
+                          </div>
+
+                          <div className="mt-3 border-t border-dotted border-rule pt-3">
+                            {laedt === spell.id ? (
+                              <p className="text-sepia italic">Der Zauber wird nachgeschlagen …</p>
+                            ) : texte[spell.id] ? (
+                              <CompendiumDetail item={texte[spell.id]} />
+                            ) : (
+                              <p className="text-sepia italic">
+                                Zu diesem Zauber liegt kein Eintrag vor – er wurde von Hand eingetragen oder das
+                                Kompendium ist nicht erreichbar.
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </Card>
     </div>

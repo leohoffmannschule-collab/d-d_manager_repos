@@ -40,9 +40,13 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
 
 ### Für die Runde
 
-- **Charakterblatt** für D&D 5e: Attribute als Wappenschilde, Rettungswürfe, Fertigkeiten, Kampfwerte,
-  Trefferpunkte samt Rettungswürfen gegen den Tod, Angriffe, Inventar & Münzen, Zauber (mit Suche im
-  Kompendium), Chronik und Merkmale. Dazu ein **generisches Blatt** für andere Systeme.
+- **Charakterblatt** für D&D 5e, so vollständig wie ein gedruckter Bogen: Attribute als Wappenschilde,
+  Rettungswürfe samt Vermerk, Fertigkeiten und die drei passiven Werte, Kampfwerte, Trefferpunkte samt
+  Rettungswürfen gegen den Tod, Angriffe, Aktionen und Bonusaktionen (mit den Standardhandlungen zum
+  Nachschlagen), Inventar, Münzen und Traglast, angelegte magische Gegenstände, Zauber mit Zeit,
+  Reichweite, Komponenten und Dauer (mit Suche im Kompendium), Aussehen und Person, Merkmale nach
+  Herkunft mit Quelle und Seite. Wahlweise in **Metern und Kilogramm oder Fuß und Pfund**, und wahlweise
+  nach Erfahrungspunkten oder Meilensteinen. Dazu ein **generisches Blatt** für andere Systeme.
 - **Eigene Blätter bearbeiten, fremde lesen** – wer in der Runde ist, sieht die Werte der Gefährten,
   schreiben darf nur die Besitzerin (und die Spielleitung).
 - **Spieltisch**: Karte schieben und zoomen, die eigene Figur ziehen (sie schnappt aufs Raster ein),
@@ -371,6 +375,7 @@ scripts/    Hilfsskripte, plattformunabhängig in Node geschrieben
             adresse.mjs      unter welchen Adressen der Almanach erreichbar ist
             tunnel.mjs       den Schnelltunnel ohne Docker aufmachen
             vertrag.mjs      die Schnittstelle gegen einen eigenen Testserver prüfen
+            blattprobe.mjs   nachrechnen, was das Charakterblatt ausrechnet
 starten.cmd / starten.sh     zum Doppelklicken, für alle ohne Terminal
 ```
 
@@ -389,6 +394,7 @@ Nützliche Befehle im Projektstamm:
 | `npm run build`     | Oberfläche bauen und ins Backend kopieren                             |
 | `npm run serve`     | Nur den Server starten (ohne zu bauen)                                |
 | `npm run vertrag`   | Die Schnittstelle gegen einen eigenen Testserver prüfen               |
+| `npm run blattprobe`| Nachrechnen, was das Charakterblatt ausrechnet                        |
 
 `npm start` nimmt außerdem `-- --neu-bauen` (Bau erzwingen) und `-- --ohne-bau` (Bau überspringen).
 
@@ -427,7 +433,7 @@ Quelltext des Servers zu lesen. Und sie ist nicht nur aufgeschrieben, sondern na
 npm run vertrag
 ```
 
-Das startet einen eigenen Almanach mit leerer Datenbank, spielt eine Runde durch und prüft fünfzig Zusagen –
+Das startet einen eigenen Almanach mit leerer Datenbank, spielt eine Runde durch und prüft über hundert Zusagen –
 Rollen, getrennte Sichten für Spielleitung und Runde, Fehlerschlüssel, Rechenwege, den Live-Kanal. Wer die
 Oberfläche umbaut, weist damit nach, dass der Unterbau steht; wer am Server schraubt, merkt sofort, wenn er etwas
 bricht, worauf sich eine Oberfläche verlässt.

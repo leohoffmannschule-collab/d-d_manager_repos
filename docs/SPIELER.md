@@ -88,11 +88,27 @@ abtippen.
 
 | Reiter | Was darin steht |
 | --- | --- |
-| **Überblick** | Attribute, Fertigkeiten, Rettungswürfe, Erfahrung |
-| **Kampf** | Trefferpunkte, Rüstungsklasse, Zustände, Erschöpfung, Konzentration, Widerstände, **Sinne**, Klassenressourcen, Rasten |
-| **Zauber** | Zauberplätze, vorbereitete Zauber – ein Tipp auf den Namen holt den ganzen Zaubertext ans Blatt |
-| **Ausrüstung** | Gegenstände, Münzen, Traglast |
-| **Hintergrund** | Herkunft, Bindungen, Merkmale, freier Text |
+| **Übersicht** | Attribute, Fertigkeiten, Rettungswürfe, deine drei passiven Werte, Erfahrung oder Meilensteine |
+| **Kampf** | Trefferpunkte, Rüstungsklasse, Zustände, Erschöpfung, Konzentration, Widerstände, **Sinne**, Aktionen, Klassenressourcen, Rasten |
+| **Inventar** | Gegenstände, Münzen, Traglast, angelegte magische Gegenstände |
+| **Zauber** | Zauberplätze und deine Zauber mit Zeit, Reichweite, Komponenten und Dauer – ein Tipp auf den Namen holt den ganzen Zaubertext ans Blatt |
+| **Hintergrund** | Aussehen, Verbündete, Wesenszüge, Übungen, Merkmale, freier Text |
+
+### Meter oder Fuß
+
+Unter *Übersicht → Maße* stellst du ein, worin dein Blatt rechnet. Neue
+Blätter sind metrisch. Schaltest du um, ändern sich nur die Zahlen vor dir,
+nicht dein Charakter: Aus 9 m Bewegung werden 30 Fuß, aus 18 m Dunkelsicht
+60 Fuß. Am Spieltisch bleibt alles, wie es war.
+
+### Was am Tisch immer geht
+
+Im Reiter *Kampf* liegt hinter **„Was am Tisch immer geht“** die Liste der
+Standardhandlungen: Angreifen, Spurt, Ausweichen, Verstecken, Ringen, Stoßen
+und die übrigen, mit je einem Satz dazu. Nachschlagen musst du dafür nichts.
+
+Darunter trägst du ein, was **dein** Charakter kann und was es kostet –
+Handauflegen als Bonusaktion, Zweiter Wind, eine Reaktion.
 
 ### Was das Blatt für dich mitdenkt
 
@@ -106,7 +122,13 @@ abtippen.
   ein – der Schwierigkeitsgrad ergibt sich daraus, und der Wurf sagt dir, ob
   der Zauber hält.
 - **Stufe.** Die Erfahrung verrät, welche Stufe dir zusteht; ein Knopf setzt
-  sie.
+  sie. Spielt ihr nach Meilensteinen, stell das unter *Aufstieg* um – dann
+  zählt niemand Punkte.
+- **Passive Werte.** Wahrnehmung, Motiverkennung und Nachforschung rechnen
+  sich aus deinen Fertigkeiten. Die Spielleitung schlägt sie nach, wenn sie
+  nicht verraten will, dass überhaupt etwas zu bemerken war.
+- **Traglast.** Unter *Inventar* steht, was du trägst, ab wann du überladen
+  bist und was du noch schieben oder heben kannst – gerechnet aus Stärke.
 
 ---
 
