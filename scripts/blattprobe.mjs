@@ -28,10 +28,24 @@ import {
   weiteNachFuss,
   withDefaults,
 } from '../frontend/src/lib/dnd5e.js';
+import { HELDEN } from '../backend/src/vorlagen/helden.js';
+import { blattAus, ATTRIBUTE, FERTIGKEITEN } from '../backend/src/vorlagen/bauen.js';
 
 let ok = 0;
 const fehler = [];
 const pruefe = (bedingung, was) => (bedingung ? ok++ : fehler.push(was));
+/**
+ * Zum Vergleichen zweier Blätter: `withDefaults` setzt die Felder neu
+ * zusammen und ordnet die Schlüssel dabei um. Das ist keine Änderung am
+ * Inhalt – also wird sortiert, bevor verglichen wird.
+ */
+const kanonisch = (wert) =>
+  JSON.stringify(wert, (_schluessel, v) =>
+    v && typeof v === 'object' && !Array.isArray(v)
+      ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, v[k]]))
+      : v
+  );
+
 const gleich = (ist, soll, was) =>
   pruefe(JSON.stringify(ist) === JSON.stringify(soll), `${was}: erwartet ${JSON.stringify(soll)}, war ${JSON.stringify(ist)}`);
 
@@ -139,6 +153,91 @@ gleich(
   'Auch Attribute allein verraten ein altes Blatt'
 );
 gleich(withDefaults({ playerName: 'Leo' }).units, 'metrisch', 'Ein bloßer Name macht noch kein altes Blatt');
+
+/* --- Die Vorlagen-Charaktere -------------------------------------------- */
+//
+// Zwölf von Hand geschriebene Blätter – da verrechnet man sich. Geprüft wird
+// deshalb, was sich prüfen lässt: die Abdeckung, die Trefferpunkte, der
+// Wertesatz und dass die Oberfläche jedes Blatt ohne Wanderung annimmt.
+{
+  const KLASSEN = [
+    'Barbar', 'Barde', 'Druide', 'Hexenmeister', 'Kämpfer', 'Kleriker',
+    'Magier', 'Mönch', 'Paladin', 'Schurke', 'Waldläufer', 'Zauberer',
+  ];
+  const SPEZIES = [
+    'Aasimar', 'Drachenblütiger', 'Elf', 'Gnom', 'Goliath', 'Halbelf',
+    'Halbling', 'Halbork', 'Mensch', 'Ork', 'Tiefling', 'Zwerg',
+  ];
+  const STANDARDSATZ = [8, 10, 12, 13, 14, 15];
+  const mod = (wert) => Math.floor((wert - 10) / 2);
+
+  gleich(HELDEN.length, 12, 'Es sind zwölf Vorlagen');
+  const deutsch = (liste) => [...liste].sort((a, b) => a.localeCompare(b, 'de'));
+  gleich(deutsch(HELDEN.map((h) => h.klasse)), KLASSEN, 'Jede Klasse kommt genau einmal vor');
+  gleich(deutsch(HELDEN.map((h) => h.spezies)), SPEZIES, 'Jede Spezies kommt genau einmal vor');
+  gleich(new Set(HELDEN.map((h) => h.schluessel)).size, 12, 'Jede Vorlage hat einen eigenen Schlüssel');
+  gleich(new Set(HELDEN.map((h) => h.name)).size, 12, 'Jede Vorlage hat einen eigenen Namen');
+
+  for (const held of HELDEN) {
+    const wer = `${held.name} (${held.spezies} ${held.klasse})`;
+    const blatt = blattAus(held);
+
+    // Der Standardwertesatz, auf den der Hintergrund +2 und +1 legt: Zieht man
+    // die beiden Boni wieder ab, muss 15/14/13/12/10/8 herauskommen.
+    const werte = ATTRIBUTE.map((a) => held.werte[a]);
+    let satzGeht = false;
+    for (let i = 0; i < 6 && !satzGeht; i++) {
+      for (let j = 0; j < 6; j++) {
+        if (i === j) continue;
+        const ohne = [...werte];
+        ohne[i] -= 2;
+        ohne[j] -= 1;
+        if (JSON.stringify([...ohne].sort((a, b) => a - b)) === JSON.stringify(STANDARDSATZ)) satzGeht = true;
+      }
+    }
+    pruefe(satzGeht, `${wer}: Wertesatz ist Standard plus Hintergrund (+2/+1)`);
+
+    // Trefferpunkte: voller Trefferwürfel plus Konstitution, beim Zwerg +1.
+    const wuerfel = Number(held.trefferwuerfel.split('d')[1]);
+    const sollTp = wuerfel + mod(held.werte.con) + (held.spezies === 'Zwerg' ? 1 : 0);
+    gleich(held.trefferpunkte, sollTp, `${wer}: Trefferpunkte`);
+
+    gleich(held.rettungswuerfe.length, 2, `${wer}: genau zwei Rettungswurf-Übungen`);
+    for (const rw of held.rettungswuerfe) pruefe(ATTRIBUTE.includes(rw), `${wer}: Rettungswurf „${rw}“ gibt es`);
+    for (const f of [...held.fertigkeiten, ...(held.expertise ?? [])]) {
+      pruefe(FERTIGKEITEN.includes(f), `${wer}: Fertigkeit „${f}“ gibt es`);
+    }
+
+    pruefe(held.ruestungsklasse >= 10 && held.ruestungsklasse <= 20, `${wer}: Rüstungsklasse ist plausibel`);
+    pruefe(held.ausruestung.length >= 5, `${wer}: hat eine Startausrüstung`);
+    pruefe(held.ausruestung.every((g) => typeof g.weight === 'number'), `${wer}: jedes Gewicht ist eine Zahl`);
+    pruefe(held.angriffe.length >= 1, `${wer}: hat mindestens einen Angriff`);
+    pruefe(held.merkmale.length >= 4, `${wer}: hat Merkmale`);
+    pruefe(held.wesen.backstory.length > 200, `${wer}: hat eine eigene Vorgeschichte`);
+    pruefe(Object.values(held.aussehen).every(Boolean), `${wer}: Aussehen ist vollständig`);
+    pruefe((held.muenzen.gp ?? 0) > 0, `${wer}: hat Startgold`);
+
+    // Wer zaubert, hat Zauber; wer nicht zaubert, hat keine.
+    const zaubert = ['Barde', 'Druide', 'Hexenmeister', 'Kleriker', 'Magier', 'Paladin', 'Waldläufer', 'Zauberer'];
+    if (zaubert.includes(held.klasse)) {
+      pruefe(blatt.spellcasting.spells.length > 0, `${wer}: hat Zauber`);
+      pruefe(blatt.spellcasting.slots[1].max > 0, `${wer}: hat einen Zauberplatz`);
+      pruefe(
+        blatt.spellcasting.spells.every((z) => z.time && z.range && z.duration),
+        `${wer}: jeder Zauber trägt Zeit, Reichweite und Dauer`
+      );
+    }
+
+    // Das Wichtigste: Die Oberfläche nimmt das Blatt, wie es ist. Ergänzt wird
+    // nur `mini` – das Feld einer längst entfernten Figurenschmiede.
+    const durch = withDefaults(blatt);
+    delete durch.mini;
+    gleich(kanonisch(durch), kanonisch(blatt), `${wer}: braucht keine Wanderung`);
+    gleich(durch.units, 'metrisch', `${wer}: rechnet metrisch`);
+    gleich(durch.level, 1, `${wer}: steht auf Stufe 1`);
+  }
+}
+
 
 console.log('');
 if (fehler.length === 0) {

@@ -21,6 +21,7 @@ import mapsRouter from './routes/maps.js';
 import mediaRouter from './routes/media.js';
 import notesRouter from './routes/notes.js';
 import scenesRouter from './routes/scenes.js';
+import { saeVorlagen } from './vorlagen/index.js';
 import stashRouter from './routes/stash.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -135,6 +136,10 @@ function localAddresses() {
     .map((iface) => iface.address);
 }
 
+// Beim allerersten Start liegen zwölf fertige Charaktere hinter dem Schirm –
+// einer je Klasse, einer je Spezies. Danach nie wieder von selbst.
+const saat = saeVorlagen();
+
 app.listen(PORT, () => {
   console.log('');
   console.log('  Abenteuer-Almanach läuft');
@@ -143,6 +148,10 @@ app.listen(PORT, () => {
   console.log(`  Auf diesem PC  : http://localhost:${PORT}`);
   for (const address of localAddresses()) {
     console.log(`  Im Netzwerk    : http://${address}:${PORT}   (für iPad/iPhone)`);
+  }
+  if (saat.gesaet > 0) {
+    console.log('');
+    console.log(`  ${saat.gesaet} Vorlagen-Charaktere angelegt – sie liegen als NSC hinter dem Schirm.`);
   }
   if (countUsers() === 0) {
     console.log('');

@@ -343,6 +343,7 @@ Entfernung lässt du den Tunnel auf dem Pi laufen – oder du gehst
 | Starten | läuft schon | `npm start` |
 | Adresse anzeigen | `npm run adresse` | `npm run adresse` |
 | Sichern | `docker compose exec dnd-manager node scripts/sicherung.mjs` | `npm run sicherung` |
+| Vorlagen nachlegen | `docker compose exec dnd-manager node scripts/vorlagen.mjs` | `npm run vorlagen` |
 | Aktualisieren | `git pull && docker compose up -d --build` | `git pull && npm start` |
 | Datenordner | im Docker-Volume `dnd-manager-data` | `backend/data` neben dem Programm |
 

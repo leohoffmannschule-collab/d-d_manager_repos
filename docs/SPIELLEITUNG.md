@@ -106,13 +106,31 @@ holst“.
 Verknüpfst du später eine Figur auf der Karte damit, gelten die Sinne des
 NSC für ihre Sicht – praktisch für den Späher mit Dunkelsicht.
 
-### 3.4 Notizen und Handzettel
+### 3.4 Die zwölf Vorlagen austeilen
+
+Hinter deinem Schirm liegen von Anfang an **zwölf fertige Charaktere** – je
+einer für jede Klasse und jede Spezies, auf Stufe 1, mit Startausrüstung,
+Merkmalen, Zaubern und eigener Vorgeschichte. Sie sind für Leute gedacht, die
+am Spielabend mitspielen wollen, ohne vorher eine Stunde zu bauen.
+
+So gibst du eine aus:
+
+1. *Charaktere* → unter **Hinter dem Schirm** die passende Vorlage suchen.
+2. **Abschrift** anklicken. Die Kopie gehört dir und ist kein NSC-Blatt mehr.
+3. *Spielleitung → Runde*: die Abschrift der Spielerin zuweisen.
+
+Die Vorlage selbst bleibt liegen – du kannst dieselbe zweimal ausgeben.
+
+> Löschst du eine Vorlage, ist sie fort und wächst nicht nach. Zurückholen:
+> `npm run vorlagen` auf dem Rechner, auf dem der Almanach läuft.
+
+### 3.5 Notizen und Handzettel
 
 *Spielleitung → Notizen.* Titel, Text, Schlagworte, durchsuchbar. Was du
 später austeilen willst – den Brief des Barons, die Karte des Schmugglers –
 schreibst du hier hin. Ausgeteilt wird erst am Abend.
 
-### 3.5 Klang
+### 3.6 Klang
 
 *Spielleitung → Klang.* Spotify-Link einfügen, benennen, verschlagworten.
 Hängst du eine Ambiente an eine Karte, legt sie sich mit der Karte auf – die

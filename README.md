@@ -47,6 +47,10 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
   Reichweite, Komponenten und Dauer (mit Suche im Kompendium), Aussehen und Person, Merkmale nach
   Herkunft mit Quelle und Seite. Wahlweise in **Metern und Kilogramm oder Fuß und Pfund**, und wahlweise
   nach Erfahrungspunkten oder Meilensteinen. Dazu ein **generisches Blatt** für andere Systeme.
+- **Zwölf fertige Vorlagen** liegen vom ersten Start an hinter dem Schirm: je eine für jede Klasse und jede
+  Spezies (die zehn aus dem Regelwerk von 2024, dazu Halbelf und Halbork), auf Stufe 1, mit Startausrüstung,
+  Merkmalen samt Quelle und Seite, Zaubern mit allen Spalten und einer eigenen Vorgeschichte. Wer mitspielen
+  will, ohne vorher eine Stunde zu bauen, bekommt von der Spielleitung eine **Abschrift** – die gehört dann ihm.
 - **Eigene Blätter bearbeiten, fremde lesen** – wer in der Runde ist, sieht die Werte der Gefährten,
   schreiben darf nur die Besitzerin (und die Spielleitung).
 - **Spieltisch**: Karte schieben und zoomen, die eigene Figur ziehen (sie schnappt aufs Raster ein),
@@ -369,6 +373,8 @@ backend/    Node.js + Express, SQLite über das eingebaute node:sqlite
                              Würfel, Szenen/Figuren/Nebel, Karten- und Klangbibliothek,
                              Bilder, Beute, Chronik,
                              Kompendium-Zwischenspeicher
+            src/vorlagen/    die zwölf fertigen Charaktere und ihre Saat
+            scripts/vorlagen.mjs  gelöschte Vorlagen nachlegen
 design/     Die Design-Entwürfe (Artboards) zum mittelalterlichen Erscheinungsbild
 scripts/    Hilfsskripte, plattformunabhängig in Node geschrieben
             start.mjs        prüfen, bauen, starten – der Weg ohne Docker
@@ -395,6 +401,7 @@ Nützliche Befehle im Projektstamm:
 | `npm run serve`     | Nur den Server starten (ohne zu bauen)                                |
 | `npm run vertrag`   | Die Schnittstelle gegen einen eigenen Testserver prüfen               |
 | `npm run blattprobe`| Nachrechnen, was das Charakterblatt ausrechnet                        |
+| `npm run vorlagen`  | Gelöschte Vorlagen-Charaktere nachlegen                               |
 
 `npm start` nimmt außerdem `-- --neu-bauen` (Bau erzwingen) und `-- --ohne-bau` (Bau überspringen).
 
