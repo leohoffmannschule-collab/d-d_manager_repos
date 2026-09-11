@@ -8,9 +8,9 @@
  *   DOMAENE=www.deinemudda.fun
  *
  * Danach heißt der Almanach für alle immer gleich – gleichgültig, in welchem
- * Netz der Rechner gerade steht. Getragen wird die Adresse vom eigenen
- * Vorposten (`npm run tunnel` mit gesetztem `TUNNEL_ZIEL`); dieser Wert hier
- * ist nur das, was der Almanach seiner Runde nennt.
+ * Netz der Rechner gerade steht. Getragen wird die Adresse vom *benannten*
+ * Tunnel (`npm run tunnel` mit gesetztem `TUNNEL_TOKEN`); dieser Wert hier ist
+ * nur das, was der Almanach der Runde nennt.
  *
  * Geschrieben werden darf sie, wie man sie in den Browser tippt: mit oder ohne
  * `https://`, mit oder ohne Schrägstrich am Ende.

@@ -33,13 +33,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = Number(process.env.PORT) || 3001;
 
-// Vor dem Almanach steht entweder gar nichts oder ein Weg nach außen: der
-// Schnelltunnel oder die Leitung zum eigenen Vorposten. Beide enden auf
-// diesem Gerät bei localhost, weshalb die Vorgabe `loopback` genügt – nur im
-// Container steht der Tunnel als eigener Zwischenschritt davor, dann gehört
-// TRUST_PROXY=1 in die Umgebung. Nur wem wir hier glauben, darf uns sagen,
-// die Anfrage sei über HTTPS gekommen (und erst dann wird das Sitzungs-
-// Plätzchen als `Secure` gesetzt).
+// Vor dem Almanach steht entweder gar nichts oder der Cloudflare-Tunnel.
+// Läuft der als Dienst auf demselben Gerät, meldet er sich von localhost;
+// steckt er in einem eigenen Container, ist er der erste Zwischenschritt –
+// dann gehört TRUST_PROXY=1 in die Umgebung. Nur wem wir hier glauben, darf
+// uns sagen, die Anfrage sei über HTTPS gekommen (und erst dann wird das
+// Sitzungs-Plätzchen als `Secure` gesetzt).
 const TRUST_PROXY = process.env.TRUST_PROXY || 'loopback';
 app.set('trust proxy', /^\d+$/.test(TRUST_PROXY) ? Number(TRUST_PROXY) : TRUST_PROXY);
 

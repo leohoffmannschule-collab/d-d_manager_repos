@@ -240,63 +240,50 @@ welche einzelne Datei du wohin legen musst; installiert wird dabei nichts.
 > **Der Haken:** Die Adresse ist geliehen und **wechselt, wenn der Tunnel neu startet** – nach einem
 > Neustart des Geräts oder einer Aktualisierung. Dann noch einmal `npm run adresse` und die neue
 > Adresse in die Gruppe schicken. Im Alltag passiert das selten; im Heimnetz gilt ohnehin durchgehend
-> die Adresse aus `npm run adresse`. Wen es doch stört: [eine feste Adresse](#eine-feste-adresse-der-eigene-vorposten)
-> kostet nichts extra – nur die Domain.
+> die Adresse aus `npm run adresse`. Wen es doch stört: [eine feste Adresse](#eine-feste-adresse-der-benannte-tunnel)
+> kostet nichts extra und keine Kreditkarte – nur die Domain.
 
 > **Umzug inklusive:** Weil der Tunnel von innen nach außen aufgebaut wird, funktioniert er überall.
 > Nimmst du den Pi zur Runde bei Freunden mit, steckst du ihn dort einfach ins Netz.
 
-### Eine feste Adresse: der eigene Vorposten
+### Eine feste Adresse: der benannte Tunnel
 
-Wem das Weitersagen zu bunt wird, gibt seiner Runde eine Adresse, die nie mehr wechselt – die eigene.
+Wem das Weitersagen zu bunt wird, der nimmt eine **eigene Domain** und einen *benannten* Tunnel. Der
+arbeitet andersherum als der Schnelltunnel: Nicht der Tunnel leiht sich eine Adresse, sondern die
+Adresse gehört dir und der Tunnel meldet sich bei ihr an. Sie bleibt danach über jeden Neustart hinweg
+dieselbe – und sogar dann, wenn der Rechner in einem fremden WLAN steht.
 
-Das Hindernis: Ein Laptop hat keine feste Adresse im Netz, eine Domain kann also nicht auf ihn zeigen.
-Der Ausweg ist ein **Vorposten** – ein kleiner Server, der immer am selben Fleck steht. Auf ihn zeigt
-die Domain, dort liegt das Zertifikat, und weil der Laptop hinausrufen darf, auch wenn niemand
-hineinrufen kann, dreht die Leitung die Richtung um:
+**Kostet nichts, keine Kreditkarte.** Anders als bei den meisten Cloud-Anbietern verlangt Cloudflare
+für Konto oder Tunnel weder eine Zahlungsmethode noch eine Kartenprüfung – die Domain selbst hast du
+ja schon. Auf dem Rechner ist nur ein einziges Programm nötig: **`cloudflared`**, dasselbe, das schon
+den Schnelltunnel oben trägt.
 
-```
-Browser → www.deinemudda.fun → nginx (Vorposten) → SSH-Leitung → dein Laptop
-```
-
-**Kostet nichts** (Oracle verschenkt dauerhaft kleine Server, das Zertifikat kommt von Let's Encrypt),
-**installiert nichts** auf dem Laptop – gebraucht wird nur `ssh`, das Windows 10 und 11, macOS und
-Linux längst mitbringen – und **fasst den Router nicht an**: keine Portfreigabe, kein DynDNS.
-
-Einmalig auf dem Vorposten:
-
-```bash
-sudo bash vorposten.sh www.deinemudda.fun "ssh-ed25519 AAAA… dein@laptop"
-```
-
-Das Skript holt nginx und certbot, legt einen Zugang an, der ausschließlich diese eine Rückleitung
-aufmachen darf, stellt den Live-Kanal puffungsfrei durch und besorgt das Zertifikat.
-
-Danach zwei Zeilen in der `.env` auf dem Laptop:
+Zwei Zeilen in der `.env`, mehr ist es nicht:
 
 ```bash
 DOMAENE=www.deinemudda.fun
-TUNNEL_ZIEL=tunnel@www.deinemudda.fun
+TUNNEL_TOKEN=eyJhIjoiN2Y…     # aus Cloudflare: Zero Trust → Networks → Tunnels
 ```
 
 ```bash
-npm start        # der Almanach
-npm run tunnel   # die Leitung zum Vorposten (baut sich nach Abbrüchen selbst wieder auf)
+docker compose --profile domaene up -d   # mit Docker
+npm run tunnel                           # ohne Docker – sieht das Kennwort und
+                                         # baut den benannten statt des Schnelltunnels
 ```
 
 Danach nennt der Almanach die Adresse schon beim Start, und `npm run adresse` sucht gar nicht mehr
-nach geliehenen – im Protokoll läge sonst womöglich noch eine von vorgestern, und die führte die
-Runde ins Leere. Schritt für Schritt, samt der beiden Oracle-Stolperstellen, steht das im
-[Einrichtungs-Handbuch 6.5](docs/EINRICHTUNG.md#65-die-feste-adresse-eigene-domain-über-einen-vorposten).
+nach geliehenen – im Protokoll läge sonst womöglich noch eine von vorgestern, und die führte die Runde
+ins Leere. Schritt für Schritt, samt der beiden häufigsten Stolperstellen, steht das im
+[Einrichtungs-Handbuch 6.5](docs/EINRICHTUNG.md#65-die-feste-adresse-eigene-domain-ganz-ohne-kreditkarte).
 
 > **Warum nicht Portfreigabe und DynDNS?** Auf einem Laptop ist das der falsche Weg: Es verlangt
 > Zugriff auf den Router, es bricht, sobald der Rechner in einem anderen Netz steht, und bei vielen
-> Anschlüssen gibt der Anbieter gar keine eigene öffentliche Adresse mehr heraus. Der Vorposten
-> umgeht das alles – und nimmt den Umzug gleich mit: Die Leitung trägt aus jedem WLAN.
+> Anschlüssen gibt der Anbieter gar keine eigene öffentliche Adresse mehr heraus. Der Tunnel umgeht
+> das alles – kein Router, keine Portfreigabe, kein Zertifikat zum Erneuern.
 
-Auf dem Vorposten liegt übrigens nichts von euch. Charaktere, Karten, Chronik und Bildnisse bleiben
-auf dem Laptop; dort stehen nur nginx und das Zertifikat. Geht er verloren, ist er in zehn Minuten
-neu angelegt.
+Der andere Weg zu einer festen Adresse ist **[Tailscale](https://tailscale.com/)** – kostenlos, ohne
+Kreditkarte, echtes HTTPS. Der Haken: Die Adresse heißt dann `*.ts.net` statt der eigenen Domain, und
+**jeder Mitspieler muss Tailscale installieren**; der Tunnel oben braucht bei ihnen nur einen Browser.
 
 ## Zugriff von iPad und iPhone
 
@@ -353,8 +340,7 @@ nebeneinander; über die Liste rechts wechselst du zwischen ihnen.
 | `PORT`           | `3001`                             | Port des Servers                                                  |
 | `DATA_DIR`       | `backend/data`                     | Ablageort von Datenbank und hochgeladenen Bildern                 |
 | `DOMAENE`        | leer                               | Feste Adresse der Runde, nur der nackte Name (`www.deinemudda.fun`) |
-| `TUNNEL_ZIEL`    | leer                               | Der Vorposten, bei dem sich dieser Rechner meldet (`tunnel@www.deinemudda.fun`) |
-| `TUNNEL_FERNPORT`| wie `PORT`                         | Port, an dem der Almanach auf dem Vorposten hängt – nur nötig, wenn 3001 dort belegt ist |
+| `TUNNEL_TOKEN`   | leer                               | Kennwort des benannten Tunnels, der diese Domain trägt – **ein Kennwort, nicht ins Git** |
 | `DND5E_API_BASE` | `https://www.dnd5eapi.co/api/2014` | Basis-URL der D&D-5e-API (Regelwerk-Version)                      |
 | `TRUST_PROXY`    | `loopback`                         | `1`, wenn ein Tunnel im eigenen Container davorsteht (siehe Compose) |
 | `CLOUDFLARED`    | leer                               | Pfad zu `cloudflared`, falls es nicht im Suchpfad liegt (nur `npm run tunnel`) |
@@ -434,8 +420,7 @@ scripts/    Hilfsskripte, plattformunabhängig in Node geschrieben
             start.mjs        prüfen, bauen, starten – der Weg ohne Docker
             adresse.mjs      unter welchen Adressen der Almanach erreichbar ist
             tunnel.mjs       den Weg nach außen ohne Docker aufmachen –
-                             Schnelltunnel, mit `TUNNEL_ZIEL` zum eigenen Vorposten
-            vorposten.sh     den Vorposten einrichten (läuft dort, nicht hier)
+                             Schnelltunnel, mit `TUNNEL_TOKEN` der benannte
             vertrag.mjs      die Schnittstelle gegen einen eigenen Testserver prüfen
             blattprobe.mjs   nachrechnen, was das Charakterblatt ausrechnet
 starten.cmd / starten.sh     den Almanach starten, zum Doppelklicken
@@ -449,7 +434,7 @@ Nützliche Befehle im Projektstamm:
 | `npm start`         | Alles in einem: nachinstallieren, bauen (falls nötig), starten (3001) |
 | `npm run pruefen`   | Nur nachsehen: Node, Bausteine, Bau, Datenordner, Port                |
 | `npm run adresse`   | Unter welchen Adressen der Almanach gerade erreichbar ist             |
-| `npm run tunnel`    | Den Weg von außen aufmachen, ohne Docker (`Strg+C` schließt ihn); mit `TUNNEL_ZIEL` die Leitung zum eigenen Vorposten |
+| `npm run tunnel`    | Den Weg von außen aufmachen, ohne Docker (`Strg+C` schließt ihn); mit `TUNNEL_TOKEN` den benannten Tunnel auf die eigene Domain |
 | `npm run sicherung` | Datenbank sichern; `-- --medien` nimmt Karten und Bildnisse mit       |
 | `npm run drucksatz` | Die Handbücher druckfertig setzen (`docs/druck/`, dann Strg+P → PDF)  |
 | `npm run setup`     | Abhängigkeiten für Backend und Frontend installieren                  |

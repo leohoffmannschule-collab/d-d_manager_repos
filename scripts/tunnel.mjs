@@ -23,14 +23,15 @@
  * Wer einen bestimmten Weg erzwingen will: TUNNEL_ANBIETER=cloudflared,
  * TUNNEL_ANBIETER=ssh oder TUNNEL_ANBIETER=localtunnel vor den Befehl stellen.
  *
- * **Mit einem TUNNEL_ZIEL läuft es andersherum.** Dann wird nichts geliehen:
- * Der Almanach ruft den eigenen Vorposten an – einen kleinen Server, auf den
- * die eigene Domain zeigt – und hängt sich dort in dessen nginx. Die Adresse
- * wechselt nie wieder, gleichgültig in welchem Netz der Rechner steht, und die
- * Runde tippt vor jedem Spielabend dieselbe. Gebraucht wird dafür nur `ssh`,
- * das ohnehin auf dem Rechner liegt – heruntergeladen wird nichts.
- * Eingerichtet wird der Vorposten einmal mit `scripts/vorposten.sh`; siehe
- * docs/EINRICHTUNG.md, Schritt 6.5.
+ * **Mit einem TUNNEL_TOKEN läuft es andersherum.** Dann wird nichts geliehen:
+ * Cloudflare weiß aus dem Kennwort, welcher *benannte* Tunnel das ist und
+ * welche Domain daran hängt, und der Almanach meldet sich dort an statt sich
+ * eine Adresse zu leihen. Die Adresse wechselt nie wieder, gleichgültig in
+ * welchem Netz der Rechner steht, und die Runde tippt vor jedem Spielabend
+ * dieselbe. Gebraucht wird dafür `cloudflared` – dasselbe Programm wie oben
+ * unter 1., nur mit eigenem Kennwort statt geliehener Adresse. Einrichtung
+ * einmalig, kostenlos und ganz ohne Kreditkarte: docs/EINRICHTUNG.md,
+ * Schritt 6.5.
  *
  * Auf dem Pi macht den Schnelltunnel der Container aus docker-compose.yml.
  * Auf einem Laptop gibt es keinen Container – dieses Skript startet das
@@ -226,144 +227,111 @@ function anleitung() {
   sagen('');
 }
 
-/* --- Der eigene Vorposten: SSH-Rücktunnel --------------------------------- */
+/* --- Der benannte Tunnel: die eigene Domain ------------------------------- */
 
 /**
- * Der Weg zur eigenen Domain, ohne auf diesem Rechner irgendetwas zu
- * installieren.
+ * Hier wird nichts geliehen. Das Kennwort sagt Cloudflare, welcher Tunnel das
+ * ist und welche Domain daran hängt – es gibt also keine Adresse mitzulesen
+ * und keine weiterzusagen. Was bleibt, ist die Leitung offenzuhalten.
  *
- * Ein Laptop hat keine feste Adresse im Netz: Er steht mal hier, mal dort,
- * meist hinter einem Router, der ihm gar keine eigene öffentliche Adresse
- * gibt. Die Domain kann also nicht auf ihn zeigen. Sie zeigt stattdessen auf
- * einen **Vorposten** – einen kleinen Server, der immer am selben Fleck steht
- * (bei Oracle ist so einer dauerhaft kostenlos). Dort liegen die Domain, das
- * Zertifikat und ein nginx.
- *
- * Und weil der Laptop hinausrufen darf, auch wenn niemand hineinrufen kann,
- * dreht dieser Tunnel die Richtung um: Der Laptop ruft beim Vorposten an
- * (`ssh -R`) und sagt ihm dabei, er möge alles, was auf seinem Port 3001
- * ankommt, durch diese Leitung zurückschicken. nginx auf dem Vorposten reicht
- * die Anfragen von der Domain genau dorthin.
- *
- *   Browser → www.deinemudda.fun → nginx (Vorposten) → SSH-Leitung → Almanach
- *
- * Gebraucht wird dafür nur `ssh`, und das bringt Windows 10 und 11, macOS und
- * Linux längst mit. **Auf diesem Rechner wird nichts heruntergeladen und nichts
- * installiert** – genau der Punkt, an dem cloudflared und Tailscale scheitern.
- *
- * Eingerichtet wird der Vorposten einmal, mit `scripts/vorposten.sh`; siehe
- * docs/EINRICHTUNG.md, Schritt 6.5.
+ * Nur cloudflared kann das: Die beiden Notwege (ssh, localtunnel) tragen
+ * fremde Adressen, an eine eigene Domain kommen sie nicht heran. Anders als
+ * beim Schnelltunnel ist hier aber auch kein Server nötig, auf den die Domain
+ * zeigt – Cloudflares eigenes Netz übernimmt das, kostenlos und ohne
+ * Kreditkarte. Einrichtung einmalig: docs/EINRICHTUNG.md, Schritt 6.5.
  */
-
-/** Zwischen zwei Versuchen – wächst, damit ein totes Ziel nicht gehämmert wird. */
-const WARTEN = [2, 5, 10, 20, 30, 60];
-
-function vpsTunnel() {
-  const ziel = process.env.TUNNEL_ZIEL;
-  const fern = Number(process.env.TUNNEL_FERNPORT) || PORT;
-
-  if (!laeuft('ssh', ['-V'])) {
+function benannterTunnel() {
+  const pfad = findeCloudflared();
+  if (!pfad) {
     sagen('');
-    sagen('  Für den eigenen Vorposten braucht es `ssh` – und das meldet sich');
-    sagen('  auf diesem Rechner nicht. Ungewöhnlich: Windows 10 und 11, macOS');
-    sagen('  und Linux bringen es alle mit.');
+    sagen('  Für die eigene Domain braucht es cloudflared – hier fehlt es noch.');
+    sagen('  ssh und localtunnel helfen nicht weiter: Die tragen fremde');
+    sagen('  Adressen, keine eigene.');
     sagen('');
-    sagen('  Unter Windows nachrüsten, ohne etwas herunterzuladen:');
-    sagen('    Einstellungen → System → Optionale Features → Feature hinzufügen');
-    sagen('    → OpenSSH-Client. Danach ein neues Fenster öffnen.');
+    if (hatDocker()) {
+      sagen('  Docker ist da – dann geht es über den Container:');
+      sagen('    docker compose --profile domaene up -d');
+      sagen('');
+    }
+    cloudflaredHolen();
     sagen('');
     process.exit(1);
   }
 
-  const adresse = festeAdresse();
+  const ziel = festeAdresse();
+  fs.mkdirSync(datenordner, { recursive: true });
+  const schreiber = fs.createWriteStream(protokoll, { flags: 'w' });
 
   sagen('');
-  if (adresse.adresse) {
+  sagen(`  Baue den benannten Tunnel zu http://localhost:${PORT} auf …`);
+  sagen('');
+  if (ziel.adresse) {
     sagen('  Die Runde erreicht den Almanach unter:');
     sagen('');
-    sagen(`    ${adresse.adresse}`);
+    sagen(`    ${ziel.adresse}`);
     sagen('');
     sagen('  Diese Adresse gehört dir und wechselt nicht mehr – auch nicht nach');
-    sagen('  einem Neustart und auch nicht in einem fremden WLAN.');
+    sagen('  einem Neustart und auch nicht in einem fremden WLAN. Einmal');
+    sagen('  weitersagen genügt.');
   } else {
-    sagen('  Es ist keine DOMAENE eingetragen. Der Tunnel steht gleich, aber der');
-    sagen('  Almanach kann seiner Runde die Adresse nicht selbst nennen:');
+    sagen('  Welche Domain daran hängt, weiß Cloudflare aus dem Kennwort.');
+    sagen('  Damit der Almanach sie selbst nennen kann, gehört sie in die .env:');
     sagen('    DOMAENE=www.deinemudda.fun');
   }
   sagen('');
-  sagen(`  Leitung: ${ziel}, dort Port ${fern} → hier Port ${PORT}`);
   sagen('  (Beenden mit Strg+C. Der Almanach läuft davon unbeirrt weiter.)');
   sagen('');
-  // Kein "fertig" an dieser Stelle: `ssh -N` schweigt, wenn es klappt, und
-  // sagt nur etwas, wenn es schiefgeht. Eine Erfolgsmeldung wäre geraten.
-  sagen('  Baue die Leitung auf … Bleibt es still, steht sie.');
-  sagen('');
 
-  let versuch = 0;
-  let aufgeben = false;
-  let seitStart = 0;
-  let laeuftGerade = null;
+  // Das Kennwort geht über die Umgebung, nicht über die Befehlszeile:
+  // cloudflared liest `--token` auch aus TUNNEL_TOKEN, und was in der
+  // Befehlszeile steht, könnte auf einem gemeinsam genutzten Rechner jeder
+  // in der Prozessliste mitlesen.
+  const tunnel = spawn(pfad, ['tunnel', '--no-autoupdate', 'run'], {
+    stdio: ['ignore', 'pipe', 'pipe'],
+    env: process.env,
+  });
 
-  // Einmal anmelden, nicht bei jedem Neuverbinden: Sonst stapeln sich die
-  // Zuhörer, bis Node über zu viele klagt.
+  // Ob das Kennwort taugt, zeigt sich erst an der ersten stehenden Verbindung.
+  // Bis dahin sieht ein falsches genauso aus wie ein richtiges.
+  let steht = false;
+  function mitlesen(stueck) {
+    const text = stueck.toString();
+    schreiber.write(text);
+    if (steht || !/Registered tunnel connection|Connection .* registered/i.test(text)) return;
+    steht = true;
+    sagen('  Die Leitung steht. Ab jetzt kommt die Runde herein.');
+    sagen('');
+  }
+
+  tunnel.stdout.on('data', mitlesen);
+  tunnel.stderr.on('data', mitlesen);
+
   for (const zeichen of ['SIGINT', 'SIGTERM']) {
-    process.on(zeichen, () => {
-      aufgeben = true;
-      laeuftGerade?.kill(zeichen);
-    });
+    process.on(zeichen, () => tunnel.kill(zeichen));
   }
 
-  function verbinden() {
-    seitStart = Date.now();
-    // -N: kein Befehl auf dem Vorposten, nur die Leitung. Genau deshalb genügt
-    //     dort ein Benutzer ganz ohne Anmeldeschale.
-    // ExitOnForwardFailure: lieber sofort abbrechen als eine Leitung offen
-    //     halten, durch die nichts kommt – sonst stünde die Runde vor einem
-    //     502 und hier sähe alles gut aus.
-    const tunnel = spawn(
-      'ssh',
-      [
-        '-N',
-        '-o', 'ExitOnForwardFailure=yes',
-        '-o', 'ServerAliveInterval=30',
-        '-o', 'ServerAliveCountMax=3',
-        '-o', 'StrictHostKeyChecking=accept-new',
-        '-R', `${fern}:localhost:${PORT}`,
-        ziel,
-      ],
-      { stdio: ['ignore', 'inherit', 'inherit'] }
-    );
-    laeuftGerade = tunnel;
-
-    tunnel.on('exit', (code, signal) => {
-      if (aufgeben || signal) {
+  tunnel.on('exit', (code, signal) => {
+    schreiber.end();
+    if (signal) {
+      sagen('');
+      sagen('  Tunnel geschlossen. Von außen kommt jetzt niemand mehr herein.');
+      sagen('');
+      process.exit(0);
+    }
+    if (code !== 0) {
+      sagen('');
+      sagen(`  cloudflared hat aufgegeben (Code ${code}). Das Protokoll steht in:`);
+      sagen(`    ${protokoll}`);
+      if (!steht) {
         sagen('');
-        sagen('  Tunnel geschlossen. Von außen kommt jetzt niemand mehr herein.');
-        sagen('');
-        process.exit(0);
+        sagen('  Die Verbindung kam nie zustande – meist stimmt das TUNNEL_TOKEN');
+        sagen('  nicht. In Cloudflare unter Zero Trust → Networks → Tunnels das');
+        sagen('  Kennwort noch einmal kopieren und in die .env übernehmen.');
       }
-
-      // Stand die Leitung eine Weile, war es ein Abbruch und kein Fehler –
-      // dann fangen wir beim kurzen Warten wieder an.
-      if (Date.now() - seitStart > 60_000) versuch = 0;
-
-      if (versuch === 0 && code !== 0) {
-        sagen('');
-        sagen(`  Die Leitung kam nicht zustande (Code ${code}) – die Meldung steht oben.`);
-        sagen('  Meist eine dieser drei Ursachen:');
-        sagen(`    - der Schlüssel liegt nicht beim Vorposten (ssh ${ziel} probieren)`);
-        sagen(`    - Port ${fern} ist dort noch von einer alten Leitung belegt`);
-        sagen('    - TUNNEL_ZIEL stimmt nicht');
-      }
-
-      const pause = WARTEN[Math.min(versuch, WARTEN.length - 1)];
-      versuch += 1;
-      sagen(`  Neuer Versuch in ${pause} s … (Strg+C beendet)`);
-      setTimeout(verbinden, pause * 1000);
-    });
-  }
-
-  verbinden();
+      sagen('');
+    }
+    process.exit(code ?? 0);
+  });
 }
 
 /* --- Der Schnelltunnel: eine geliehene Adresse ---------------------------- */
@@ -453,7 +421,6 @@ function schnellTunnel() {
 
 /* --- Los ------------------------------------------------------------------ */
 
-// Mit eigenem Vorposten gibt es nichts zu wählen: Dann führt genau ein Weg
-// hinaus, und die Adresse steht schon fest.
-if (process.env.TUNNEL_ZIEL) vpsTunnel();
+// Mit eigener Domain gibt es nichts zu wählen: Dann führt genau ein Weg hinaus.
+if (process.env.TUNNEL_TOKEN) benannterTunnel();
 else schnellTunnel();
