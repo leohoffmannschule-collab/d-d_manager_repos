@@ -260,8 +260,8 @@ Browser → www.deinemudda.fun → nginx (Vorposten) → SSH-Leitung → dein La
 ```
 
 **Kostet nichts** (Oracle verschenkt dauerhaft kleine Server, das Zertifikat kommt von Let's Encrypt),
-**installiert nichts** auf dem Laptop – gebraucht wird nur `ssh`, das Windows 10, macOS und Linux
-längst mitbringen – und **fasst den Router nicht an**: keine Portfreigabe, kein DynDNS.
+**installiert nichts** auf dem Laptop – gebraucht wird nur `ssh`, das Windows 10 und 11, macOS und
+Linux längst mitbringen – und **fasst den Router nicht an**: keine Portfreigabe, kein DynDNS.
 
 Einmalig auf dem Vorposten:
 
@@ -438,7 +438,8 @@ scripts/    Hilfsskripte, plattformunabhängig in Node geschrieben
             vorposten.sh     den Vorposten einrichten (läuft dort, nicht hier)
             vertrag.mjs      die Schnittstelle gegen einen eigenen Testserver prüfen
             blattprobe.mjs   nachrechnen, was das Charakterblatt ausrechnet
-starten.cmd / starten.sh     zum Doppelklicken, für alle ohne Terminal
+starten.cmd / starten.sh     den Almanach starten, zum Doppelklicken
+tunnel.cmd  / tunnel.sh      die Leitung nach außen, zum Doppelklicken
 ```
 
 Nützliche Befehle im Projektstamm:

@@ -506,8 +506,8 @@ Browser → www.deinemudda.fun → nginx (Vorposten) → SSH-Leitung → dein La
 | | |
 | --- | --- |
 | **Kostet** | nichts. Oracle verschenkt dauerhaft kleine Server („Always Free“), das Zertifikat kommt von Let's Encrypt. Die Domain hast du schon. |
-| **Auf dem Laptop zu installieren** | **nichts.** Gebraucht wird nur `ssh`, und das bringen Windows 10, macOS und Linux längst mit. |
-| **Router** | wird nicht angefasst. Keine Portfreigabe, keine DynDNS. |
+| **Auf dem Laptop zu installieren** | **nichts.** Gebraucht wird nur `ssh`, und das bringen Windows 10 und 11, macOS und Linux längst mit. |
+| **Router** | wird **nicht angefasst**. Keine Portfreigabe, keine DynDNS, keine Einstellung – auch dann nicht, wenn der Router gar nicht dir gehört. Die Leitung wird von innen nach außen aufgebaut, und hinaus darf jeder Rechner. |
 | **Umzug** | inklusive. Die Leitung wird von innen nach außen aufgebaut, also trägt sie aus jedem WLAN. |
 
 > **Warum nicht einfach Portfreigabe und DynDNS?** Das wäre der klassische Weg,
@@ -519,27 +519,36 @@ Browser → www.deinemudda.fun → nginx (Vorposten) → SSH-Leitung → dein La
 #### Schritt 1: Den Schlüssel auf dem Laptop
 
 Damit der Laptop sich beim Vorposten ausweisen kann, braucht er ein
-Schlüsselpaar. Das legt `ssh` selbst an – nichts zu holen:
+Schlüsselpaar. Das legt `ssh` selbst an – **zu holen ist dafür nichts**:
+Windows 11 bringt den OpenSSH-Client von Haus aus mit, macOS und Linux
+ohnehin.
 
-```bash
+**Windows 11** – Eingabeaufforderung öffnen (Startmenü, `cmd` tippen):
+
+```
 ssh-keygen -t ed25519
-```
-
-Dreimal Enter (kein Kennwort nötig). Danach den **öffentlichen** Teil anzeigen
-und in die Zwischenablage nehmen:
-
-```bash
-cat ~/.ssh/id_ed25519.pub
-```
-
-Unter Windows in der Eingabeaufforderung:
-
-```
 type %USERPROFILE%\.ssh\id_ed25519.pub
 ```
 
-Das ist eine Zeile, die mit `ssh-ed25519 AAAA…` beginnt. Sie darf jeder sehen –
-der geheime Teil (ohne `.pub`) bleibt auf dem Laptop.
+**macOS und Linux:**
+
+```bash
+ssh-keygen -t ed25519
+cat ~/.ssh/id_ed25519.pub
+```
+
+Beim `ssh-keygen` dreimal Enter drücken – ein Kennwort auf dem Schlüssel
+brauchst du nicht, sonst musst du es vor jedem Spielabend eintippen.
+
+Der zweite Befehl zeigt eine Zeile, die mit `ssh-ed25519 AAAA…` beginnt und
+mit deinem Benutzernamen endet. **Die** wird gleich gebraucht, also gleich
+markieren und kopieren. Sie darf jeder sehen; der geheime Teil liegt in der
+Datei ohne `.pub` daneben und bleibt, wo er ist.
+
+> **Sagt Windows `ssh-keygen wird nicht als Befehl erkannt`?** Dann fehlt der
+> OpenSSH-Client – bei Windows 11 selten, aber möglich. Nachrüsten ohne
+> Download: *Einstellungen → System → Optionale Features → Feature hinzufügen*
+> → **OpenSSH-Client**. Danach ein neues Fenster öffnen.
 
 #### Schritt 2: Den Vorposten bei Oracle anlegen
 
@@ -625,25 +634,43 @@ Am Ende steht dort, was auf dem Laptop in die `.env` gehört.
 
 #### Schritt 6: Den Laptop anschließen
 
-Im Ordner des Almanachs:
+Im Ordner des Almanachs die Vorlage für die eigenen Einstellungen kopieren –
+**Windows 11** in der Eingabeaufforderung:
+
+```
+copy .env.example .env
+notepad .env
+```
+
+macOS und Linux:
 
 ```bash
 cp .env.example .env
 ```
 
-Und in der `.env` diese zwei Zeilen füllen:
+In der `.env` diese zwei Zeilen füllen, den Rest stehen lassen:
 
 ```
 DOMAENE=www.deinemudda.fun
 TUNNEL_ZIEL=tunnel@www.deinemudda.fun
 ```
 
-Dann, in zwei Fenstern:
+> **Windows und die Dateiendung.** Der Explorer versteckt bekannte Endungen,
+> und Notepad hängt beim Speichern gern `.txt` an – aus `.env` wird dann
+> `.env.txt`, und der Almanach findet nichts. Der `copy`-Befehl oben umgeht
+> das, weil die Datei schon richtig heißt, bevor Notepad sie öffnet. Zur
+> Kontrolle: `npm run pruefen` zeigt unter *Feste Adresse*, was angekommen ist.
+
+Dann **zwei Fenster** – erst der Almanach, dann die Leitung:
 
 ```bash
-npm start        # der Almanach
-npm run tunnel   # die Leitung zum Vorposten
+npm start        # Fenster 1: der Almanach
+npm run tunnel   # Fenster 2: die Leitung zum Vorposten
 ```
+
+Wer lieber klickt, hat für beides eine Datei zum Doppelklicken: erst
+**`starten.cmd`**, dann **`tunnel.cmd`** (unter macOS und Linux `./starten.sh`
+und `./tunnel.sh`).
 
 Das zweite Fenster sagt:
 
@@ -655,8 +682,13 @@ Das zweite Fenster sagt:
   Baue die Leitung auf … Bleibt es still, steht sie.
 ```
 
-Das war es. **Ab jetzt vor jedem Spielabend nur noch diese zwei Befehle** – die
+Das war es. **Ab jetzt vor jedem Spielabend nur diese zwei Fenster** – die
 Adresse bleibt.
+
+> **Der Laptop darf nicht einschlafen.** Klappt er zu, nimmt er die ganze Runde
+> mit. Unter Windows 11: *Einstellungen → System → Netzbetrieb und
+> Energiesparen → Bildschirm und Ruhezustand*, dort im Netzbetrieb beides auf
+> **Nie**, solange gespielt wird.
 
 #### Was sich danach ändert
 
@@ -689,6 +721,16 @@ Port 3001 aufmachen. Keine Anmeldeschale, kein Dateizugriff, sonst nichts.
 | Am Tisch kommt alles verspätet an | nginx puffert den Live-Kanal. Das Skript stellt das ab; wurde die Datei von Hand geändert, muss `proxy_buffering off;` wieder hinein. |
 | Das Zertifikat ist abgelaufen | certbot erneuert selbst. Nachsehen mit `sudo certbot renew --dry-run` auf dem Vorposten. |
 | Anmeldung hält nicht | Der Almanach hält die Verbindung für unverschlüsselt. Auf dem Laptop ist die Vorgabe richtig; nur wenn du `TRUST_PROXY` von Hand gesetzt hast, gehört dort wieder `loopback` hin. |
+
+**Und was nur unter Windows vorkommt:**
+
+| Bild | Woran es liegt |
+| --- | --- |
+| `ssh-keygen wird nicht als Befehl erkannt` | Der OpenSSH-Client fehlt. *Einstellungen → System → Optionale Features → Feature hinzufügen → OpenSSH-Client*, dann ein neues Fenster öffnen. Nichts herunterzuladen. |
+| `UNPROTECTED PRIVATE KEY FILE` oder `bad permissions` | Die Schlüsseldatei darf zu vielen gehören – das passiert, wenn man sie von woanders hereinkopiert hat. Rechtsklick auf `id_ed25519` → *Eigenschaften → Sicherheit → Erweitert → Vererbung deaktivieren*, dann alle Einträge außer deinem eigenen Benutzer entfernen. Oder einfacher: mit `ssh-keygen` einen neuen anlegen und Schritt 5 wiederholen. |
+| Die `.env` wird nicht gelesen | Notepad hat `.env.txt` daraus gemacht. Im Explorer unter *Ansicht → Anzeigen → Dateinamenerweiterungen* einschalten und nachsehen. `npm run pruefen` zeigt, was angekommen ist. |
+| `npm.ps1 kann nicht geladen werden` | Die Ausführungsrichtlinie der PowerShell, nicht der Almanach. In der **Eingabeaufforderung** arbeiten statt in der PowerShell – oder gleich `starten.cmd` und `tunnel.cmd` doppelklicken. |
+| Mitten im Spiel bricht alles ab | Der Laptop ist eingeschlafen. Energieoptionen auf **Nie** stellen, siehe Schritt 6. |
 
 ## 7. Musik: Spotify-Links hinterlegen
 
@@ -1049,6 +1091,8 @@ d-d_manager_repos/            der Ordner, den du geholt hast
   ├── .env                    freiwillig: Domain, Tunnel-Kennwort, KI-Rückblick
   ├── starten.cmd             Doppelklick-Start unter Windows
   ├── starten.sh              dasselbe für macOS und Linux
+  ├── tunnel.cmd              die Leitung nach außen, zum Doppelklicken
+  ├── tunnel.sh               dasselbe für macOS und Linux
   ├── backend/public/         die gebaute Oberfläche (entsteht beim Start)
   └── backend/data/           ← der ganze Almanach; nur dieser Ordner zählt
        ├── manager.sqlite3    alles: Konten, Charaktere, Karten, Chronik

@@ -247,8 +247,8 @@ function anleitung() {
  *
  *   Browser → www.deinemudda.fun → nginx (Vorposten) → SSH-Leitung → Almanach
  *
- * Gebraucht wird dafür nur `ssh`, und das bringt Windows 10, macOS und Linux
- * längst mit. **Auf diesem Rechner wird nichts heruntergeladen und nichts
+ * Gebraucht wird dafür nur `ssh`, und das bringt Windows 10 und 11, macOS und
+ * Linux längst mit. **Auf diesem Rechner wird nichts heruntergeladen und nichts
  * installiert** – genau der Punkt, an dem cloudflared und Tailscale scheitern.
  *
  * Eingerichtet wird der Vorposten einmal, mit `scripts/vorposten.sh`; siehe
@@ -265,11 +265,12 @@ function vpsTunnel() {
   if (!laeuft('ssh', ['-V'])) {
     sagen('');
     sagen('  Für den eigenen Vorposten braucht es `ssh` – und das meldet sich');
-    sagen('  auf diesem Rechner nicht. Ungewöhnlich: Windows 10, macOS und');
-    sagen('  Linux bringen es alle mit.');
+    sagen('  auf diesem Rechner nicht. Ungewöhnlich: Windows 10 und 11, macOS');
+    sagen('  und Linux bringen es alle mit.');
     sagen('');
-    sagen('  Unter Windows nachrüsten ohne Download:');
-    sagen('    Einstellungen → Apps → Optionale Features → OpenSSH-Client');
+    sagen('  Unter Windows nachrüsten, ohne etwas herunterzuladen:');
+    sagen('    Einstellungen → System → Optionale Features → Feature hinzufügen');
+    sagen('    → OpenSSH-Client. Danach ein neues Fenster öffnen.');
     sagen('');
     process.exit(1);
   }
