@@ -503,6 +503,11 @@ die Richtung um – der Laptop ruft beim Vorposten an und hält die Leitung offe
 Browser → www.deinemudda.fun → nginx (Vorposten) → SSH-Leitung → dein Laptop
 ```
 
+Die Domain zeigt also auf den **Vorposten**, nicht auf dich. Deine eigene
+IP-Adresse wird nirgends eingetragen und muss auch niemandem bekannt sein –
+der Laptop meldet sich von sich aus, aus welchem Netz auch immer er gerade
+kommt.
+
 | | |
 | --- | --- |
 | **Kostet** | nichts. Oracle verschenkt dauerhaft kleine Server („Always Free“), das Zertifikat kommt von Let's Encrypt. Die Domain hast du schon. |
@@ -595,16 +600,30 @@ Beim Anbieter deiner Domain einen **A-Record** eintragen:
 
 | Name | Typ | Wert |
 | --- | --- | --- |
-| `www` | `A` | die Public IP aus Schritt 2 |
+| `www` | `A` | die **Public IP des Vorpostens** – die Adresse aus Schritt 2 |
 
-Ob es schon greift, sagt dir:
+> **Nicht deine eigene IP.** Das ist die Stelle, an der man sich am ehesten
+> vertut. In die Domain gehört die Adresse des Oracle-Servers, nicht die deines
+> Anschlusses zu Hause.
+>
+> Deine eigene IP kommt in dieser ganzen Einrichtung **an keiner Stelle vor**,
+> und das ist Absicht: Sie wechselt, sie ist beim Mitspieler eine andere, und
+> hinter dem Router ist sie von außen ohnehin nicht erreichbar. Genau deshalb
+> der Umweg über den Vorposten – dessen Adresse steht fest, für immer.
+>
+> Findest du sie in der Oracle-Oberfläche nicht wieder: **Compute → Instances →
+> deine Instanz**, Feld *Public IP address*. Sie sieht aus wie `130.61.…` oder
+> `152.70.…`.
+
+Ob der Eintrag schon greift, sagt dir:
 
 ```bash
 nslookup www.deinemudda.fun
 ```
 
-Steht dort deine IP, weiter. Sonst ein paar Minuten warten – manche Anbieter
-brauchen bis zu einem Tag.
+Steht dort die IP des Vorpostens, weiter zu Schritt 5. Steht dort etwas
+anderes oder nichts, warte ein paar Minuten – manche Anbieter brauchen bis zu
+einem Tag, bis ein geänderter Eintrag überall angekommen ist.
 
 #### Schritt 5: Den Vorposten einrichten
 
@@ -714,7 +733,7 @@ Port 3001 aufmachen. Keine Anmeldeschale, kein Dateizugriff, sonst nichts.
 
 | Bild | Woran es liegt |
 | --- | --- |
-| Die Domain antwortet gar nicht | Fast immer Schritt 3: die Ingress-Regeln in der Oracle-Weboberfläche. Prüfen mit `curl -v http://www.deinemudda.fun` vom Laptop. |
+| Die Domain antwortet gar nicht | Zwei Verdächtige, in dieser Reihenfolge: Zeigt der A-Record wirklich auf den **Vorposten** (`nslookup www.deinemudda.fun` muss die Oracle-IP nennen, nicht deine eigene)? Und sind die Ingress-Regeln aus Schritt 3 gesetzt? Prüfen mit `curl -v http://www.deinemudda.fun` vom Laptop. |
 | `npm run tunnel`: „Die Leitung kam nicht zustande“ | Erst `ssh tunnel@www.deinemudda.fun` probieren. Kommt „Permission denied“, liegt der Schlüssel nicht beim Vorposten – Skript aus Schritt 5 noch einmal laufen lassen. |
 | Die Domain zeigt **502 Bad Gateway** | Die Leitung steht, aber der Almanach nicht. `npm start` im anderen Fenster. |
 | `remote port forwarding failed` | Auf dem Vorposten hängt noch eine alte Leitung an Port 3001. Dort `sudo systemctl restart ssh`, dann neu verbinden. |
