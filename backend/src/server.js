@@ -1,3 +1,7 @@
+// Ganz oben, und das mit Absicht: Diese Zeile liest die Datei `.env` ein, und
+// sie muss gelesen sein, bevor ein anderes Modul die Umgebung befragt – die
+// Datenbank etwa sucht ihren Ordner schon beim Laden.
+import { umgebung } from './umgebung.js';
 import express from 'express';
 import cors from 'cors';
 import os from 'node:os';
@@ -5,6 +9,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import db, { driver } from './db.js';
+import { festeAdresse } from './domaene.js';
 import { attachUser, countUsers, requireAuth } from './auth.js';
 import { addClient, presence } from './events.js';
 import ambienceRouter from './routes/ambience.js';
@@ -140,14 +145,34 @@ function localAddresses() {
 // einer je Klasse, einer je Spezies. Danach nie wieder von selbst.
 const saat = saeVorlagen();
 
+// Die feste Adresse, unter der die Runde spielt – sofern eine eingetragen ist.
+const domaene = festeAdresse();
+
 app.listen(PORT, () => {
   console.log('');
   console.log('  Abenteuer-Almanach läuft');
   console.log(`  Datenbank      : ${driver}`);
   console.log(`  Oberfläche     : ${hasFrontend ? 'wird mit ausgeliefert' : 'separat über "npm run dev" (Port 5173)'}`);
+  if (domaene.adresse) {
+    console.log(`  Für die Runde  : ${domaene.adresse}   (solange der Tunnel läuft)`);
+  }
   console.log(`  Auf diesem PC  : http://localhost:${PORT}`);
   for (const address of localAddresses()) {
     console.log(`  Im Netzwerk    : http://${address}:${PORT}   (für iPad/iPhone)`);
+  }
+  if (domaene.gesetzt && !domaene.adresse) {
+    console.log('');
+    console.log(`  DOMAENE=${domaene.roh} ergibt keinen Domainnamen – bitte in .env nachsehen.`);
+    console.log('  Erwartet wird der nackte Name, etwa: DOMAENE=www.deinemudda.fun');
+  }
+  if (umgebung.grund === 'node_zu_alt') {
+    console.log('');
+    console.log('  Es liegt eine .env daneben, aber dieses Node kann sie nicht lesen');
+    console.log(`  (${process.version}, nötig wäre 20.12 oder neuer). Alles darin bleibt unbeachtet.`);
+  }
+  if (umgebung.grund === 'fehler') {
+    console.log('');
+    console.log(`  Die .env ließ sich nicht lesen: ${umgebung.fehler}`);
   }
   if (saat.gesaet > 0) {
     console.log('');

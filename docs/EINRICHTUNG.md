@@ -14,7 +14,9 @@ für den Pi und mit **etwa zehn Minuten** für den Laptop, das meiste davon
 Wartezeit.
 
 **Es kostet nichts.** Keine Domain, kein Abonnement, kein Konto irgendwo –
-außer dem Strom.
+außer dem Strom. Wer später eine feste Adresse für die Runde will, rüstet sie
+für etwa 10 € im Jahr nach ([Schritt 6.5](#65-die-feste-adresse-eine-eigene-domain));
+nötig ist sie nicht.
 
 ---
 
@@ -95,9 +97,10 @@ Spotify-Links – auch dafür braucht der Almanach nichts von dir.
 > Aktualisierung. Dann schickst du deiner Runde einmal die neue Adresse. Im
 > Alltag passiert das selten.
 >
-> Wenn dich das später stört, zeigt
-> [Schritt 6.5](#65-wenn-die-wechselnde-adresse-stört) zwei Wege zu einer
-> festen Adresse – beide jederzeit nachrüstbar.
+> Wenn dich das später stört, führt
+> [Schritt 6.5](#65-die-feste-adresse-eine-eigene-domain) Schritt für Schritt
+> zu einer **eigenen Domain**, die nie mehr wechselt – für etwa 10 € im Jahr
+> und jederzeit nachrüstbar.
 
 ---
 
@@ -451,7 +454,8 @@ npm run adresse
 ```
 
 … und die neue Adresse in die Gruppe schicken. Das ist der Preis dafür, keine
-Domain zu bezahlen.
+Domain zu bezahlen – und genau das schafft
+[Schritt 6.5](#65-die-feste-adresse-eine-eigene-domain) aus der Welt.
 
 > **Wichtig zu wissen:** Die alte Adresse führt danach ins Leere. Wer den
 > Almanach auf dem Telefon zum Home-Bildschirm gelegt hat, muss ihn nach einem
@@ -475,17 +479,160 @@ Bedenke aber: Eine `trycloudflare.com`-Adresse ist zwar unwahrscheinlich zu
 erraten, aber nicht geheim. Wer sie hat, sieht die Anmeldeseite – mehr nicht,
 solange die Passwörter etwas taugen. Vergib also ordentliche.
 
-### 6.5 Wenn die wechselnde Adresse stört
+### 6.5 Die feste Adresse: eine eigene Domain
 
-Zwei Wege zu einer festen Adresse, beide später jederzeit nachrüstbar:
+Wenn dich das Weitersagen stört, gibt es den **benannten Tunnel**. Er arbeitet
+genau andersherum als der Schnelltunnel: Nicht der Tunnel leiht sich eine
+Adresse, sondern die Adresse gehört dir und der Tunnel meldet sich bei ihr an.
+Danach heißt der Almanach für alle immer gleich – über jeden Neustart hinweg
+und selbst dann, wenn du den Rechner in ein fremdes WLAN mitnimmst.
 
-| Weg | Kosten | Haken |
-| --- | --- | --- |
-| **Eigene Domain** bei Cloudflare, dann statt des Schnelltunnels einen *benannten* Tunnel anlegen (Zero Trust → Networks → Tunnels), Public Hostname auf `dnd-manager:3001` | ~10 €/Jahr | einmalige Einrichtung, danach nie wieder |
-| **[Tailscale](https://tailscale.com/)** – feste Adresse auf `*.ts.net`, echtes HTTPS, alles privat im eigenen Netz | kostenlos | **jeder Mitspieler muss Tailscale installieren** |
+Die Runde tippt dann immer dasselbe:
 
-Der Schnelltunnel braucht bei deinen Mitspielern nur einen Browser. Das ist
-der Grund, warum er hier der voreingestellte Weg ist.
+```
+https://www.deinemudda.fun
+```
+
+**Kosten:** die Domain, je nach Endung etwa 10 bis 15 € im Jahr. Cloudflare
+selbst kostet für diesen Zweck nichts, das HTTPS-Zertifikat auch nicht.
+
+> **Warum kein Portfreigabe-und-DynDNS?** Das wäre der klassische Weg, und auf
+> einem Laptop ist er der falsche. Er verlangt Zugriff auf den Router, er
+> bricht, sobald der Rechner in einem anderen Netz steht, und bei vielen
+> Anschlüssen (Kabel, Mobilfunk) ist er gar nicht einzurichten, weil der
+> Anbieter gar keine eigene öffentliche Adresse mehr herausgibt. Der Tunnel
+> ruft von innen nach außen an und umgeht das alles – **kein Router, keine
+> Portfreigabe, kein Zertifikat zum Erneuern.**
+
+#### Schritt 1: Die Domain zu Cloudflare bringen
+
+Die Domain kannst du kaufen, wo du magst. Damit ein benannter Tunnel sie
+tragen kann, muss Cloudflare sie aber verwalten:
+
+1. Kostenloses Konto auf [cloudflare.com](https://www.cloudflare.com) anlegen.
+2. *Add a site* → deine Domain eintragen → **Free**-Tarif wählen.
+3. Cloudflare nennt dir zwei **Nameserver**. Die trägst du bei deinem
+   Domain-Anbieter ein, dort wo „Nameserver“ oder „DNS-Server“ steht.
+
+Das Umstellen dauert je nach Anbieter ein paar Minuten bis einen Tag.
+Cloudflare schickt eine Mail, wenn die Domain aktiv ist. Solange spielt ihr
+weiter über den Schnelltunnel.
+
+#### Schritt 2: Den Tunnel anlegen
+
+In Cloudflare: **Zero Trust** → **Networks** → **Tunnels** → *Create a tunnel*
+→ **Cloudflared** → einen Namen geben (`almanach` etwa) → *Save*.
+
+Auf der nächsten Seite zeigt Cloudflare Installationsbefehle an. **Die
+brauchst du nicht** – der Almanach bringt alles mit. Was du brauchst, ist die
+lange Zeichenkette hinter `--token`: Das ist dein Tunnel-Kennwort. Kopier sie.
+
+Dann, noch auf derselben Seite, unter **Public Hostname** → *Add a public
+hostname*:
+
+| Feld | Wert |
+| --- | --- |
+| Subdomain | `www` |
+| Domain | `deinemudda.fun` |
+| Type | `HTTP` |
+| URL | siehe Tabelle unten |
+
+Und das **URL**-Feld ist die eine Stelle, an der sich die beiden Wege
+unterscheiden:
+
+| | URL eintragen |
+| --- | --- |
+| Weg A – auf dem Pi, mit Docker | `dnd-manager:3001` |
+| Weg B – auf dem Laptop, ohne Docker | `localhost:3001` |
+
+*Save hostname*.
+
+> **Ohne `www` spielen?** Dann lässt du die Subdomain leer. Wenn beides gehen
+> soll, legst du einfach einen zweiten Public Hostname an – einen mit `www`,
+> einen ohne, beide auf dieselbe URL.
+
+#### Schritt 3: Kennwort und Adresse eintragen
+
+Im Ordner des Almanachs eine Datei `.env` anlegen – eine Vorlage liegt schon
+daneben:
+
+```bash
+cp .env.example .env
+```
+
+Dann in `.env` zwei Zeilen füllen:
+
+```
+DOMAENE=www.deinemudda.fun
+TUNNEL_TOKEN=eyJhIjoiN2Y…    ← die lange Zeichenkette aus Schritt 2
+```
+
+`DOMAENE` ist nur das, was der Almanach der Runde nennt; getragen wird die
+Adresse vom Kennwort darunter. Der nackte Name genügt, ohne `https://`.
+
+> **Die `.env` ist ein Kennwortzettel.** Sie steht deshalb in `.gitignore` und
+> wandert nicht in dein Git. Wer das Kennwort hat, kann einen Tunnel auf deine
+> Domain aufbauen – also behandle sie wie ein Passwort.
+
+#### Schritt 4: Starten
+
+**Weg A – auf dem Pi:**
+
+```bash
+docker compose --profile domaene up -d
+```
+
+(Statt `--profile tunnel`. Beide zugleich wären zwei Wege zum selben Ziel –
+nimm eins.)
+
+**Weg B – auf dem Laptop:** wie gehabt in einem zweiten Fenster:
+
+```bash
+npm run tunnel
+```
+
+Das Skript sieht das Kennwort und baut nun den benannten statt des
+Schnelltunnels auf. Es sagt dir die Adresse und meldet sich noch einmal, wenn
+die Leitung wirklich steht:
+
+```
+  Die Runde erreicht den Almanach unter:
+
+    https://www.deinemudda.fun
+
+  Die Leitung steht. Ab jetzt kommt die Runde herein.
+```
+
+Das war es. **Ab jetzt vor jedem Spielabend nur noch `npm start` und
+`npm run tunnel`** – die Adresse bleibt.
+
+#### Was sich danach ändert
+
+- `npm run adresse` nennt die eigene Adresse und sucht nicht mehr nach
+  geliehenen. (Das ist Absicht: Im Protokoll läge sonst womöglich noch eine
+  von vorgestern, und die führte die Runde ins Leere.)
+- Der Almanach nennt sie beim Start gleich mit.
+- Deine Mitspieler können den Almanach dauerhaft aufs Telefon legen – das
+  Symbol bleibt gültig, weil die Adresse bleibt.
+
+#### Wenn es klemmt
+
+| Bild | Woran es liegt |
+| --- | --- |
+| `npm run tunnel` sagt „Die Verbindung kam nie zustande“ | Das Kennwort stimmt nicht. In Cloudflare unter *Tunnels → dein Tunnel → Configure* neu kopieren. |
+| Die Domain zeigt **Error 1016** oder eine Cloudflare-Fehlerseite | Der Public Hostname fehlt oder zeigt woandershin. Schritt 2 prüfen – besonders die URL-Spalte. |
+| Die Domain zeigt **502** | Der Tunnel läuft, aber der Almanach nicht. `npm start` im anderen Fenster. |
+| Die Domain zeigt **Error 1033** | Der Tunnel läuft nicht. `npm run tunnel` starten. |
+| Alles läuft, aber die Anmeldung hält nicht | `TRUST_PROXY` prüfen – im Container `1`, auf dem Laptop die Vorgabe `loopback`. Ohne das hält der Almanach die Verbindung für unverschlüsselt und setzt kein sicheres Cookie. |
+| Der Almanach nennt die Domain nicht beim Start | Die `.env` wurde nicht gelesen. `npm run pruefen` zeigt unter *Feste Adresse*, was angekommen ist. Braucht Node 20.12 oder neuer. |
+
+#### Und Tailscale?
+
+Der andere Weg zu einer festen Adresse: [Tailscale](https://tailscale.com/)
+gibt dir eine feste Adresse auf `*.ts.net`, kostenlos und ganz ohne Domain.
+Der Haken ist, dass **jeder Mitspieler Tailscale installieren muss** – der
+Tunnel braucht bei ihnen nur einen Browser. Für eine Runde, die sich nicht mit
+Technik befassen will, ist die eigene Domain der freundlichere Weg.
 
 ## 7. Musik: Spotify-Links hinterlegen
 
@@ -672,8 +819,8 @@ nicht gewirkt.
 2. Den Code weitergeben – einer je Person, jeder gilt nur einmal.
 3. Deine Mitspieler öffnen die Adresse, unter der der Almanach für sie
    erreichbar ist – im Haus die aus `npm run adresse`, von auswärts die des
-   Tunnels –, klicken auf *„Du hast einen Einladungscode? Konto anlegen“*
-   und tragen Name, Passwort und Code ein.
+   Tunnels oder deine eigene Domain –, klicken auf *„Du hast einen
+   Einladungscode? Konto anlegen“* und tragen Name, Passwort und Code ein.
 
 **Aufs Telefon oder iPad legen:** Die Seite im Browser öffnen, dann
 *Teilen → Zum Home-Bildschirm*. Der Almanach läuft dann wie eine App, ohne
@@ -802,15 +949,23 @@ ist der einzige gefährliche in diesem Handbuch.**
 
 Für den normalen Betrieb ist **nichts** einzustellen; die folgenden Werte
 stehen schon passend in der `docker-compose.yml`. Eine `.env` brauchst du nur
-für den erzählenden Rückblick in der Chronik.
+für die eigene Domain ([Schritt 6.5](#65-die-feste-adresse-eine-eigene-domain))
+oder für den erzählenden Rückblick in der Chronik.
+
+Gelesen wird sie auf **beiden** Wegen: `docker compose` schöpft daraus, und
+`npm start` liest sie beim Start selbst ein (dafür braucht es Node 20.12 oder
+neuer). Was schon in der Umgebung steht, schlägt die Datei – `PORT=3002 npm
+start` gilt also auch dann, wenn in der `.env` etwas anderes steht.
 
 | Variable | Vorgabe | Bedeutung |
 | --- | --- | --- |
 | `PORT` | `3001` | Port des Servers. |
 | `DATA_DIR` | `/app/data` im Container, sonst `backend/data` | Wo Datenbank und Bilder liegen. |
+| `DOMAENE` | leer | Die feste Adresse der Runde, etwa `www.deinemudda.fun` – nur der nackte Name. Ohne sie gilt die geliehene Adresse des Schnelltunnels. |
+| `TUNNEL_TOKEN` | leer | Kennwort des benannten Tunnels, der diese Domain trägt. Liegt es vor, baut `npm run tunnel` den benannten statt des Schnelltunnels auf. **Ein Kennwort – gehört nicht ins Git.** |
 | `TRUST_PROXY` | `1` (Compose), sonst `loopback` | Sagt dem Almanach, dass der Tunnel davorsteht – nötig für sichere Cookies. |
 | `CLOUDFLARED` | leer | Pfad zu `cloudflared`, falls es nicht im Suchpfad liegt (nur für `npm run tunnel`). |
-| `TUNNEL_ANBIETER` | leer (automatisch) | `cloudflared`, `ssh` oder `localtunnel` erzwingen (nur für `npm run tunnel`). |
+| `TUNNEL_ANBIETER` | leer (automatisch) | `cloudflared`, `ssh` oder `localtunnel` erzwingen (nur für den Schnelltunnel). |
 | `DND5E_API_BASE` | `…/api/2014` | Regelwerk-Fassung. `…/api/2024` für die neuen Regeln. |
 | `CHRONIK_KI_URL` | leer | Freiwillig: Adresse eines Sprachmodells für den erzählenden Rückblick. |
 | `CHRONIK_KI_MODELL` | `gpt-4o-mini` | Name des Modells. |
@@ -822,7 +977,8 @@ für den erzählenden Rückblick in der Chronik.
 
 ```
 ~/d-d_manager_repos/          der Quellcode, hierhin geht `git pull`
-~/d-d_manager_repos/.env      freiwillig, nur für den KI-Rückblick
+~/d-d_manager_repos/.env      freiwillig: eigene Domain, Tunnel-Kennwort,
+                              KI-Rückblick. Nicht im Git – enthält Kennwörter.
 Docker-Volume dnd-manager-data
   ├── manager.sqlite3         alles: Konten, Charaktere, Karten, Chronik
   ├── medien/                 hochgeladene Karten und Bildnisse
@@ -833,6 +989,7 @@ Docker-Volume dnd-manager-data
 
 ```
 d-d_manager_repos/            der Ordner, den du geholt hast
+  ├── .env                    freiwillig: Domain, Tunnel-Kennwort, KI-Rückblick
   ├── starten.cmd             Doppelklick-Start unter Windows
   ├── starten.sh              dasselbe für macOS und Linux
   ├── backend/public/         die gebaute Oberfläche (entsteht beim Start)
@@ -854,6 +1011,7 @@ Einzige, was mit muss.
 docker compose ps                        # Was läuft?
 docker compose logs -f dnd-manager       # Zusehen
 docker compose --profile tunnel up -d    # Starten (auch nach Änderungen an .env)
+docker compose --profile domaene up -d   # dasselbe mit eigener Domain (6.5)
 docker compose --profile tunnel restart  # Neu starten
 docker compose down                      # Anhalten (Daten bleiben)
 curl -s localhost:3001/api/health        # Lebenszeichen
@@ -866,9 +1024,10 @@ im Quellcode und nicht in Docker:
 npm start                 # holen, bauen (falls nötig) und starten
 npm start -- --neu-bauen  # Oberfläche in jedem Fall neu bauen
 npm start -- --ohne-bau   # Bau überspringen, sofort starten
-npm run pruefen           # nur nachsehen, nichts tun
+npm run pruefen           # nur nachsehen, nichts tun (auch: welche Adresse gilt)
 npm run adresse           # unter welchen Adressen er erreichbar ist
-npm run tunnel            # den Weg von außen aufmachen (Strg+C schließt ihn)
+npm run tunnel            # den Weg von außen aufmachen (Strg+C schließt ihn);
+                          # mit TUNNEL_TOKEN in der .env den benannten Tunnel
 npm run sicherung         # Datenbank sichern (--medien nimmt Bilder mit)
 npm run vertrag           # prüfen, ob Server und Oberfläche zusammenpassen
 ```

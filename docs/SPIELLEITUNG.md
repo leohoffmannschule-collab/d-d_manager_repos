@@ -65,6 +65,11 @@ Konto anlegen“* und tragen Name, Passwort und Code ein.
 > **Welche Adresse?** Im selben WLAN die aus `npm run adresse`; von auswärts
 > die des Tunnels. Beides erklärt das
 > [Einrichtungs-Handbuch](EINRICHTUNG.md#6-von-außen-erreichbar-der-tunnel).
+>
+> Die geliehene Tunnel-Adresse wechselt gelegentlich, und dann musst du sie
+> neu herumschicken. Wer das leid ist, legt sich eine **eigene Domain** zu –
+> etwa 10 € im Jahr, einmal eingerichtet, danach nie wieder:
+> [Schritt 6.5](EINRICHTUNG.md#65-die-feste-adresse-eine-eigene-domain).
 
 ### 2.3 Später
 

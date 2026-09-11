@@ -14,12 +14,18 @@
  * Protokoll – entweder in dem des Containers (Weg über Docker) oder in
  * `data/tunnel.log` (Weg über `npm run tunnel`). Dieses Skript sieht in
  * beiden nach, damit man sie nicht suchen muss.
+ *
+ * Steht in der Umgebung eine DOMAENE, entfällt die Sucherei: Dann gilt die
+ * eigene Adresse, und zwar nur sie. In den Protokollen läge sonst womöglich
+ * noch eine geliehene Adresse von früher – und die führte die Runde ins Leere.
  */
+import '../backend/src/umgebung.js';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { festeAdresse } from '../backend/src/domaene.js';
 
 const wurzel = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = Number(process.env.PORT) || 3001;
@@ -65,12 +71,31 @@ function netzAdressen() {
     .map((karte) => karte.address);
 }
 
+const eigene = festeAdresse();
+
 sagen('');
 sagen('  Abenteuer-Almanach – so ist er erreichbar');
 sagen('');
+if (eigene.adresse) sagen(`  Für die Runde    : ${eigene.adresse}`);
 sagen(`  Auf diesem Gerät : http://localhost:${PORT}`);
 for (const adresse of netzAdressen()) {
   sagen(`  Im selben Netz   : http://${adresse}:${PORT}`);
+}
+
+if (eigene.adresse) {
+  sagen('');
+  sagen('  Die erste Adresse gehört dir und wechselt nicht mehr. Sie trägt');
+  sagen('  allerdings nur, solange der Tunnel dazu läuft:');
+  sagen('    npm run tunnel                          (ohne Docker)');
+  sagen('    docker compose --profile domaene up -d  (auf dem Pi)');
+  sagen('');
+  process.exit(0);
+}
+
+if (eigene.gesetzt) {
+  sagen('');
+  sagen(`  DOMAENE=${eigene.roh} ergibt keinen Domainnamen – bitte in .env nachsehen.`);
+  sagen('  Erwartet wird der nackte Name, etwa: DOMAENE=www.deinemudda.fun');
 }
 
 // Beide Quellen fragen, nicht nur die erste, die etwas sagt: Wer den Tunnel
