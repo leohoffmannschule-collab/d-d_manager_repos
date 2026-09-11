@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
  *
  * Im Container stellt Docker die Werte selbst zusammen; auf einem Laptop gibt
  * es nichts dergleichen. Damit dort nicht vor jedem Spielabend
- * `DOMAENE=… TUNNEL_TOKEN=… npm start` getippt werden muss, liest der Almanach
+ * `DOMAENE=… TUNNEL_ZIEL=… npm start` getippt werden muss, liest der Almanach
  * beim Start die Datei `.env` ein – dieselbe, aus der auch `docker compose`
  * schöpft.
  *

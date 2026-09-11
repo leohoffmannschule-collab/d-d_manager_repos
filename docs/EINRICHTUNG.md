@@ -15,8 +15,9 @@ Wartezeit.
 
 **Es kostet nichts.** Keine Domain, kein Abonnement, kein Konto irgendwo –
 außer dem Strom. Wer später eine feste Adresse für die Runde will, rüstet sie
-für etwa 10 € im Jahr nach ([Schritt 6.5](#65-die-feste-adresse-eine-eigene-domain));
-nötig ist sie nicht.
+nach ([Schritt 6.5](#65-die-feste-adresse-eigene-domain-über-einen-vorposten)):
+Der Server dafür ist bei Oracle dauerhaft kostenlos, es kostet nur die Domain.
+Nötig ist das nicht.
 
 ---
 
@@ -98,9 +99,10 @@ Spotify-Links – auch dafür braucht der Almanach nichts von dir.
 > Alltag passiert das selten.
 >
 > Wenn dich das später stört, führt
-> [Schritt 6.5](#65-die-feste-adresse-eine-eigene-domain) Schritt für Schritt
-> zu einer **eigenen Domain**, die nie mehr wechselt – für etwa 10 € im Jahr
-> und jederzeit nachrüstbar.
+> [Schritt 6.5](#65-die-feste-adresse-eigene-domain-über-einen-vorposten)
+> Schritt für Schritt zu deiner **eigenen Domain**, die nie mehr wechselt.
+> Auf dem Laptop ist dafür nichts zu installieren, und der Server, der sie
+> trägt, ist bei Oracle dauerhaft kostenlos.
 
 ---
 
@@ -455,7 +457,7 @@ npm run adresse
 
 … und die neue Adresse in die Gruppe schicken. Das ist der Preis dafür, keine
 Domain zu bezahlen – und genau das schafft
-[Schritt 6.5](#65-die-feste-adresse-eine-eigene-domain) aus der Welt.
+[Schritt 6.5](#65-die-feste-adresse-eigene-domain-über-einen-vorposten) aus der Welt.
 
 > **Wichtig zu wissen:** Die alte Adresse führt danach ins Leere. Wer den
 > Almanach auf dem Telefon zum Home-Bildschirm gelegt hat, muss ihn nach einem
@@ -479,160 +481,214 @@ Bedenke aber: Eine `trycloudflare.com`-Adresse ist zwar unwahrscheinlich zu
 erraten, aber nicht geheim. Wer sie hat, sieht die Anmeldeseite – mehr nicht,
 solange die Passwörter etwas taugen. Vergib also ordentliche.
 
-### 6.5 Die feste Adresse: eine eigene Domain
+### 6.5 Die feste Adresse: eigene Domain über einen Vorposten
 
-Wenn dich das Weitersagen stört, gibt es den **benannten Tunnel**. Er arbeitet
-genau andersherum als der Schnelltunnel: Nicht der Tunnel leiht sich eine
-Adresse, sondern die Adresse gehört dir und der Tunnel meldet sich bei ihr an.
-Danach heißt der Almanach für alle immer gleich – über jeden Neustart hinweg
-und selbst dann, wenn du den Rechner in ein fremdes WLAN mitnimmst.
-
-Die Runde tippt dann immer dasselbe:
+Wenn dich das Weitersagen stört, bekommt die Runde eine Adresse, die nie mehr
+wechselt – deine eigene:
 
 ```
 https://www.deinemudda.fun
 ```
 
-**Kosten:** die Domain, je nach Endung etwa 10 bis 15 € im Jahr. Cloudflare
-selbst kostet für diesen Zweck nichts, das HTTPS-Zertifikat auch nicht.
+**Das Hindernis.** Ein Laptop hat keine feste Adresse im Netz. Er steht mal im
+Wohnzimmer, mal beim Mitspieler, meist hinter einem Router, der ihm gar keine
+eigene öffentliche Adresse gibt. Eine Domain kann also nicht auf ihn zeigen.
 
-> **Warum kein Portfreigabe-und-DynDNS?** Das wäre der klassische Weg, und auf
-> einem Laptop ist er der falsche. Er verlangt Zugriff auf den Router, er
-> bricht, sobald der Rechner in einem anderen Netz steht, und bei vielen
-> Anschlüssen (Kabel, Mobilfunk) ist er gar nicht einzurichten, weil der
-> Anbieter gar keine eigene öffentliche Adresse mehr herausgibt. Der Tunnel
-> ruft von innen nach außen an und umgeht das alles – **kein Router, keine
-> Portfreigabe, kein Zertifikat zum Erneuern.**
+**Der Ausweg** heißt Vorposten: ein kleiner Server, der immer am selben Fleck
+steht. Auf ihn zeigt die Domain, dort liegt das Zertifikat. Und weil der Laptop
+zwar hinausrufen darf, auch wenn niemand hineinrufen kann, dreht die Leitung
+die Richtung um – der Laptop ruft beim Vorposten an und hält die Leitung offen:
 
-#### Schritt 1: Die Domain zu Cloudflare bringen
+```
+Browser → www.deinemudda.fun → nginx (Vorposten) → SSH-Leitung → dein Laptop
+```
 
-Die Domain kannst du kaufen, wo du magst. Damit ein benannter Tunnel sie
-tragen kann, muss Cloudflare sie aber verwalten:
+| | |
+| --- | --- |
+| **Kostet** | nichts. Oracle verschenkt dauerhaft kleine Server („Always Free“), das Zertifikat kommt von Let's Encrypt. Die Domain hast du schon. |
+| **Auf dem Laptop zu installieren** | **nichts.** Gebraucht wird nur `ssh`, und das bringen Windows 10, macOS und Linux längst mit. |
+| **Router** | wird nicht angefasst. Keine Portfreigabe, keine DynDNS. |
+| **Umzug** | inklusive. Die Leitung wird von innen nach außen aufgebaut, also trägt sie aus jedem WLAN. |
 
-1. Kostenloses Konto auf [cloudflare.com](https://www.cloudflare.com) anlegen.
-2. *Add a site* → deine Domain eintragen → **Free**-Tarif wählen.
-3. Cloudflare nennt dir zwei **Nameserver**. Die trägst du bei deinem
-   Domain-Anbieter ein, dort wo „Nameserver“ oder „DNS-Server“ steht.
+> **Warum nicht einfach Portfreigabe und DynDNS?** Das wäre der klassische Weg,
+> und auf einem Laptop ist er der falsche: Er verlangt Zugriff auf den Router,
+> er bricht, sobald der Rechner woanders steht, und bei vielen Anschlüssen
+> (Kabel, Mobilfunk) gibt der Anbieter längst keine eigene öffentliche Adresse
+> mehr heraus – dann geht es schlicht nicht. Der Vorposten umgeht das alles.
 
-Das Umstellen dauert je nach Anbieter ein paar Minuten bis einen Tag.
-Cloudflare schickt eine Mail, wenn die Domain aktiv ist. Solange spielt ihr
-weiter über den Schnelltunnel.
+#### Schritt 1: Den Schlüssel auf dem Laptop
 
-#### Schritt 2: Den Tunnel anlegen
+Damit der Laptop sich beim Vorposten ausweisen kann, braucht er ein
+Schlüsselpaar. Das legt `ssh` selbst an – nichts zu holen:
 
-In Cloudflare: **Zero Trust** → **Networks** → **Tunnels** → *Create a tunnel*
-→ **Cloudflared** → einen Namen geben (`almanach` etwa) → *Save*.
+```bash
+ssh-keygen -t ed25519
+```
 
-Auf der nächsten Seite zeigt Cloudflare Installationsbefehle an. **Die
-brauchst du nicht** – der Almanach bringt alles mit. Was du brauchst, ist die
-lange Zeichenkette hinter `--token`: Das ist dein Tunnel-Kennwort. Kopier sie.
+Dreimal Enter (kein Kennwort nötig). Danach den **öffentlichen** Teil anzeigen
+und in die Zwischenablage nehmen:
 
-Dann, noch auf derselben Seite, unter **Public Hostname** → *Add a public
-hostname*:
+```bash
+cat ~/.ssh/id_ed25519.pub
+```
+
+Unter Windows in der Eingabeaufforderung:
+
+```
+type %USERPROFILE%\.ssh\id_ed25519.pub
+```
+
+Das ist eine Zeile, die mit `ssh-ed25519 AAAA…` beginnt. Sie darf jeder sehen –
+der geheime Teil (ohne `.pub`) bleibt auf dem Laptop.
+
+#### Schritt 2: Den Vorposten bei Oracle anlegen
+
+Auf [cloud.oracle.com](https://cloud.oracle.com) ein Konto anlegen. Es wird
+eine Kreditkarte zur Prüfung verlangt, aber nicht belastet – die „Always
+Free“-Maschinen bleiben kostenlos, auch nach der Probezeit.
+
+Dann **Compute → Instances → Create instance**:
 
 | Feld | Wert |
 | --- | --- |
-| Subdomain | `www` |
-| Domain | `deinemudda.fun` |
-| Type | `HTTP` |
-| URL | siehe Tabelle unten |
+| Name | `almanach-vorposten` |
+| Image | **Ubuntu** (nicht Oracle Linux – die Anleitung hier geht von Ubuntu aus) |
+| Shape | eine mit **„Always Free eligible“**: `VM.Standard.A1.Flex` (1 OCPU, 6 GB reicht reichlich) oder `VM.Standard.E2.1.Micro` |
+| SSH keys | **Paste public keys** → die Zeile aus Schritt 1 einfügen |
 
-Und das **URL**-Feld ist die eine Stelle, an der sich die beiden Wege
-unterscheiden:
+Erstellen, eine Minute warten, dann die **Public IP address** notieren.
 
-| | URL eintragen |
-| --- | --- |
-| Weg A – auf dem Pi, mit Docker | `dnd-manager:3001` |
-| Weg B – auf dem Laptop, ohne Docker | `localhost:3001` |
+> **Bekommst du „Out of capacity“?** Die kostenlosen ARM-Maschinen sind in
+> beliebten Regionen oft ausgebucht. Dann `VM.Standard.E2.1.Micro` nehmen (die
+> ist fast immer da) oder es später noch einmal versuchen.
 
-*Save hostname*.
+#### Schritt 3: Die Wand aufmachen
 
-> **Ohne `www` spielen?** Dann lässt du die Subdomain leer. Wenn beides gehen
-> soll, legst du einfach einen zweiten Public Hostname an – einen mit `www`,
-> einen ohne, beide auf dieselbe URL.
+**Das ist die Stolperstelle schlechthin bei Oracle**, und sie kostet
+erfahrungsgemäß den meisten Nerv: Oracle blockt standardmäßig alles außer SSH,
+und zwar an **zwei** Stellen. Die eine öffnet das Einrichtungsskript später
+selbst, die andere geht nur in der Weboberfläche:
 
-#### Schritt 3: Kennwort und Adresse eintragen
+**Networking → Virtual Cloud Networks → dein VCN → Security Lists → Default
+Security List → Add Ingress Rules**, und zwar zweimal:
 
-Im Ordner des Almanachs eine Datei `.env` anlegen – eine Vorlage liegt schon
-daneben:
+| Source CIDR | IP Protocol | Destination Port |
+| --- | --- | --- |
+| `0.0.0.0/0` | TCP | `80` |
+| `0.0.0.0/0` | TCP | `443` |
+
+Ohne das antwortet die Domain später gar nicht, und man sucht den Fehler
+stundenlang beim nginx, der längst richtig läuft.
+
+#### Schritt 4: Die Domain auf den Vorposten zeigen lassen
+
+Beim Anbieter deiner Domain einen **A-Record** eintragen:
+
+| Name | Typ | Wert |
+| --- | --- | --- |
+| `www` | `A` | die Public IP aus Schritt 2 |
+
+Ob es schon greift, sagt dir:
+
+```bash
+nslookup www.deinemudda.fun
+```
+
+Steht dort deine IP, weiter. Sonst ein paar Minuten warten – manche Anbieter
+brauchen bis zu einem Tag.
+
+#### Schritt 5: Den Vorposten einrichten
+
+Vom Laptop aus auf den Vorposten (der Benutzer heißt bei Ubuntu-Abbildern
+`ubuntu`):
+
+```bash
+ssh ubuntu@www.deinemudda.fun
+```
+
+Dort das Einrichtungsskript holen und laufen lassen – es installiert nginx,
+legt den Tunnel-Benutzer an und holt das Zertifikat:
+
+```bash
+curl -fsSL -o vorposten.sh https://raw.githubusercontent.com/leohoffmannschule-collab/d-d_manager_repos/main/scripts/vorposten.sh
+sudo bash vorposten.sh www.deinemudda.fun "ssh-ed25519 AAAA… dein@laptop"
+```
+
+Die Zeichenkette in Anführungszeichen ist der öffentliche Schlüssel aus
+Schritt 1. Lässt du sie weg, fragt das Skript danach.
+
+> Wer die Zeile lieber nicht aus dem Netz zieht: Die Datei liegt auch in deinem
+> Almanach-Ordner unter `scripts/vorposten.sh` und lässt sich mit
+> `scp scripts/vorposten.sh ubuntu@www.deinemudda.fun:` hinüberkopieren.
+
+Am Ende steht dort, was auf dem Laptop in die `.env` gehört.
+
+#### Schritt 6: Den Laptop anschließen
+
+Im Ordner des Almanachs:
 
 ```bash
 cp .env.example .env
 ```
 
-Dann in `.env` zwei Zeilen füllen:
+Und in der `.env` diese zwei Zeilen füllen:
 
 ```
 DOMAENE=www.deinemudda.fun
-TUNNEL_TOKEN=eyJhIjoiN2Y…    ← die lange Zeichenkette aus Schritt 2
+TUNNEL_ZIEL=tunnel@www.deinemudda.fun
 ```
 
-`DOMAENE` ist nur das, was der Almanach der Runde nennt; getragen wird die
-Adresse vom Kennwort darunter. Der nackte Name genügt, ohne `https://`.
-
-> **Die `.env` ist ein Kennwortzettel.** Sie steht deshalb in `.gitignore` und
-> wandert nicht in dein Git. Wer das Kennwort hat, kann einen Tunnel auf deine
-> Domain aufbauen – also behandle sie wie ein Passwort.
-
-#### Schritt 4: Starten
-
-**Weg A – auf dem Pi:**
+Dann, in zwei Fenstern:
 
 ```bash
-docker compose --profile domaene up -d
+npm start        # der Almanach
+npm run tunnel   # die Leitung zum Vorposten
 ```
 
-(Statt `--profile tunnel`. Beide zugleich wären zwei Wege zum selben Ziel –
-nimm eins.)
-
-**Weg B – auf dem Laptop:** wie gehabt in einem zweiten Fenster:
-
-```bash
-npm run tunnel
-```
-
-Das Skript sieht das Kennwort und baut nun den benannten statt des
-Schnelltunnels auf. Es sagt dir die Adresse und meldet sich noch einmal, wenn
-die Leitung wirklich steht:
+Das zweite Fenster sagt:
 
 ```
   Die Runde erreicht den Almanach unter:
 
     https://www.deinemudda.fun
 
-  Die Leitung steht. Ab jetzt kommt die Runde herein.
+  Baue die Leitung auf … Bleibt es still, steht sie.
 ```
 
-Das war es. **Ab jetzt vor jedem Spielabend nur noch `npm start` und
-`npm run tunnel`** – die Adresse bleibt.
+Das war es. **Ab jetzt vor jedem Spielabend nur noch diese zwei Befehle** – die
+Adresse bleibt.
 
 #### Was sich danach ändert
 
 - `npm run adresse` nennt die eigene Adresse und sucht nicht mehr nach
-  geliehenen. (Das ist Absicht: Im Protokoll läge sonst womöglich noch eine
-  von vorgestern, und die führte die Runde ins Leere.)
+  geliehenen. (Das ist Absicht: Im Protokoll läge sonst womöglich noch eine von
+  vorgestern, und die führte die Runde ins Leere.)
 - Der Almanach nennt sie beim Start gleich mit.
-- Deine Mitspieler können den Almanach dauerhaft aufs Telefon legen – das
-  Symbol bleibt gültig, weil die Adresse bleibt.
+- Deine Mitspieler können ihn dauerhaft aufs Telefon legen – das Symbol bleibt
+  gültig, weil die Adresse bleibt.
+- Bricht die Leitung ab (WLAN gewechselt, Laptop kurz eingeschlafen), baut
+  `npm run tunnel` sie von selbst wieder auf, mit wachsenden Pausen.
+
+#### Was auf dem Vorposten liegt
+
+Nichts von euch. Dort stehen nur nginx und das Zertifikat; Charaktere, Karten,
+Chronik und Bildnisse bleiben auf dem Laptop. Geht der Vorposten verloren,
+legst du ihn in zehn Minuten neu an – verloren ist dabei nichts.
+
+Der Zugang `tunnel` darf dort ausdrücklich **nur** eines: eine Rückleitung auf
+Port 3001 aufmachen. Keine Anmeldeschale, kein Dateizugriff, sonst nichts.
 
 #### Wenn es klemmt
 
 | Bild | Woran es liegt |
 | --- | --- |
-| `npm run tunnel` sagt „Die Verbindung kam nie zustande“ | Das Kennwort stimmt nicht. In Cloudflare unter *Tunnels → dein Tunnel → Configure* neu kopieren. |
-| Die Domain zeigt **Error 1016** oder eine Cloudflare-Fehlerseite | Der Public Hostname fehlt oder zeigt woandershin. Schritt 2 prüfen – besonders die URL-Spalte. |
-| Die Domain zeigt **502** | Der Tunnel läuft, aber der Almanach nicht. `npm start` im anderen Fenster. |
-| Die Domain zeigt **Error 1033** | Der Tunnel läuft nicht. `npm run tunnel` starten. |
-| Alles läuft, aber die Anmeldung hält nicht | `TRUST_PROXY` prüfen – im Container `1`, auf dem Laptop die Vorgabe `loopback`. Ohne das hält der Almanach die Verbindung für unverschlüsselt und setzt kein sicheres Cookie. |
-| Der Almanach nennt die Domain nicht beim Start | Die `.env` wurde nicht gelesen. `npm run pruefen` zeigt unter *Feste Adresse*, was angekommen ist. Braucht Node 20.12 oder neuer. |
-
-#### Und Tailscale?
-
-Der andere Weg zu einer festen Adresse: [Tailscale](https://tailscale.com/)
-gibt dir eine feste Adresse auf `*.ts.net`, kostenlos und ganz ohne Domain.
-Der Haken ist, dass **jeder Mitspieler Tailscale installieren muss** – der
-Tunnel braucht bei ihnen nur einen Browser. Für eine Runde, die sich nicht mit
-Technik befassen will, ist die eigene Domain der freundlichere Weg.
+| Die Domain antwortet gar nicht | Fast immer Schritt 3: die Ingress-Regeln in der Oracle-Weboberfläche. Prüfen mit `curl -v http://www.deinemudda.fun` vom Laptop. |
+| `npm run tunnel`: „Die Leitung kam nicht zustande“ | Erst `ssh tunnel@www.deinemudda.fun` probieren. Kommt „Permission denied“, liegt der Schlüssel nicht beim Vorposten – Skript aus Schritt 5 noch einmal laufen lassen. |
+| Die Domain zeigt **502 Bad Gateway** | Die Leitung steht, aber der Almanach nicht. `npm start` im anderen Fenster. |
+| `remote port forwarding failed` | Auf dem Vorposten hängt noch eine alte Leitung an Port 3001. Dort `sudo systemctl restart ssh`, dann neu verbinden. |
+| Am Tisch kommt alles verspätet an | nginx puffert den Live-Kanal. Das Skript stellt das ab; wurde die Datei von Hand geändert, muss `proxy_buffering off;` wieder hinein. |
+| Das Zertifikat ist abgelaufen | certbot erneuert selbst. Nachsehen mit `sudo certbot renew --dry-run` auf dem Vorposten. |
+| Anmeldung hält nicht | Der Almanach hält die Verbindung für unverschlüsselt. Auf dem Laptop ist die Vorgabe richtig; nur wenn du `TRUST_PROXY` von Hand gesetzt hast, gehört dort wieder `loopback` hin. |
 
 ## 7. Musik: Spotify-Links hinterlegen
 
@@ -949,7 +1005,7 @@ ist der einzige gefährliche in diesem Handbuch.**
 
 Für den normalen Betrieb ist **nichts** einzustellen; die folgenden Werte
 stehen schon passend in der `docker-compose.yml`. Eine `.env` brauchst du nur
-für die eigene Domain ([Schritt 6.5](#65-die-feste-adresse-eine-eigene-domain))
+für die eigene Domain ([Schritt 6.5](#65-die-feste-adresse-eigene-domain-über-einen-vorposten))
 oder für den erzählenden Rückblick in der Chronik.
 
 Gelesen wird sie auf **beiden** Wegen: `docker compose` schöpft daraus, und
@@ -962,7 +1018,8 @@ start` gilt also auch dann, wenn in der `.env` etwas anderes steht.
 | `PORT` | `3001` | Port des Servers. |
 | `DATA_DIR` | `/app/data` im Container, sonst `backend/data` | Wo Datenbank und Bilder liegen. |
 | `DOMAENE` | leer | Die feste Adresse der Runde, etwa `www.deinemudda.fun` – nur der nackte Name. Ohne sie gilt die geliehene Adresse des Schnelltunnels. |
-| `TUNNEL_TOKEN` | leer | Kennwort des benannten Tunnels, der diese Domain trägt. Liegt es vor, baut `npm run tunnel` den benannten statt des Schnelltunnels auf. **Ein Kennwort – gehört nicht ins Git.** |
+| `TUNNEL_ZIEL` | leer | Der Vorposten, bei dem sich dieser Rechner meldet, etwa `tunnel@www.deinemudda.fun`. Liegt er vor, baut `npm run tunnel` die Leitung dorthin statt eines Schnelltunnels. |
+| `TUNNEL_FERNPORT` | wie `PORT` | Port, an dem der Almanach auf dem Vorposten hängt. Nur nötig, wenn dort schon etwas anderes auf 3001 liegt. |
 | `TRUST_PROXY` | `1` (Compose), sonst `loopback` | Sagt dem Almanach, dass der Tunnel davorsteht – nötig für sichere Cookies. |
 | `CLOUDFLARED` | leer | Pfad zu `cloudflared`, falls es nicht im Suchpfad liegt (nur für `npm run tunnel`). |
 | `TUNNEL_ANBIETER` | leer (automatisch) | `cloudflared`, `ssh` oder `localtunnel` erzwingen (nur für den Schnelltunnel). |
@@ -1011,7 +1068,6 @@ Einzige, was mit muss.
 docker compose ps                        # Was läuft?
 docker compose logs -f dnd-manager       # Zusehen
 docker compose --profile tunnel up -d    # Starten (auch nach Änderungen an .env)
-docker compose --profile domaene up -d   # dasselbe mit eigener Domain (6.5)
 docker compose --profile tunnel restart  # Neu starten
 docker compose down                      # Anhalten (Daten bleiben)
 curl -s localhost:3001/api/health        # Lebenszeichen
@@ -1027,7 +1083,7 @@ npm start -- --ohne-bau   # Bau überspringen, sofort starten
 npm run pruefen           # nur nachsehen, nichts tun (auch: welche Adresse gilt)
 npm run adresse           # unter welchen Adressen er erreichbar ist
 npm run tunnel            # den Weg von außen aufmachen (Strg+C schließt ihn);
-                          # mit TUNNEL_TOKEN in der .env den benannten Tunnel
+                          # mit TUNNEL_ZIEL in der .env zum eigenen Vorposten
 npm run sicherung         # Datenbank sichern (--medien nimmt Bilder mit)
 npm run vertrag           # prüfen, ob Server und Oberfläche zusammenpassen
 ```

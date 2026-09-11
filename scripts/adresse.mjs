@@ -85,9 +85,8 @@ for (const adresse of netzAdressen()) {
 if (eigene.adresse) {
   sagen('');
   sagen('  Die erste Adresse gehört dir und wechselt nicht mehr. Sie trägt');
-  sagen('  allerdings nur, solange der Tunnel dazu läuft:');
-  sagen('    npm run tunnel                          (ohne Docker)');
-  sagen('    docker compose --profile domaene up -d  (auf dem Pi)');
+  sagen('  allerdings nur, solange die Leitung zum Vorposten steht:');
+  sagen('    npm run tunnel');
   sagen('');
   process.exit(0);
 }

@@ -58,35 +58,12 @@ services:
     profiles:
       - tunnel
 
-  # Derselbe Weg nach außen, nur mit eigener Adresse: ein *benannter* Tunnel.
-  # Cloudflare weiß aus dem Kennwort, welcher Tunnel das ist und welche Domain
-  # daran hängt – geliehen wird hier nichts mehr, die Adresse bleibt über jeden
-  # Neustart hinweg dieselbe.
-  #
-  #   docker compose --profile domaene up -d
-  #
-  # Voraussetzung ist ein TUNNEL_TOKEN in der `.env`; eingerichtet wird es
-  # einmalig nach docs/EINRICHTUNG.md, Schritt 6.5. Dieses Profil und `tunnel`
-  # schließen einander aus – beide zugleich wären zwei Wege zum selben Ziel.
-  cloudflared-domaene:
-    image: cloudflare/cloudflared:latest
-    container_name: dnd-manager-domaene
-    restart: unless-stopped
-    # Das Kennwort geht über die Umgebung statt über die Befehlszeile: Was im
-    # Befehl steht, zeigt `docker ps` jedem, der auf dem Gerät nachsieht.
-    command: tunnel --no-autoupdate run
-    environment:
-      - TUNNEL_TOKEN=${TUNNEL_TOKEN:-}
-    depends_on:
-      dnd-manager:
-        condition: service_healthy
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
-    profiles:
-      - domaene
+  # **Eine feste Adresse gibt es hier nicht als Container.** Der Weg dorthin
+  # führt über einen eigenen Vorposten: einen kleinen Server, auf den die
+  # Domain zeigt und der die Anfragen durch eine SSH-Leitung hierher
+  # zurückreicht. Aufgebaut wird die Leitung von hier aus, mit
+  # `npm run tunnel` und einem TUNNEL_ZIEL in der `.env` – dafür braucht es
+  # keinen Container, nur `ssh`. Siehe docs/EINRICHTUNG.md, Schritt 6.5.
 
 volumes:
   dnd-manager-data:

@@ -1,16 +1,16 @@
 /**
  * Die feste Adresse der Runde.
  *
- * Ohne eigene Domain leiht sich der Schnelltunnel bei jedem Start eine neue
- * Adresse, und die Runde bekommt vor jedem Spielabend eine andere geschickt.
- * Wer eine Domain hat, trägt sie einmal ein:
+ * Ohne feste Adresse leiht sich der Schnelltunnel bei jedem Start eine neue,
+ * und die Runde bekommt vor jedem Spielabend eine andere geschickt. Wer eine
+ * feste hat, trägt sie einmal ein:
  *
  *   DOMAENE=www.deinemudda.fun
  *
  * Danach heißt der Almanach für alle immer gleich – gleichgültig, in welchem
- * Netz der Rechner gerade steht. Getragen wird die Adresse vom *benannten*
- * Tunnel (`npm run tunnel` mit gesetztem `TUNNEL_TOKEN`); dieser Wert hier ist
- * nur das, was der Almanach der Runde nennt.
+ * Netz der Rechner gerade steht. Getragen wird die Adresse vom eigenen
+ * Vorposten (`npm run tunnel` mit gesetztem `TUNNEL_ZIEL`); dieser Wert hier
+ * ist nur das, was der Almanach seiner Runde nennt.
  *
  * Geschrieben werden darf sie, wie man sie in den Browser tippt: mit oder ohne
  * `https://`, mit oder ohne Schrägstrich am Ende.

@@ -211,7 +211,7 @@ if (nurPruefen) {
   sagen(`  Port           : ${process.env.PORT || 3001}`);
   const domaene = festeAdresse();
   sagen(`  Feste Adresse  : ${domaene.adresse ?? (domaene.gesetzt ? `unbrauchbar (DOMAENE=${domaene.roh})` : 'keine (DOMAENE nicht gesetzt)')}`);
-  sagen(`  Tunnel-Kennwort: ${process.env.TUNNEL_TOKEN ? 'liegt vor' : 'keins (dann Schnelltunnel)'}`);
+  sagen(`  Weg nach außen : ${process.env.TUNNEL_ZIEL ? `eigener Vorposten (${process.env.TUNNEL_ZIEL})` : 'Schnelltunnel (geliehene Adresse)'}`);
   sagen('');
   process.exit(0);
 }
