@@ -543,10 +543,20 @@ cloudflared --version
 
 Steht dort eine Versionsnummer, ist es da.
 
-> **Kein `winget`?** Dann liegt neben dieser Datei die Möglichkeit, die
-> `.exe` einzeln zu holen und neben den Almanach-Ordner zu legen – `npm run
-> tunnel` findet sie dort auch ohne `winget`. Ein Download bleibt es so oder
-> so; das ist der einzige an diesem ganzen Weg.
+> **Sagt PowerShell „winget wurde nicht erkannt“?** Auf manchen
+> Firmenrechnern fehlt `winget` (App Installer) absichtlich. Dann die `.exe`
+> direkt holen, im Ordner des Almanachs:
+>
+> ```powershell
+> Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe" -OutFile "cloudflared.exe"
+> ```
+>
+> `npm run tunnel` findet `cloudflared.exe` dort auch ohne `winget` und ohne
+> PATH-Eintrag. Prüfen mit `.\cloudflared.exe --version`. Zeigt Windows dabei
+> eine blaue Seite „Windows hat Ihren PC geschützt“ (SmartScreen) – *Weitere
+> Informationen → Trotzdem ausführen*; cloudflared ist von Cloudflare
+> signiert, das kommt höchstens beim allerersten Start. Ein Download bleibt
+> es so oder so; das ist der einzige an diesem ganzen Weg.
 
 **macOS** (mit Homebrew): `brew install cloudflared`.
 **Linux:** siehe die Pakete auf
@@ -670,6 +680,7 @@ Das war es. **Ab jetzt vor jedem Spielabend nur noch `starten.cmd` und
 
 | Bild | Woran es liegt |
 | --- | --- |
+| `winget` wird nicht als Befehl erkannt | Fehlt auf manchen Firmenrechnern absichtlich. Die `.exe` direkt holen (siehe Kasten in Schritt 2, `Invoke-WebRequest`). |
 | `winget install` findet `Cloudflare.cloudflared` nicht | `winget source update` einmal ausführen, dann erneut versuchen. Sonst die `.exe` von Hand holen (siehe Schritt 2). |
 | `cloudflared --version` sagt „nicht als Befehl erkannt“ | Neues Fenster geöffnet? `winget` trägt den Pfad erst in neu gestartete Fenster ein. |
 | `npm run tunnel` sagt „Die Verbindung kam nie zustande“ | Das Kennwort stimmt nicht. In Cloudflare unter *Tunnels → dein Tunnel → Configure* neu kopieren. |
