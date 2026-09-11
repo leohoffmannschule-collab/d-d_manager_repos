@@ -528,7 +528,17 @@ Schlüsselpaar. Das legt `ssh` selbst an – **zu holen ist dafür nichts**:
 Windows 11 bringt den OpenSSH-Client von Haus aus mit, macOS und Linux
 ohnehin.
 
-**Windows 11** – Eingabeaufforderung öffnen (Startmenü, `cmd` tippen):
+**Windows 11.** Öffne, was gerade da ist – meist **PowerShell**
+(erkennbar am Prompt `PS C:\…>`), manchmal die ältere **Eingabeaufforderung**
+(`C:\…>` ohne `PS`). `ssh-keygen` selbst ist in beiden gleich; nur der
+zweite Befehl, der den Schlüssel anzeigt, unterscheidet sich:
+
+```powershell
+ssh-keygen -t ed25519
+Get-Content $env:USERPROFILE\.ssh\id_ed25519.pub
+```
+
+Eingabeaufforderung (`C:\…>`, kein `PS` davor):
 
 ```
 ssh-keygen -t ed25519
@@ -541,6 +551,22 @@ type %USERPROFILE%\.ssh\id_ed25519.pub
 ssh-keygen -t ed25519
 cat ~/.ssh/id_ed25519.pub
 ```
+
+> **Die beiden Befehle einzeln ausführen, nicht als Block einfügen.**
+> Fügt man mehrere Zeilen auf einmal ein, kann der Rest im Eingabepuffer
+> hängen bleiben und landet als Antwort auf die nächste Frage – dann fragt
+> `ssh-keygen` „Enter file in which to save the key" und bekommt
+> versehentlich `ssh-keygen -t ed25519` als Dateinamen zur Antwort. Das
+> Ergebnis: zwei falsch benannte Dateien **im Projektordner statt in
+> `.ssh`** – eine davon der private Schlüssel, mitten in einem Git-Repo.
+>
+> Ist dir das passiert (die Meldung am Ende nennt einen Dateinamen wie
+> `ssh-keygen -t ed25519` statt eines Pfads mit `.ssh`), erst aufräumen:
+> `Get-ChildItem -Force -Filter "ssh-keygen*"` zeigt die Dateien,
+> `git status` bestätigt, dass sie noch nicht `git add`et sind, dann
+> `Remove-Item -Force "ssh-keygen -t ed25519", "ssh-keygen -t ed25519.pub"`.
+> Danach `ssh-keygen -t ed25519` neu ausführen und bei der Frage nach dem
+> Dateipfad **nur Enter drücken**, ohne etwas einzutippen.
 
 Beim `ssh-keygen` dreimal Enter drücken – ein Kennwort auf dem Schlüssel
 brauchst du nicht, sonst musst du es vor jedem Spielabend eintippen.
@@ -747,6 +773,7 @@ Port 3001 aufmachen. Keine Anmeldeschale, kein Dateizugriff, sonst nichts.
 | --- | --- |
 | `ssh-keygen wird nicht als Befehl erkannt` | Der OpenSSH-Client fehlt. *Einstellungen → System → Optionale Features → Feature hinzufügen → OpenSSH-Client*, dann ein neues Fenster öffnen. Nichts herunterzuladen. |
 | `UNPROTECTED PRIVATE KEY FILE` oder `bad permissions` | Die Schlüsseldatei darf zu vielen gehören – das passiert, wenn man sie von woanders hereinkopiert hat. Rechtsklick auf `id_ed25519` → *Eigenschaften → Sicherheit → Erweitert → Vererbung deaktivieren*, dann alle Einträge außer deinem eigenen Benutzer entfernen. Oder einfacher: mit `ssh-keygen` einen neuen anlegen und Schritt 5 wiederholen. |
+| `ssh-keygen` meldet am Ende einen Dateinamen wie `ssh-keygen -t ed25519` statt eines Pfads in `.ssh` | Mehrere Befehle wurden auf einmal eingefügt, und ein Rest davon ist als Antwort auf „Enter file in which to save the key" gelandet. Der Schlüssel liegt dann falsch benannt **im aktuellen Ordner** – im schlimmsten Fall mitten in diesem Git-Repo. Mit `Get-ChildItem -Force -Filter "ssh-keygen*"` prüfen, mit `git status`, dass nichts davon schon `git add`et ist, dann löschen und `ssh-keygen -t ed25519` **einzeln** noch einmal ausführen; bei der Frage nach dem Dateipfad nur Enter drücken. |
 | Die `.env` wird nicht gelesen | Notepad hat `.env.txt` daraus gemacht. Im Explorer unter *Ansicht → Anzeigen → Dateinamenerweiterungen* einschalten und nachsehen. `npm run pruefen` zeigt, was angekommen ist. |
 | `npm.ps1 kann nicht geladen werden` | Die Ausführungsrichtlinie der PowerShell, nicht der Almanach. In der **Eingabeaufforderung** arbeiten statt in der PowerShell – oder gleich `starten.cmd` und `tunnel.cmd` doppelklicken. |
 | Mitten im Spiel bricht alles ab | Der Laptop ist eingeschlafen. Energieoptionen auf **Nie** stellen, siehe Schritt 6. |
