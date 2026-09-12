@@ -20,13 +20,11 @@
  *   --ohne-bau    den Bau überspringen (schnellster Start nach einer Änderung
  *                 nur am Server)
  */
-import '../backend/src/umgebung.js';
 import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
-import { festeAdresse } from '../backend/src/domaene.js';
 
 const wurzel = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const schalter = new Set(process.argv.slice(2));
@@ -209,9 +207,6 @@ if (nurPruefen) {
   sagen(`  Oberfläche     : ${ohneBau ? 'Bau übersprungen' : grund ? `Bau nötig (${grund})` : 'aktuell'}`);
   sagen(`  Datenordner    : ${process.env.DATA_DIR || path.join(wurzel, 'backend', 'data')}`);
   sagen(`  Port           : ${process.env.PORT || 3001}`);
-  const domaene = festeAdresse();
-  sagen(`  Feste Adresse  : ${domaene.adresse ?? (domaene.gesetzt ? `unbrauchbar (DOMAENE=${domaene.roh})` : 'keine (DOMAENE nicht gesetzt)')}`);
-  sagen(`  Tunnel-Kennwort: ${process.env.TUNNEL_TOKEN ? 'liegt vor' : 'keins (dann Schnelltunnel)'}`);
   sagen('');
   process.exit(0);
 }

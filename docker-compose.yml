@@ -17,10 +17,6 @@ services:
       - DND5E_API_BASE=https://www.dnd5eapi.co/api/2014
       # Der Tunnel unten ist der erste Zwischenschritt vor dem Almanach.
       - TRUST_PROXY=1
-      # Freiwillig: die feste Adresse, unter der die Runde spielt. Damit der
-      # Almanach sie beim Start nennen kann – getragen wird sie vom benannten
-      # Tunnel weiter unten.
-      - DOMAENE=${DOMAENE:-}
       # Freiwillig: erzählender Rückblick in der Chronik.
       - CHRONIK_KI_URL=${CHRONIK_KI_URL:-}
       - CHRONIK_KI_MODELL=${CHRONIK_KI_MODELL:-}
@@ -57,36 +53,6 @@ services:
         max-file: "3"
     profiles:
       - tunnel
-
-  # Derselbe Weg nach außen, nur mit eigener Adresse: ein *benannter* Tunnel.
-  # Cloudflare weiß aus dem Kennwort, welcher Tunnel das ist und welche Domain
-  # daran hängt – geliehen wird hier nichts mehr, die Adresse bleibt über jeden
-  # Neustart hinweg dieselbe. Kostenlos, ohne Kreditkarte.
-  #
-  #   docker compose --profile domaene up -d
-  #
-  # Voraussetzung ist ein TUNNEL_TOKEN in der `.env`; eingerichtet wird es
-  # einmalig nach docs/EINRICHTUNG.md, Schritt 6.5. Dieses Profil und `tunnel`
-  # schließen einander aus – beide zugleich wären zwei Wege zum selben Ziel.
-  cloudflared-domaene:
-    image: cloudflare/cloudflared:latest
-    container_name: dnd-manager-domaene
-    restart: unless-stopped
-    # Das Kennwort geht über die Umgebung statt über die Befehlszeile: Was im
-    # Befehl steht, zeigt `docker ps` jedem, der auf dem Gerät nachsieht.
-    command: tunnel --no-autoupdate run
-    environment:
-      - TUNNEL_TOKEN=${TUNNEL_TOKEN:-}
-    depends_on:
-      dnd-manager:
-        condition: service_healthy
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
-    profiles:
-      - domaene
 
 volumes:
   dnd-manager-data:

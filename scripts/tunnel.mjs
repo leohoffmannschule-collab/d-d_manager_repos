@@ -23,17 +23,7 @@
  * Wer einen bestimmten Weg erzwingen will: TUNNEL_ANBIETER=cloudflared,
  * TUNNEL_ANBIETER=ssh oder TUNNEL_ANBIETER=localtunnel vor den Befehl stellen.
  *
- * **Mit einem TUNNEL_TOKEN läuft es andersherum.** Dann wird nichts geliehen:
- * Cloudflare weiß aus dem Kennwort, welcher *benannte* Tunnel das ist und
- * welche Domain daran hängt, und der Almanach meldet sich dort an statt sich
- * eine Adresse zu leihen. Die Adresse wechselt nie wieder, gleichgültig in
- * welchem Netz der Rechner steht, und die Runde tippt vor jedem Spielabend
- * dieselbe. Gebraucht wird dafür `cloudflared` – dasselbe Programm wie oben
- * unter 1., nur mit eigenem Kennwort statt geliehener Adresse. Einrichtung
- * einmalig, kostenlos und ganz ohne Kreditkarte: docs/EINRICHTUNG.md,
- * Schritt 6.5.
- *
- * Auf dem Pi macht den Schnelltunnel der Container aus docker-compose.yml.
+ * Auf dem Pi macht das der Container aus docker-compose.yml (cloudflared).
  * Auf einem Laptop gibt es keinen Container – dieses Skript startet das
  * gewählte Programm direkt und schreibt sein Protokoll nach `data/tunnel.log`,
  * damit `npm run adresse` die Adresse dort wiederfindet.
@@ -41,12 +31,10 @@
  * Beenden mit Strg+C. Der Almanach selbst läuft davon unbeirrt weiter; nur
  * der Weg von außen ist dann wieder zu.
  */
-import '../backend/src/umgebung.js';
 import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { festeAdresse } from '../backend/src/domaene.js';
 
 const wurzel = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = Number(process.env.PORT) || 3001;
@@ -185,7 +173,18 @@ const HOLEN = {
   'win32-x64': 'cloudflared-windows-amd64.exe',
 };
 
-function cloudflaredHolen() {
+function anleitung() {
+  sagen('');
+  sagen('  Keiner der drei Wege nach außen ist auf diesem Gerät einsatzbereit:');
+  sagen('  cloudflared fehlt, ssh fehlt, und selbst npx (das mit Node kommt)');
+  sagen('  meldet sich nicht – das ist ungewöhnlich und meist ein PATH-Problem.');
+  sagen('');
+  if (hatDocker()) {
+    sagen('  Docker ist da – dann geht es über den Container:');
+    sagen('    docker compose --profile tunnel up -d');
+    sagen('    npm run adresse');
+    sagen('');
+  }
   sagen('  cloudflared von Hand holen und neben dieses Projekt legen:');
   const datei = HOLEN[`${process.platform}-${process.arch}`];
   if (datei) {
@@ -202,21 +201,6 @@ function cloudflaredHolen() {
     sagen('    … oder, wenn Homebrew da ist:  brew install cloudflared');
   }
   sagen(`    (Die Datei gehört nach ${wurzel})`);
-}
-
-function anleitung() {
-  sagen('');
-  sagen('  Keiner der drei Wege nach außen ist auf diesem Gerät einsatzbereit:');
-  sagen('  cloudflared fehlt, ssh fehlt, und selbst npx (das mit Node kommt)');
-  sagen('  meldet sich nicht – das ist ungewöhnlich und meist ein PATH-Problem.');
-  sagen('');
-  if (hatDocker()) {
-    sagen('  Docker ist da – dann geht es über den Container:');
-    sagen('    docker compose --profile tunnel up -d');
-    sagen('    npm run adresse');
-    sagen('');
-  }
-  cloudflaredHolen();
   sagen('');
   sagen('  Wenn dieser Rechner gar nichts herunterladen darf, ist keiner der');
   sagen('  drei Wege einzurichten. Zwei Möglichkeiten bleiben:');
@@ -227,200 +211,85 @@ function anleitung() {
   sagen('');
 }
 
-/* --- Der benannte Tunnel: die eigene Domain ------------------------------- */
-
-/**
- * Hier wird nichts geliehen. Das Kennwort sagt Cloudflare, welcher Tunnel das
- * ist und welche Domain daran hängt – es gibt also keine Adresse mitzulesen
- * und keine weiterzusagen. Was bleibt, ist die Leitung offenzuhalten.
- *
- * Nur cloudflared kann das: Die beiden Notwege (ssh, localtunnel) tragen
- * fremde Adressen, an eine eigene Domain kommen sie nicht heran. Anders als
- * beim Schnelltunnel ist hier aber auch kein Server nötig, auf den die Domain
- * zeigt – Cloudflares eigenes Netz übernimmt das, kostenlos und ohne
- * Kreditkarte. Einrichtung einmalig: docs/EINRICHTUNG.md, Schritt 6.5.
- */
-function benannterTunnel() {
-  const pfad = findeCloudflared();
-  if (!pfad) {
-    sagen('');
-    sagen('  Für die eigene Domain braucht es cloudflared – hier fehlt es noch.');
-    sagen('  ssh und localtunnel helfen nicht weiter: Die tragen fremde');
-    sagen('  Adressen, keine eigene.');
-    sagen('');
-    if (hatDocker()) {
-      sagen('  Docker ist da – dann geht es über den Container:');
-      sagen('    docker compose --profile domaene up -d');
-      sagen('');
-    }
-    cloudflaredHolen();
-    sagen('');
-    process.exit(1);
-  }
-
-  const ziel = festeAdresse();
-  fs.mkdirSync(datenordner, { recursive: true });
-  const schreiber = fs.createWriteStream(protokoll, { flags: 'w' });
-
-  sagen('');
-  sagen(`  Baue den benannten Tunnel zu http://localhost:${PORT} auf …`);
-  sagen('');
-  if (ziel.adresse) {
-    sagen('  Die Runde erreicht den Almanach unter:');
-    sagen('');
-    sagen(`    ${ziel.adresse}`);
-    sagen('');
-    sagen('  Diese Adresse gehört dir und wechselt nicht mehr – auch nicht nach');
-    sagen('  einem Neustart und auch nicht in einem fremden WLAN. Einmal');
-    sagen('  weitersagen genügt.');
-  } else {
-    sagen('  Welche Domain daran hängt, weiß Cloudflare aus dem Kennwort.');
-    sagen('  Damit der Almanach sie selbst nennen kann, gehört sie in die .env:');
-    sagen('    DOMAENE=www.deinemudda.fun');
-  }
-  sagen('');
-  sagen('  (Beenden mit Strg+C. Der Almanach läuft davon unbeirrt weiter.)');
-  sagen('');
-
-  // Das Kennwort geht über die Umgebung, nicht über die Befehlszeile:
-  // cloudflared liest `--token` auch aus TUNNEL_TOKEN, und was in der
-  // Befehlszeile steht, könnte auf einem gemeinsam genutzten Rechner jeder
-  // in der Prozessliste mitlesen.
-  const tunnel = spawn(pfad, ['tunnel', '--no-autoupdate', 'run'], {
-    stdio: ['ignore', 'pipe', 'pipe'],
-    env: process.env,
-  });
-
-  // Ob das Kennwort taugt, zeigt sich erst an der ersten stehenden Verbindung.
-  // Bis dahin sieht ein falsches genauso aus wie ein richtiges.
-  let steht = false;
-  function mitlesen(stueck) {
-    const text = stueck.toString();
-    schreiber.write(text);
-    if (steht || !/Registered tunnel connection|Connection .* registered/i.test(text)) return;
-    steht = true;
-    sagen('  Die Leitung steht. Ab jetzt kommt die Runde herein.');
-    sagen('');
-  }
-
-  tunnel.stdout.on('data', mitlesen);
-  tunnel.stderr.on('data', mitlesen);
-
-  for (const zeichen of ['SIGINT', 'SIGTERM']) {
-    process.on(zeichen, () => tunnel.kill(zeichen));
-  }
-
-  tunnel.on('exit', (code, signal) => {
-    schreiber.end();
-    if (signal) {
-      sagen('');
-      sagen('  Tunnel geschlossen. Von außen kommt jetzt niemand mehr herein.');
-      sagen('');
-      process.exit(0);
-    }
-    if (code !== 0) {
-      sagen('');
-      sagen(`  cloudflared hat aufgegeben (Code ${code}). Das Protokoll steht in:`);
-      sagen(`    ${protokoll}`);
-      if (!steht) {
-        sagen('');
-        sagen('  Die Verbindung kam nie zustande – meist stimmt das TUNNEL_TOKEN');
-        sagen('  nicht. In Cloudflare unter Zero Trust → Networks → Tunnels das');
-        sagen('  Kennwort noch einmal kopieren und in die .env übernehmen.');
-      }
-      sagen('');
-    }
-    process.exit(code ?? 0);
-  });
-}
-
-/* --- Der Schnelltunnel: eine geliehene Adresse ---------------------------- */
-
-function schnellTunnel() {
-  const wahl = waehleAnbieter();
-  if (!wahl) {
-    anleitung();
-    process.exit(1);
-  }
-  const { eintrag: anbieter, pfad } = wahl;
-
-  fs.mkdirSync(datenordner, { recursive: true });
-  // Frisch anfangen: Sonst fischt `npm run adresse` womöglich die Adresse von
-  // vorgestern aus dem Protokoll und die Runde landet ins Leere.
-  const schreiber = fs.createWriteStream(protokoll, { flags: 'w' });
-
-  sagen('');
-  sagen(`  Baue den Tunnel zu http://localhost:${PORT} auf … (${anbieter.name})`);
-  sagen('  (Beenden mit Strg+C. Der Almanach läuft davon unbeirrt weiter.)');
-  if (anbieter.hinweis) {
-    sagen('');
-    for (const zeile of anbieter.hinweis) sagen(zeile);
-  }
-  sagen('');
-
-  const tunnel = anbieter.starten(pfad);
-
-  // Nicht nur die erste Adresse: Baut die Verbindung neu auf, leiht sich der
-  // Anbieter womöglich eine andere. Dann muss die Runde die neue bekommen –
-  // also sagen wir jede, die sich von der zuletzt genannten unterscheidet.
-  let gemeldet = null;
-  function mitlesen(stueck) {
-    const text = stueck.toString();
-    schreiber.write(text);
-    const treffer = text.match(anbieter.muster);
-    if (!treffer) return;
-    const neuste = treffer[treffer.length - 1];
-    if (neuste === gemeldet) return;
-    const zumZweiten = gemeldet !== null;
-    gemeldet = neuste;
-    sagen('');
-    sagen(
-      zumZweiten
-        ? '  Der Tunnel hat eine neue Adresse bekommen – bitte weitersagen:'
-        : '  Der Almanach ist jetzt von überall erreichbar unter:'
-    );
-    sagen('');
-    sagen(`    ${neuste}`);
-    sagen('');
-    if (!zumZweiten) {
-      sagen('  Diese Adresse ist geliehen: Startet der Tunnel neu, bekommt er eine');
-      sagen('  neue. Später wieder nachsehen mit:  npm run adresse');
-      sagen('');
-    }
-  }
-
-  tunnel.stdout.on('data', mitlesen);
-  tunnel.stderr.on('data', mitlesen);
-
-  for (const zeichen of ['SIGINT', 'SIGTERM']) {
-    process.on(zeichen, () => tunnel.kill(zeichen));
-  }
-
-  tunnel.on('exit', (code, signal) => {
-    schreiber.end();
-    if (signal) {
-      sagen('');
-      sagen('  Tunnel geschlossen. Von außen kommt jetzt niemand mehr herein.');
-      sagen('');
-      process.exit(0);
-    }
-    if (code !== 0 && gemeldet === null) {
-      sagen('');
-      sagen(`  ${anbieter.name} hat aufgegeben (Code ${code}). Das Protokoll steht in:`);
-      sagen(`    ${protokoll}`);
-      if (ANBIETER.some((a) => a.id !== anbieter.id && a.verfuegbar())) {
-        sagen('');
-        sagen('  Ein anderer Weg ist auf diesem Gerät auch da – erzwingen mit:');
-        sagen(`    TUNNEL_ANBIETER=<${ANBIETER.map((a) => a.id).join('|')}> npm run tunnel`);
-      }
-      sagen('');
-    }
-    process.exit(code ?? 0);
-  });
-}
-
 /* --- Los ------------------------------------------------------------------ */
 
-// Mit eigener Domain gibt es nichts zu wählen: Dann führt genau ein Weg hinaus.
-if (process.env.TUNNEL_TOKEN) benannterTunnel();
-else schnellTunnel();
+const wahl = waehleAnbieter();
+if (!wahl) {
+  anleitung();
+  process.exit(1);
+}
+const { eintrag: anbieter, pfad } = wahl;
+
+fs.mkdirSync(datenordner, { recursive: true });
+// Frisch anfangen: Sonst fischt `npm run adresse` womöglich die Adresse von
+// vorgestern aus dem Protokoll und die Runde landet ins Leere.
+const schreiber = fs.createWriteStream(protokoll, { flags: 'w' });
+
+sagen('');
+sagen(`  Baue den Tunnel zu http://localhost:${PORT} auf … (${anbieter.name})`);
+sagen('  (Beenden mit Strg+C. Der Almanach läuft davon unbeirrt weiter.)');
+if (anbieter.hinweis) {
+  sagen('');
+  for (const zeile of anbieter.hinweis) sagen(zeile);
+}
+sagen('');
+
+const tunnel = anbieter.starten(pfad);
+
+// Nicht nur die erste Adresse: Baut die Verbindung neu auf, leiht sich der
+// Anbieter womöglich eine andere. Dann muss die Runde die neue bekommen –
+// also sagen wir jede, die sich von der zuletzt genannten unterscheidet.
+let gemeldet = null;
+function mitlesen(stueck) {
+  const text = stueck.toString();
+  schreiber.write(text);
+  const treffer = text.match(anbieter.muster);
+  if (!treffer) return;
+  const neuste = treffer[treffer.length - 1];
+  if (neuste === gemeldet) return;
+  const zumZweiten = gemeldet !== null;
+  gemeldet = neuste;
+  sagen('');
+  sagen(
+    zumZweiten
+      ? '  Der Tunnel hat eine neue Adresse bekommen – bitte weitersagen:'
+      : '  Der Almanach ist jetzt von überall erreichbar unter:'
+  );
+  sagen('');
+  sagen(`    ${neuste}`);
+  sagen('');
+  if (!zumZweiten) {
+    sagen('  Diese Adresse ist geliehen: Startet der Tunnel neu, bekommt er eine');
+    sagen('  neue. Später wieder nachsehen mit:  npm run adresse');
+    sagen('');
+  }
+}
+
+tunnel.stdout.on('data', mitlesen);
+tunnel.stderr.on('data', mitlesen);
+
+for (const zeichen of ['SIGINT', 'SIGTERM']) {
+  process.on(zeichen, () => tunnel.kill(zeichen));
+}
+
+tunnel.on('exit', (code, signal) => {
+  schreiber.end();
+  if (signal) {
+    sagen('');
+    sagen('  Tunnel geschlossen. Von außen kommt jetzt niemand mehr herein.');
+    sagen('');
+    process.exit(0);
+  }
+  if (code !== 0 && gemeldet === null) {
+    sagen('');
+    sagen(`  ${anbieter.name} hat aufgegeben (Code ${code}). Das Protokoll steht in:`);
+    sagen(`    ${protokoll}`);
+    if (ANBIETER.some((a) => a.id !== anbieter.id && a.verfuegbar())) {
+      sagen('');
+      sagen('  Ein anderer Weg ist auf diesem Gerät auch da – erzwingen mit:');
+      sagen(`    TUNNEL_ANBIETER=<${ANBIETER.map((a) => a.id).join('|')}> npm run tunnel`);
+    }
+    sagen('');
+  }
+  process.exit(code ?? 0);
+});
