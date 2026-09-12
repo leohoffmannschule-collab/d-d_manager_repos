@@ -38,9 +38,11 @@ das ist so gewollt, weil der Almanach von außen erreichbar ist.
 **Angemeldet bleibst du 30 Tage.** Am Spielabend musst du also nicht
 hantieren. Passwort vergessen? Deine Spielleitung setzt es neu.
 
-> **Zwei Adressen.** Im selben WLAN wie der Rechner der Spielleitung gilt
-> eine `192.168.…`-Adresse, von zu Hause aus eine `https://…`-Adresse. Wechselt
-> die Runde den Ort, fragst du einmal nach der aktuellen.
+> **Welche Adresse gilt?** Hat deine Runde eine **eigene Domain** (etwas wie
+> `https://www.deinemudda.fun`), dann ist es immer dieselbe – einmal merken,
+> fertig. Sonst gibt es zwei: im selben WLAN wie der Rechner der Spielleitung
+> eine `192.168.…`-Adresse, von zu Hause aus eine geliehene `https://…`. Die
+> geliehene wechselt gelegentlich; dann fragst du einmal nach der neuen.
 
 ---
 
@@ -54,7 +56,8 @@ Home-Bildschirm*.
 **Android (Chrome):** Seite öffnen → Menü → *Zum Startbildschirm hinzufügen*.
 
 > Wechselt die Adresse der Runde später, musst du das Symbol einmal neu
-> ablegen – für den Browser ist es dann eine neue Seite.
+> ablegen – für den Browser ist es dann eine neue Seite. Bei einer Runde mit
+> eigener Domain passiert das nie: Die Adresse bleibt, das Symbol auch.
 
 Oben rechts kannst du zwischen **Pergament** (helle Räume) und
 **Kerzenlicht** (abgedunkelter Spieltisch) wechseln. Jedes Gerät merkt sich
@@ -280,7 +283,7 @@ zurück** – am Spieltisch gilt das Blatt im Almanach.
 | Bild | Was zu tun ist |
 | --- | --- |
 | **Der Punkt neben deinem Namen blinkt rot** | Die Verbindung ist unterbrochen; der Almanach knüpft sie von allein wieder an. Leuchtet er golden, läuft alles wieder ein. |
-| **Die Seite lädt gar nicht** | Bist du im richtigen Netz? Im WLAN gilt die `192.168.…`-Adresse, von auswärts die des Tunnels. Frag im Zweifel nach der aktuellen – sie kann gewechselt haben. |
+| **Die Seite lädt gar nicht** | Hat eure Runde eine eigene Domain, läuft der Almanach bei der Spielleitung gerade nicht – kurz nachfragen. Sonst: Bist du im richtigen Netz? Im WLAN gilt die `192.168.…`-Adresse, von auswärts die des Tunnels, und die kann gewechselt haben. |
 | **Der Spieltisch ist leer** | Es liegt gerade keine Szene auf, oder die Spielleitung hat den Vorhang zu. Beides normal. |
 | **Du siehst weniger als die anderen** | Du hast eine Sichtweite eingetragen, oder die Szene ist dunkel und du trägst kein Licht. Frag deine Spielleitung – meistens ist es so gewollt. |
 | **„Zu viele Versuche“** | Acht Fehlversuche, dann zehn Minuten Ruhe. Kurz warten. |
