@@ -44,7 +44,7 @@ function saubereEintraege(liste) {
 }
 
 router.get('/', (req, res) => {
-  res.json(db.prepare('SELECT * FROM encounters ORDER BY name COLLATE NOCASE').all().map(rowToEncounter));
+  res.json(db.prepare('SELECT * FROM encounters WHERE campaign_id = ? ORDER BY name COLLATE NOCASE').all(req.campaignId).map(rowToEncounter));
 });
 
 router.post('/', (req, res) => {
@@ -53,18 +53,19 @@ router.post('/', (req, res) => {
     return res.status(400).json({ code: 'name_fehlt', error: 'Name ist erforderlich.' });
   }
   const id = randomUUID();
-  db.prepare('INSERT INTO encounters (id, name, notes, entries, created_at) VALUES (?, ?, ?, ?, ?)').run(
+  db.prepare('INSERT INTO encounters (id, name, notes, entries, campaign_id, created_at) VALUES (?, ?, ?, ?, ?, ?)').run(
     id,
     body.name.trim().slice(0, 100),
     typeof body.notes === 'string' ? body.notes.slice(0, 4000) : '',
     JSON.stringify(saubereEintraege(body.entries)),
+    req.campaignId,
     new Date().toISOString()
   );
   res.status(201).json(rowToEncounter(db.prepare('SELECT * FROM encounters WHERE id = ?').get(id)));
 });
 
 router.put('/:id', (req, res) => {
-  const row = db.prepare('SELECT * FROM encounters WHERE id = ?').get(req.params.id);
+  const row = db.prepare('SELECT * FROM encounters WHERE id = ? AND campaign_id = ?').get(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'begegnung_nicht_gefunden', error: 'Begegnung nicht gefunden.' });
   const body = req.body ?? {};
   db.prepare('UPDATE encounters SET name = ?, notes = ?, entries = ? WHERE id = ?').run(
@@ -77,22 +78,22 @@ router.put('/:id', (req, res) => {
 });
 
 router.delete('/:id', (req, res) => {
-  const info = db.prepare('DELETE FROM encounters WHERE id = ?').run(req.params.id);
+  const info = db.prepare('DELETE FROM encounters WHERE id = ? AND campaign_id = ?').run(req.params.id, req.campaignId);
   if (info.changes === 0) return res.status(404).json({ code: 'begegnung_nicht_gefunden', error: 'Begegnung nicht gefunden.' });
   res.status(204).end();
 });
 
 // POST /api/encounters/:id/stellen – die ganze Begegnung in den Kampf setzen
 router.post('/:id/stellen', (req, res) => {
-  const row = db.prepare('SELECT * FROM encounters WHERE id = ?').get(req.params.id);
+  const row = db.prepare('SELECT * FROM encounters WHERE id = ? AND campaign_id = ?').get(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'begegnung_nicht_gefunden', error: 'Begegnung nicht gefunden.' });
 
   const wuerfeln = req.body?.rollInitiative !== false;
   const eintraege = JSON.parse(row.entries);
   const now = new Date().toISOString();
   const einfuegen = db.prepare(
-    `INSERT INTO combatants (id, name, type, initiative, hp, max_hp, ac, conditions, notes, character_id, media_id, hidden, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, '[]', '', NULL, ?, ?, ?)`
+    `INSERT INTO combatants (id, name, type, initiative, hp, max_hp, ac, conditions, notes, character_id, media_id, hidden, campaign_id, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, '[]', '', NULL, ?, ?, ?, ?)`
   );
 
   let gestellt = 0;
@@ -108,6 +109,7 @@ router.post('/:id/stellen', (req, res) => {
         e.ac,
         e.mediaId ?? null,
         e.hidden ? 1 : 0,
+        req.campaignId,
         now
       );
       gestellt += 1;
@@ -116,28 +118,31 @@ router.post('/:id/stellen', (req, res) => {
 
   // Verborgene Gegner tauchen nicht in der für alle sichtbaren Chronik auf.
   const offenkundig = eintraege.filter((e) => !e.hidden);
-  chronik.log({
-    kind: 'auftritt',
-    text: offenkundig.length
-      ? `Begegnung „${row.name}“: ${offenkundig.map((e) => `${e.count}× ${e.name}`).join(', ')}.`
-      : `Begegnung „${row.name}“ wird gestellt.`,
-    meta: {
-      encounterId: row.id,
-      name: row.name,
-      count: gestellt,
-      gruppen: offenkundig.map((e) => ({ name: e.name, count: e.count })),
+  chronik.log(
+    {
+      kind: 'auftritt',
+      text: offenkundig.length
+        ? `Begegnung „${row.name}“: ${offenkundig.map((e) => `${e.count}× ${e.name}`).join(', ')}.`
+        : `Begegnung „${row.name}“ wird gestellt.`,
+      meta: {
+        encounterId: row.id,
+        name: row.name,
+        count: gestellt,
+        gruppen: offenkundig.map((e) => ({ name: e.name, count: e.count })),
+      },
+      secret: offenkundig.length === 0,
     },
-    secret: offenkundig.length === 0,
-  });
+    req.campaignId
+  );
 
-  sendeKampf();
+  sendeKampf(req.campaignId);
   res.status(201).json({ created: gestellt });
 });
 
 // POST /api/encounters/aus-kampf – den laufenden Kampf als Begegnung sichern
 router.post('/aus-kampf', (req, res) => {
   const name = typeof req.body?.name === 'string' && req.body.name.trim() ? req.body.name.trim() : 'Gesicherter Kampf';
-  const kaempfer = db.prepare("SELECT * FROM combatants WHERE type != 'pc'").all();
+  const kaempfer = db.prepare("SELECT * FROM combatants WHERE type != 'pc' AND campaign_id = ?").all(req.campaignId);
   if (kaempfer.length === 0) {
     return res.status(400).json({ code: 'kampf_ohne_gegner', error: 'Im Kampf steht gerade kein Gegner, den man sichern könnte.' });
   }
@@ -165,11 +170,12 @@ router.post('/aus-kampf', (req, res) => {
   }
 
   const id = randomUUID();
-  db.prepare('INSERT INTO encounters (id, name, notes, entries, created_at) VALUES (?, ?, ?, ?, ?)').run(
+  db.prepare('INSERT INTO encounters (id, name, notes, entries, campaign_id, created_at) VALUES (?, ?, ?, ?, ?, ?)').run(
     id,
     name.slice(0, 100),
     '',
     JSON.stringify([...gruppen.values()]),
+    req.campaignId,
     new Date().toISOString()
   );
   res.status(201).json(rowToEncounter(db.prepare('SELECT * FROM encounters WHERE id = ?').get(id)));

@@ -10,10 +10,11 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import db, { driver } from './db.js';
 import { festeAdresse } from './domaene.js';
-import { attachUser, countUsers, requireAuth } from './auth.js';
+import { attachUser, countUsers, requireAuth, requireCampaign } from './auth.js';
 import { addClient, presence } from './events.js';
 import ambienceRouter from './routes/ambience.js';
 import authRouter from './routes/auth.js';
+import campaignsRouter from './routes/campaigns.js';
 import chronicleRouter from './routes/chronicle.js';
 import charactersRouter from './routes/characters.js';
 import chatRouter from './routes/chat.js';
@@ -26,7 +27,6 @@ import mapsRouter from './routes/maps.js';
 import mediaRouter from './routes/media.js';
 import notesRouter from './routes/notes.js';
 import scenesRouter from './routes/scenes.js';
-import { saeVorlagen } from './vorlagen/index.js';
 import stashRouter from './routes/stash.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -83,31 +83,32 @@ app.get('/api/health', (req, res) => {
  * Der Live-Kanal. Alle offenen Fenster hängen hier und bekommen Änderungen
  * an Kampf, Spieltisch, Würfen und Charakteren zugeschickt.
  */
-app.get('/api/stream', requireAuth, (req, res) => {
+app.get('/api/stream', requireCampaign, (req, res) => {
   req.socket.setTimeout(0);
   req.socket.setNoDelay(true);
   req.socket.setKeepAlive(true);
-  addClient(req, res, req.user);
+  addClient(req, res, req.user, req.campaignId);
 });
 
-app.get('/api/anwesenheit', requireAuth, (req, res) => {
-  res.json(presence());
+app.get('/api/anwesenheit', requireCampaign, (req, res) => {
+  res.json(presence(req.campaignId));
 });
 
-app.use('/api/ambience', ambienceRouter);
+app.use('/api/ambience', requireCampaign, ambienceRouter);
 app.use('/api/auth', authRouter);
-app.use('/api/characters', charactersRouter);
-app.use('/api/chat', chatRouter);
+app.use('/api/campaigns', campaignsRouter);
+app.use('/api/characters', requireCampaign, charactersRouter);
+app.use('/api/chat', requireCampaign, chatRouter);
 app.use('/api/compendium', requireAuth, compendiumRouter);
-app.use('/api/dice', diceRouter);
-app.use('/api/chronicle', chronicleRouter);
-app.use('/api/encounter', encounterRouter);
-app.use('/api/encounters', encountersRouter);
-app.use('/api/library', libraryRouter);
-app.use('/api/maps', mapsRouter);
-app.use('/api/notes', notesRouter);
-app.use('/api/scenes', scenesRouter);
-app.use('/api/stash', stashRouter);
+app.use('/api/dice', requireCampaign, diceRouter);
+app.use('/api/chronicle', requireCampaign, chronicleRouter);
+app.use('/api/encounter', requireCampaign, encounterRouter);
+app.use('/api/encounters', requireCampaign, encountersRouter);
+app.use('/api/library', requireCampaign, libraryRouter);
+app.use('/api/maps', requireCampaign, mapsRouter);
+app.use('/api/notes', requireCampaign, notesRouter);
+app.use('/api/scenes', requireCampaign, scenesRouter);
+app.use('/api/stash', requireCampaign, stashRouter);
 
 app.use('/api', (req, res) => {
   res.status(404).json({ code: 'route_unbekannt', error: 'Diesen Weg kennt der Almanach nicht.' });
@@ -142,10 +143,6 @@ function localAddresses() {
     .map((iface) => iface.address);
 }
 
-// Beim allerersten Start liegen zwölf fertige Charaktere hinter dem Schirm –
-// einer je Klasse, einer je Spezies. Danach nie wieder von selbst.
-const saat = saeVorlagen();
-
 // Die feste Adresse, unter der die Runde spielt – sofern eine eingetragen ist.
 const domaene = festeAdresse();
 
@@ -174,10 +171,6 @@ app.listen(PORT, () => {
   if (umgebung.grund === 'fehler') {
     console.log('');
     console.log(`  Die .env ließ sich nicht lesen: ${umgebung.fehler}`);
-  }
-  if (saat.gesaet > 0) {
-    console.log('');
-    console.log(`  ${saat.gesaet} Vorlagen-Charaktere angelegt – sie liegen als NSC hinter dem Schirm.`);
   }
   if (countUsers() === 0) {
     console.log('');

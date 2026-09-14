@@ -73,7 +73,7 @@ function teile(vorrat, anteile) {
   return { proKopf, rest: ausKupfer(uebertrag), restInKupfer: uebertrag };
 }
 
-const muenzen = () => ({ ...LEER, ...(getState('beute', LEER) ?? LEER) });
+const muenzen = (campaignId) => ({ ...LEER, ...(getState('beute', campaignId, LEER) ?? LEER) });
 
 function rowToItem(row) {
   return {
@@ -87,16 +87,20 @@ function rowToItem(row) {
   };
 }
 
-const alleGegenstaende = () =>
-  db.prepare('SELECT * FROM stash_items ORDER BY created_at').all().map(rowToItem);
+const alleGegenstaende = (campaignId) =>
+  db.prepare('SELECT * FROM stash_items WHERE campaign_id = ? ORDER BY created_at').all(campaignId).map(rowToItem);
 
 function melden(req) {
-  broadcast('beute', { items: alleGegenstaende(), coins: muenzen() }, { exceptClient: originClient(req) });
+  broadcast(
+    'beute',
+    { items: alleGegenstaende(req.campaignId), coins: muenzen(req.campaignId) },
+    { exceptClient: originClient(req), campaignId: req.campaignId }
+  );
 }
 
 // GET /api/stash
 router.get('/', (req, res) => {
-  res.json({ items: alleGegenstaende(), coins: muenzen() });
+  res.json({ items: alleGegenstaende(req.campaignId), coins: muenzen(req.campaignId) });
 });
 
 // POST /api/stash/items – jede und jeder darf eintragen, was gefunden wurde
@@ -107,7 +111,7 @@ router.post('/items', (req, res) => {
   }
   const id = randomUUID();
   db.prepare(
-    'INSERT INTO stash_items (id, name, qty, weight, notes, holder_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    'INSERT INTO stash_items (id, name, qty, weight, notes, holder_id, campaign_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
   ).run(
     id,
     body.name.trim().slice(0, 120),
@@ -115,6 +119,7 @@ router.post('/items', (req, res) => {
     Math.max(0, toNumber(body.weight, 0)),
     typeof body.notes === 'string' ? body.notes.slice(0, 500) : '',
     body.holderId ?? null,
+    req.campaignId,
     new Date().toISOString()
   );
   melden(req);
@@ -122,7 +127,7 @@ router.post('/items', (req, res) => {
 });
 
 router.put('/items/:id', (req, res) => {
-  const row = db.prepare('SELECT * FROM stash_items WHERE id = ?').get(req.params.id);
+  const row = db.prepare('SELECT * FROM stash_items WHERE id = ? AND campaign_id = ?').get(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'gegenstand_nicht_gefunden', error: 'Gegenstand nicht gefunden.' });
   const body = req.body ?? {};
   db.prepare('UPDATE stash_items SET name = ?, qty = ?, weight = ?, notes = ?, holder_id = ? WHERE id = ?').run(
@@ -138,7 +143,7 @@ router.put('/items/:id', (req, res) => {
 });
 
 router.delete('/items/:id', (req, res) => {
-  const info = db.prepare('DELETE FROM stash_items WHERE id = ?').run(req.params.id);
+  const info = db.prepare('DELETE FROM stash_items WHERE id = ? AND campaign_id = ?').run(req.params.id, req.campaignId);
   if (info.changes === 0) return res.status(404).json({ code: 'gegenstand_nicht_gefunden', error: 'Gegenstand nicht gefunden.' });
   melden(req);
   res.status(204).end();
@@ -148,8 +153,9 @@ router.delete('/items/:id', (req, res) => {
 router.put('/coins', (req, res) => {
   const body = req.body ?? {};
   const naechste = { ...LEER };
-  for (const m of MUENZEN) naechste[m] = Math.max(0, Math.floor(toNumber(body[m], muenzen()[m])));
-  setState('beute', naechste);
+  const vorher = muenzen(req.campaignId);
+  for (const m of MUENZEN) naechste[m] = Math.max(0, Math.floor(toNumber(body[m], vorher[m])));
+  setState('beute', req.campaignId, naechste);
   melden(req);
   res.json(naechste);
 });
@@ -163,7 +169,7 @@ router.put('/coins', (req, res) => {
  */
 router.get('/teilung', (req, res) => {
   const anteile = Math.max(1, Math.min(20, parseInt(req.query.anteile, 10) || 1));
-  const vorrat = muenzen();
+  const vorrat = muenzen(req.campaignId);
   const { proKopf, rest } = teile(vorrat, anteile);
   res.json({ anteile, proKopf, rest, gesamtInKupfer: inKupfer(vorrat) });
 });
@@ -180,11 +186,11 @@ router.post('/auszahlen', requireDm, (req, res) => {
   if (ids.length === 0) return res.status(400).json({ code: 'empfaenger_fehlen', error: 'Es wurde niemand genannt, der etwas bekommen soll.' });
 
   const charaktere = ids
-    .map((id) => db.prepare('SELECT * FROM characters WHERE id = ?').get(id))
+    .map((id) => db.prepare('SELECT * FROM characters WHERE id = ? AND campaign_id = ?').get(id, req.campaignId))
     .filter(Boolean);
   if (charaktere.length === 0) return res.status(400).json({ code: 'charakter_nicht_gefunden', error: 'Keiner dieser Charaktere ist verzeichnet.' });
 
-  const vorrat = muenzen();
+  const vorrat = muenzen(req.campaignId);
   const { proKopf: anteil, rest, restInKupfer } = teile(vorrat, charaktere.length);
   if (inKupfer(anteil) <= 0) {
     return res.status(400).json({ code: 'beute_zu_klein', error: 'In der Kiste liegt zu wenig, um sie zu teilen.' });
@@ -201,34 +207,34 @@ router.post('/auszahlen', requireDm, (req, res) => {
       jetzt,
       row.id
     );
-    broadcast('charakter:aktualisiert', {
-      id: row.id,
-      name: row.name,
-      hp: data?.combat?.hp ?? null,
-      ownerId: row.owner_id,
-      shared: !!row.shared,
-    });
+    broadcast(
+      'charakter:aktualisiert',
+      { id: row.id, name: row.name, hp: data?.combat?.hp ?? null, ownerId: row.owner_id, shared: !!row.shared },
+      { campaignId: req.campaignId }
+    );
   }
 
-  setState('beute', rest);
+  setState('beute', req.campaignId, rest);
 
   const beschreibung = MUENZEN.filter((m) => anteil[m])
     .map((m) => `${anteil[m]} ${MUENZNAME[m]}`)
     .join(', ');
-  chronik.log({
-    kind: 'notiz',
-    actor: req.user.name,
-    text: `Die Beute wird geteilt: je ${beschreibung} für ${charaktere.map((c) => c.name).join(', ')}.`,
-    meta: {
-      anteil,
-      empfaenger: charaktere.length,
-      namen: charaktere.map((c) => c.name),
-      restInKupfer,
+  chronik.log(
+    {
+      kind: 'notiz',
+      actor: req.user.name,
+      text: `Die Beute wird geteilt: je ${beschreibung} für ${charaktere.map((c) => c.name).join(', ')}.`,
+      meta: {
+        anteil,
+        empfaenger: charaktere.length,
+        namen: charaktere.map((c) => c.name),
+        restInKupfer,
+      },
     },
-  });
+    req.campaignId
+  );
 
   melden(req);
-  broadcast('beute', { items: alleGegenstaende(), coins: rest });
   res.json({ anteil, rest, empfaenger: charaktere.length });
 });
 

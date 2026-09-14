@@ -52,7 +52,7 @@ function summary(row) {
 
 const SELECT = `SELECT c.*, u.name AS owner_name FROM characters c LEFT JOIN users u ON u.id = c.owner_id`;
 
-const holen = (id) => db.prepare(`${SELECT} WHERE c.id = ?`).get(id);
+const holen = (id, campaignId) => db.prepare(`${SELECT} WHERE c.id = ? AND c.campaign_id = ?`).get(id, campaignId);
 
 // Charaktere ohne Besitzer stammen aus der Zeit vor den Konten – sie gehören
 // der Spielleitung, bis sie jemandem zugewiesen werden.
@@ -80,22 +80,24 @@ function sinneAus(rohesJson) {
 }
 
 function meldeAenderung(row, req) {
-  broadcast('charakter:aktualisiert', summary(row), { exceptClient: originClient(req) });
+  broadcast('charakter:aktualisiert', summary(row), { exceptClient: originClient(req), campaignId: req.campaignId });
 }
 
 // GET /api/characters – eigene Charaktere, dazu die geteilten der Mitspieler
 router.get('/', (req, res) => {
   const rows = isDm(req.user)
-    ? db.prepare(`${SELECT} ORDER BY c.updated_at DESC`).all()
+    ? db.prepare(`${SELECT} WHERE c.campaign_id = ? ORDER BY c.updated_at DESC`).all(req.campaignId)
     : db
-        .prepare(`${SELECT} WHERE c.npc = 0 AND (c.owner_id = ? OR c.shared = 1) ORDER BY c.updated_at DESC`)
-        .all(req.user.id);
+        .prepare(
+          `${SELECT} WHERE c.campaign_id = ? AND c.npc = 0 AND (c.owner_id = ? OR c.shared = 1) ORDER BY c.updated_at DESC`
+        )
+        .all(req.campaignId, req.user.id);
   res.json(rows.map(summary));
 });
 
 // GET /api/characters/:id
 router.get('/:id', (req, res) => {
-  const row = holen(req.params.id);
+  const row = holen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'charakter_nicht_gefunden', error: 'Charakter nicht gefunden' });
   if (!darfSehen(req.user, row)) return res.status(403).json({ code: 'blatt_nicht_sichtbar', error: 'Dieses Blatt ist nicht für dich bestimmt.' });
   res.json({ ...rowToCharacter(row), editable: darfBearbeiten(req.user, row) });
@@ -112,17 +114,17 @@ router.post('/', (req, res) => {
   const id = randomUUID();
   const now = new Date().toISOString();
   db.prepare(
-    `INSERT INTO characters (id, name, system, data, owner_id, shared, npc, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
-  ).run(id, name.trim(), system, JSON.stringify(data), req.user.id, npc ? 0 : 1, npc ? 1 : 0, now, now);
-  const row = holen(id);
+    `INSERT INTO characters (id, name, system, data, owner_id, shared, npc, campaign_id, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(id, name.trim(), system, JSON.stringify(data), req.user.id, npc ? 0 : 1, npc ? 1 : 0, req.campaignId, now, now);
+  const row = holen(id, req.campaignId);
   meldeAenderung(row, req);
   res.status(201).json(rowToCharacter(row));
 });
 
 // PUT /api/characters/:id – full update (autosave from the sheet editor)
 router.put('/:id', (req, res) => {
-  const existing = holen(req.params.id);
+  const existing = holen(req.params.id, req.campaignId);
   if (!existing) return res.status(404).json({ code: 'charakter_nicht_gefunden', error: 'Charakter nicht gefunden' });
   if (!darfBearbeiten(req.user, existing)) {
     return res.status(403).json({ code: 'blatt_fremd', error: 'Dieses Blatt gehört jemand anderem.' });
@@ -146,13 +148,13 @@ router.put('/:id', (req, res) => {
     now,
     req.params.id
   );
-  const row = holen(req.params.id);
+  const row = holen(req.params.id, req.campaignId);
 
   // Trefferpunkte im Kampf mitziehen, damit die Spielleitung sofort sieht,
   // wenn jemand Schaden einträgt.
   const hp = JSON.parse(row.data)?.combat?.hp;
   if (hp && Number.isFinite(Number(hp.current))) {
-    const linked = db.prepare('SELECT id FROM combatants WHERE character_id = ?').all(row.id);
+    const linked = db.prepare('SELECT id FROM combatants WHERE character_id = ? AND campaign_id = ?').all(row.id, req.campaignId);
     for (const combatant of linked) {
       db.prepare('UPDATE combatants SET hp = ?, max_hp = ? WHERE id = ?').run(
         Number(hp.current) || 0,
@@ -160,10 +162,10 @@ router.put('/:id', (req, res) => {
         combatant.id
       );
     }
-    if (linked.length) broadcast('kampf:aktualisiert', {});
+    if (linked.length) broadcast('kampf:aktualisiert', {}, { campaignId: req.campaignId });
   }
 
-  if (sinneVorher !== sinneNachher) sendeSzene();
+  if (sinneVorher !== sinneNachher) sendeSzene(req.campaignId);
 
   meldeAenderung(row, req);
   res.json(rowToCharacter(row));
@@ -171,7 +173,7 @@ router.put('/:id', (req, res) => {
 
 // PATCH /api/characters/:id – Besitz und Sichtbarkeit
 router.patch('/:id', (req, res) => {
-  const existing = holen(req.params.id);
+  const existing = holen(req.params.id, req.campaignId);
   if (!existing) return res.status(404).json({ code: 'charakter_nicht_gefunden', error: 'Charakter nicht gefunden' });
   if (!darfBearbeiten(req.user, existing)) {
     return res.status(403).json({ code: 'blatt_fremd', error: 'Dieses Blatt gehört jemand anderem.' });
@@ -197,43 +199,43 @@ router.patch('/:id', (req, res) => {
     db.prepare('UPDATE characters SET npc = ?, shared = ? WHERE id = ?').run(npc ? 1 : 0, npc ? 0 : 1, existing.id);
   }
 
-  const row = holen(existing.id);
+  const row = holen(existing.id, req.campaignId);
   meldeAenderung(row, req);
   res.json(rowToCharacter(row));
 });
 
 // DELETE /api/characters/:id
 router.delete('/:id', (req, res) => {
-  const existing = holen(req.params.id);
+  const existing = holen(req.params.id, req.campaignId);
   if (!existing) return res.status(404).json({ code: 'charakter_nicht_gefunden', error: 'Charakter nicht gefunden' });
   if (!darfBearbeiten(req.user, existing)) {
     return res.status(403).json({ code: 'blatt_fremd', error: 'Dieses Blatt gehört jemand anderem.' });
   }
   db.prepare('DELETE FROM characters WHERE id = ?').run(existing.id);
-  broadcast('charakter:entfernt', { id: existing.id });
+  broadcast('charakter:entfernt', { id: existing.id }, { campaignId: req.campaignId });
   res.status(204).end();
 });
 
 // POST /api/characters/:id/duplicate
 router.post('/:id/duplicate', (req, res) => {
-  const existing = holen(req.params.id);
+  const existing = holen(req.params.id, req.campaignId);
   if (!existing) return res.status(404).json({ code: 'charakter_nicht_gefunden', error: 'Charakter nicht gefunden' });
   if (!darfSehen(req.user, existing)) return res.status(403).json({ code: 'blatt_nicht_sichtbar', error: 'Dieses Blatt ist nicht für dich bestimmt.' });
 
   const id = randomUUID();
   const now = new Date().toISOString();
   db.prepare(
-    `INSERT INTO characters (id, name, system, data, owner_id, shared, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-  ).run(id, `${existing.name} (Kopie)`, existing.system, existing.data, req.user.id, existing.shared, now, now);
-  const row = holen(id);
+    `INSERT INTO characters (id, name, system, data, owner_id, shared, campaign_id, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(id, `${existing.name} (Kopie)`, existing.system, existing.data, req.user.id, existing.shared, req.campaignId, now, now);
+  const row = holen(id, req.campaignId);
   meldeAenderung(row, req);
   res.status(201).json(rowToCharacter(row));
 });
 
 // GET /api/characters/:id/all – Rohdaten aller Blätter für die Spielleitung
 router.get('/verwaltung/alle', requireDm, (req, res) => {
-  res.json(db.prepare(`${SELECT} ORDER BY c.name COLLATE NOCASE`).all().map(summary));
+  res.json(db.prepare(`${SELECT} WHERE c.campaign_id = ? ORDER BY c.name COLLATE NOCASE`).all(req.campaignId).map(summary));
 });
 
 export default router;

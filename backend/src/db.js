@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { randomUUID } from 'node:crypto';
 
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -93,6 +94,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS auth_sessions (
     token_hash TEXT PRIMARY KEY,
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    campaign_id TEXT,
     created_at TEXT NOT NULL,
     last_seen TEXT NOT NULL
   );
@@ -103,6 +105,27 @@ db.exec(`
     created_at TEXT NOT NULL,
     used_by TEXT,
     used_at TEXT
+  );
+
+  /* --- Kampagnen: dieselbe Runde, mehrere Geschichten --------------------
+     Konten, Rollen und Einladungen bleiben rundenweit gemeinsam; alles, was
+     am Tisch entsteht (Figuren, Chronik, Spielszenen, Beute …), gehört zu
+     genau einer Kampagne. Wer an mehreren teilnimmt, wählt nach der
+     Anmeldung, an welcher gerade gespielt wird – festgehalten in der
+     eigenen Sitzung (auth_sessions.campaign_id), nicht im Konto selbst. */
+
+  CREATE TABLE IF NOT EXISTS campaigns (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    created_by TEXT REFERENCES users(id) ON DELETE SET NULL,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS campaign_members (
+    campaign_id TEXT NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    joined_at TEXT NOT NULL,
+    PRIMARY KEY (campaign_id, user_id)
   );
 
   /* --- Spielleitung: Kampf, Bestiarium, Notizen -------------------------- */
@@ -357,9 +380,59 @@ addColumnIfMissing('scenes', 'scale', 'REAL NOT NULL DEFAULT 5');
 addColumnIfMissing('maps', 'unit', "TEXT NOT NULL DEFAULT 'fuss'");
 addColumnIfMissing('maps', 'scale', 'REAL NOT NULL DEFAULT 5');
 
-/** Kleiner Schlüssel-Wert-Speicher für Einzelwerte (aktive Szene, Kampfrunde …). */
-export function getState(key, fallback = null) {
-  const row = db.prepare('SELECT value FROM app_state WHERE key = ?').get(key);
+/* --- Kampagnen nachrüsten -------------------------------------------------
+   Jede Tabelle, die am Tisch entsteht, bekommt eine campaign_id. Wer schon
+   eine laufende Runde hat, bekommt seine bestehenden Daten in eine erste
+   Kampagne überführt – niemand verliert dadurch etwas. */
+const KAMPAGNEN_TABELLEN = [
+  'characters', 'combatants', 'library', 'notes', 'rolls', 'messages',
+  'scenes', 'maps', 'media', 'encounters', 'stash_items', 'ambience', 'game_sessions',
+];
+for (const tabelle of KAMPAGNEN_TABELLEN) addColumnIfMissing(tabelle, 'campaign_id', 'TEXT');
+addColumnIfMissing('auth_sessions', 'campaign_id', 'TEXT');
+
+(function ersteKampagneSichern() {
+  if (db.prepare('SELECT COUNT(*) AS n FROM campaigns').get().n > 0) return;
+
+  const nutzer = db.prepare('SELECT id FROM users ORDER BY created_at').all();
+  if (nutzer.length === 0) return; // Frisch eingerichteter Almanach: legt seine erste Kampagne selbst an.
+
+  const id = randomUUID();
+  const jetzt = new Date().toISOString();
+  const ersteSl = db.prepare("SELECT id FROM users WHERE role = 'sl' ORDER BY created_at LIMIT 1").get();
+  db.prepare('INSERT INTO campaigns (id, name, created_by, created_at) VALUES (?, ?, ?, ?)').run(
+    id,
+    'Erste Kampagne',
+    ersteSl?.id ?? null,
+    jetzt
+  );
+  const mitglied = db.prepare(
+    'INSERT INTO campaign_members (campaign_id, user_id, joined_at) VALUES (?, ?, ?)'
+  );
+  for (const { id: userId } of nutzer) mitglied.run(id, userId, jetzt);
+
+  for (const tabelle of KAMPAGNEN_TABELLEN) {
+    db.prepare(`UPDATE ${tabelle} SET campaign_id = ? WHERE campaign_id IS NULL`).run(id);
+  }
+  db.prepare('UPDATE auth_sessions SET campaign_id = ? WHERE campaign_id IS NULL').run(id);
+
+  // app_state trug seine Werte bisher unter nacktem Schlüssel (z. B. „beute“) –
+  // jetzt gehört die Kampagne mit davor. Ohne diesen Umzug stünde die Kiste
+  // der Runde nach dem Update plötzlich wieder leer da.
+  const alteSchluessel = ['kampf', 'szene', 'vorhang', 'nsc_sicht', 'klang', 'beute', 'vorlagen:gesaet'];
+  for (const schluessel of alteSchluessel) {
+    const alt = db.prepare('SELECT value FROM app_state WHERE key = ?').get(schluessel);
+    if (!alt) continue;
+    db.prepare('INSERT OR IGNORE INTO app_state (key, value) VALUES (?, ?)').run(`${id}:${schluessel}`, alt.value);
+    db.prepare('DELETE FROM app_state WHERE key = ?').run(schluessel);
+  }
+})();
+
+/** Kleiner Schlüssel-Wert-Speicher für Einzelwerte (aktive Szene, Kampfrunde …).
+ *  Der Schlüssel trägt die Kampagne mit sich (`<campaignId>:<key>`) – so
+ *  braucht app_state selbst keine eigene Spalte und keine neue Sitzung. */
+export function getState(key, campaignId, fallback = null) {
+  const row = db.prepare('SELECT value FROM app_state WHERE key = ?').get(`${campaignId}:${key}`);
   if (!row) return fallback;
   try {
     return JSON.parse(row.value);
@@ -368,11 +441,11 @@ export function getState(key, fallback = null) {
   }
 }
 
-export function setState(key, value) {
+export function setState(key, campaignId, value) {
   db.prepare(
     `INSERT INTO app_state (key, value) VALUES (?, ?)
      ON CONFLICT(key) DO UPDATE SET value = excluded.value`
-  ).run(key, JSON.stringify(value));
+  ).run(`${campaignId}:${key}`, JSON.stringify(value));
   return value;
 }
 

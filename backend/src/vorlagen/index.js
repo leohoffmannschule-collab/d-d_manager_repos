@@ -32,28 +32,34 @@ export const VORLAGEN = HELDEN.map((held) => ({
 }));
 
 /**
- * Legt die Vorlagen an, sofern das noch nie geschehen ist.
+ * Legt die Vorlagen in einer Kampagne an, sofern das dort noch nie geschehen
+ * ist. Eine Kampagne ist die neue „frische Installation“: Jede neu
+ * angelegte Kampagne bekommt ihre eigenen zwölf Vorlagen, unabhängig davon,
+ * was in anderen Kampagnen liegt oder schon gelöscht wurde.
  *
  * Ohne Besitzer: Blätter ohne `owner_id` gehören der Spielleitung – so steht
  * es schon in der Charakterverwaltung. Das ist hier gerade recht, denn beim
- * allerersten Start gibt es noch gar kein Konto, dem man sie zuschreiben
- * könnte.
+ * Anlegen einer Kampagne steht noch nicht fest, wer darin später welchen
+ * Charakter führt.
  */
-export function saeVorlagen({ erzwingen = false } = {}) {
-  if (!erzwingen && getState(SCHLUESSEL)) return { gesaet: 0, schonGesaet: true };
+export function saeVorlagen(campaignId, { erzwingen = false } = {}) {
+  if (!erzwingen && getState(SCHLUESSEL, campaignId)) return { gesaet: 0, schonGesaet: true };
 
   const jetzt = new Date().toISOString();
   const einfuegen = db.prepare(
-    `INSERT OR IGNORE INTO characters (id, name, system, data, owner_id, shared, npc, created_at, updated_at)
-     VALUES (?, ?, 'dnd5e', ?, NULL, 0, 1, ?, ?)`
+    `INSERT OR IGNORE INTO characters (id, name, system, data, owner_id, shared, npc, campaign_id, created_at, updated_at)
+     VALUES (?, ?, 'dnd5e', ?, NULL, 0, 1, ?, ?, ?)`
   );
 
   let gesaet = 0;
   for (const vorlage of VORLAGEN) {
-    const { changes } = einfuegen.run(vorlage.id, vorlage.name, JSON.stringify(vorlage.data), jetzt, jetzt);
+    // Die Vorlagen-Kennung ist rundenweit fest verdrahtet; je Kampagne braucht
+    // sie ihre eigene, sonst träfe „INSERT OR IGNORE“ eine fremde Kampagne.
+    const id = `${vorlage.id}--${campaignId}`;
+    const { changes } = einfuegen.run(id, vorlage.name, JSON.stringify(vorlage.data), campaignId, jetzt, jetzt);
     if (changes) gesaet += 1;
   }
 
-  setState(SCHLUESSEL, jetzt);
+  setState(SCHLUESSEL, campaignId, jetzt);
   return { gesaet, schonGesaet: false };
 }

@@ -41,7 +41,7 @@ function statsAus(quelle, vorgabe = {}) {
 }
 
 router.get('/', (req, res) => {
-  res.json(db.prepare('SELECT * FROM library ORDER BY name COLLATE NOCASE').all().map(rowToEntry));
+  res.json(db.prepare('SELECT * FROM library WHERE campaign_id = ? ORDER BY name COLLATE NOCASE').all(req.campaignId).map(rowToEntry));
 });
 
 router.post('/', (req, res) => {
@@ -51,8 +51,8 @@ router.post('/', (req, res) => {
   }
   const id = randomUUID();
   db.prepare(
-    `INSERT INTO library (id, name, category, ac, hp, speed, stats, abilities, actions, notes, tags, mini, media_id, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO library (id, name, category, ac, hp, speed, stats, abilities, actions, notes, tags, mini, media_id, campaign_id, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     id,
     body.name.trim().slice(0, 100),
@@ -67,13 +67,14 @@ router.post('/', (req, res) => {
     JSON.stringify(Array.isArray(body.tags) ? body.tags.filter((t) => typeof t === 'string').slice(0, 20) : []),
     JSON.stringify(body.mini && typeof body.mini === 'object' ? body.mini : {}),
     body.mediaId ?? null,
+    req.campaignId,
     new Date().toISOString()
   );
   res.status(201).json(rowToEntry(db.prepare('SELECT * FROM library WHERE id = ?').get(id)));
 });
 
 router.put('/:id', (req, res) => {
-  const row = db.prepare('SELECT * FROM library WHERE id = ?').get(req.params.id);
+  const row = db.prepare('SELECT * FROM library WHERE id = ? AND campaign_id = ?').get(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'eintrag_nicht_gefunden', error: 'Eintrag nicht gefunden.' });
 
   const body = req.body ?? {};
@@ -101,14 +102,14 @@ router.put('/:id', (req, res) => {
 });
 
 router.delete('/:id', (req, res) => {
-  const info = db.prepare('DELETE FROM library WHERE id = ?').run(req.params.id);
+  const info = db.prepare('DELETE FROM library WHERE id = ? AND campaign_id = ?').run(req.params.id, req.campaignId);
   if (info.changes === 0) return res.status(404).json({ code: 'eintrag_nicht_gefunden', error: 'Eintrag nicht gefunden.' });
   res.status(204).end();
 });
 
 // POST /api/library/:id/add-to-encounter – „3 Goblins“ mit einem Klick
 router.post('/:id/add-to-encounter', (req, res) => {
-  const row = db.prepare('SELECT * FROM library WHERE id = ?').get(req.params.id);
+  const row = db.prepare('SELECT * FROM library WHERE id = ? AND campaign_id = ?').get(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'eintrag_nicht_gefunden', error: 'Eintrag nicht gefunden.' });
 
   const body = req.body ?? {};
@@ -118,8 +119,8 @@ router.post('/:id/add-to-encounter', (req, res) => {
   const now = new Date().toISOString();
 
   const einfuegen = db.prepare(
-    `INSERT INTO combatants (id, name, type, initiative, hp, max_hp, ac, conditions, notes, character_id, media_id, hidden, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, '[]', '', NULL, ?, ?, ?)`
+    `INSERT INTO combatants (id, name, type, initiative, hp, max_hp, ac, conditions, notes, character_id, media_id, hidden, campaign_id, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, '[]', '', NULL, ?, ?, ?, ?)`
   );
 
   for (let i = 0; i < anzahl; i++) {
@@ -133,18 +134,22 @@ router.post('/:id/add-to-encounter', (req, res) => {
       row.ac ?? 10,
       row.media_id ?? null,
       body.hidden ? 1 : 0,
+      req.campaignId,
       now
     );
   }
 
-  chronik.log({
-    kind: 'auftritt',
-    text: `${anzahl > 1 ? `${anzahl}× ` : ''}${row.name} ${anzahl > 1 ? 'treten' : 'tritt'} auf.`,
-    meta: { libraryId: row.id, name: row.name, count: anzahl },
-    secret: !!body.hidden,
-  });
+  chronik.log(
+    {
+      kind: 'auftritt',
+      text: `${anzahl > 1 ? `${anzahl}× ` : ''}${row.name} ${anzahl > 1 ? 'treten' : 'tritt'} auf.`,
+      meta: { libraryId: row.id, name: row.name, count: anzahl },
+      secret: !!body.hidden,
+    },
+    req.campaignId
+  );
 
-  sendeKampf();
+  sendeKampf(req.campaignId);
   res.status(201).json({ created: anzahl });
 });
 
@@ -161,8 +166,8 @@ router.post('/aus-kompendium', (req, res) => {
 
   const id = randomUUID();
   db.prepare(
-    `INSERT INTO library (id, name, category, ac, hp, speed, stats, abilities, actions, notes, tags, created_at)
-     VALUES (?, ?, 'monster', ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO library (id, name, category, ac, hp, speed, stats, abilities, actions, notes, tags, campaign_id, created_at)
+     VALUES (?, ?, 'monster', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     id,
     String(m.name).slice(0, 100),

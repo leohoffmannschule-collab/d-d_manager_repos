@@ -36,7 +36,7 @@ function rowToMap(row) {
   };
 }
 
-const holen = (id) => db.prepare('SELECT * FROM maps WHERE id = ?').get(id);
+const holen = (id, campaignId) => db.prepare('SELECT * FROM maps WHERE id = ? AND campaign_id = ?').get(id, campaignId);
 
 const sauberesSchlagwort = (t) => typeof t === 'string' && t.trim();
 const schlagworte = (liste) =>
@@ -65,9 +65,11 @@ function bildFreigeben(mediaId) {
 
 // GET /api/maps
 router.get('/', (req, res) => {
-  const karten = db.prepare('SELECT * FROM maps ORDER BY name COLLATE NOCASE').all().map(rowToMap);
+  const karten = db.prepare('SELECT * FROM maps WHERE campaign_id = ? ORDER BY name COLLATE NOCASE').all(req.campaignId).map(rowToMap);
   // Wie oft liegt diese Karte schon als Szene vor?
-  const szenen = db.prepare('SELECT map_id, COUNT(*) AS n FROM scenes WHERE map_id IS NOT NULL GROUP BY map_id').all();
+  const szenen = db
+    .prepare('SELECT map_id, COUNT(*) AS n FROM scenes WHERE campaign_id = ? AND map_id IS NOT NULL GROUP BY map_id')
+    .all(req.campaignId);
   const zahl = new Map(szenen.map((z) => [z.map_id, z.n]));
   res.json(karten.map((k) => ({ ...k, szenen: zahl.get(k.id) ?? 0 })));
 });
@@ -81,8 +83,8 @@ router.post('/', (req, res) => {
   const id = randomUUID();
   db.prepare(
     `INSERT INTO maps (id, name, media_id, thumb_media_id, width, height, grid_size,
-                       grid_offset_x, grid_offset_y, unit, scale, tags, notes, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?, ?)`
+                       grid_offset_x, grid_offset_y, unit, scale, tags, notes, campaign_id, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?, ?, ?)`
   ).run(
     id,
     body.name.trim().slice(0, 120),
@@ -95,14 +97,15 @@ router.post('/', (req, res) => {
     clamp(toNumber(body.scale, body.unit === 'meter' ? 1 : 5), 0.1, 1000),
     JSON.stringify(schlagworte(body.tags)),
     typeof body.notes === 'string' ? body.notes.slice(0, 2000) : '',
+    req.campaignId,
     new Date().toISOString()
   );
-  res.status(201).json(rowToMap(holen(id)));
+  res.status(201).json(rowToMap(holen(id, req.campaignId)));
 });
 
 // PUT /api/maps/:id – umbenennen, verschlagworten, Raster nachjustieren
 router.put('/:id', (req, res) => {
-  const row = holen(req.params.id);
+  const row = holen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'karte_nicht_gefunden', error: 'Karte nicht gefunden.' });
   const body = req.body ?? {};
 
@@ -122,12 +125,12 @@ router.put('/:id', (req, res) => {
     'ambienceId' in body ? (body.ambienceId || null) : row.ambience_id,
     row.id
   );
-  res.json(rowToMap(holen(row.id)));
+  res.json(rowToMap(holen(row.id, req.campaignId)));
 });
 
 // DELETE /api/maps/:id
 router.delete('/:id', (req, res) => {
-  const row = holen(req.params.id);
+  const row = holen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'karte_nicht_gefunden', error: 'Karte nicht gefunden.' });
 
   db.prepare('DELETE FROM maps WHERE id = ?').run(row.id);
@@ -152,16 +155,16 @@ router.delete('/:id', (req, res) => {
  * Das Raster wandert in jedem Fall mit: einmal ausgerichtet, immer richtig.
  */
 router.post('/:id/auflegen', (req, res) => {
-  const row = holen(req.params.id);
+  const row = holen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'karte_nicht_gefunden', error: 'Karte nicht gefunden.' });
 
   if (req.body?.frisch !== true) {
     const vorhanden = db
-      .prepare('SELECT * FROM scenes WHERE map_id = ? ORDER BY created_at DESC LIMIT 1')
-      .get(row.id);
+      .prepare('SELECT * FROM scenes WHERE map_id = ? AND campaign_id = ? ORDER BY created_at DESC LIMIT 1')
+      .get(row.id, req.campaignId);
     if (vorhanden) {
-      aktiviereSzene(vorhanden, { verdeckt: req.body?.verdeckt === true });
-      if (row.ambience_id) klangAuflegen(row.ambience_id);
+      aktiviereSzene(vorhanden, req.campaignId, { verdeckt: req.body?.verdeckt === true });
+      if (row.ambience_id) klangAuflegen(row.ambience_id, req.campaignId);
       return res.json({ sceneId: vorhanden.id, name: vorhanden.name, neu: false });
     }
   }
@@ -171,8 +174,8 @@ router.post('/:id/auflegen', (req, res) => {
 
   db.prepare(
     `INSERT INTO scenes (id, name, media_id, width, height, grid_size, grid_offset_x, grid_offset_y,
-                         grid_visible, fog_enabled, fog, unit, scale, map_id, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, '[]', ?, ?, ?, ?)`
+                         grid_visible, fog_enabled, fog, unit, scale, map_id, campaign_id, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, '[]', ?, ?, ?, ?, ?)`
   ).run(
     id,
     name.slice(0, 100),
@@ -186,13 +189,14 @@ router.post('/:id/auflegen', (req, res) => {
     row.unit,
     row.scale,
     row.id,
+    req.campaignId,
     new Date().toISOString()
   );
 
   const szene = db.prepare('SELECT * FROM scenes WHERE id = ?').get(id);
-  aktiviereSzene(szene, { verdeckt: req.body?.verdeckt === true });
+  aktiviereSzene(szene, req.campaignId, { verdeckt: req.body?.verdeckt === true });
   // Hängt an der Karte eine Ambiente, legt sie sich mit auf.
-  if (row.ambience_id) klangAuflegen(row.ambience_id);
+  if (row.ambience_id) klangAuflegen(row.ambience_id, req.campaignId);
   res.status(201).json({ sceneId: id, name: szene.name, neu: true });
 });
 

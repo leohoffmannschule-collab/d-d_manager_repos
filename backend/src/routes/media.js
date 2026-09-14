@@ -40,13 +40,16 @@ router.post('/', express.json({ limit: '20mb' }), (req, res) => {
     return res.status(413).json({ code: 'bild_zu_gross', error: `Das Bild ist größer als ${Math.round(MAX_BYTES / 1024 / 1024)} MB.` });
   }
 
+  if (!req.campaignId) return res.status(409).json({ code: 'keine_kampagne', error: 'Bitte zuerst eine Kampagne wählen.' });
+
   const id = randomUUID();
   fs.writeFileSync(path.join(mediaDir, `${id}.${endung}`), bytes);
-  db.prepare('INSERT INTO media (id, filename, mime, bytes, created_at) VALUES (?, ?, ?, ?, ?)').run(
+  db.prepare('INSERT INTO media (id, filename, mime, bytes, campaign_id, created_at) VALUES (?, ?, ?, ?, ?, ?)').run(
     id,
     `${id}.${endung}`,
     mime,
     bytes.length,
+    req.campaignId,
     new Date().toISOString()
   );
   res.status(201).json({ id, url: `/api/media/${id}`, bytes: bytes.length });
@@ -55,7 +58,9 @@ router.post('/', express.json({ limit: '20mb' }), (req, res) => {
 // GET /api/media/:id
 router.get('/:id', (req, res) => {
   const row = db.prepare('SELECT * FROM media WHERE id = ?').get(req.params.id);
-  if (!row) return res.status(404).json({ code: 'bild_nicht_gefunden', error: 'Bild nicht gefunden.' });
+  if (!row || row.campaign_id !== req.campaignId) {
+    return res.status(404).json({ code: 'bild_nicht_gefunden', error: 'Bild nicht gefunden.' });
+  }
   const datei = path.join(mediaDir, row.filename);
   if (!fs.existsSync(datei)) return res.status(404).json({ code: 'bild_nicht_gefunden', error: 'Bild nicht gefunden.' });
 
@@ -69,7 +74,9 @@ router.get('/:id', (req, res) => {
 // DELETE /api/media/:id
 router.delete('/:id', requireDm, (req, res) => {
   const row = db.prepare('SELECT * FROM media WHERE id = ?').get(req.params.id);
-  if (!row) return res.status(404).json({ code: 'bild_nicht_gefunden', error: 'Bild nicht gefunden.' });
+  if (!row || row.campaign_id !== req.campaignId) {
+    return res.status(404).json({ code: 'bild_nicht_gefunden', error: 'Bild nicht gefunden.' });
+  }
   fs.rmSync(path.join(mediaDir, row.filename), { force: true });
   db.prepare('DELETE FROM media WHERE id = ?').run(row.id);
   res.status(204).end();

@@ -62,9 +62,15 @@ function rowToToken(row) {
   };
 }
 
-const holeSzene = (id) => db.prepare('SELECT * FROM scenes WHERE id = ?').get(id);
-const holeFigur = (id) => db.prepare('SELECT * FROM tokens WHERE id = ?').get(id);
-const aktiveSzeneId = () => getState('szene', null);
+const holeSzene = (id, campaignId) => db.prepare('SELECT * FROM scenes WHERE id = ? AND campaign_id = ?').get(id, campaignId);
+// Figuren tragen ihre Kampagne nicht selbst – sie hängen an einer Szene, die
+// es bereits tut. Der Verbund verhindert, dass eine Figur aus einer fremden
+// Kampagne über ihre bloße Kennung erreicht werden kann.
+const holeFigur = (id, campaignId) =>
+  db
+    .prepare('SELECT t.* FROM tokens t JOIN scenes s ON s.id = t.scene_id WHERE t.id = ? AND s.campaign_id = ?')
+    .get(id, campaignId);
+const aktiveSzeneId = (campaignId) => getState('szene', campaignId, null);
 
 /**
  * Der Vorhang über dem Spieltisch.
@@ -77,7 +83,7 @@ const aktiveSzeneId = () => getState('szene', null);
  * Er hängt am Tisch, nicht an der Szene – sonst müsste man ihn für jede neue
  * Karte neu zuziehen, und genau in dem Moment sähe die Runde alles.
  */
-const vorhangZu = () => getState('vorhang', false) === true;
+const vorhangZu = (campaignId) => getState('vorhang', campaignId, false) === true;
 
 function figuren(sceneId) {
   return db.prepare('SELECT * FROM tokens WHERE scene_id = ? ORDER BY created_at').all(sceneId).map(rowToToken);
@@ -89,13 +95,15 @@ function figuren(sceneId) {
  * Die Sinne hinter den Figuren. Eine Figur sieht, was ihr Charakterblatt
  * hergibt – Dunkelsicht, Blindsicht und was sonst noch eingetragen ist.
  */
-function sinneJeFigur(tokens) {
+function sinneJeFigur(tokens, campaignId) {
   const kennungen = [...new Set(tokens.map((t) => t.characterId).filter(Boolean))];
   const sinne = new Map();
   if (kennungen.length === 0) return sinne;
 
   const platzhalter = kennungen.map(() => '?').join(',');
-  const blaetter = db.prepare(`SELECT id, data FROM characters WHERE id IN (${platzhalter})`).all(...kennungen);
+  const blaetter = db
+    .prepare(`SELECT id, data FROM characters WHERE campaign_id = ? AND id IN (${platzhalter})`)
+    .all(campaignId, ...kennungen);
   const jeCharakter = new Map();
   for (const blatt of blaetter) {
     try {
@@ -129,34 +137,34 @@ function figurSichtbar(token, szene, offen, sicht) {
  * Rechnung wie für die Runde, und zwar buchstäblich dieselbe: Es gibt nur
  * diese eine Stelle, an der Sicht entsteht.
  */
-function szenenSicht(user) {
+function szenenSicht(user, campaignId) {
   // Für die Runde endet es hier, wenn der Vorhang zu ist. Nicht gefiltert,
   // nicht ausgeblendet – es wird schlicht nichts geschickt.
-  if (!isDm(user) && vorhangZu()) return { vorhang: true };
+  if (!isDm(user) && vorhangZu(campaignId)) return { vorhang: true };
 
   // Auch ohne aufgelegte Szene muss die Spielleitung sehen, dass der Vorhang
   // zu ist – sonst zöge sie ihn zu und hätte kein Zeichen mehr davon.
-  const id = aktiveSzeneId();
-  const row = id ? holeSzene(id) : null;
-  if (!row) return vorhangZu() ? { vorhang: true } : null;
+  const id = aktiveSzeneId(campaignId);
+  const row = id ? holeSzene(id, campaignId) : null;
+  if (!row) return vorhangZu(campaignId) ? { vorhang: true } : null;
 
   const szene = rowToScene(row);
   const alle = figuren(szene.id);
   const offen = offeneFelder(row);
   const bereich = rasterBereich(szene);
-  const durchAugen = durchAugenVon(user, alle);
+  const durchAugen = durchAugenVon(user, alle, campaignId);
 
   // Nebel und Sicht wandern als Bitkarte, ein Bit je Feld. Bei einer Karte
   // über zweihundert Meter wären es als Liste von "x,y" 348 KB je Person
   // und Zug – siehe sicht.js.
-  const grundlage = { ...szene, fogBits: alsBitkarte(offen, bereich), vorhang: vorhangZu(), aktiv: true };
+  const grundlage = { ...szene, fogBits: alsBitkarte(offen, bereich), vorhang: vorhangZu(campaignId), aktiv: true };
 
   if (isDm(user) && !durchAugen) {
     return { ...grundlage, tokens: alle, sichtBits: null, nscSicht: null };
   }
 
-  const eigene = durchAugen ? [durchAugen] : meineFiguren(user, alle);
-  const sicht = sichtFelder(szene, alle, eigene, sinneJeFigur(alle));
+  const eigene = durchAugen ? [durchAugen] : meineFiguren(user, alle, campaignId);
+  const sicht = sichtFelder(szene, alle, eigene, sinneJeFigur(alle, campaignId));
   const eigeneKennungen = new Set(eigene.map((t) => t.id));
 
   const sichtbar = alle.filter((token) => {
@@ -174,29 +182,32 @@ function szenenSicht(user) {
 }
 
 /** Die Figuren, die dieser Person gehören. */
-function meineFiguren(user, alle) {
-  const meine = db.prepare('SELECT id FROM characters WHERE owner_id = ?').all(user.id).map((c) => c.id);
+function meineFiguren(user, alle, campaignId) {
+  const meine = db
+    .prepare('SELECT id FROM characters WHERE owner_id = ? AND campaign_id = ?')
+    .all(user.id, campaignId)
+    .map((c) => c.id);
   if (meine.length === 0) return [];
   const gehoert = new Set(meine);
   return alle.filter((t) => t.characterId && gehoert.has(t.characterId));
 }
 
 /** Schaut die Spielleitung gerade durch die Augen einer Figur? */
-function durchAugenVon(user, alle) {
+function durchAugenVon(user, alle, campaignId) {
   if (!isDm(user)) return null;
-  const kennung = getState('nsc_sicht', null);
+  const kennung = getState('nsc_sicht', campaignId, null);
   return kennung ? (alle.find((t) => t.id === kennung) ?? null) : null;
 }
 
-export function sendeSzene() {
-  broadcast('szene', szenenSicht({ role: 'sl' }), { role: 'sl' });
+export function sendeSzene(campaignId) {
+  broadcast('szene', szenenSicht({ role: 'sl' }, campaignId), { role: 'sl', campaignId });
   // Jede Person am Tisch sieht etwas anderes – also bekommt auch jede ihre
   // eigene Fassung. Nur wer verbunden ist, bekommt überhaupt eine.
-  for (const person of presence()) {
+  for (const person of presence(campaignId)) {
     if (person.role === 'sl') continue;
-    broadcast('szene', szenenSicht(person), { userIds: [person.id] });
+    broadcast('szene', szenenSicht(person, campaignId), { userIds: [person.id], campaignId });
   }
-  merkeFiguren();
+  merkeFiguren(campaignId);
 }
 
 /**
@@ -211,19 +222,19 @@ function figurenKennung(sicht) {
   return (sicht?.tokens ?? []).map((t) => t.id).join('|');
 }
 
-function merkeFiguren() {
-  for (const person of presence()) {
-    letzteFiguren.set(person.id, figurenKennung(szenenSicht(person)));
+function merkeFiguren(campaignId) {
+  for (const person of presence(campaignId)) {
+    letzteFiguren.set(person.id, figurenKennung(szenenSicht(person, campaignId)));
   }
 }
 
-export function sendeFigurenWennGeaendert() {
-  for (const person of presence()) {
-    const sicht = szenenSicht(person);
+export function sendeFigurenWennGeaendert(campaignId) {
+  for (const person of presence(campaignId)) {
+    const sicht = szenenSicht(person, campaignId);
     const kennung = figurenKennung(sicht);
     if (letzteFiguren.get(person.id) === kennung) continue;
     letzteFiguren.set(person.id, kennung);
-    broadcast('figuren', sicht?.tokens ?? [], { userIds: [person.id] });
+    broadcast('figuren', sicht?.tokens ?? [], { userIds: [person.id], campaignId });
   }
 }
 
@@ -250,36 +261,39 @@ function darfBewegen(user, tokenRow) {
 function meldeFigur(row, req) {
   // Schaut die Spielleitung durch fremde Augen, gilt für sie dieselbe
   // Rechnung wie für die Runde – dann genügt die einzelne Figur nicht.
-  if (getState('nsc_sicht', null)) {
-    broadcast('szene', szenenSicht({ role: 'sl' }), { role: 'sl' });
+  if (getState('nsc_sicht', req.campaignId, null)) {
+    broadcast('szene', szenenSicht({ role: 'sl' }, req.campaignId), { role: 'sl', campaignId: req.campaignId });
   } else {
-    broadcast('figur', rowToToken(row), { role: 'sl', exceptClient: originClient(req) });
+    broadcast('figur', rowToToken(row), { role: 'sl', exceptClient: originClient(req), campaignId: req.campaignId });
   }
 
-  for (const person of presence()) {
+  for (const person of presence(req.campaignId)) {
     if (person.role === 'sl') continue;
-    broadcast('szene', szenenSicht(person), { userIds: [person.id] });
+    broadcast('szene', szenenSicht(person, req.campaignId), { userIds: [person.id], campaignId: req.campaignId });
   }
-  merkeFiguren();
+  merkeFiguren(req.campaignId);
 }
 
 /* --- Szenen -------------------------------------------------------------- */
 
 // GET /api/scenes – die Spielleitung sieht alle, die Runde nur die aktive
 router.get('/', (req, res) => {
-  if (!isDm(req.user)) return res.json(szenenSicht(req.user) ? [szenenSicht(req.user)] : []);
-  const aktiv = aktiveSzeneId();
+  if (!isDm(req.user)) {
+    const sicht = szenenSicht(req.user, req.campaignId);
+    return res.json(sicht ? [sicht] : []);
+  }
+  const aktiv = aktiveSzeneId(req.campaignId);
   res.json(
     db
-      .prepare('SELECT * FROM scenes ORDER BY created_at DESC')
-      .all()
+      .prepare('SELECT * FROM scenes WHERE campaign_id = ? ORDER BY created_at DESC')
+      .all(req.campaignId)
       .map((row) => ({ ...rowToScene(row), aktiv: row.id === aktiv, tokenCount: figuren(row.id).length }))
   );
 });
 
 // GET /api/scenes/aktiv – was gerade auf dem Tisch liegt
 router.get('/aktiv', (req, res) => {
-  res.json(szenenSicht(req.user));
+  res.json(szenenSicht(req.user, req.campaignId));
 });
 
 router.post('/', requireDm, (req, res) => {
@@ -290,8 +304,8 @@ router.post('/', requireDm, (req, res) => {
   const id = randomUUID();
   db.prepare(
     `INSERT INTO scenes (id, name, media_id, width, height, grid_size, grid_offset_x, grid_offset_y,
-                         grid_visible, fog_enabled, fog, unit, scale, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, 0, 0, 1, ?, '[]', ?, ?, ?)`
+                         grid_visible, fog_enabled, fog, unit, scale, campaign_id, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, 0, 0, 1, ?, '[]', ?, ?, ?, ?)`
   ).run(
     id,
     body.name.trim().slice(0, 100),
@@ -302,16 +316,17 @@ router.post('/', requireDm, (req, res) => {
     body.fogEnabled === false ? 0 : 1,
     body.unit === 'meter' ? 'meter' : 'fuss',
     clamp(toNumber(body.scale, body.unit === 'meter' ? 1 : 5), 0.1, 1000),
+    req.campaignId,
     new Date().toISOString()
   );
   // Die erste Szene kommt gleich auf den Tisch.
-  if (!aktiveSzeneId()) setState('szene', id);
-  sendeSzene();
-  res.status(201).json(rowToScene(holeSzene(id)));
+  if (!aktiveSzeneId(req.campaignId)) setState('szene', req.campaignId, id);
+  sendeSzene(req.campaignId);
+  res.status(201).json(rowToScene(holeSzene(id, req.campaignId)));
 });
 
 router.put('/:id', requireDm, (req, res) => {
-  const row = holeSzene(req.params.id);
+  const row = holeSzene(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'szene_nicht_gefunden', error: 'Szene nicht gefunden.' });
   const body = req.body ?? {};
 
@@ -336,18 +351,22 @@ router.put('/:id', requireDm, (req, res) => {
     'scale' in body ? clamp(toNumber(body.scale, row.scale), 0.1, 1000) : row.scale,
     row.id
   );
-  sendeSzene();
-  res.json(rowToScene(holeSzene(row.id)));
+  sendeSzene(req.campaignId);
+  res.json(rowToScene(holeSzene(row.id, req.campaignId)));
 });
 
 router.delete('/:id', requireDm, (req, res) => {
-  const row = holeSzene(req.params.id);
+  const row = holeSzene(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'szene_nicht_gefunden', error: 'Szene nicht gefunden.' });
   db.prepare('DELETE FROM scenes WHERE id = ?').run(row.id);
-  if (aktiveSzeneId() === row.id) {
-    setState('szene', db.prepare('SELECT id FROM scenes ORDER BY created_at DESC').get()?.id ?? null);
+  if (aktiveSzeneId(req.campaignId) === row.id) {
+    setState(
+      'szene',
+      req.campaignId,
+      db.prepare('SELECT id FROM scenes WHERE campaign_id = ? ORDER BY created_at DESC').get(req.campaignId)?.id ?? null
+    );
   }
-  sendeSzene();
+  sendeSzene(req.campaignId);
   res.status(204).end();
 });
 
@@ -356,24 +375,27 @@ router.delete('/:id', requireDm, (req, res) => {
  * Eine Szene auf den Tisch legen. Mit `verdeckt` geht vorher der Vorhang zu –
  * dann baut die Spielleitung dahinter auf, und die Runde merkt nichts davon.
  */
-export function aktiviereSzene(row, optionen = {}) {
-  if (optionen.verdeckt) setState('vorhang', true);
-  setState('szene', row.id);
+export function aktiviereSzene(row, campaignId, optionen = {}) {
+  if (optionen.verdeckt) setState('vorhang', campaignId, true);
+  setState('szene', campaignId, row.id);
   // Hinter dem Vorhang ist die Runde noch nirgends angekommen. Der Eintrag in
   // der Chronik wartet, bis er aufgeht – sonst stünde im Protokoll ein Ort,
   // den am Tisch niemand gesehen hat.
-  if (!vorhangZu()) {
-    chronik.log({ kind: 'szene', text: `Die Runde erreicht: ${row.name}.`, meta: { sceneId: row.id, name: row.name } });
+  if (!vorhangZu(campaignId)) {
+    chronik.log(
+      { kind: 'szene', text: `Die Runde erreicht: ${row.name}.`, meta: { sceneId: row.id, name: row.name } },
+      campaignId
+    );
   }
-  sendeSzene();
+  sendeSzene(campaignId);
 }
 
 // POST /api/scenes/:id/aktivieren – Szene auf den Tisch legen
 router.post('/:id/aktivieren', requireDm, (req, res) => {
-  const row = holeSzene(req.params.id);
+  const row = holeSzene(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'szene_nicht_gefunden', error: 'Szene nicht gefunden.' });
-  aktiviereSzene(row, { verdeckt: req.body?.verdeckt === true });
-  res.json({ ...rowToScene(row), vorhang: vorhangZu() });
+  aktiviereSzene(row, req.campaignId, { verdeckt: req.body?.verdeckt === true });
+  res.json({ ...rowToScene(row), vorhang: vorhangZu(req.campaignId) });
 });
 
 /**
@@ -388,23 +410,22 @@ router.post('/:id/aktivieren', requireDm, (req, res) => {
  */
 router.post('/vorhang', requireDm, (req, res) => {
   const zu = req.body?.zu === true;
-  const warZu = vorhangZu();
-  setState('vorhang', zu);
+  const warZu = vorhangZu(req.campaignId);
+  setState('vorhang', req.campaignId, zu);
 
   // Erst jetzt erreicht die Runde den Ort – also steht er jetzt im Protokoll.
   if (warZu && !zu) {
-    const id = aktiveSzeneId();
-    const row = id ? holeSzene(id) : null;
+    const id = aktiveSzeneId(req.campaignId);
+    const row = id ? holeSzene(id, req.campaignId) : null;
     if (row) {
-      chronik.log({
-        kind: 'szene',
-        text: `Der Vorhang hebt sich: ${row.name}.`,
-        meta: { sceneId: row.id, name: row.name },
-      });
+      chronik.log(
+        { kind: 'szene', text: `Der Vorhang hebt sich: ${row.name}.`, meta: { sceneId: row.id, name: row.name } },
+        req.campaignId
+      );
     }
   }
 
-  sendeSzene();
+  sendeSzene(req.campaignId);
   res.json({ vorhang: zu });
 });
 
@@ -424,14 +445,14 @@ router.post('/vorhang', requireDm, (req, res) => {
 router.post('/nsc-sicht', requireDm, (req, res) => {
   const kennung = req.body?.tokenId ?? null;
   if (kennung !== null) {
-    const figur = holeFigur(kennung);
+    const figur = holeFigur(kennung, req.campaignId);
     if (!figur) return res.status(404).json({ code: 'figur_nicht_gefunden', error: 'Figur nicht gefunden.' });
-    if (figur.scene_id !== aktiveSzeneId()) {
+    if (figur.scene_id !== aktiveSzeneId(req.campaignId)) {
       return res.status(409).json({ code: 'figur_andere_szene', error: 'Diese Figur steht nicht auf dem Tisch.' });
     }
   }
-  setState('nsc_sicht', kennung);
-  broadcast('szene', szenenSicht({ role: 'sl' }), { role: 'sl' });
+  setState('nsc_sicht', req.campaignId, kennung);
+  broadcast('szene', szenenSicht({ role: 'sl' }, req.campaignId), { role: 'sl', campaignId: req.campaignId });
   res.json({ nscSicht: kennung });
 });
 
@@ -444,7 +465,7 @@ const MAX_FELDER = 65536;
 
 // POST /api/scenes/:id/nebel  { cells: ['3,4', …], revealed: true }
 router.post('/:id/nebel', requireDm, (req, res) => {
-  const row = holeSzene(req.params.id);
+  const row = holeSzene(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'szene_nicht_gefunden', error: 'Szene nicht gefunden.' });
 
   const cells = Array.isArray(req.body?.cells)
@@ -463,15 +484,15 @@ router.post('/:id/nebel', requireDm, (req, res) => {
   db.prepare('UPDATE scenes SET fog = ? WHERE id = ?').run(JSON.stringify(naechste), row.id);
 
   // Nur die Änderung wandert übers Netz, nicht die ganze Karte.
-  broadcast('nebel', { sceneId: row.id, cells, revealed }, { exceptClient: originClient(req) });
+  broadcast('nebel', { sceneId: row.id, cells, revealed }, { exceptClient: originClient(req), campaignId: req.campaignId });
   // Deckt der Strich eine Figur auf oder wieder zu, muss auch das ankommen.
-  sendeFigurenWennGeaendert();
+  sendeFigurenWennGeaendert(req.campaignId);
   res.json({ ok: true, offen: naechste.length });
 });
 
 // POST /api/scenes/:id/nebel/alles  { revealed: true|false }
 router.post('/:id/nebel/alles', requireDm, (req, res) => {
-  const row = holeSzene(req.params.id);
+  const row = holeSzene(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'szene_nicht_gefunden', error: 'Szene nicht gefunden.' });
   const revealed = req.body?.revealed === true;
 
@@ -489,14 +510,14 @@ router.post('/:id/nebel/alles', requireDm, (req, res) => {
     }
   }
   db.prepare('UPDATE scenes SET fog = ? WHERE id = ?').run(JSON.stringify(fog), row.id);
-  sendeSzene();
+  sendeSzene(req.campaignId);
   res.json({ ok: true, offen: fog.length });
 });
 
 /* --- Figuren ------------------------------------------------------------- */
 
 router.post('/:id/figuren', requireDm, (req, res) => {
-  const szene = holeSzene(req.params.id);
+  const szene = holeSzene(req.params.id, req.campaignId);
   if (!szene) return res.status(404).json({ code: 'szene_nicht_gefunden', error: 'Szene nicht gefunden.' });
 
   const body = req.body ?? {};
@@ -521,14 +542,14 @@ router.post('/:id/figuren', requireDm, (req, res) => {
     clamp(toNumber(body.lightDim, 0), 0, 200),
     new Date().toISOString()
   );
-  const row = holeFigur(id);
+  const row = holeFigur(id, req.campaignId);
   meldeFigur(row, req);
   res.status(201).json(rowToToken(row));
 });
 
 // PATCH /api/scenes/figuren/:id – Bewegen darf auch, wem die Figur gehört
 router.patch('/figuren/:id', (req, res) => {
-  const row = holeFigur(req.params.id);
+  const row = holeFigur(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'figur_nicht_gefunden', error: 'Figur nicht gefunden.' });
   if (!darfBewegen(req.user, row)) return res.status(403).json({ code: 'figur_fremd', error: 'Diese Figur gehört jemand anderem.' });
 
@@ -551,25 +572,25 @@ router.patch('/figuren/:id', (req, res) => {
     row.id
   );
 
-  const next = holeFigur(row.id);
+  const next = holeFigur(row.id, req.campaignId);
   meldeFigur(next, req);
   res.json(rowToToken(next));
 });
 
 router.delete('/figuren/:id', requireDm, (req, res) => {
-  const row = holeFigur(req.params.id);
+  const row = holeFigur(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'figur_nicht_gefunden', error: 'Figur nicht gefunden.' });
   db.prepare('DELETE FROM tokens WHERE id = ?').run(row.id);
   // Mit der Figur geht womöglich ihre Fackel – das ändert, was alle sehen.
-  if (getState('nsc_sicht', null) === row.id) setState('nsc_sicht', null);
-  broadcast('figur:entfernt', { id: row.id }, { role: 'sl' });
-  sendeSzene();
+  if (getState('nsc_sicht', req.campaignId, null) === row.id) setState('nsc_sicht', req.campaignId, null);
+  broadcast('figur:entfernt', { id: row.id }, { role: 'sl', campaignId: req.campaignId });
+  sendeSzene(req.campaignId);
   res.status(204).end();
 });
 
 // POST /api/scenes/:id/figuren/aus-kampf – alle Kämpfer als Figuren auslegen
 router.post('/:id/figuren/aus-kampf', requireDm, (req, res) => {
-  const szene = holeSzene(req.params.id);
+  const szene = holeSzene(req.params.id, req.campaignId);
   if (!szene) return res.status(404).json({ code: 'szene_nicht_gefunden', error: 'Szene nicht gefunden.' });
 
   const vorhanden = new Set(
@@ -578,7 +599,7 @@ router.post('/:id/figuren/aus-kampf', requireDm, (req, res) => {
       .all(szene.id)
       .map((r) => r.combatant_id)
   );
-  const kaempfer = db.prepare('SELECT * FROM combatants ORDER BY initiative DESC').all();
+  const kaempfer = db.prepare('SELECT * FROM combatants WHERE campaign_id = ? ORDER BY initiative DESC').all(req.campaignId);
   const now = new Date().toISOString();
   const raster = szene.grid_size;
 
@@ -609,7 +630,7 @@ router.post('/:id/figuren/aus-kampf', requireDm, (req, res) => {
     platz += 1;
   }
 
-  sendeSzene();
+  sendeSzene(req.campaignId);
   res.status(201).json({ created: platz });
 });
 
@@ -618,13 +639,11 @@ router.post('/:id/figuren/aus-kampf', requireDm, (req, res) => {
 // POST /api/scenes/ping – ein kurzes Aufleuchten für alle, nichts wird gespeichert
 router.post('/ping', (req, res) => {
   const body = req.body ?? {};
-  broadcast('ping', {
-    x: toNumber(body.x, 0),
-    y: toNumber(body.y, 0),
-    color: req.user.color,
-    name: req.user.name,
-    at: Date.now(),
-  });
+  broadcast(
+    'ping',
+    { x: toNumber(body.x, 0), y: toNumber(body.y, 0), color: req.user.color, name: req.user.name, at: Date.now() },
+    { campaignId: req.campaignId }
+  );
   res.status(204).end();
 });
 

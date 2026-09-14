@@ -25,8 +25,10 @@ function rowToNote(row) {
 
 router.get('/', (req, res) => {
   const rows = isDm(req.user)
-    ? db.prepare('SELECT * FROM notes ORDER BY updated_at DESC').all()
-    : db.prepare("SELECT * FROM notes WHERE visibility = 'runde' ORDER BY updated_at DESC").all();
+    ? db.prepare('SELECT * FROM notes WHERE campaign_id = ? ORDER BY updated_at DESC').all(req.campaignId)
+    : db
+        .prepare("SELECT * FROM notes WHERE campaign_id = ? AND visibility = 'runde' ORDER BY updated_at DESC")
+        .all(req.campaignId);
   res.json(rows.map(rowToNote));
 });
 
@@ -38,26 +40,30 @@ router.post('/', requireDm, (req, res) => {
   const id = randomUUID();
   const now = new Date().toISOString();
   db.prepare(
-    'INSERT INTO notes (id, title, content, tags, visibility, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    'INSERT INTO notes (id, title, content, tags, visibility, campaign_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
   ).run(
     id,
     body.title.trim().slice(0, 150),
     typeof body.content === 'string' ? body.content.slice(0, 20000) : '',
     JSON.stringify(Array.isArray(body.tags) ? body.tags.filter((t) => typeof t === 'string').slice(0, 20) : []),
     SICHTBARKEIT.has(body.visibility) ? body.visibility : 'sl',
+    req.campaignId,
     now,
     now
   );
   const note = rowToNote(db.prepare('SELECT * FROM notes WHERE id = ?').get(id));
   if (note.visibility === 'runde') {
-    broadcast('notizen:aktualisiert', {});
-    chronik.log({ kind: 'handzettel', text: `Die Runde erhält: „${note.title}“.`, meta: { noteId: note.id, title: note.title } });
+    broadcast('notizen:aktualisiert', {}, { campaignId: req.campaignId });
+    chronik.log(
+      { kind: 'handzettel', text: `Die Runde erhält: „${note.title}“.`, meta: { noteId: note.id, title: note.title } },
+      req.campaignId
+    );
   }
   res.status(201).json(note);
 });
 
 router.put('/:id', requireDm, (req, res) => {
-  const row = db.prepare('SELECT * FROM notes WHERE id = ?').get(req.params.id);
+  const row = db.prepare('SELECT * FROM notes WHERE id = ? AND campaign_id = ?').get(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'notiz_nicht_gefunden', error: 'Notiz nicht gefunden.' });
 
   const body = req.body ?? {};
@@ -73,18 +79,23 @@ router.put('/:id', requireDm, (req, res) => {
   );
   const note = rowToNote(db.prepare('SELECT * FROM notes WHERE id = ?').get(row.id));
   // Auch beim Zurückziehen eines Handouts müssen die Spieler es verschwinden sehen.
-  if (note.visibility === 'runde' || row.visibility === 'runde') broadcast('notizen:aktualisiert', {});
+  if (note.visibility === 'runde' || row.visibility === 'runde') {
+    broadcast('notizen:aktualisiert', {}, { campaignId: req.campaignId });
+  }
   if (note.visibility === 'runde' && row.visibility !== 'runde') {
-    chronik.log({ kind: 'handzettel', text: `Die Runde erhält: „${note.title}“.`, meta: { noteId: note.id, title: note.title } });
+    chronik.log(
+      { kind: 'handzettel', text: `Die Runde erhält: „${note.title}“.`, meta: { noteId: note.id, title: note.title } },
+      req.campaignId
+    );
   }
   res.json(note);
 });
 
 router.delete('/:id', requireDm, (req, res) => {
-  const row = db.prepare('SELECT * FROM notes WHERE id = ?').get(req.params.id);
+  const row = db.prepare('SELECT * FROM notes WHERE id = ? AND campaign_id = ?').get(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'notiz_nicht_gefunden', error: 'Notiz nicht gefunden.' });
   db.prepare('DELETE FROM notes WHERE id = ?').run(row.id);
-  if (row.visibility === 'runde') broadcast('notizen:aktualisiert', {});
+  if (row.visibility === 'runde') broadcast('notizen:aktualisiert', {}, { campaignId: req.campaignId });
   res.status(204).end();
 });
 

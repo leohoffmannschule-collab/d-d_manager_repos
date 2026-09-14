@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { randomInt } from 'node:crypto';
+import { randomInt, randomUUID } from 'node:crypto';
 import { db } from '../db.js';
 import {
   clearSessionCookie,
@@ -12,9 +12,11 @@ import {
   nameKey,
   requireAuth,
   requireDm,
+  setSessionCampaign,
   setSessionCookie,
   verifyPassword,
 } from '../auth.js';
+import { saeVorlagen } from '../vorlagen/index.js';
 import { broadcast } from '../events.js';
 
 const router = Router();
@@ -112,7 +114,30 @@ router.post('/register', (req, res) => {
     );
   }
 
-  setSessionCookie(req, res, createSession(user.id));
+  const token = createSession(user.id);
+
+  // Die allererste Anmeldung braucht sofort eine Kampagne, sonst stünde die
+  // frisch eingerichtete Spielleitung vor einem leeren Almanach ohne Weg
+  // hinein.
+  if (erste) {
+    const kampagneId = randomUUID();
+    const jetzt = new Date().toISOString();
+    db.prepare('INSERT INTO campaigns (id, name, created_by, created_at) VALUES (?, ?, ?, ?)').run(
+      kampagneId,
+      'Erste Kampagne',
+      user.id,
+      jetzt
+    );
+    db.prepare('INSERT INTO campaign_members (campaign_id, user_id, joined_at) VALUES (?, ?, ?)').run(
+      kampagneId,
+      user.id,
+      jetzt
+    );
+    saeVorlagen(kampagneId);
+    setSessionCampaign(token, kampagneId);
+  }
+
+  setSessionCookie(req, res, token);
   broadcast('runde:aktualisiert', {}, { dmOnly: true });
   res.status(201).json({ user: { id: user.id, name: user.name, role: user.role, color: user.color } });
 });

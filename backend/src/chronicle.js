@@ -34,9 +34,13 @@ const KIND_LABELS = {
 
 export const kindLabel = (kind) => KIND_LABELS[kind] ?? kind;
 
-/** Die gerade offene Sitzung – oder gar keine. */
-export function offeneSitzung() {
-  return db.prepare('SELECT * FROM game_sessions WHERE ended_at IS NULL ORDER BY started_at DESC').get() ?? null;
+/** Die gerade offene Sitzung dieser Kampagne – oder gar keine. */
+export function offeneSitzung(campaignId) {
+  return (
+    db
+      .prepare('SELECT * FROM game_sessions WHERE campaign_id = ? AND ended_at IS NULL ORDER BY started_at DESC')
+      .get(campaignId) ?? null
+  );
 }
 
 function heutigerTitel() {
@@ -47,26 +51,27 @@ function heutigerTitel() {
   })}`;
 }
 
-export function starteSitzung(title) {
-  const laufend = offeneSitzung();
+export function starteSitzung(title, campaignId) {
+  const laufend = offeneSitzung(campaignId);
   if (laufend) return laufend;
   const id = randomUUID();
-  db.prepare('INSERT INTO game_sessions (id, title, started_at) VALUES (?, ?, ?)').run(
+  db.prepare('INSERT INTO game_sessions (id, title, campaign_id, started_at) VALUES (?, ?, ?, ?)').run(
     id,
     (title || heutigerTitel()).slice(0, 150),
+    campaignId,
     new Date().toISOString()
   );
   const sitzung = db.prepare('SELECT * FROM game_sessions WHERE id = ?').get(id);
-  broadcast('chronik:sitzung', sitzung);
+  broadcast('chronik:sitzung', sitzung, { campaignId });
   return sitzung;
 }
 
-export function beendeSitzung() {
-  const laufend = offeneSitzung();
+export function beendeSitzung(campaignId) {
+  const laufend = offeneSitzung(campaignId);
   if (!laufend) return null;
   db.prepare('UPDATE game_sessions SET ended_at = ? WHERE id = ?').run(new Date().toISOString(), laufend.id);
   const sitzung = db.prepare('SELECT * FROM game_sessions WHERE id = ?').get(laufend.id);
-  broadcast('chronik:sitzung', sitzung);
+  broadcast('chronik:sitzung', sitzung, { campaignId });
   return sitzung;
 }
 
@@ -82,9 +87,9 @@ export function beendeSitzung() {
  * Kampf des Abends verloren, nur weil niemand auf „Sitzung beginnen“ gedrückt
  * hat. Die Spielleitung kann sie hinterher umbenennen.
  */
-export function log({ kind, actor = '', target = '', text, meta = {}, secret = false }) {
+export function log({ kind, actor = '', target = '', text, meta = {}, secret = false }, campaignId) {
   if (!text) return null;
-  const sitzung = offeneSitzung() ?? starteSitzung();
+  const sitzung = offeneSitzung(campaignId) ?? starteSitzung(undefined, campaignId);
   const eintrag = {
     id: randomUUID(),
     sessionId: sitzung.id,
@@ -113,7 +118,7 @@ export function log({ kind, actor = '', target = '', text, meta = {}, secret = f
   );
 
   // Geheimes bleibt geheim – auch in der Chronik.
-  broadcast('chronik', eintrag, secret ? { dmOnly: true } : {});
+  broadcast('chronik', eintrag, { ...(secret ? { dmOnly: true } : {}), campaignId });
   return eintrag;
 }
 

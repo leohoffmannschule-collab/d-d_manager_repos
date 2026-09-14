@@ -42,15 +42,21 @@ function tokenHash(token) {
   return createHash('sha256').update(token).digest('hex');
 }
 
+/**
+ * Neue Sitzung. Gehört das Konto genau einer Kampagne an, ist die gleich
+ * gewählt – bei mehreren entscheidet die Person selbst (Kampagnenauswahl
+ * nach der Anmeldung), also bleibt campaign_id dann zunächst leer.
+ */
 export function createSession(userId) {
   const token = randomBytes(32).toString('base64url');
   const now = new Date().toISOString();
-  db.prepare('INSERT INTO auth_sessions (token_hash, user_id, created_at, last_seen) VALUES (?, ?, ?, ?)').run(
-    tokenHash(token),
-    userId,
-    now,
-    now
-  );
+  const mitgliedschaften = db
+    .prepare('SELECT campaign_id FROM campaign_members WHERE user_id = ?')
+    .all(userId);
+  const campaignId = mitgliedschaften.length === 1 ? mitgliedschaften[0].campaign_id : null;
+  db.prepare(
+    'INSERT INTO auth_sessions (token_hash, user_id, campaign_id, created_at, last_seen) VALUES (?, ?, ?, ?, ?)'
+  ).run(tokenHash(token), userId, campaignId, now, now);
   return token;
 }
 
@@ -67,7 +73,7 @@ function userForToken(token) {
   if (!token) return null;
   const row = db
     .prepare(
-      `SELECT u.id, u.name, u.role, u.color, s.last_seen
+      `SELECT u.id, u.name, u.role, u.color, s.last_seen, s.campaign_id
          FROM auth_sessions s JOIN users u ON u.id = s.user_id
         WHERE s.token_hash = ?`
     )
@@ -87,7 +93,20 @@ function userForToken(token) {
       tokenHash(token)
     );
   }
-  return { id: row.id, name: row.name, role: row.role, color: row.color };
+  return { id: row.id, name: row.name, role: row.role, color: row.color, campaignId: row.campaign_id };
+}
+
+/** Ist dieses Konto Mitglied der Kampagne – oder war es das nicht (mehr)? */
+export function istMitglied(campaignId, userId) {
+  if (!campaignId) return false;
+  return !!db
+    .prepare('SELECT 1 FROM campaign_members WHERE campaign_id = ? AND user_id = ?')
+    .get(campaignId, userId);
+}
+
+/** Trägt die gewählte Kampagne in die laufende Sitzung ein. */
+export function setSessionCampaign(token, campaignId) {
+  db.prepare('UPDATE auth_sessions SET campaign_id = ? WHERE token_hash = ?').run(campaignId, tokenHash(token));
 }
 
 /* --- Cookies ------------------------------------------------------------ */
@@ -132,11 +151,24 @@ export function clearSessionCookie(res) {
 export function attachUser(req, res, next) {
   req.sessionToken = readCookie(req, COOKIE_NAME);
   req.user = userForToken(req.sessionToken);
+  req.campaignId = req.user?.campaignId ?? null;
   next();
 }
 
 export function requireAuth(req, res, next) {
   if (!req.user) return res.status(401).json({ code: 'nicht_angemeldet', error: 'Bitte zuerst anmelden.' });
+  next();
+}
+
+/**
+ * Für alles, was am Spieltisch entsteht: ohne gewählte Kampagne (oder ohne
+ * weiterhin gültige Mitgliedschaft darin) gibt es hier nichts zu holen.
+ */
+export function requireCampaign(req, res, next) {
+  if (!req.user) return res.status(401).json({ code: 'nicht_angemeldet', error: 'Bitte zuerst anmelden.' });
+  if (!req.campaignId || !istMitglied(req.campaignId, req.user.id)) {
+    return res.status(409).json({ code: 'keine_kampagne', error: 'Bitte zuerst eine Kampagne wählen.' });
+  }
   next();
 }
 

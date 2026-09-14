@@ -87,32 +87,35 @@ function rowToKlang(row) {
   };
 }
 
-const holen = (id) => db.prepare('SELECT * FROM ambience WHERE id = ?').get(id);
+const holen = (id, campaignId) => db.prepare('SELECT * FROM ambience WHERE id = ? AND campaign_id = ?').get(id, campaignId);
 
 /* --- Was gerade aufliegt ------------------------------------------------- */
 
 const STILLE = { ambienceId: null, uri: null, webUrl: null, kind: null, name: '', notes: '', seit: null };
 
-export const aktuellerKlang = () => ({ ...STILLE, ...(getState('klang') ?? {}) });
+export const aktuellerKlang = (campaignId) => ({ ...STILLE, ...(getState('klang', campaignId) ?? {}) });
 
-function setzeKlang(werte) {
-  const klang = setState('klang', { ...STILLE, ...werte });
-  broadcast('klang', klang);
+function setzeKlang(campaignId, werte) {
+  const klang = setState('klang', campaignId, { ...STILLE, ...werte });
+  broadcast('klang', klang, { campaignId });
   return klang;
 }
 
 /** Wird von der Kartenbibliothek gebraucht: Eine Karte bringt ihre Ambiente mit. */
-export function klangAuflegen(ambienceId) {
-  const row = holen(ambienceId);
+export function klangAuflegen(ambienceId, campaignId) {
+  const row = holen(ambienceId, campaignId);
   if (!row) return null;
   const eintrag = rowToKlang(row);
-  chronik.log({
-    kind: 'klang',
-    target: eintrag.name,
-    text: `Über dem Tisch liegt „${eintrag.name}“.`,
-    meta: { ambienceId: eintrag.id, uri: eintrag.uri },
-  });
-  return setzeKlang({
+  chronik.log(
+    {
+      kind: 'klang',
+      target: eintrag.name,
+      text: `Über dem Tisch liegt „${eintrag.name}“.`,
+      meta: { ambienceId: eintrag.id, uri: eintrag.uri },
+    },
+    campaignId
+  );
+  return setzeKlang(campaignId, {
     ambienceId: eintrag.id,
     uri: eintrag.uri,
     webUrl: eintrag.webUrl,
@@ -127,12 +130,12 @@ export function klangAuflegen(ambienceId) {
 
 // GET /api/ambience/aktiv – die ganze Runde darf wissen, was dran ist.
 router.get('/aktiv', (req, res) => {
-  res.json(aktuellerKlang());
+  res.json(aktuellerKlang(req.campaignId));
 });
 
 // GET /api/ambience – die Sammlung ist Vorbereitung und bleibt beim DM.
 router.get('/', requireDm, (req, res) => {
-  res.json(db.prepare('SELECT * FROM ambience ORDER BY name COLLATE NOCASE').all().map(rowToKlang));
+  res.json(db.prepare('SELECT * FROM ambience WHERE campaign_id = ? ORDER BY name COLLATE NOCASE').all(req.campaignId).map(rowToKlang));
 });
 
 router.post('/', requireDm, (req, res) => {
@@ -150,7 +153,7 @@ router.post('/', requireDm, (req, res) => {
 
   const id = randomUUID();
   db.prepare(
-    `INSERT INTO ambience (id, name, uri, kind, tags, notes, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO ambience (id, name, uri, kind, tags, notes, campaign_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     id,
     body.name.trim().slice(0, 120),
@@ -158,13 +161,14 @@ router.post('/', requireDm, (req, res) => {
     adresse.kind,
     JSON.stringify(schlagworte(body.tags)),
     typeof body.notes === 'string' ? body.notes.slice(0, 2000) : '',
+    req.campaignId,
     new Date().toISOString()
   );
-  res.status(201).json(rowToKlang(holen(id)));
+  res.status(201).json(rowToKlang(holen(id, req.campaignId)));
 });
 
 router.put('/:id', requireDm, (req, res) => {
-  const row = holen(req.params.id);
+  const row = holen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'klang_nicht_gefunden', error: 'Ambiente nicht gefunden.' });
   const body = req.body ?? {};
 
@@ -188,37 +192,44 @@ router.put('/:id', requireDm, (req, res) => {
     row.id
   );
 
-  const frisch = rowToKlang(holen(row.id));
+  const frisch = rowToKlang(holen(row.id, req.campaignId));
   // Liegt gerade genau dieses auf, wandert die Änderung sofort mit – sonst
   // stünde am Tisch noch der alte Name oder der alte Verweis.
-  if (aktuellerKlang().ambienceId === frisch.id) {
-    setzeKlang({ ...aktuellerKlang(), uri: frisch.uri, webUrl: frisch.webUrl, kind: frisch.kind, name: frisch.name, notes: frisch.notes });
+  if (aktuellerKlang(req.campaignId).ambienceId === frisch.id) {
+    setzeKlang(req.campaignId, {
+      ...aktuellerKlang(req.campaignId),
+      uri: frisch.uri,
+      webUrl: frisch.webUrl,
+      kind: frisch.kind,
+      name: frisch.name,
+      notes: frisch.notes,
+    });
   }
   res.json(frisch);
 });
 
 router.delete('/:id', requireDm, (req, res) => {
-  const row = holen(req.params.id);
+  const row = holen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'klang_nicht_gefunden', error: 'Ambiente nicht gefunden.' });
 
   db.prepare('DELETE FROM ambience WHERE id = ?').run(row.id);
   db.prepare('UPDATE maps SET ambience_id = NULL WHERE ambience_id = ?').run(row.id);
   // Was gelöscht ist, soll auch nicht mehr am Tisch stehen.
-  if (aktuellerKlang().ambienceId === row.id) setzeKlang({});
+  if (aktuellerKlang(req.campaignId).ambienceId === row.id) setzeKlang(req.campaignId, {});
   res.status(204).end();
 });
 
 // POST /api/ambience/:id/auflegen
 router.post('/:id/auflegen', requireDm, (req, res) => {
-  const klang = klangAuflegen(req.params.id);
+  const klang = klangAuflegen(req.params.id, req.campaignId);
   if (!klang) return res.status(404).json({ code: 'klang_nicht_gefunden', error: 'Ambiente nicht gefunden.' });
   res.json(klang);
 });
 
 // POST /api/ambience/stille – nichts liegt mehr auf.
 router.post('/stille', requireDm, (req, res) => {
-  chronik.log({ kind: 'klang', text: 'Die Musik verstummt.' });
-  res.json(setzeKlang({}));
+  chronik.log({ kind: 'klang', text: 'Die Musik verstummt.' }, req.campaignId);
+  res.json(setzeKlang(req.campaignId, {}));
 });
 
 export default router;

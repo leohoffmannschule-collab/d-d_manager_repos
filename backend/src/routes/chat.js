@@ -48,22 +48,22 @@ function rowToMessage(row) {
  * Was diese Person lesen darf: alles Öffentliche und die eigenen Flüstereien
  * in beide Richtungen.
  */
-function sichtbarFuer(userId, limit) {
+function sichtbarFuer(userId, campaignId, limit) {
   return db
     .prepare(
       `SELECT * FROM messages
-        WHERE to_user_id IS NULL OR to_user_id = ? OR user_id = ?
+        WHERE campaign_id = ? AND (to_user_id IS NULL OR to_user_id = ? OR user_id = ?)
         ORDER BY created_at DESC
         LIMIT ?`
     )
-    .all(userId, userId, limit)
+    .all(campaignId, userId, userId, limit)
     .map(rowToMessage);
 }
 
 // GET /api/chat – der Verlauf, jüngste zuerst
 router.get('/', (req, res) => {
   const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 100, 1), AUFBEWAHREN);
-  res.json(sichtbarFuer(req.user.id, limit));
+  res.json(sichtbarFuer(req.user.id, req.campaignId, limit));
 });
 
 // POST /api/chat – etwas sagen; mit `an` wird geflüstert
@@ -96,8 +96,8 @@ router.post('/', (req, res) => {
   };
 
   db.prepare(
-    `INSERT INTO messages (id, user_id, user_name, color, text, to_user_id, to_user_name, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO messages (id, user_id, user_name, color, text, to_user_id, to_user_name, campaign_id, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     eintrag.id,
     eintrag.userId,
@@ -106,17 +106,20 @@ router.post('/', (req, res) => {
     eintrag.text,
     eintrag.toUserId,
     eintrag.toUserName,
+    req.campaignId,
     eintrag.createdAt
   );
 
-  db.prepare('DELETE FROM messages WHERE id NOT IN (SELECT id FROM messages ORDER BY created_at DESC LIMIT ?)').run(
-    AUFBEWAHREN
-  );
+  db.prepare(
+    `DELETE FROM messages WHERE campaign_id = ? AND id NOT IN
+      (SELECT id FROM messages WHERE campaign_id = ? ORDER BY created_at DESC LIMIT ?)`
+  ).run(req.campaignId, req.campaignId, AUFBEWAHREN);
 
   // Geflüstertes geht nur an die beiden – nicht an die übrigen Fenster.
   broadcast('chat', eintrag, {
     ...(eintrag.toUserId ? { userIds: [eintrag.userId, eintrag.toUserId] } : {}),
     exceptClient: originClient(req),
+    campaignId: req.campaignId,
   });
 
   res.status(201).json(eintrag);
@@ -124,8 +127,15 @@ router.post('/', (req, res) => {
 
 // GET /api/chat/wer – an wen sich flüstern lässt
 router.get('/wer', (req, res) => {
-  const rows = db.prepare('SELECT id, name, role, color FROM users ORDER BY name').all();
-  const anwesend = new Set(presence().map((p) => p.id));
+  const rows = db
+    .prepare(
+      `SELECT u.id, u.name, u.role, u.color
+         FROM users u JOIN campaign_members m ON m.user_id = u.id
+        WHERE m.campaign_id = ?
+        ORDER BY u.name`
+    )
+    .all(req.campaignId);
+  const anwesend = new Set(presence(req.campaignId).map((p) => p.id));
   res.json(
     rows
       .filter((r) => r.id !== req.user.id)
@@ -135,8 +145,8 @@ router.get('/wer', (req, res) => {
 
 // DELETE /api/chat – aufräumen, bevor die nächste Runde beginnt
 router.delete('/', requireDm, (req, res) => {
-  db.prepare('DELETE FROM messages').run();
-  broadcast('chat:geleert', {});
+  db.prepare('DELETE FROM messages WHERE campaign_id = ?').run(req.campaignId);
+  broadcast('chat:geleert', {}, { campaignId: req.campaignId });
   res.json({ ok: true });
 });
 

@@ -31,39 +31,43 @@ function rowToSession(row, user) {
   };
 }
 
+const sitzungHolen = (id, campaignId) =>
+  db.prepare('SELECT * FROM game_sessions WHERE id = ? AND campaign_id = ?').get(id, campaignId);
+
 router.get('/sessions', (req, res) => {
-  const rows = db.prepare('SELECT * FROM game_sessions ORDER BY started_at DESC').all();
+  const rows = db.prepare('SELECT * FROM game_sessions WHERE campaign_id = ? ORDER BY started_at DESC').all(req.campaignId);
   res.json(rows.map((row) => rowToSession(row, req.user)));
 });
 
 router.get('/sessions/:id', (req, res) => {
-  const row = db.prepare('SELECT * FROM game_sessions WHERE id = ?').get(req.params.id);
+  const row = sitzungHolen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'sitzung_nicht_gefunden', error: 'Sitzung nicht gefunden.' });
   res.json({ ...rowToSession(row, req.user), entries: eintraege(row.id, req.user) });
 });
 
 router.post('/sessions', requireDm, (req, res) => {
-  res.status(201).json(rowToSession(chronik.starteSitzung(req.body?.title), req.user));
+  res.status(201).json(rowToSession(chronik.starteSitzung(req.body?.title, req.campaignId), req.user));
 });
 
 router.post('/sessions/:id/ende', requireDm, (req, res) => {
-  const beendet = chronik.beendeSitzung();
+  const beendet = chronik.beendeSitzung(req.campaignId);
   if (!beendet) return res.status(400).json({ code: 'keine_offene_sitzung', error: 'Es läuft gerade keine Sitzung.' });
   res.json(rowToSession(beendet, req.user));
 });
 
 router.patch('/sessions/:id', requireDm, (req, res) => {
-  const row = db.prepare('SELECT * FROM game_sessions WHERE id = ?').get(req.params.id);
+  const row = sitzungHolen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'sitzung_nicht_gefunden', error: 'Sitzung nicht gefunden.' });
   if (typeof req.body?.title === 'string' && req.body.title.trim()) {
     db.prepare('UPDATE game_sessions SET title = ? WHERE id = ?').run(req.body.title.trim().slice(0, 150), row.id);
   }
-  res.json(rowToSession(db.prepare('SELECT * FROM game_sessions WHERE id = ?').get(row.id), req.user));
+  res.json(rowToSession(sitzungHolen(row.id, req.campaignId), req.user));
 });
 
 router.delete('/sessions/:id', requireDm, (req, res) => {
-  const info = db.prepare('DELETE FROM game_sessions WHERE id = ?').run(req.params.id);
-  if (info.changes === 0) return res.status(404).json({ code: 'sitzung_nicht_gefunden', error: 'Sitzung nicht gefunden.' });
+  const row = sitzungHolen(req.params.id, req.campaignId);
+  if (!row) return res.status(404).json({ code: 'sitzung_nicht_gefunden', error: 'Sitzung nicht gefunden.' });
+  db.prepare('DELETE FROM game_sessions WHERE id = ?').run(row.id);
   res.status(204).end();
 });
 
@@ -74,19 +78,28 @@ router.delete('/sessions/:id', requireDm, (req, res) => {
 router.post('/eintrag', requireDm, (req, res) => {
   const text = typeof req.body?.text === 'string' ? req.body.text.trim() : '';
   if (!text) return res.status(400).json({ code: 'text_fehlt', error: 'Ohne Text kein Eintrag.' });
-  const eintrag = chronik.log({
-    kind: 'notiz',
-    actor: req.user.name,
-    text: text.slice(0, 2000),
-    secret: req.body?.secret === true,
-  });
+  const eintrag = chronik.log(
+    {
+      kind: 'notiz',
+      actor: req.user.name,
+      text: text.slice(0, 2000),
+      secret: req.body?.secret === true,
+    },
+    req.campaignId
+  );
   res.status(201).json(eintrag);
 });
 
 router.delete('/eintrag/:id', requireDm, (req, res) => {
-  const info = db.prepare('DELETE FROM chronicle WHERE id = ?').run(req.params.id);
+  // Ein Eintrag gehört zu einer Sitzung, die zu dieser Kampagne gehört – so
+  // lässt sich kein Eintrag aus einer fremden Kampagne treffen.
+  const info = db
+    .prepare(
+      `DELETE FROM chronicle WHERE id = ? AND session_id IN (SELECT id FROM game_sessions WHERE campaign_id = ?)`
+    )
+    .run(req.params.id, req.campaignId);
   if (info.changes === 0) return res.status(404).json({ code: 'eintrag_nicht_gefunden', error: 'Eintrag nicht gefunden.' });
-  broadcast('chronik:geaendert', {});
+  broadcast('chronik:geaendert', {}, { campaignId: req.campaignId });
   res.status(204).end();
 });
 
@@ -141,7 +154,7 @@ export function protokoll(session, liste) {
 }
 
 router.get('/sessions/:id/protokoll', (req, res) => {
-  const row = db.prepare('SELECT * FROM game_sessions WHERE id = ?').get(req.params.id);
+  const row = sitzungHolen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'sitzung_nicht_gefunden', error: 'Sitzung nicht gefunden.' });
   const text = protokoll(row, eintraege(row.id, req.user));
   res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
@@ -178,7 +191,7 @@ router.post('/sessions/:id/rueckblick', requireDm, async (req, res) => {
     });
   }
 
-  const row = db.prepare('SELECT * FROM game_sessions WHERE id = ?').get(req.params.id);
+  const row = sitzungHolen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'sitzung_nicht_gefunden', error: 'Sitzung nicht gefunden.' });
 
   const liste = db.prepare('SELECT * FROM chronicle WHERE session_id = ? ORDER BY created_at').all(row.id);
@@ -220,7 +233,7 @@ router.post('/sessions/:id/rueckblick', requireDm, async (req, res) => {
     if (!rueckblick) return res.status(502).json({ code: 'ki_leer', error: 'Das Sprachmodell hat nichts geschrieben.' });
 
     db.prepare('UPDATE game_sessions SET summary = ? WHERE id = ?').run(rueckblick, row.id);
-    broadcast('chronik:geaendert', {});
+    broadcast('chronik:geaendert', {}, { campaignId: req.campaignId });
     res.json({ summary: rueckblick });
   } catch (err) {
     res.status(502).json({ code: 'ki_nicht_erreichbar', error: `Das Sprachmodell war nicht erreichbar: ${err.message}` });

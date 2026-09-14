@@ -12,8 +12,8 @@ router.use(requireAuth);
 const TYPEN = new Set(['pc', 'npc', 'monster']);
 const toNumber = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
 
-function meta() {
-  return getState('kampf', { round: 1, activeCombatantId: null });
+function meta(campaignId) {
+  return getState('kampf', campaignId, { round: 1, activeCombatantId: null });
 }
 
 function rowToCombatant(row) {
@@ -34,10 +34,10 @@ function rowToCombatant(row) {
 }
 
 /** Nach Initiative absteigend, bei Gleichstand alphabetisch. */
-function alleKaempfer() {
+function alleKaempfer(campaignId) {
   return db
-    .prepare('SELECT * FROM combatants ORDER BY initiative DESC, name COLLATE NOCASE')
-    .all()
+    .prepare('SELECT * FROM combatants WHERE campaign_id = ? ORDER BY initiative DESC, name COLLATE NOCASE')
+    .all(campaignId)
     .map(rowToCombatant);
 }
 
@@ -59,8 +59,8 @@ function zustand(hp, maxHp) {
   return 'schwer_verwundet';
 }
 
-export function encounterView(user) {
-  const kaempfer = alleKaempfer();
+export function encounterView(user, campaignId) {
+  const kaempfer = alleKaempfer(campaignId);
   const sichtbar = isDm(user)
     ? kaempfer
     : kaempfer
@@ -77,24 +77,24 @@ export function encounterView(user) {
                 status: zustand(c.hp, c.maxHp),
               }
         );
-  return { ...meta(), combatants: sichtbar };
+  return { ...meta(campaignId), combatants: sichtbar };
 }
 
 /** Beide Fassungen an alle offenen Fenster schicken. */
-export function sendeKampf() {
-  broadcast('kampf', encounterView({ role: 'sl' }), { role: 'sl' });
-  broadcast('kampf', encounterView({ role: 'spieler' }), { role: 'spieler' });
+export function sendeKampf(campaignId) {
+  broadcast('kampf', encounterView({ role: 'sl' }, campaignId), { role: 'sl', campaignId });
+  broadcast('kampf', encounterView({ role: 'spieler' }, campaignId), { role: 'spieler', campaignId });
 }
 
 function antwort(req, res) {
-  sendeKampf();
-  res.json(encounterView(req.user));
+  sendeKampf(req.campaignId);
+  res.json(encounterView(req.user, req.campaignId));
 }
 
 /** Trefferpunkte auf das verknüpfte Charakterblatt zurückschreiben. */
-function syncCharakter(combatant) {
+function syncCharakter(combatant, campaignId) {
   if (!combatant.character_id) return;
-  const row = db.prepare('SELECT * FROM characters WHERE id = ?').get(combatant.character_id);
+  const row = db.prepare('SELECT * FROM characters WHERE id = ? AND campaign_id = ?').get(combatant.character_id, campaignId);
   if (!row) return;
   const data = JSON.parse(row.data);
   data.combat = data.combat ?? {};
@@ -104,20 +104,18 @@ function syncCharakter(combatant) {
     new Date().toISOString(),
     row.id
   );
-  broadcast('charakter:aktualisiert', {
-    id: row.id,
-    name: row.name,
-    hp: data.combat.hp,
-    ownerId: row.owner_id,
-    shared: !!row.shared,
-  });
+  broadcast(
+    'charakter:aktualisiert',
+    { id: row.id, name: row.name, hp: data.combat.hp, ownerId: row.owner_id, shared: !!row.shared },
+    { campaignId }
+  );
 }
 
-const holen = (id) => db.prepare('SELECT * FROM combatants WHERE id = ?').get(id);
+const holen = (id, campaignId) => db.prepare('SELECT * FROM combatants WHERE id = ? AND campaign_id = ?').get(id, campaignId);
 
 // GET /api/encounter
 router.get('/', (req, res) => {
-  res.json(encounterView(req.user));
+  res.json(encounterView(req.user, req.campaignId));
 });
 
 // POST /api/encounter/combatants
@@ -128,8 +126,8 @@ router.post('/combatants', requireDm, (req, res) => {
   }
   const hpValue = toNumber(hp, 0);
   db.prepare(
-    `INSERT INTO combatants (id, name, type, initiative, hp, max_hp, ac, conditions, notes, character_id, media_id, hidden, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO combatants (id, name, type, initiative, hp, max_hp, ac, conditions, notes, character_id, media_id, hidden, campaign_id, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     randomUUID(),
     name.trim().slice(0, 100),
@@ -143,6 +141,7 @@ router.post('/combatants', requireDm, (req, res) => {
     characterId ?? null,
     req.body?.mediaId ?? null,
     hidden ? 1 : 0,
+    req.campaignId,
     new Date().toISOString()
   );
   antwort(req, res);
@@ -150,7 +149,7 @@ router.post('/combatants', requireDm, (req, res) => {
 
 // PUT /api/encounter/combatants/:id
 router.put('/combatants/:id', requireDm, (req, res) => {
-  const row = holen(req.params.id);
+  const row = holen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'kaempfer_nicht_gefunden', error: 'Kämpfer nicht gefunden.' });
 
   const body = req.body ?? {};
@@ -185,7 +184,7 @@ router.put('/combatants/:id', requireDm, (req, res) => {
     row.id
   );
 
-  if (felder.hp !== row.hp || felder.max_hp !== row.max_hp) syncCharakter(holen(row.id));
+  if (felder.hp !== row.hp || felder.max_hp !== row.max_hp) syncCharakter(holen(row.id, req.campaignId), req.campaignId);
 
   if (felder.conditions !== row.conditions) {
     const vorher = new Set(JSON.parse(row.conditions));
@@ -205,7 +204,7 @@ router.put('/combatants/:id', requireDm, (req, res) => {
           .join(' '),
         meta: { target: felder.name, added: neu, removed: weg },
         secret: !!felder.hidden,
-      });
+      }, req.campaignId);
     }
   }
 
@@ -214,12 +213,12 @@ router.put('/combatants/:id', requireDm, (req, res) => {
 
 // POST /api/encounter/combatants/:id/damage – negative Werte heilen
 router.post('/combatants/:id/damage', requireDm, (req, res) => {
-  const row = holen(req.params.id);
+  const row = holen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'kaempfer_nicht_gefunden', error: 'Kämpfer nicht gefunden.' });
   const amount = toNumber(req.body?.amount, 0);
   const hp = Math.max(0, Math.min(row.max_hp || Number.MAX_SAFE_INTEGER, row.hp - amount));
   db.prepare('UPDATE combatants SET hp = ? WHERE id = ?').run(hp, row.id);
-  syncCharakter(holen(row.id));
+  syncCharakter(holen(row.id, req.campaignId), req.campaignId);
 
   if (amount !== 0) {
     chronik.log({
@@ -233,7 +232,7 @@ router.post('/combatants/:id/damage', requireDm, (req, res) => {
       meta: { target: row.name, amount, hp, maxHp: row.max_hp },
       // Von verborgenen Kämpfern soll die Runde nichts mitbekommen.
       secret: !!row.hidden,
-    });
+    }, req.campaignId);
   }
   if (hp === 0 && row.hp > 0) {
     chronik.log({
@@ -243,7 +242,7 @@ router.post('/combatants/:id/damage', requireDm, (req, res) => {
       text: `${row.name} geht zu Boden.`,
       meta: { target: row.name, type: row.type },
       secret: !!row.hidden,
-    });
+    }, req.campaignId);
   }
 
   antwort(req, res);
@@ -257,7 +256,7 @@ router.post('/combatants/:id/damage', requireDm, (req, res) => {
  * Wurf selbst ein. Fremde Zeilen bleiben tabu.
  */
 router.post('/combatants/:id/initiative', (req, res) => {
-  const row = holen(req.params.id);
+  const row = holen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'kaempfer_nicht_gefunden', error: 'Kämpfer nicht gefunden.' });
 
   if (!isDm(req.user)) {
@@ -274,17 +273,17 @@ router.post('/combatants/:id/initiative', (req, res) => {
 
 // DELETE /api/encounter/combatants/:id
 router.delete('/combatants/:id', requireDm, (req, res) => {
-  const row = holen(req.params.id);
+  const row = holen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'kaempfer_nicht_gefunden', error: 'Kämpfer nicht gefunden.' });
 
-  const reihenfolge = alleKaempfer();
+  const reihenfolge = alleKaempfer(req.campaignId);
   const index = reihenfolge.findIndex((c) => c.id === row.id);
   db.prepare('DELETE FROM combatants WHERE id = ?').run(row.id);
 
-  const aktuell = meta();
+  const aktuell = meta(req.campaignId);
   if (aktuell.activeCombatantId === row.id) {
-    const rest = alleKaempfer();
-    setState('kampf', { ...aktuell, activeCombatantId: rest[index]?.id ?? rest[0]?.id ?? null });
+    const rest = alleKaempfer(req.campaignId);
+    setState('kampf', req.campaignId, { ...aktuell, activeCombatantId: rest[index]?.id ?? rest[0]?.id ?? null });
   }
   antwort(req, res);
 });
@@ -292,15 +291,15 @@ router.delete('/combatants/:id', requireDm, (req, res) => {
 // POST /api/encounter/next-turn  |  /prev-turn
 function zug(richtung) {
   return (req, res) => {
-    const kaempfer = alleKaempfer();
-    const aktuell = meta();
+    const kaempfer = alleKaempfer(req.campaignId);
+    const aktuell = meta(req.campaignId);
     if (kaempfer.length === 0) {
-      setState('kampf', { ...aktuell, activeCombatantId: null });
+      setState('kampf', req.campaignId, { ...aktuell, activeCombatantId: null });
       return antwort(req, res);
     }
     const index = kaempfer.findIndex((c) => c.id === aktuell.activeCombatantId);
     if (index === -1) {
-      setState('kampf', {
+      setState('kampf', req.campaignId, {
         ...aktuell,
         activeCombatantId: richtung > 0 ? kaempfer[0].id : kaempfer[kaempfer.length - 1].id,
       });
@@ -315,9 +314,9 @@ function zug(richtung) {
       next = kaempfer.length - 1;
       round = Math.max(1, round - 1);
     }
-    setState('kampf', { round, activeCombatantId: kaempfer[next].id });
+    setState('kampf', req.campaignId, { round, activeCombatantId: kaempfer[next].id });
     if (round !== aktuell.round) {
-      chronik.log({ kind: 'runde', text: `Kampfrunde ${round} beginnt.`, meta: { round } });
+      chronik.log({ kind: 'runde', text: `Kampfrunde ${round} beginnt.`, meta: { round } }, req.campaignId);
     }
     antwort(req, res);
   };
@@ -328,16 +327,19 @@ router.post('/prev-turn', requireDm, zug(-1));
 
 // POST /api/encounter/reset
 router.post('/reset', requireDm, (req, res) => {
-  const meta_ = meta();
-  const zahl = db.prepare('SELECT COUNT(*) AS n FROM combatants').get().n;
-  db.prepare('DELETE FROM combatants').run();
-  setState('kampf', { round: 1, activeCombatantId: null });
+  const meta_ = meta(req.campaignId);
+  const zahl = db.prepare('SELECT COUNT(*) AS n FROM combatants WHERE campaign_id = ?').get(req.campaignId).n;
+  db.prepare('DELETE FROM combatants WHERE campaign_id = ?').run(req.campaignId);
+  setState('kampf', req.campaignId, { round: 1, activeCombatantId: null });
   if (zahl > 0) {
-    chronik.log({
-      kind: 'kampf',
-      text: `Der Kampf endet nach ${meta_.round} ${meta_.round === 1 ? 'Runde' : 'Runden'}.`,
-      meta: { rounds: meta_.round, kapitel: true },
-    });
+    chronik.log(
+      {
+        kind: 'kampf',
+        text: `Der Kampf endet nach ${meta_.round} ${meta_.round === 1 ? 'Runde' : 'Runden'}.`,
+        meta: { rounds: meta_.round, kapitel: true },
+      },
+      req.campaignId
+    );
   }
   antwort(req, res);
 });
@@ -345,7 +347,7 @@ router.post('/reset', requireDm, (req, res) => {
 // POST /api/encounter/roll-initiative – für alle NSC und Monster ohne Wert
 router.post('/roll-initiative', requireDm, (req, res) => {
   const nurLeere = req.body?.onlyEmpty !== false;
-  for (const row of db.prepare("SELECT * FROM combatants WHERE type != 'pc'").all()) {
+  for (const row of db.prepare("SELECT * FROM combatants WHERE type != 'pc' AND campaign_id = ?").all(req.campaignId)) {
     if (nurLeere && row.initiative !== 0) continue;
     db.prepare('UPDATE combatants SET initiative = ? WHERE id = ?').run(rollD20(), row.id);
   }
@@ -355,9 +357,12 @@ router.post('/roll-initiative', requireDm, (req, res) => {
 // POST /api/encounter/party – die Charaktere der Runde in den Kampf holen
 router.post('/party', requireDm, (req, res) => {
   const vorhanden = new Set(
-    db.prepare('SELECT character_id FROM combatants WHERE character_id IS NOT NULL').all().map((r) => r.character_id)
+    db
+      .prepare('SELECT character_id FROM combatants WHERE character_id IS NOT NULL AND campaign_id = ?')
+      .all(req.campaignId)
+      .map((r) => r.character_id)
   );
-  const charaktere = db.prepare('SELECT * FROM characters WHERE shared = 1 AND npc = 0').all();
+  const charaktere = db.prepare('SELECT * FROM characters WHERE shared = 1 AND npc = 0 AND campaign_id = ?').all(req.campaignId);
   const now = new Date().toISOString();
 
   for (const row of charaktere) {
@@ -365,8 +370,8 @@ router.post('/party', requireDm, (req, res) => {
     const data = JSON.parse(row.data);
     const hp = data?.combat?.hp ?? {};
     db.prepare(
-      `INSERT INTO combatants (id, name, type, initiative, hp, max_hp, ac, conditions, notes, character_id, media_id, hidden, created_at)
-       VALUES (?, ?, 'pc', 0, ?, ?, ?, '[]', '', ?, ?, 0, ?)`
+      `INSERT INTO combatants (id, name, type, initiative, hp, max_hp, ac, conditions, notes, character_id, media_id, hidden, campaign_id, created_at)
+       VALUES (?, ?, 'pc', 0, ?, ?, ?, '[]', '', ?, ?, 0, ?, ?)`
     ).run(
       randomUUID(),
       row.name,
@@ -375,10 +380,11 @@ router.post('/party', requireDm, (req, res) => {
       toNumber(data?.combat?.armorClass ?? data?.combat?.ac, 10),
       row.id,
       data?.miniMediaId ?? null,
+      req.campaignId,
       now
     );
   }
-  chronik.log({ kind: 'kampf', text: 'Ein Kampf beginnt.', meta: { kapitel: true } });
+  chronik.log({ kind: 'kampf', text: 'Ein Kampf beginnt.', meta: { kapitel: true } }, req.campaignId);
   antwort(req, res);
 });
 

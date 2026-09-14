@@ -30,8 +30,10 @@ function rowToRoll(row) {
 router.get('/history', (req, res) => {
   const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 50, 1), AUFBEWAHREN);
   const rows = isDm(req.user)
-    ? db.prepare('SELECT * FROM rolls ORDER BY created_at DESC LIMIT ?').all(limit)
-    : db.prepare('SELECT * FROM rolls WHERE secret = 0 ORDER BY created_at DESC LIMIT ?').all(limit);
+    ? db.prepare('SELECT * FROM rolls WHERE campaign_id = ? ORDER BY created_at DESC LIMIT ?').all(req.campaignId, limit)
+    : db
+        .prepare('SELECT * FROM rolls WHERE campaign_id = ? AND secret = 0 ORDER BY created_at DESC LIMIT ?')
+        .all(req.campaignId, limit);
   res.json(rows.map(rowToRoll));
 });
 
@@ -67,8 +69,8 @@ router.post('/roll', (req, res) => {
   };
 
   db.prepare(
-    `INSERT INTO rolls (id, user_id, user_name, label, expression, mode, details, total, secret, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO rolls (id, user_id, user_name, label, expression, mode, details, total, secret, campaign_id, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     eintrag.id,
     eintrag.userId,
@@ -79,36 +81,41 @@ router.post('/roll', (req, res) => {
     JSON.stringify(eintrag.details),
     eintrag.total,
     secret ? 1 : 0,
+    req.campaignId,
     eintrag.createdAt
   );
 
   db.prepare(
-    `DELETE FROM rolls WHERE id NOT IN (SELECT id FROM rolls ORDER BY created_at DESC LIMIT ?)`
-  ).run(AUFBEWAHREN);
+    `DELETE FROM rolls WHERE campaign_id = ? AND id NOT IN
+      (SELECT id FROM rolls WHERE campaign_id = ? ORDER BY created_at DESC LIMIT ?)`
+  ).run(req.campaignId, req.campaignId, AUFBEWAHREN);
 
-  chronik.log({
-    kind: 'wurf',
-    actor: req.user.name,
-    text: `${eintrag.label ? `${eintrag.label}: ` : ''}${eintrag.expression} ergibt ${eintrag.total}`,
-    meta: {
-      total: eintrag.total,
-      expression: eintrag.expression,
-      mode: eintrag.mode,
-      label: eintrag.label,
-      details: eintrag.details,
+  chronik.log(
+    {
+      kind: 'wurf',
+      actor: req.user.name,
+      text: `${eintrag.label ? `${eintrag.label}: ` : ''}${eintrag.expression} ergibt ${eintrag.total}`,
+      meta: {
+        total: eintrag.total,
+        expression: eintrag.expression,
+        mode: eintrag.mode,
+        label: eintrag.label,
+        details: eintrag.details,
+      },
+      secret,
     },
-    secret,
-  });
+    req.campaignId
+  );
 
   const nutzlast = { ...eintrag, color: req.user.color };
-  broadcast('wurf', nutzlast, secret ? { dmOnly: true } : {});
+  broadcast('wurf', nutzlast, { ...(secret ? { dmOnly: true } : {}), campaignId: req.campaignId });
   res.status(201).json(nutzlast);
 });
 
 // DELETE /api/dice/history
 router.delete('/history', requireDm, (req, res) => {
-  db.prepare('DELETE FROM rolls').run();
-  broadcast('wuerfe:geleert', {});
+  db.prepare('DELETE FROM rolls WHERE campaign_id = ?').run(req.campaignId);
+  broadcast('wuerfe:geleert', {}, { campaignId: req.campaignId });
   res.status(204).end();
 });
 

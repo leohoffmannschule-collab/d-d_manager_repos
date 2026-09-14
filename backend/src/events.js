@@ -21,7 +21,7 @@ function write(client, event, data) {
   }
 }
 
-export function addClient(req, res, user) {
+export function addClient(req, res, user, campaignId) {
   res.writeHead(200, {
     'Content-Type': 'text/event-stream; charset=utf-8',
     'Cache-Control': 'no-cache, no-transform',
@@ -31,7 +31,7 @@ export function addClient(req, res, user) {
   });
   res.flushHeaders?.();
 
-  const client = { id: nextClientId++, res, user };
+  const client = { id: nextClientId++, res, user, campaignId };
   clients.add(client);
 
   // Ein erster Datensatz, damit der Browser die Verbindung als offen ansieht,
@@ -50,12 +50,12 @@ export function addClient(req, res, user) {
   const close = () => {
     clearInterval(heartbeat);
     clients.delete(client);
-    broadcast('anwesenheit', presence());
+    broadcast('anwesenheit', presence(campaignId), { campaignId });
   };
   req.on('close', close);
   req.on('error', close);
 
-  broadcast('anwesenheit', presence());
+  broadcast('anwesenheit', presence(campaignId), { campaignId });
   return client;
 }
 
@@ -69,23 +69,28 @@ export function addClient(req, res, user) {
  * @param {'sl'|'spieler'} [options.role] nur an eine Rolle
  * @param {string[]} [options.userIds] nur an bestimmte Konten
  * @param {number} [options.exceptClient] ein Fenster auslassen (der Auslöser)
+ * @param {string} [options.campaignId] nur an Fenster in dieser Kampagne
  */
 export function broadcast(event, data, options = {}) {
-  const { dmOnly = false, role = null, userIds = null, exceptClient = null } = options;
+  const { dmOnly = false, role = null, userIds = null, exceptClient = null, campaignId = undefined } = options;
   for (const client of clients) {
     if (dmOnly && client.user?.role !== 'sl') continue;
     if (role && client.user?.role !== role) continue;
     if (userIds && !userIds.includes(client.user?.id)) continue;
     if (exceptClient && client.id === exceptClient) continue;
+    // Kein campaignId angegeben heißt: rundenweites Ereignis (Konten, Einladungen) –
+    // das geht an alle, unabhängig davon, wer gerade in welcher Kampagne steckt.
+    if (campaignId !== undefined && client.campaignId !== campaignId) continue;
     write(client, event, data);
   }
 }
 
-/** Wer ist gerade am Tisch? Mehrere Fenster einer Person zählen einmal. */
-export function presence() {
+/** Wer ist gerade in dieser Kampagne am Tisch? Mehrere Fenster einer Person zählen einmal. */
+export function presence(campaignId) {
   const byUser = new Map();
   for (const client of clients) {
     if (!client.user) continue;
+    if (client.campaignId !== campaignId) continue;
     const existing = byUser.get(client.user.id);
     if (existing) {
       existing.fenster += 1;
