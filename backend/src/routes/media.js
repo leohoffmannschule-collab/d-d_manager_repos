@@ -62,7 +62,14 @@ router.get('/:id', (req, res) => {
     return res.status(404).json({ code: 'bild_nicht_gefunden', error: 'Bild nicht gefunden.' });
   }
   const datei = path.join(mediaDir, row.filename);
-  if (!fs.existsSync(datei)) return res.status(404).json({ code: 'bild_nicht_gefunden', error: 'Bild nicht gefunden.' });
+  if (!fs.existsSync(datei)) {
+    // Der Eintrag steht, die Datei fehlt: Das passiert beim Umziehen auf ein
+    // anderes Gerät, wenn der Ordner „medien“ nicht (oder eine Ebene zu tief)
+    // mitgekommen ist. Stillschweigend ein leeres Bild zu liefern, hieße die
+    // Spielleitung im Dunkeln stehen zu lassen – deshalb steht es im Protokoll.
+    console.warn(`  Bilddatei fehlt: ${datei}  (Eintrag ${row.id} ist da, die Datei nicht)`);
+    return res.status(404).json({ code: 'bilddatei_fehlt', error: 'Zu diesem Bild fehlt die Datei auf der Platte.' });
+  }
 
   // Der Inhalt zu einer Kennung ändert sich nie – der Browser darf ihn also
   // behalten. Auf dem Spieltisch spart das jede Menge Nachladen.

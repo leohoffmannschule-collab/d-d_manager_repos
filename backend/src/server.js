@@ -8,7 +8,7 @@ import os from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import db, { driver } from './db.js';
+import db, { driver, mediaDir } from './db.js';
 import { festeAdresse } from './domaene.js';
 import { attachUser, countUsers, requireAuth, requireCampaign } from './auth.js';
 import { addClient, presence } from './events.js';
@@ -137,6 +137,18 @@ app.use((err, req, res, next) => {
   res.status(500).json({ code: 'serverfehler', error: 'Im Almanach ist etwas schiefgegangen.' });
 });
 
+/**
+ * Karten und Bildnisse liegen als Dateien neben der Datenbank. Beim Umzug auf
+ * ein anderes Gerät bleibt der Ordner gern zurück (oder landet eine Ebene zu
+ * tief) – dann steht jeder Eintrag noch, aber der Spieltisch bleibt leer. Das
+ * fällt sonst erst mitten im Spielabend auf, deshalb steht es beim Start da.
+ */
+function fehlendeBilder() {
+  const alle = db.prepare('SELECT filename FROM media').all();
+  const fehlen = alle.filter(({ filename }) => !fs.existsSync(path.join(mediaDir, filename)));
+  return { gesamt: alle.length, fehlen: fehlen.length };
+}
+
 function localAddresses() {
   return Object.values(os.networkInterfaces())
     .flat()
@@ -175,6 +187,13 @@ app.listen(PORT, () => {
   if (umgebung.grund === 'fehler') {
     console.log('');
     console.log(`  Die .env ließ sich nicht lesen: ${umgebung.fehler}`);
+  }
+  const bilder = fehlendeBilder();
+  if (bilder.fehlen > 0) {
+    console.log('');
+    console.log(`  ${bilder.fehlen} von ${bilder.gesamt} Bildern fehlen auf der Platte.`);
+    console.log(`  Erwartet werden sie in: ${mediaDir}`);
+    console.log('  Beim Umzug ist der Ordner "medien" wohl nicht (oder eine Ebene zu tief) mitgekommen.');
   }
   if (geraeumt > 0) {
     console.log('');
