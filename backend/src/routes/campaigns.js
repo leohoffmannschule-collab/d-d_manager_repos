@@ -35,19 +35,22 @@ function nameBestaetigt(kampagne, eingabe) {
 router.get('/', (req, res) => {
   const rows = db
     .prepare(
-      `SELECT c.id, c.name, c.created_at, c.created_by,
+      `SELECT c.id, c.name, c.created_at, c.created_by, u.name AS urheber,
               (SELECT COUNT(*) FROM campaign_members m WHERE m.campaign_id = c.id) AS mitglieder
          FROM campaigns c
          JOIN campaign_members cm ON cm.campaign_id = c.id
+         LEFT JOIN users u ON u.id = c.created_by
         WHERE cm.user_id = ? AND c.deleted_at IS NULL
         ORDER BY c.created_at`
     )
     .all(req.user.id);
   res.json({
-    kampagnen: rows.map(({ created_by: urheber, ...rest }) => ({
+    kampagnen: rows.map(({ created_by: von, urheber, ...rest }) => ({
       ...rest,
-      // Damit die Oberfläche weiß, wem sie den Löschknopf überhaupt zeigen darf.
-      darfLoeschen: darfLoeschen({ created_by: urheber }, req.user),
+      // Beides, damit die Oberfläche nicht nur weiß, *ob* jemand löschen darf,
+      // sondern im Zweifel auch sagen kann, wer es stattdessen dürfte.
+      darfLoeschen: darfLoeschen({ created_by: von }, req.user),
+      angelegtVon: urheber ?? null,
     })),
     aktive: req.campaignId,
   });

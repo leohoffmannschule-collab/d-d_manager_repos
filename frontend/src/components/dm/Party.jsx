@@ -189,6 +189,7 @@ function Kampagnenmitglieder({ users }) {
  * vergreift, klickt einmal auf „Zurückholen“ und hat nichts verloren.
  */
 function KampagneEntsorgen() {
+  const { isDm } = useAuth();
   const { active, remove, restore, purge, papierkorb } = useCampaign();
   const [name, setName] = useState('');
   const [fehler, setFehler] = useState('');
@@ -205,6 +206,16 @@ function KampagneEntsorgen() {
 
   return (
     <>
+      {isDm && active && !active.darfLoeschen && (
+        <section className="panel p-4">
+          <Rubric>Diese Kampagne löschen</Rubric>
+          <p className="text-sepia italic">
+            „{active.name}“ kann nur {active.angelegtVon ? `${active.angelegtVon} löschen` : 'die Spielleitung löschen'} –
+            wer eine Kampagne anlegt, entscheidet auch über ihr Ende.
+          </p>
+        </section>
+      )}
+
       {active?.darfLoeschen && (
         <section className="panel border-rubric/40 p-4">
           <Rubric>Diese Kampagne löschen</Rubric>
