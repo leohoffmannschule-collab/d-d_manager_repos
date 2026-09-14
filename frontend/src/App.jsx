@@ -8,9 +8,11 @@ import Tabletop from './pages/Tabletop.jsx';
 import DmBoard from './pages/DmBoard.jsx';
 import Chronicle from './pages/Chronicle.jsx';
 import Login from './pages/Login.jsx';
+import Kampagnenwahl from './pages/Kampagnenwahl.jsx';
 import Help from './pages/Help.jsx';
 import NotFound from './pages/NotFound.jsx';
 import { useAuth } from './lib/auth.jsx';
+import { CampaignProvider, useCampaign } from './lib/campaign.jsx';
 import { LiveProvider } from './lib/live.jsx';
 
 function Ladeblatt() {
@@ -27,6 +29,25 @@ function NurSpielleitung({ children }) {
   return isDm ? children : <Navigate to="/" replace />;
 }
 
+/**
+ * Erst wenn eine Kampagne aktiv ist, geht es hinter die Pforte. Der
+ * `key={activeId}` sorgt dafür, dass beim Wechsel der Kampagne alles
+ * darunter – vor allem der Live-Draht – frisch aufgebaut wird, statt an
+ * der alten Kampagne hängen zu bleiben.
+ */
+function KampagnenTor({ children }) {
+  const { activeId, loading } = useCampaign();
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-sepia italic">Die Kampagnen werden gesichtet …</p>
+      </div>
+    );
+  }
+  if (!activeId) return <Kampagnenwahl />;
+  return <div key={activeId}>{children}</div>;
+}
+
 export default function App() {
   const { user, loading } = useAuth();
 
@@ -34,27 +55,31 @@ export default function App() {
   if (!user) return <Login />;
 
   return (
-    <LiveProvider>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/neu" element={<NewCharacter />} />
-          <Route path="/charaktere/:id" element={<CharacterSheet />} />
-          <Route path="/tisch" element={<Tabletop />} />
-          <Route path="/kompendium" element={<Compendium />} />
-          <Route path="/chronik" element={<Chronicle />} />
-          <Route
-            path="/spielleitung"
-            element={
-              <NurSpielleitung>
-                <DmBoard />
-              </NurSpielleitung>
-            }
-          />
-          <Route path="/hilfe" element={<Help />} />
-          <Route path="*" element={<NotFound />} />
-        </Route>
-      </Routes>
-    </LiveProvider>
+    <CampaignProvider>
+      <KampagnenTor>
+        <LiveProvider>
+          <Routes>
+            <Route element={<Layout />}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/neu" element={<NewCharacter />} />
+              <Route path="/charaktere/:id" element={<CharacterSheet />} />
+              <Route path="/tisch" element={<Tabletop />} />
+              <Route path="/kompendium" element={<Compendium />} />
+              <Route path="/chronik" element={<Chronicle />} />
+              <Route
+                path="/spielleitung"
+                element={
+                  <NurSpielleitung>
+                    <DmBoard />
+                  </NurSpielleitung>
+                }
+              />
+              <Route path="/hilfe" element={<Help />} />
+              <Route path="*" element={<NotFound />} />
+            </Route>
+          </Routes>
+        </LiveProvider>
+      </KampagnenTor>
+    </CampaignProvider>
   );
 }
