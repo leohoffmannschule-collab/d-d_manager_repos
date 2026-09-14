@@ -391,6 +391,11 @@ const KAMPAGNEN_TABELLEN = [
 for (const tabelle of KAMPAGNEN_TABELLEN) addColumnIfMissing(tabelle, 'campaign_id', 'TEXT');
 addColumnIfMissing('auth_sessions', 'campaign_id', 'TEXT');
 
+// Eine gelöschte Kampagne ist erst einmal nur weggeräumt: Sie verschwindet
+// aus allen Listen, ihre Daten bleiben aber liegen, bis die Frist abläuft
+// oder jemand sie ausdrücklich endgültig entfernt.
+addColumnIfMissing('campaigns', 'deleted_at', 'TEXT');
+
 (function ersteKampagneSichern() {
   if (db.prepare('SELECT COUNT(*) AS n FROM campaigns').get().n > 0) return;
 

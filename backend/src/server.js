@@ -12,6 +12,7 @@ import db, { driver } from './db.js';
 import { festeAdresse } from './domaene.js';
 import { attachUser, countUsers, requireAuth, requireCampaign } from './auth.js';
 import { addClient, presence } from './events.js';
+import { raeumePapierkorb } from './kampagnen.js';
 import ambienceRouter from './routes/ambience.js';
 import authRouter from './routes/auth.js';
 import campaignsRouter from './routes/campaigns.js';
@@ -146,6 +147,9 @@ function localAddresses() {
 // Die feste Adresse, unter der die Runde spielt – sofern eine eingetragen ist.
 const domaene = festeAdresse();
 
+// Was länger als die Frist im Papierkorb lag, wird beim Start geräumt.
+const geraeumt = raeumePapierkorb();
+
 app.listen(PORT, () => {
   console.log('');
   console.log('  Abenteuer-Almanach läuft');
@@ -171,6 +175,10 @@ app.listen(PORT, () => {
   if (umgebung.grund === 'fehler') {
     console.log('');
     console.log(`  Die .env ließ sich nicht lesen: ${umgebung.fehler}`);
+  }
+  if (geraeumt > 0) {
+    console.log('');
+    console.log(`  ${geraeumt} Kampagne(n) im Papierkorb waren über die Frist – endgültig entfernt.`);
   }
   if (countUsers() === 0) {
     console.log('');

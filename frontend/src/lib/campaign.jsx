@@ -54,6 +54,22 @@ export function CampaignProvider({ children }) {
         await refresh();
         return neu;
       },
+      /**
+       * In den Papierkorb. War es die gerade offene Kampagne, steht man
+       * danach ohne aktive da – das Tor schickt einen dann zur Auswahl.
+       */
+      async remove(id, name) {
+        const weg = await campaignsApi.remove(id, name);
+        if (id === activeId) setActiveId(null);
+        await refresh();
+        return weg;
+      },
+      async restore(id) {
+        await campaignsApi.restore(id);
+        await refresh();
+      },
+      purge: (id, name) => campaignsApi.purge(id, name),
+      papierkorb: () => campaignsApi.papierkorb(),
     }),
     [campaigns, activeId, loading, refresh]
   );

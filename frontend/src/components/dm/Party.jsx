@@ -181,6 +181,136 @@ function Kampagnenmitglieder({ users }) {
   );
 }
 
+/**
+ * Die Kampagne wegräumen – und wiederholen, was weggeräumt wurde.
+ *
+ * Nichts davon geht mit einem Klick: Der Name muss abgetippt werden, und
+ * selbst dann liegt die Kampagne erst einmal nur im Papierkorb. Wer sich
+ * vergreift, klickt einmal auf „Zurückholen“ und hat nichts verloren.
+ */
+function KampagneEntsorgen() {
+  const { active, remove, restore, purge, papierkorb } = useCampaign();
+  const [name, setName] = useState('');
+  const [fehler, setFehler] = useState('');
+  const [korb, setKorb] = useState([]);
+  const [endgueltig, setEndgueltig] = useState({});
+
+  const korbLaden = useCallback(() => {
+    papierkorb().then(setKorb).catch(() => {});
+  }, [papierkorb]);
+
+  useEffect(() => {
+    korbLaden();
+  }, [korbLaden]);
+
+  return (
+    <>
+      {active?.darfLoeschen && (
+        <section className="panel border-rubric/40 p-4">
+          <Rubric>Diese Kampagne löschen</Rubric>
+          <p className="mb-3 text-sepia italic">
+            „{active.name}“ verschwindet aus allen Listen. Charaktere, Chronik, Karten und Beute bleiben 30 Tage im
+            Papierkorb liegen und lassen sich zurückholen – erst danach ist es endgültig.
+          </p>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setFehler('');
+              try {
+                // Danach ist diese Ansicht fort: Ohne aktive Kampagne
+                // landet man in der Auswahl. Hier also nichts mehr setzen.
+                await remove(active.id, name);
+              } catch (err) {
+                setFehler(err.message);
+              }
+            }}
+            className="flex flex-wrap gap-2"
+          >
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={`Zum Bestätigen „${active.name}“ abtippen`}
+              className="field-box min-w-[12rem] flex-1"
+            />
+            <button
+              type="submit"
+              disabled={name.trim() !== active.name}
+              className="btn btn-seal disabled:opacity-40"
+              title={name.trim() !== active.name ? 'Der Name stimmt noch nicht' : 'In den Papierkorb legen'}
+            >
+              <IconTrash size={16} /> In den Papierkorb
+            </button>
+          </form>
+          {fehler && <p className="mt-3 text-rubric">{fehler}</p>}
+        </section>
+      )}
+
+      {korb.length > 0 && (
+        <section className="panel p-4">
+          <Rubric>Papierkorb</Rubric>
+          <ul className="space-y-2">
+            {korb.map((k) => (
+              <li key={k.id} className="border border-rule bg-panel-soft p-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="min-w-0 flex-1 truncate text-ink">{k.name}</span>
+                  <span className="shrink-0 text-[15px] text-sepia italic">
+                    noch {k.tageUebrig} {k.tageUebrig === 1 ? 'Tag' : 'Tage'}
+                  </span>
+                  <button
+                    onClick={async () => {
+                      await restore(k.id);
+                      korbLaden();
+                    }}
+                    className="btn-plate min-h-11 px-3 text-[13px]"
+                  >
+                    Zurückholen
+                  </button>
+                  <button
+                    onClick={() => setEndgueltig((e) => ({ ...e, [k.id]: e[k.id] === undefined ? '' : undefined }))}
+                    className="min-h-11 px-2 text-[13px] text-sepia hover:text-rubric"
+                  >
+                    endgültig …
+                  </button>
+                </div>
+
+                {endgueltig[k.id] !== undefined && (
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      try {
+                        await purge(k.id, endgueltig[k.id]);
+                        setEndgueltig((s) => ({ ...s, [k.id]: undefined }));
+                        korbLaden();
+                      } catch (err) {
+                        setFehler(err.message);
+                      }
+                    }}
+                    className="mt-2 flex flex-wrap gap-2 border-t border-dashed border-rule pt-2"
+                  >
+                    <input
+                      value={endgueltig[k.id]}
+                      onChange={(e) => setEndgueltig((s) => ({ ...s, [k.id]: e.target.value }))}
+                      placeholder={`„${k.name}“ abtippen – danach ist alles fort`}
+                      className="field-box min-w-[12rem] flex-1"
+                    />
+                    <button
+                      type="submit"
+                      disabled={endgueltig[k.id]?.trim() !== k.name}
+                      className="btn btn-seal disabled:opacity-40"
+                    >
+                      <IconTrash size={16} /> Endgültig löschen
+                    </button>
+                  </form>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </>
+  );
+}
+
 function Konten({ users, onChanged }) {
   const { user } = useAuth();
   const [passwort, setPasswort] = useState({});
@@ -339,6 +469,7 @@ export default function Party() {
       <Kampagnenmitglieder users={users} />
       <Konten users={users} onChanged={laden} />
       <Charakterzuweisung users={users} onChanged={laden} />
+      <KampagneEntsorgen />
     </div>
   );
 }

@@ -51,7 +51,11 @@ export function createSession(userId) {
   const token = randomBytes(32).toString('base64url');
   const now = new Date().toISOString();
   const mitgliedschaften = db
-    .prepare('SELECT campaign_id FROM campaign_members WHERE user_id = ?')
+    .prepare(
+      `SELECT m.campaign_id FROM campaign_members m
+         JOIN campaigns c ON c.id = m.campaign_id
+        WHERE m.user_id = ? AND c.deleted_at IS NULL`
+    )
     .all(userId);
   const campaignId = mitgliedschaften.length === 1 ? mitgliedschaften[0].campaign_id : null;
   db.prepare(
@@ -96,11 +100,19 @@ function userForToken(token) {
   return { id: row.id, name: row.name, role: row.role, color: row.color, campaignId: row.campaign_id };
 }
 
-/** Ist dieses Konto Mitglied der Kampagne – oder war es das nicht (mehr)? */
+/**
+ * Ist dieses Konto Mitglied der Kampagne – oder war es das nicht (mehr)?
+ * Eine im Papierkorb liegende Kampagne zählt nicht: Wer noch mit ihr in der
+ * Sitzung steht, wird zur Auswahl zurückgeschickt.
+ */
 export function istMitglied(campaignId, userId) {
   if (!campaignId) return false;
   return !!db
-    .prepare('SELECT 1 FROM campaign_members WHERE campaign_id = ? AND user_id = ?')
+    .prepare(
+      `SELECT 1 FROM campaign_members m
+         JOIN campaigns c ON c.id = m.campaign_id
+        WHERE m.campaign_id = ? AND m.user_id = ? AND c.deleted_at IS NULL`
+    )
     .get(campaignId, userId);
 }
 

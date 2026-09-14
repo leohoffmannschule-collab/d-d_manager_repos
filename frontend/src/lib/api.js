@@ -45,7 +45,9 @@ const senden = (method) => (path, payload) =>
 const post = senden('POST');
 const put = senden('PUT');
 const patch = senden('PATCH');
-const del = (path) => request(path, { method: 'DELETE' });
+// Löschen trägt in der Regel nichts bei sich – außer dort, wo der Server eine
+// ausdrückliche Bestätigung verlangt (etwa den abgetippten Kampagnennamen).
+const del = senden('DELETE');
 
 export const authApi = {
   status: () => request('/auth/status'),
@@ -68,6 +70,11 @@ export const campaignsApi = {
   members: (id) => request(`/campaigns/${id}/mitglieder`),
   addMember: (id, userId) => post(`/campaigns/${id}/mitglieder`, { userId }),
   removeMember: (id, userId) => del(`/campaigns/${id}/mitglieder/${userId}`),
+  // Der Name wandert als Bestätigung mit – ohne ihn weist der Server ab.
+  remove: (id, name) => del(`/campaigns/${id}`, { name }),
+  papierkorb: () => request('/campaigns/papierkorb'),
+  restore: (id) => post(`/campaigns/${id}/wiederherstellen`),
+  purge: (id, name) => del(`/campaigns/${id}/endgueltig`, { name }),
 };
 
 export const charactersApi = {
