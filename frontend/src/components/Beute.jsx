@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { stashApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
 import { useBeute, useCharaktere } from '../lib/daten.jsx';
+import Kopierziel from './Kopierziel.jsx';
 import { IconCheck, IconPlus, IconTrash, IconUsers } from './icons.jsx';
 
 const MUENZEN = [
@@ -191,6 +192,16 @@ export default function Beute() {
                       </option>
                     ))}
                   </select>
+                  {/* Ein Fund, der in zwei Geschichten vorkommen soll. Wer
+                      ihn drüben trägt, entscheidet sich über den Namen. */}
+                  {isDm && (
+                    <Kopierziel
+                      kopieren={(ziel) => stashApi.kopieren(g.id, ziel)}
+                      beschriftung="kopieren"
+                      nachOben
+                      klasse="min-h-11 shrink-0 px-1 text-[15px] text-sepia hover:text-ink"
+                    />
+                  )}
                   <button
                     onClick={() => stashApi.removeItem(g.id)}
                     className="flex h-11 w-11 shrink-0 items-center justify-center border border-rule text-sepia hover:border-rubric hover:text-rubric"

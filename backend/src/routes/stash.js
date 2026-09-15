@@ -4,6 +4,7 @@ import { db, getState, setState } from '../db.js';
 import { requireAuth, requireDm } from '../auth.js';
 import { broadcast, originClient } from '../events.js';
 import * as chronik from '../chronicle.js';
+import { kopiereGegenstand, meldeNachZiel, zielPruefen } from '../uebernehmen.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -236,6 +237,22 @@ router.post('/auszahlen', requireDm, (req, res) => {
 
   melden(req);
   res.json({ anteil, rest, empfaenger: charaktere.length });
+});
+
+/**
+ * POST /api/stash/items/:id/kopieren  { campaignId }
+ *
+ * Ein Fund in einer anderen Kampagne – der Dolch, der in zwei Geschichten
+ * vorkommen soll. Getragen wird er drüben nur, wenn dort jemand gleichen
+ * Namens steht; sonst liegt er einfach in der Kiste.
+ */
+router.post('/items/:id/kopieren', requireDm, zielPruefen, (req, res) => {
+  const row = db.prepare('SELECT * FROM stash_items WHERE id = ? AND campaign_id = ?').get(req.params.id, req.campaignId);
+  if (!row) return res.status(404).json({ code: 'gegenstand_nicht_gefunden', error: 'Gegenstand nicht gefunden.' });
+
+  const kopiert = kopiereGegenstand(row, req.ziel);
+  meldeNachZiel('beute', req.ziel);
+  res.status(201).json({ ...kopiert, campaignId: req.ziel });
 });
 
 export default router;

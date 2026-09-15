@@ -4,6 +4,7 @@ import { db } from '../db.js';
 import { isDm, requireAuth, requireDm } from '../auth.js';
 import { broadcast } from '../events.js';
 import * as chronik from '../chronicle.js';
+import { kopiereNotiz, meldeNachZiel, zielPruefen } from '../uebernehmen.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -97,6 +98,23 @@ router.delete('/:id', requireDm, (req, res) => {
   db.prepare('DELETE FROM notes WHERE id = ?').run(row.id);
   if (row.visibility === 'runde') broadcast('notizen:aktualisiert', {}, { campaignId: req.campaignId });
   res.status(204).end();
+});
+
+/**
+ * POST /api/notes/:id/kopieren  { campaignId }
+ *
+ * Denselben Zettel in einer anderen Kampagne. Handzettel gehören zu einer
+ * Geschichte – der Steckbrief aus der einen Stadt passt nicht von allein in
+ * die andere –, aber manchmal eben doch: dieselbe Hausregel, derselbe
+ * Götterkatalog, dieselbe Karte in Worten.
+ */
+router.post('/:id/kopieren', requireDm, zielPruefen, (req, res) => {
+  const row = db.prepare('SELECT * FROM notes WHERE id = ? AND campaign_id = ?').get(req.params.id, req.campaignId);
+  if (!row) return res.status(404).json({ code: 'notiz_nicht_gefunden', error: 'Notiz nicht gefunden.' });
+
+  const kopiert = kopiereNotiz(row, req.ziel);
+  meldeNachZiel('notizen', req.ziel);
+  res.status(201).json({ ...kopiert, campaignId: req.ziel });
 });
 
 export default router;

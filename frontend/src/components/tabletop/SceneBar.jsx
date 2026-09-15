@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { mapsApi, mediaApi, scenesApi } from '../../lib/api.js';
 import { useKarten, useSzenenListe } from '../../lib/daten.jsx';
+import Kopierziel from '../Kopierziel.jsx';
 import { bildUndVorschau } from '../../lib/bilder.js';
 import { EINHEIT, rasterBereich, weite } from '../../lib/rasterkarte.js';
 import {
@@ -468,6 +469,14 @@ export default function SceneBar({ scene, vorhang, laedtSzene, tokens = [], mode
                       </button>
                     </>
                   )}
+                  {/* Dieselbe Szene in einer anderen Kampagne – samt Figuren
+                      und Nebel. Die Karte darunter gehört ohnehin der Runde. */}
+                  <Kopierziel
+                    kopieren={(ziel) => scenesApi.kopieren(s.id, ziel)}
+                    beschriftung="kopieren"
+                    nachOben
+                    klasse="min-h-9 px-1 font-display text-[11px] tracking-[0.08em] text-sepia uppercase hover:text-ink"
+                  />
                   <button
                     onClick={async () => {
                       if (!confirm(`Szene „${s.name}“ samt Figuren löschen?`)) return;

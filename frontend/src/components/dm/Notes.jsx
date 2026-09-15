@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { notesApi } from '../../lib/api.js';
 import { useNotizen } from '../../lib/daten.jsx';
+import Kopierziel from '../Kopierziel.jsx';
 import { IconEye, IconEyeOff, IconPlus, IconSearch, IconTrash } from '../icons.jsx';
 
 /** Notizen der Spielleitung – wahlweise geheim oder als Handzettel für alle. */
@@ -130,7 +131,10 @@ export default function Notes() {
                     </p>
                   )}
                 </div>
-                <div className="flex gap-1.5">
+                <div className="flex items-center gap-1.5">
+                  {/* Derselbe Zettel in einer anderen Kampagne – Hausregeln,
+                      Götterkatalog, alles, was nicht an dieser Geschichte hängt. */}
+                  <Kopierziel kopieren={(ziel) => notesApi.kopieren(n.id, ziel)} />
                   <button
                     onClick={() =>
                       notesApi

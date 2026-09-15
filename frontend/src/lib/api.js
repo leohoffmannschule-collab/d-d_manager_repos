@@ -73,6 +73,9 @@ export const campaignsApi = {
   // Der Name wandert als Bestätigung mit – ohne ihn weist der Server ab.
   remove: (id, name) => del(`/campaigns/${id}`, { name }),
   papierkorb: () => request('/campaigns/papierkorb'),
+  // Was liegt in dieser Kampagne – und alles davon in eine andere legen.
+  umfang: () => request('/campaigns/umfang'),
+  uebernehmen: (campaignId, arten) => post('/campaigns/uebernehmen', { campaignId, arten }),
   restore: (id) => post(`/campaigns/${id}/wiederherstellen`),
   purge: (id, name) => del(`/campaigns/${id}/endgueltig`, { name }),
 };
@@ -113,6 +116,7 @@ export const stashApi = {
   addItem: (payload) => post('/stash/items', payload),
   updateItem: (id, payload) => put(`/stash/items/${id}`, payload),
   removeItem: (id) => del(`/stash/items/${id}`),
+  kopieren: (id, campaignId) => post(`/stash/items/${id}/kopieren`, { campaignId }),
   setCoins: (coins) => put('/stash/coins', coins),
   teilung: (anteile) => request(`/stash/teilung?anteile=${anteile}`),
   auszahlen: (characterIds) => post('/stash/auszahlen', { characterIds }),
@@ -159,6 +163,7 @@ export const notesApi = {
   create: (payload) => post('/notes', payload),
   update: (id, payload) => put(`/notes/${id}`, payload),
   remove: (id) => del(`/notes/${id}`),
+  kopieren: (id, campaignId) => post(`/notes/${id}/kopieren`, { campaignId }),
 };
 
 export const diceApi = {
@@ -180,6 +185,7 @@ export const scenesApi = {
   create: (payload) => post('/scenes', payload),
   update: (id, payload) => put(`/scenes/${id}`, payload),
   remove: (id) => del(`/scenes/${id}`),
+  kopieren: (id, campaignId) => post(`/scenes/${id}/kopieren`, { campaignId }),
   activate: (id, verdeckt = false) => post(`/scenes/${id}/aktivieren`, { verdeckt }),
   vorhang: (zu) => post('/scenes/vorhang', { zu }),
   fog: (id, cells, revealed) => post(`/scenes/${id}/nebel`, { cells, revealed }),

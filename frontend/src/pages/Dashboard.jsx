@@ -1,10 +1,9 @@
-import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { charactersApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
-import { useCampaign } from '../lib/campaign.jsx';
 import { useCharaktere } from '../lib/daten.jsx';
-import { IconCheck, IconCrown, IconEye, IconEyeOff, IconPlus, IconScroll } from '../components/icons.jsx';
+import Kopierziel from '../components/Kopierziel.jsx';
+import { IconCrown, IconEye, IconEyeOff, IconPlus, IconScroll } from '../components/icons.jsx';
 
 function subtitle(count) {
   if (count === 0) return 'Noch ist keine Seele verzeichnet';
@@ -12,69 +11,6 @@ function subtitle(count) {
   return `${count} Gefährten sind in diesem Almanach verzeichnet`;
 }
 
-
-/**
- * Dasselbe Blatt in eine andere Kampagne legen – nur für die Spielleitung.
- *
- * Kopiert, nicht verschoben: Das Blatt bleibt, wo es ist. Angeboten werden
- * nur Kampagnen, in denen die Spielleitung selbst sitzt.
- */
-function Kopierknopf({ charakterId }) {
-  const { campaigns, activeId } = useCampaign();
-  const [offen, setOffen] = useState(false);
-  const [gelandet, setGelandet] = useState('');
-  const andere = campaigns.filter((k) => k.id !== activeId);
-
-  if (andere.length === 0) return null;
-
-  async function kopieren(ziel, e) {
-    e.preventDefault();
-    e.stopPropagation();
-    await charactersApi.kopieren(charakterId, ziel.id);
-    setOffen(false);
-    setGelandet(ziel.name);
-    setTimeout(() => setGelandet(''), 2500);
-  }
-
-  if (gelandet) {
-    return (
-      <span className="flex min-h-9 items-center gap-1.5 text-gold">
-        <IconCheck size={14} /> in „{gelandet}“
-      </span>
-    );
-  }
-
-  return (
-    <div className="relative">
-      <button
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setOffen((o) => !o);
-        }}
-        className="min-h-9 text-sepia hover:text-ink"
-      >
-        In Kampagne …
-      </button>
-      {offen && (
-        <div
-          onClick={(e) => e.stopPropagation()}
-          className="panel absolute right-0 bottom-full z-40 mb-1 w-56 p-2"
-        >
-          {andere.map((k) => (
-            <button
-              key={k.id}
-              onClick={(e) => kopieren(k, e)}
-              className="flex min-h-11 w-full items-center px-2 text-left text-sepia hover:text-ink"
-            >
-              <span className="truncate">{k.name}</span>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
 /** Ein Blatt in der Übersicht. Zweimal gebraucht: für die Runde und hinter dem Schirm. */
 function Blatt({ c, user, isDm, onOeffnen, onAbschrift, onLoeschen }) {
@@ -130,7 +66,7 @@ function Blatt({ c, user, isDm, onOeffnen, onAbschrift, onLoeschen }) {
       )}
 
       <div className="flex justify-end gap-4 border-t border-dashed border-rule pt-3">
-        {isDm && <Kopierknopf charakterId={c.id} />}
+        {isDm && <Kopierziel kopieren={(ziel) => charactersApi.kopieren(c.id, ziel)} nachOben />}
         <button onClick={onAbschrift} className="min-h-9 text-sepia hover:text-ink">
           Abschrift
         </button>

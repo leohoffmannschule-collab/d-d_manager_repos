@@ -5,6 +5,7 @@ import { isDm, requireAuth, requireDm } from '../auth.js';
 import { broadcast, originClient, presence } from '../events.js';
 import * as chronik from '../chronicle.js';
 import { alsBitkarte, figurenFeld, rasterBereich, sichtFelder } from '../sicht.js';
+import { kopiereSzene, zielPruefen } from '../uebernehmen.js';
 
 const router = Router();
 router.use(requireAuth);
@@ -368,6 +369,30 @@ router.delete('/:id', requireDm, (req, res) => {
   }
   sendeSzene(req.campaignId);
   res.status(204).end();
+});
+
+/**
+ * POST /api/scenes/:id/kopieren  { campaignId }
+ *
+ * Die Szene noch einmal in einer anderen Kampagne – samt Figuren und samt
+ * dem Nebel, so wie er gerade steht. Die Karte dahinter gehört ohnehin der
+ * ganzen Runde und wird nicht zweimal abgelegt.
+ *
+ * Figuren, die an einem Charakterblatt hängen, suchen drüben den Charakter
+ * gleichen Namens. Wer also erst die Runde kopiert und dann die Szene,
+ * bekommt seine Helden wieder auf die Karte; wer es umgekehrt tut, bekommt
+ * Figuren ohne Blatt dahinter. Ein Kämpfer aus einem laufenden Kampf bleibt
+ * in jedem Fall hier – Kämpfe reisen nicht mit.
+ */
+router.post('/:id/kopieren', requireDm, zielPruefen, (req, res) => {
+  const row = holeSzene(req.params.id, req.campaignId);
+  if (!row) return res.status(404).json({ code: 'szene_nicht_gefunden', error: 'Szene nicht gefunden.' });
+
+  const kopiert = kopiereSzene(row, req.ziel);
+  // Drüben kann diese Kopie gerade die erste Szene überhaupt sein und damit
+  // sofort auf dem Tisch liegen – wer dort offen hat, soll es sehen.
+  sendeSzene(req.ziel);
+  res.status(201).json({ ...kopiert, campaignId: req.ziel });
 });
 
 /** Eine Szene auf den Tisch legen – auch aus der Kartenbibliothek heraus. */

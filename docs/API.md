@@ -47,7 +47,8 @@ prüfen.** Die mitgelieferte Oberfläche übersetzt Schlüssel in
 `frontend/src/lib/beschriftung.js`; eine andere Oberfläche tauscht diese Datei
 aus und ist fertig.
 
-Häufige Schlüssel: `nicht_angemeldet` (401), `nur_spielleitung` (403),
+Häufige Schlüssel: `nicht_angemeldet` (401), `keine_kampagne` (409),
+`nur_spielleitung` (403),
 `blatt_fremd`, `figur_fremd`, `kaempfer_fremd`, `einladung_ungueltig`,
 `einladung_verbraucht`, `name_vergeben`, `passwort_zu_kurz`,
 `zu_viele_versuche` (429), `route_unbekannt` (404), `serverfehler` (500).
@@ -143,6 +144,70 @@ gesamten Zweigs.
     POST   /api/auth/invites             [SL]  { note? }
     DELETE /api/auth/invites/:code       [SL]
 
+### /api/campaigns   (Standard: angemeldet)
+
+    GET    /api/campaigns                    eigene Kampagnen + welche aktiv ist
+    POST   /api/campaigns                    [SL]  { name }
+    POST   /api/campaigns/:id/aktiv                in diese Kampagne wechseln
+    GET    /api/campaigns/:id/mitglieder     [SL]
+    POST   /api/campaigns/:id/mitglieder     [SL]  { userId }
+    DELETE /api/campaigns/:id/mitglieder/:userId   [SL]
+    GET    /api/campaigns/umfang             [SL]  was liegt in dieser Kampagne?
+    POST   /api/campaigns/uebernehmen        [SL]  { campaignId, arten: [...] }
+    DELETE /api/campaigns/:id                      { name }  – in den Papierkorb
+    GET    /api/campaigns/papierkorb
+    POST   /api/campaigns/:id/wiederherstellen
+    DELETE /api/campaigns/:id/endgueltig           { name }
+
+Konten gehören der ganzen **Runde**, alles Gespielte gehört einer
+**Kampagne**. Welche gerade offen ist, hängt an der *Sitzung*, nicht am Konto:
+Dieselbe Person kann in zwei Fenstern in zwei Kampagnen sitzen. Wer noch keine
+gewählt hat, bekommt auf jedem Spielweg `409 keine_kampagne` – das ist das Tor,
+durch das eine Oberfläche in ihre Kampagnenauswahl schickt.
+
+Löschen darf nur, wer die Kampagne angelegt hat, und nur mit dem abgetippten
+Namen im Rumpf. Gelöschtes liegt 30 Tage im Papierkorb.
+
+**Was der Kampagne gehört und was der Runde.** Vorbereitung gehört der Runde
+und steht in jeder Kampagne bereit: Karten (`/maps`), Bilder (`/media`),
+Bestiarium (`/library`), Begegnungen (`/encounters`), Klang (`/ambience`).
+Dieselbe Taverne, derselbe Goblin, dieselbe Musik liegen für jede Geschichte
+bereit, und das Entfernen einer Kampagne rührt sie nicht an. Alles andere –
+Charaktere, Notizen, Szenen mit Figuren, Beute, Kampf, Würfe, Chat, Chronik –
+gehört zu genau einer Kampagne.
+
+**Kopieren.** Was einer Kampagne gehört, lässt sich in eine andere kopieren –
+einzeln:
+
+    POST /api/characters/:id/kopieren     [SL]  { campaignId }
+    POST /api/notes/:id/kopieren          [SL]  { campaignId }
+    POST /api/scenes/:id/kopieren         [SL]  { campaignId }  samt Figuren und Nebel
+    POST /api/stash/items/:id/kopieren    [SL]  { campaignId }
+
+oder auf einmal über `/api/campaigns/uebernehmen` mit `arten` aus
+`charaktere`, `notizen`, `szenen`, `beute`. `GET /api/campaigns/umfang` nennt
+vorher, wie viel in jeder Art liegt, samt Einzahl und Mehrzahl für den Satz
+darüber.
+
+Dabei gilt:
+
+- Kopiert wird, nicht verschoben, und es wird nicht abgeglichen: Zweimal
+  ausgeführt steht drüben alles zweimal. Die Münzen der Beutekiste werden
+  **dazugelegt**, nicht ersetzt – was drüben liegt, verschluckt kein
+  Kopiervorgang.
+- Verweise auf Charaktere (Figuren auf der Karte, getragene Gegenstände)
+  suchen drüben den **gleichnamigen** Charakter. Wer zuerst die Runde kopiert
+  und dann die Szene, bekommt seine Helden wieder auf die Karte.
+- Ziel darf nur eine Kampagne sein, in der die Spielleitung selbst sitzt
+  (sonst `403 ziel_unbekannt`), und nicht dieselbe (`400 gleiche_kampagne`).
+- Beim Umzug „alles auf einmal“ bleiben unberührte **Vorlagen** zurück: Jede
+  Kampagne bringt dieselben zwölf von selbst mit. Wer eine einzeln kopiert,
+  bekommt sie trotzdem.
+- Ein laufender **Kampf** reist nicht mit – dafür gibt es
+  `POST /api/encounters/aus-kampf`, und Begegnungen gehören ohnehin der Runde.
+  Würfe, Chat und Chronik bleiben ebenfalls: Sie gehören zu den Abenden, an
+  denen sie geschahen.
+
 ### /api/characters   (Standard: angemeldet)
 
     GET    /api/characters               eigene und geteilte, als Kurzfassung
@@ -152,6 +217,7 @@ gesamten Zweigs.
     PATCH  /api/characters/:id           { ownerId?, shared?, npc? }   ownerId und npc nur [SL]
     DELETE /api/characters/:id
     POST   /api/characters/:id/duplicate
+    POST   /api/characters/:id/kopieren      [SL]  { campaignId } – in eine andere Kampagne
     GET    /api/characters/verwaltung/alle   [SL]
 
 Die Kurzfassung enthält vorgerechnet `hp`, `ac` und `initiative`, damit eine

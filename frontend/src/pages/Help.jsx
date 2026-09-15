@@ -30,6 +30,41 @@ export default function Help() {
         </p>
       </Card>
 
+      <Card title="Mehrere Kampagnen">
+        <p className="leading-relaxed text-ink">
+          Eine Runde kann mehrere Geschichten nebeneinander spielen. Die Konten bleiben dieselben; gewechselt wird
+          oben rechts über den Namen der Kampagne. Was am Tisch entsteht – Charaktere, Handzettel, Szenen, Beute,
+          Kampf, Würfe, Chat und Chronik –, gehört zu genau einer Kampagne. Die Vorbereitung dagegen gehört der
+          ganzen Runde: Karten, hochgeladene Bilder, Bestiarium, vorbereitete Begegnungen und der Klangteppich
+          stehen in jeder Kampagne bereit und müssen nie zweimal angelegt werden.
+        </p>
+        {isDm && (
+          <>
+            <p className="mt-3 leading-relaxed text-ink">
+              Neue Kampagnen legt die Spielleitung im Kampagnenmenü an. Löschen darf nur, wer eine Kampagne angelegt
+              hat – und nur, indem der Name abgetippt wird. Danach liegt sie 30 Tage im Papierkorb und lässt sich
+              zurückholen.
+            </p>
+            <p className="mt-3 leading-relaxed text-ink">
+              <span className="font-display">Etwas hinüberkopieren:</span> An jedem Charakterblatt, jedem Handzettel,
+              jeder Szene und jedem Fund in der Beutekiste steht der Knopf{' '}
+              <span className="font-display">In Kampagne …</span> bereit. Unter{' '}
+              <span className="font-display">Spielleitung → Runde</span> nimmt{' '}
+              <span className="font-display">Alles in eine andere Kampagne</span> auf einen Schlag mit, was du
+              ankreuzt – gedacht für den Umzug einer Runde in eine neue Geschichte. Kopiert wird, nicht verschoben:
+              Hier bleibt alles liegen, und beide Fassungen gehen danach getrennte Wege. Zweimal kopiert heißt
+              drüben zweimal.
+            </p>
+            <p className="mt-3 leading-relaxed text-ink">
+              Figuren auf der Karte und getragene Gegenstände finden drüben den Charakter{' '}
+              <span className="italic">gleichen Namens</span> wieder – kopiere also zuerst die Runde und dann die
+              Szenen. Die zwölf Vorlagen hinter dem Schirm bleiben beim Umzug zurück, weil jede Kampagne dieselben
+              von selbst mitbringt.
+            </p>
+          </>
+        )}
+      </Card>
+
       <Card title="Der Spieltisch">
         <ul className="flex list-disc flex-col gap-1.5 pl-5 leading-relaxed text-ink marker:text-rubric">
           <li>
