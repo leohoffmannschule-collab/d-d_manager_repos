@@ -8,7 +8,7 @@ import os from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import db, { driver, mediaDir } from './db.js';
+import db, { dataDir, driver, mediaDir } from './db.js';
 import { festeAdresse } from './domaene.js';
 import { attachUser, countUsers, requireAuth, requireCampaign } from './auth.js';
 import { addClient, presence } from './events.js';
@@ -162,10 +162,14 @@ const domaene = festeAdresse();
 // Was länger als die Frist im Papierkorb lag, wird beim Start geräumt.
 const geraeumt = raeumePapierkorb();
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log('');
   console.log('  Abenteuer-Almanach läuft');
   console.log(`  Datenbank      : ${driver}`);
+  // Wer zwei Ordner nebeneinander betreibt – den laufenden Almanach und einen
+  // zum Ausprobieren –, sieht hier auf einen Blick, welcher von beiden gerade
+  // spricht. Beide heißen sonst gleich und sehen gleich aus.
+  console.log(`  Datenordner    : ${dataDir}`);
   console.log(`  Oberfläche     : ${hasFrontend ? 'wird mit ausgeliefert' : 'separat über "npm run dev" (Port 5173)'}`);
   if (domaene.adresse) {
     console.log(`  Für die Runde  : ${domaene.adresse}   (solange der Weg nach außen offen ist)`);
@@ -204,4 +208,25 @@ app.listen(PORT, () => {
     console.log('  Noch kein Konto vorhanden: Das erste angelegte Konto führt die Spielleitung.');
   }
   console.log('');
+});
+
+/**
+ * Zwei Almanache auf demselben Port gehen nicht – und das ist gut so.
+ *
+ * Wer einen zweiten Ordner zum Ausprobieren betreibt, soll ihn nicht
+ * versehentlich neben den laufenden stellen: Über die Domain käme sonst mal
+ * der eine und mal der andere. Statt eines Stapelauszugs sagt der Almanach
+ * deshalb geradeheraus, was zu tun ist.
+ */
+server.on('error', (err) => {
+  if (err.code !== 'EADDRINUSE') throw err;
+  console.log('');
+  console.log(`  Auf Port ${PORT} lauscht schon jemand – sehr wahrscheinlich ein anderer Almanach.`);
+  console.log('  Es kann immer nur einer den Port haben, und nur wer ihn hat, wird über die');
+  console.log('  Domain ausgeliefert.');
+  console.log('');
+  console.log('  Also: im anderen Fenster mit Strg+C beenden, dann hier neu starten.');
+  console.log(`  (Oder diesen hier auf einen eigenen Port legen: PORT=3002 in die .env.)`);
+  console.log('');
+  process.exit(1);
 });
