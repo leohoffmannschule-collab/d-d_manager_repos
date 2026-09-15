@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { mediaApi } from '../../lib/api.js';
-import { hatStelle, rasterBereich, weiteText } from '../../lib/rasterkarte.js';
+import {
+  bereichGrenzen,
+  felderImBereich,
+  felderImPinsel,
+  hatStelle,
+  pinselGrenzen,
+  rasterBereich,
+  weiteText,
+} from '../../lib/rasterkarte.js';
 
 // Der Zoom-Boden ist keine feste Zahl mehr: Eine Karte über zweihundert
 // Meter ist zwölftausend Bildpunkte breit und passt bei 0,12 nicht auf den
@@ -153,16 +161,31 @@ export default function Board({
   pings = [],
   selectedTokenId = null,
   onSelectToken,
+  pinsel = 1,
 }) {
   const huelle = useRef(null);
   const [ansicht, setAnsicht] = useState({ scale: 1, tx: 0, ty: 0 });
   const [boden, setBoden] = useState(MIN_SCALE);
   const [ziehen, setZiehen] = useState(null);
   const [lineal, setLineal] = useState(null);
+  // Das Feld unter dem Zeiger – nur fürs Vorzeigen des Pinselabdrucks.
+  const [zeigerFeld, setZeigerFeld] = useState(null);
   const zeiger = useRef(new Map());
   const gepasst = useRef(null);
+  // Wo der letzte Abdruck saß: Daraus wird die Strecke bis zum nächsten
+  // gefüllt, damit ein schneller Strich keine Lücken lässt.
+  const letzterAbdruck = useRef(null);
 
   const { g } = useMemo(() => rasterBereich(scene), [scene]);
+
+  const nebelModus = mode === 'nebel-auf' || mode === 'nebel-zu';
+  const alsRechteck = pinsel === 'rechteck';
+  const pinselGroesse = alsRechteck ? 1 : Math.max(1, Number(pinsel) || 1);
+
+  // Werkzeug gewechselt: Der Abdruck unter dem Zeiger hat ausgedient.
+  useEffect(() => {
+    if (!nebelModus) setZeigerFeld(null);
+  }, [nebelModus]);
 
   /** Bildpunkte der Karte aus einem Bildschirmpunkt. */
   const zuSzene = useCallback(
@@ -176,9 +199,39 @@ export default function Board({
     [ansicht]
   );
 
-  const feld = useCallback(
-    (punkt) => `${Math.floor((punkt.x - scene.gridOffsetX) / g)},${Math.floor((punkt.y - scene.gridOffsetY) / g)}`,
+  const feldKoord = useCallback(
+    (punkt) => ({
+      x: Math.floor((punkt.x - scene.gridOffsetX) / g),
+      y: Math.floor((punkt.y - scene.gridOffsetY) / g),
+    }),
     [g, scene.gridOffsetX, scene.gridOffsetY]
+  );
+
+  /**
+   * Einen Pinselabdruck setzen – und die Strecke seit dem letzten mit.
+   *
+   * Zwischen zwei Bildern springt der Zeiger bei einem schnellen Strich über
+   * mehrere Felder. Ohne die Zwischenschritte bliebe eine Perlenkette stehen
+   * statt eines Strichs; mit einem breiten Pinsel fiele das noch mehr auf.
+   */
+  const abdruecken = useCallback(
+    (punkt) => {
+      const jetzt = feldKoord(punkt);
+      const vorher = letzterAbdruck.current;
+      letzterAbdruck.current = jetzt;
+
+      const felder = new Set(felderImPinsel(scene, jetzt.x, jetzt.y, pinselGroesse));
+      if (vorher) {
+        const schritte = Math.max(Math.abs(jetzt.x - vorher.x), Math.abs(jetzt.y - vorher.y));
+        for (let i = 1; i < schritte; i++) {
+          const x = Math.round(vorher.x + ((jetzt.x - vorher.x) * i) / schritte);
+          const y = Math.round(vorher.y + ((jetzt.y - vorher.y) * i) / schritte);
+          for (const f of felderImPinsel(scene, x, y, pinselGroesse)) felder.add(f);
+        }
+      }
+      if (felder.size) onPaintFog?.([...felder], mode === 'nebel-auf');
+    },
+    [feldKoord, scene, pinselGroesse, onPaintFog, mode]
   );
 
   // Beim ersten Anzeigen die Karte einpassen.
@@ -255,8 +308,14 @@ export default function Board({
       setLineal({ von: punkt, bis: punkt });
       return;
     }
-    if (mode === 'nebel-auf' || mode === 'nebel-zu') {
-      onPaintFog?.([feld(punkt)], mode === 'nebel-auf');
+    if (nebelModus) {
+      if (alsRechteck) {
+        const ecke = feldKoord(punkt);
+        setZiehen({ art: 'nebel-rechteck', von: ecke, bis: ecke });
+        return;
+      }
+      letzterAbdruck.current = null;
+      abdruecken(punkt);
       setZiehen({ art: 'nebel' });
       return;
     }
@@ -277,6 +336,13 @@ export default function Board({
   }
 
   function beiZeigerBewegung(e) {
+    // Der Abdruck folgt dem Zeiger auch ohne gedrückte Taste – sonst malte
+    // man bei 5×5 ins Blaue. Neu gesetzt wird nur beim Feldwechsel.
+    if (nebelModus) {
+      const unterm = feldKoord(zuSzene(e.clientX, e.clientY));
+      setZeigerFeld((alt) => (alt && alt.x === unterm.x && alt.y === unterm.y ? alt : unterm));
+    }
+
     if (!zeiger.current.has(e.pointerId)) return;
     const vorher = [...zeiger.current.values()];
     zeiger.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -309,7 +375,9 @@ export default function Board({
         ty: ziehen.ty + (e.clientY - ziehen.vonY),
       }));
     } else if (ziehen.art === 'nebel') {
-      onPaintFog?.([feld(punkt)], mode === 'nebel-auf');
+      abdruecken(punkt);
+    } else if (ziehen.art === 'nebel-rechteck') {
+      setZiehen((z) => ({ ...z, bis: feldKoord(punkt) }));
     } else if (ziehen.art === 'figur') {
       setZiehen((z) => ({ ...z, x: punkt.x - z.greifX, y: punkt.y - z.greifY }));
     }
@@ -323,6 +391,13 @@ export default function Board({
       setLineal(null);
       return;
     }
+    if (ziehen?.art === 'nebel-rechteck') {
+      const felder = felderImBereich(scene, ziehen.von.x, ziehen.von.y, ziehen.bis.x, ziehen.bis.y);
+      if (felder.length) onPaintFog?.(felder, mode === 'nebel-auf');
+      setZiehen(null);
+      return;
+    }
+    letzterAbdruck.current = null;
     if (ziehen?.art === 'figur') {
       // Auf das Raster einschnappen.
       const x = Math.round((ziehen.x - scene.gridOffsetX) / g) * g + scene.gridOffsetX;
@@ -336,6 +411,22 @@ export default function Board({
     (token) => combatants.find((c) => c.id === token.combatantId || (token.characterId && c.characterId === token.characterId)),
     [combatants]
   );
+
+  /**
+   * Was der nächste Strich träfe – als Rechteck in Feldkoordinaten.
+   *
+   * Beim Rechteck ist es das aufgezogene, sonst der Abdruck des Pinsels um
+   * das Feld unter dem Zeiger. Ohne diese Vorschau wäre ein 5×5-Pinsel ein
+   * Ratespiel: Man sähe erst hinterher, was man erwischt hat.
+   */
+  const vorschau = useMemo(() => {
+    if (!dm || !nebelModus) return null;
+    if (ziehen?.art === 'nebel-rechteck') {
+      return bereichGrenzen(scene, ziehen.von.x, ziehen.von.y, ziehen.bis.x, ziehen.bis.y);
+    }
+    if (!zeigerFeld) return null;
+    return pinselGrenzen(scene, zeigerFeld.x, zeigerFeld.y, alsRechteck ? 1 : pinselGroesse);
+  }, [dm, nebelModus, ziehen, scene, zeigerFeld, alsRechteck, pinselGroesse]);
 
   const felder = lineal
     ? Math.max(
@@ -351,6 +442,7 @@ export default function Board({
       onPointerMove={beiZeigerBewegung}
       onPointerUp={beiZeigerAuf}
       onPointerCancel={beiZeigerAuf}
+      onPointerLeave={() => setZeigerFeld(null)}
       className={`relative h-full w-full overflow-hidden bg-[#14100a] ${
         mode === 'bewegen' ? 'cursor-grab' : mode === 'zeigen' ? 'cursor-pointer' : 'cursor-crosshair'
       }`}
@@ -408,6 +500,38 @@ export default function Board({
         )}
 
         {scene.fogEnabled && <Nebel scene={scene} fog={fog} sicht={sicht} dm={dm} />}
+
+        {vorschau && (
+          <div
+            className="pointer-events-none absolute border-dashed"
+            style={{
+              left: scene.gridOffsetX + vorschau.x1 * g,
+              top: scene.gridOffsetY + vorschau.y1 * g,
+              width: (vorschau.x2 - vorschau.x1 + 1) * g,
+              height: (vorschau.y2 - vorschau.y1 + 1) * g,
+              // Gold deckt auf, Rot verhüllt – dieselbe Sprache wie in der
+              // Werkzeugleiste.
+              borderColor: mode === 'nebel-auf' ? '#d9b451' : '#9a2b22',
+              backgroundColor: mode === 'nebel-auf' ? 'rgba(217,180,81,0.16)' : 'rgba(154,43,34,0.20)',
+              borderWidth: Math.max(1, 2 / ansicht.scale),
+              zIndex: 6,
+            }}
+          >
+            {ziehen?.art === 'nebel-rechteck' && (
+              <span
+                className="absolute bottom-full left-0 mb-1 whitespace-nowrap font-display"
+                style={{
+                  fontSize: Math.max(11, 14 / ansicht.scale),
+                  color: '#e8cf8d',
+                  paintOrder: 'stroke',
+                  textShadow: '0 1px 3px #14100a, 0 0 2px #14100a',
+                }}
+              >
+                {vorschau.x2 - vorschau.x1 + 1} × {vorschau.y2 - vorschau.y1 + 1} Felder
+              </span>
+            )}
+          </div>
+        )}
 
         {lineal && (
           <svg className="pointer-events-none absolute inset-0 overflow-visible">

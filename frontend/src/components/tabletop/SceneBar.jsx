@@ -25,6 +25,24 @@ const WERKZEUGE = [
   { id: 'zeigen', label: 'Zeigen', Icon: IconTarget, hinweis: 'kurz aufleuchten lassen (auch Alt+Klick)' },
 ];
 
+/**
+ * Wie breit der Nebelpinsel streicht.
+ *
+ * Feld für Feld ist für Feinarbeit an einer Wand richtig; einen Saal oder
+ * einen Gang so aufzudecken, dauert eine Minute. Deshalb der Block – und für
+ * alles Rechteckige lieber gleich das Rechteck: aufziehen, loslassen, fertig.
+ *
+ * Nur ungerade Größen: Bei einer geraden gäbe es kein Feld in der Mitte, und
+ * der Abdruck läge versetzt zum Zeiger.
+ */
+const PINSEL = [
+  { id: 1, label: '1×1', hinweis: 'Feld für Feld – für die Feinarbeit' },
+  { id: 3, label: '3×3', hinweis: 'neun Felder auf einen Strich' },
+  { id: 5, label: '5×5', hinweis: 'fünfundzwanzig Felder auf einen Strich' },
+  { id: 7, label: '7×7', hinweis: 'neunundvierzig Felder auf einen Strich' },
+  { id: 'rechteck', label: 'Rechteck', hinweis: 'Aufziehen und alles darin auf einmal – für Säle und Gänge' },
+];
+
 function Knopf({ aktiv, children, ...rest }) {
   return (
     <button
@@ -39,7 +57,19 @@ function Knopf({ aktiv, children, ...rest }) {
 }
 
 /** Werkzeugleiste und Szenenverwaltung – nur für die Spielleitung. */
-export default function SceneBar({ scene, vorhang, laedtSzene, tokens = [], mode, onMode, onChanged, onFogAll, onTokensFromEncounter }) {
+export default function SceneBar({
+  scene,
+  vorhang,
+  laedtSzene,
+  tokens = [],
+  mode,
+  onMode,
+  pinsel = 1,
+  onPinsel,
+  onChanged,
+  onFogAll,
+  onTokensFromEncounter,
+}) {
   const { szenen, laden } = useSzenenListe();
   const { karten, laden: kartenLaden } = useKarten();
   const [offen, setOffen] = useState(false);
@@ -153,6 +183,20 @@ export default function SceneBar({ scene, vorhang, laedtSzene, tokens = [], mode
               <Icon size={14} /> {label}
             </Knopf>
           ))}
+
+        {/* Die Pinselbreite steht nur da, wenn sie zählt – sonst wären es
+            fünf Knöpfe mehr in einer ohnehin vollen Leiste. */}
+        {scene && (mode === 'nebel-auf' || mode === 'nebel-zu') && (
+          <>
+            <span className="mx-1 hidden h-6 w-px bg-rule sm:block" />
+            <span className="font-display text-[11px] tracking-[0.10em] text-faint uppercase">Pinsel</span>
+            {PINSEL.map(({ id, label, hinweis }) => (
+              <Knopf key={id} aktiv={pinsel === id} onClick={() => onPinsel?.(id)} title={hinweis}>
+                {label}
+              </Knopf>
+            ))}
+          </>
+        )}
 
         {scene && (
           <>

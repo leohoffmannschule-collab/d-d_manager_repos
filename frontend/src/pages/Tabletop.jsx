@@ -64,6 +64,9 @@ export default function Tabletop() {
   const meineKennungen = useMemo(() => meine.map((c) => c.id), [meine]);
 
   const [mode, setMode] = useState('bewegen');
+  // Wie breit der Nebelpinsel streicht – bleibt über den Werkzeugwechsel
+  // hinweg stehen, damit man nicht nach jedem Griff neu einstellt.
+  const [pinsel, setPinsel] = useState(1);
   const [gewaehlt, setGewaehlt] = useState(null);
   const [reiter, setReiter] = useState('kampf');
   const [seite, setSeite] = useState(false);
@@ -136,6 +139,8 @@ export default function Tabletop() {
             tokens={tokens}
             mode={mode}
             onMode={setMode}
+            pinsel={pinsel}
+            onPinsel={setPinsel}
             onChanged={ladeSzene}
             onFogAll={async (revealed) => {
               if (!scene) return;
@@ -161,6 +166,7 @@ export default function Tabletop() {
               dm={isDm}
               sicht={sicht}
               mode={mode}
+              pinsel={pinsel}
               canMoveToken={darfBewegen}
               onMoveToken={figurBewegen}
               onPaintFog={nebelMalen}

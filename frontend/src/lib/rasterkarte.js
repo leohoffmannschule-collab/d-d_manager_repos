@@ -74,6 +74,52 @@ export function mitFeldern(karte, felder, gesetzt) {
   return { ...karte, bytes };
 }
 
+/* --- Pinsel über dem Raster ---------------------------------------------- */
+
+/**
+ * Ein Rechteck aus Feldkoordinaten, beschnitten auf das, was die Karte
+ * überhaupt hat. Gibt `null` zurück, wenn davon nichts übrig bleibt.
+ *
+ * Beschnitten wird, weil ein Pinselabdruck am Kartenrand sonst Felder
+ * enthielte, die es nicht gibt: Sie kosteten Platz in der Nebelliste und
+ * wären nie wieder zu sehen.
+ */
+export function bereichGrenzen(scene, vonX, vonY, bisX, bisY) {
+  const { minX, minY, cols, rows } = rasterBereich(scene);
+  const x1 = Math.max(minX, Math.min(vonX, bisX));
+  const x2 = Math.min(minX + cols - 1, Math.max(vonX, bisX));
+  const y1 = Math.max(minY, Math.min(vonY, bisY));
+  const y2 = Math.min(minY + rows - 1, Math.max(vonY, bisY));
+  return x2 < x1 || y2 < y1 ? null : { x1, y1, x2, y2 };
+}
+
+/** Alle Felder eines solchen Rechtecks, als `"x,y"` für den Server. */
+export function felderImBereich(scene, vonX, vonY, bisX, bisY) {
+  const grenzen = bereichGrenzen(scene, vonX, vonY, bisX, bisY);
+  if (!grenzen) return [];
+  const felder = [];
+  for (let y = grenzen.y1; y <= grenzen.y2; y++) {
+    for (let x = grenzen.x1; x <= grenzen.x2; x++) felder.push(`${x},${y}`);
+  }
+  return felder;
+}
+
+/**
+ * Der Abdruck eines Pinsels: ein Block um die Mitte.
+ *
+ * Nur ungerade Größen – bei einer geraden gäbe es keine Mitte, und der
+ * Abdruck läge versetzt zum Feld unter dem Zeiger.
+ */
+export function pinselGrenzen(scene, feldX, feldY, groesse) {
+  const rand = Math.floor(Math.max(1, groesse) / 2);
+  return bereichGrenzen(scene, feldX - rand, feldY - rand, feldX + rand, feldY + rand);
+}
+
+export function felderImPinsel(scene, feldX, feldY, groesse) {
+  const rand = Math.floor(Math.max(1, groesse) / 2);
+  return felderImBereich(scene, feldX - rand, feldY - rand, feldX + rand, feldY + rand);
+}
+
 /* --- Maßstab ------------------------------------------------------------- */
 
 const FUSS_JE_METER = 3.280839895;

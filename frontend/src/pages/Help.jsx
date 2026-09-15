@@ -122,6 +122,14 @@ export default function Help() {
               aufgedeckt hast, wird der Runde gar nicht erst geschickt – auch die Figuren nicht, die dort stehen.
             </li>
             <li>
+              Sobald eines der beiden gewählt ist, steht daneben der <span className="font-display">Pinsel</span>:
+              1×1 für die Feinarbeit an einer Wand, 3×3, 5×5 oder 7×7 für einen breiten Strich – und{' '}
+              <span className="font-display">Rechteck</span>, um einen Saal oder einen Gang aufzuziehen und auf
+              einmal zu öffnen. Was der nächste Strich trifft, steht vorher hell auf der Karte (rot beim
+              Verhüllen); beim Rechteck steht daneben, wie viele Felder es sind. Die Wahl bleibt stehen, auch
+              wenn du zwischendurch etwas anderes tust.
+            </li>
+            <li>
               Unter „Raster“ stellst du auch den <span className="font-display">Maßstab</span> ein: wofür ein
               Feld im Spiel steht. Fünf Fuß nach Regelwerk oder ein Meter – darunter steht dann, wie groß die
               Karte insgesamt ist. Eine leere Szene legst du mit „ohne Karte“ in der gewünschten Feldzahl an,
