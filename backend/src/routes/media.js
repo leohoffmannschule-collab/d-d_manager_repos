@@ -55,10 +55,17 @@ router.post('/', express.json({ limit: '20mb' }), (req, res) => {
   res.status(201).json({ id, url: `/api/media/${id}`, bytes: bytes.length });
 });
 
-// GET /api/media/:id
+/**
+ * GET /api/media/:id
+ *
+ * Bilder gehören der Runde, nicht einer Kampagne: Dieselbe Karte soll in jeder
+ * Geschichte aufliegen können, ohne ein zweites Mal hochgeladen zu werden.
+ * Zu sehen bekommt sie ohnehin nur, wer angemeldet ist *und* die Kennung
+ * kennt – und die steht nur in einer Szene, die die Spielleitung aufgelegt hat.
+ */
 router.get('/:id', (req, res) => {
   const row = db.prepare('SELECT * FROM media WHERE id = ?').get(req.params.id);
-  if (!row || row.campaign_id !== req.campaignId) {
+  if (!row) {
     return res.status(404).json({ code: 'bild_nicht_gefunden', error: 'Bild nicht gefunden.' });
   }
   const datei = path.join(mediaDir, row.filename);
@@ -81,7 +88,7 @@ router.get('/:id', (req, res) => {
 // DELETE /api/media/:id
 router.delete('/:id', requireDm, (req, res) => {
   const row = db.prepare('SELECT * FROM media WHERE id = ?').get(req.params.id);
-  if (!row || row.campaign_id !== req.campaignId) {
+  if (!row) {
     return res.status(404).json({ code: 'bild_nicht_gefunden', error: 'Bild nicht gefunden.' });
   }
   fs.rmSync(path.join(mediaDir, row.filename), { force: true });

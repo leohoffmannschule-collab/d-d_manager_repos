@@ -202,9 +202,10 @@ router.post('/:id/wiederherstellen', (req, res) => {
 /**
  * DELETE /api/campaigns/:id/endgueltig  { name }
  *
- * Jetzt und ohne Wiederkehr: Charaktere, Chronik, Karten, Beute und die
- * hochgeladenen Bilder dieser Kampagne sind danach fort. Auch hier muss der
- * Name abgetippt werden, und liegen muss sie ohnehin schon im Papierkorb.
+ * Jetzt und ohne Wiederkehr: Charaktere, Chronik, Szenen, Begegnungen und
+ * Beute dieser Kampagne sind danach fort. Die Kartenbibliothek bleibt – sie
+ * gehört der Runde, nicht der einzelnen Geschichte. Auch hier muss der Name
+ * abgetippt werden, und liegen muss sie ohnehin schon im Papierkorb.
  */
 router.delete('/:id/endgueltig', (req, res) => {
   const kampagne = holen(req.params.id);

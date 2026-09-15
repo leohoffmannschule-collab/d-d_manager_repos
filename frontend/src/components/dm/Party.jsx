@@ -220,8 +220,9 @@ function KampagneEntsorgen() {
         <section className="panel border-rubric/40 p-4">
           <Rubric>Diese Kampagne löschen</Rubric>
           <p className="mb-3 text-sepia italic">
-            „{active.name}“ verschwindet aus allen Listen. Charaktere, Chronik, Karten und Beute bleiben 30 Tage im
-            Papierkorb liegen und lassen sich zurückholen – erst danach ist es endgültig.
+            „{active.name}“ verschwindet aus allen Listen. Charaktere, Chronik, Szenen und Beute bleiben 30 Tage im
+            Papierkorb liegen und lassen sich zurückholen – erst danach ist es endgültig. Die Kartenbibliothek gehört
+            der ganzen Runde und bleibt in jedem Fall erhalten.
           </p>
           <form
             onSubmit={async (e) => {

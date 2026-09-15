@@ -1,6 +1,4 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { db, mediaDir } from './db.js';
+import { db } from './db.js';
 
 /**
  * Der Papierkorb für Kampagnen.
@@ -9,17 +7,25 @@ import { db, mediaDir } from './db.js';
  * Papierkorb: Sie verschwindet aus allen Listen, aber kein Zeichen ihrer
  * Daten ist fort – ein Fehlgriff kostet so nichts weiter als einen Klick auf
  * „Wiederherstellen“. Erst nach Ablauf der Frist (oder auf ausdrücklichen
- * Wunsch) wird wirklich alles entfernt, samt der hochgeladenen Bilder.
+ * Wunsch) wird wirklich entfernt, was dieser Kampagne allein gehört.
  *
  * Das ist Absicht: Was hier gelöscht wird, sind Monate an Spielabenden.
  */
 
 export const FRIST_TAGE = 30;
 
-/** Tabellen, die eine campaign_id tragen. Kinder daran hängen per FK mit. */
+/**
+ * Tabellen, die zu genau einer Kampagne gehören. Kinder daran hängen per
+ * Fremdschlüssel mit (Figuren an der Szene, Chronikeinträge an der Sitzung).
+ *
+ * Nicht dabei und mit Absicht: **maps** und **media**. Die Kartenbibliothek
+ * und die Bilddateien gehören der ganzen Runde – dieselbe Taverne liegt in
+ * jeder Geschichte. Eine Kampagne zu löschen darf der Runde nicht ihre
+ * vorbereiteten Karten wegnehmen.
+ */
 const TABELLEN = [
   'characters', 'combatants', 'library', 'notes', 'rolls', 'messages',
-  'scenes', 'maps', 'encounters', 'stash_items', 'ambience', 'game_sessions',
+  'scenes', 'encounters', 'stash_items', 'ambience', 'game_sessions',
 ];
 
 /** Wie viele Tage bleiben dieser Kampagne noch im Papierkorb? */
@@ -30,17 +36,14 @@ export function verbleibendeTage(deletedAt) {
 
 /**
  * Alles entfernen, was zu dieser Kampagne gehört – ohne Netz und doppelten
- * Boden. Die Bilddateien gehen zuerst: Bliebe die Datenbank stehen und die
- * Dateien wären fort, sähe die Runde kaputte Karten; andersherum liegen nur
- * ein paar verwaiste Dateien herum, die niemanden stören.
+ * Boden.
+ *
+ * Karten und Bilddateien bleiben ausdrücklich liegen: Sie gehören der Runde
+ * und werden anderswo weiterbenutzt. Was eine Karte nicht mehr braucht, räumt
+ * die Bibliothek beim Löschen der Karte selbst weg (siehe routes/maps.js).
  */
 export function endgueltigEntfernen(campaignId) {
-  const bilder = db.prepare('SELECT filename FROM media WHERE campaign_id = ?').all(campaignId);
-  for (const { filename } of bilder) {
-    fs.rmSync(path.join(mediaDir, filename), { force: true });
-  }
-
-  for (const tabelle of [...TABELLEN, 'media']) {
+  for (const tabelle of TABELLEN) {
     db.prepare(`DELETE FROM ${tabelle} WHERE campaign_id = ?`).run(campaignId);
   }
 

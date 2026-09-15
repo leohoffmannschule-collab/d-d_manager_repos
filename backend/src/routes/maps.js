@@ -9,8 +9,19 @@ import { klangAuflegen } from './ambience.js';
 
 const router = Router();
 
-// Die Bibliothek ist Vorbereitung. Was dort liegt, hat die Runde noch nicht
-// gesehen – und soll es auch nicht, bevor die Karte auf dem Tisch liegt.
+/**
+ * Die Kartenbibliothek gehört der ganzen Runde, nicht einer Kampagne.
+ *
+ * Eine Karte ist Vorbereitung: ein Bild samt einmal ausgerichtetem Raster.
+ * Diese Arbeit ein zweites Mal zu machen, nur weil eine neue Geschichte
+ * beginnt, wäre unsinnig – dieselbe Taverne steht in jeder Kampagne gleich da.
+ *
+ * Was daraus im Spiel wird, bleibt dagegen streng getrennt: Die **Szene** –
+ * also die Karte auf dem Tisch, mit Nebel und Figuren – gehört zu genau einer
+ * Kampagne. Die eine Runde wischt der anderen also keinen Nebel weg.
+ *
+ * Und weiterhin: Was hier liegt, hat die Runde noch nicht gesehen.
+ */
 router.use(requireDm);
 
 const toNumber = (wert, ersatz) => (Number.isFinite(Number(wert)) ? Number(wert) : ersatz);
@@ -36,7 +47,7 @@ function rowToMap(row) {
   };
 }
 
-const holen = (id, campaignId) => db.prepare('SELECT * FROM maps WHERE id = ? AND campaign_id = ?').get(id, campaignId);
+const holen = (id) => db.prepare('SELECT * FROM maps WHERE id = ?').get(id);
 
 const sauberesSchlagwort = (t) => typeof t === 'string' && t.trim();
 const schlagworte = (liste) =>
@@ -65,8 +76,10 @@ function bildFreigeben(mediaId) {
 
 // GET /api/maps
 router.get('/', (req, res) => {
-  const karten = db.prepare('SELECT * FROM maps WHERE campaign_id = ? ORDER BY name COLLATE NOCASE').all(req.campaignId).map(rowToMap);
-  // Wie oft liegt diese Karte schon als Szene vor?
+  const karten = db.prepare('SELECT * FROM maps ORDER BY name COLLATE NOCASE').all().map(rowToMap);
+  // Wie oft liegt diese Karte schon als Szene vor? Gezählt wird nur in dieser
+  // Kampagne – dass die Taverne nebenan auch schon aufgebaut ist, hilft hier
+  // niemandem weiter.
   const szenen = db
     .prepare('SELECT map_id, COUNT(*) AS n FROM scenes WHERE campaign_id = ? AND map_id IS NOT NULL GROUP BY map_id')
     .all(req.campaignId);
@@ -100,12 +113,12 @@ router.post('/', (req, res) => {
     req.campaignId,
     new Date().toISOString()
   );
-  res.status(201).json(rowToMap(holen(id, req.campaignId)));
+  res.status(201).json(rowToMap(holen(id)));
 });
 
 // PUT /api/maps/:id – umbenennen, verschlagworten, Raster nachjustieren
 router.put('/:id', (req, res) => {
-  const row = holen(req.params.id, req.campaignId);
+  const row = holen(req.params.id);
   if (!row) return res.status(404).json({ code: 'karte_nicht_gefunden', error: 'Karte nicht gefunden.' });
   const body = req.body ?? {};
 
@@ -125,12 +138,12 @@ router.put('/:id', (req, res) => {
     'ambienceId' in body ? (body.ambienceId || null) : row.ambience_id,
     row.id
   );
-  res.json(rowToMap(holen(row.id, req.campaignId)));
+  res.json(rowToMap(holen(row.id)));
 });
 
 // DELETE /api/maps/:id
 router.delete('/:id', (req, res) => {
-  const row = holen(req.params.id, req.campaignId);
+  const row = holen(req.params.id);
   if (!row) return res.status(404).json({ code: 'karte_nicht_gefunden', error: 'Karte nicht gefunden.' });
 
   db.prepare('DELETE FROM maps WHERE id = ?').run(row.id);
@@ -155,7 +168,7 @@ router.delete('/:id', (req, res) => {
  * Das Raster wandert in jedem Fall mit: einmal ausgerichtet, immer richtig.
  */
 router.post('/:id/auflegen', (req, res) => {
-  const row = holen(req.params.id, req.campaignId);
+  const row = holen(req.params.id);
   if (!row) return res.status(404).json({ code: 'karte_nicht_gefunden', error: 'Karte nicht gefunden.' });
 
   if (req.body?.frisch !== true) {
