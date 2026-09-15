@@ -85,6 +85,7 @@ export const charactersApi = {
   patch: (id, payload) => patch(`/characters/${id}`, payload),
   remove: (id) => del(`/characters/${id}`),
   duplicate: (id) => post(`/characters/${id}/duplicate`),
+  kopieren: (id, campaignId) => post(`/characters/${id}/kopieren`, { campaignId }),
   all: () => request('/characters/verwaltung/alle'),
 };
 

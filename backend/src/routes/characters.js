@@ -1,6 +1,8 @@
 import { Router } from 'express';
+import fs from 'node:fs';
+import path from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { db } from '../db.js';
+import { db, mediaDir } from '../db.js';
 import { isDm, requireAuth, requireDm } from '../auth.js';
 import { broadcast, originClient } from '../events.js';
 import { sendeSzene } from './scenes.js';
@@ -231,6 +233,93 @@ router.post('/:id/duplicate', (req, res) => {
   const row = holen(id, req.campaignId);
   meldeAenderung(row, req);
   res.status(201).json(rowToCharacter(row));
+});
+
+/**
+ * Ein Bild in eine andere Kampagne mitnehmen.
+ *
+ * Bildnisse stecken als Daten-URL im Blatt selbst und wandern von allein mit.
+ * Nur die alte `miniMediaId` aus der entfernten Figurenschmiede zeigt noch auf
+ * eine Datei – und Bilder gehören seit den Kampagnen zu genau einer. Ohne
+ * diese Abschrift zeigte die Kopie ins Leere.
+ */
+function bildMitnehmen(mediaId, zielKampagne) {
+  if (!mediaId) return null;
+  const quelle = db.prepare('SELECT * FROM media WHERE id = ?').get(mediaId);
+  if (!quelle) return null;
+
+  const neueId = randomUUID();
+  const endung = path.extname(quelle.filename);
+  const datei = path.join(mediaDir, quelle.filename);
+  if (!fs.existsSync(datei)) return null;
+
+  fs.copyFileSync(datei, path.join(mediaDir, `${neueId}${endung}`));
+  db.prepare('INSERT INTO media (id, filename, mime, bytes, campaign_id, created_at) VALUES (?, ?, ?, ?, ?, ?)').run(
+    neueId,
+    `${neueId}${endung}`,
+    quelle.mime,
+    quelle.bytes,
+    zielKampagne,
+    new Date().toISOString()
+  );
+  return neueId;
+}
+
+/**
+ * POST /api/characters/:id/kopieren  { campaignId }
+ *
+ * Dasselbe Blatt in einer anderen Kampagne – etwa, wenn die Runde dieselben
+ * Helden in einer neuen Geschichte weiterspielt oder ein NSC ein zweites Mal
+ * gebraucht wird. Kopiert wird, nicht verschoben: Das Blatt hier bleibt, wo
+ * es ist, und beide gehen fortan getrennte Wege.
+ */
+router.post('/:id/kopieren', requireDm, (req, res) => {
+  const quelle = holen(req.params.id, req.campaignId);
+  if (!quelle) return res.status(404).json({ code: 'charakter_nicht_gefunden', error: 'Charakter nicht gefunden' });
+
+  const ziel = req.body?.campaignId;
+  if (ziel === req.campaignId) {
+    return res.status(400).json({
+      code: 'gleiche_kampagne',
+      error: 'Das wäre dieselbe Kampagne – dafür gibt es die Abschrift.',
+    });
+  }
+  // Nur in Kampagnen, in denen die Spielleitung selbst sitzt: Wer nicht
+  // hineinsieht, soll auch nichts hineinlegen können.
+  const dabei = db
+    .prepare(
+      `SELECT c.id FROM campaigns c
+         JOIN campaign_members m ON m.campaign_id = c.id
+        WHERE c.id = ? AND m.user_id = ? AND c.deleted_at IS NULL`
+    )
+    .get(ziel, req.user.id);
+  if (!dabei) {
+    return res.status(403).json({ code: 'ziel_unbekannt', error: 'In diese Kampagne kannst du nichts legen.' });
+  }
+
+  const data = JSON.parse(quelle.data);
+  const mini = bildMitnehmen(data.miniMediaId, ziel);
+  if (mini) data.miniMediaId = mini;
+  else if (data.miniMediaId) delete data.miniMediaId;
+
+  // Der Besitzer zieht nur mit, wenn er in der Zielkampagne überhaupt
+  // mitspielt – sonst gehört das Blatt dort der Spielleitung.
+  const besitzerBleibt =
+    quelle.owner_id &&
+    db.prepare('SELECT 1 FROM campaign_members WHERE campaign_id = ? AND user_id = ?').get(ziel, quelle.owner_id);
+
+  const id = randomUUID();
+  const now = new Date().toISOString();
+  db.prepare(
+    `INSERT INTO characters (id, name, system, data, owner_id, shared, npc, campaign_id, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(id, quelle.name, quelle.system, JSON.stringify(data), besitzerBleibt ? quelle.owner_id : null, quelle.shared, quelle.npc, ziel, now, now);
+
+  // Die Zielkampagne sieht das neue Blatt sofort – wer dort gerade offen hat,
+  // soll nicht erst neu laden müssen.
+  const kopie = holen(id, ziel);
+  broadcast('charakter:aktualisiert', summary(kopie), { campaignId: ziel });
+  res.status(201).json({ id, name: kopie.name, campaignId: ziel, besitzerMitgenommen: !!besitzerBleibt });
 });
 
 // GET /api/characters/:id/all – Rohdaten aller Blätter für die Spielleitung
