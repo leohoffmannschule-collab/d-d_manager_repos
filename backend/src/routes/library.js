@@ -8,8 +8,15 @@ import * as chronik from '../chronicle.js';
 
 const router = Router();
 
-// Das Bestiarium ist Sache der Spielleitung – die Runde soll die Statblöcke
-// des heutigen Abends schließlich nicht vorab lesen können.
+/**
+ * Das Bestiarium ist Sache der Spielleitung – die Runde soll die Statblöcke
+ * des heutigen Abends schließlich nicht vorab lesen können.
+ *
+ * Es gehört der ganzen Runde, nicht einer Kampagne: Ein Goblin bleibt ein
+ * Goblin, gleich in welcher Geschichte er auftritt. Was daraus im Kampf wird –
+ * der einzelne Kämpfer mit seinen Trefferpunkten – gehört dagegen zu genau
+ * einer Kampagne.
+ */
 router.use(requireDm);
 
 const KATEGORIEN = new Set(['npc', 'monster']);
@@ -41,7 +48,7 @@ function statsAus(quelle, vorgabe = {}) {
 }
 
 router.get('/', (req, res) => {
-  res.json(db.prepare('SELECT * FROM library WHERE campaign_id = ? ORDER BY name COLLATE NOCASE').all(req.campaignId).map(rowToEntry));
+  res.json(db.prepare('SELECT * FROM library ORDER BY name COLLATE NOCASE').all().map(rowToEntry));
 });
 
 router.post('/', (req, res) => {
@@ -74,7 +81,7 @@ router.post('/', (req, res) => {
 });
 
 router.put('/:id', (req, res) => {
-  const row = db.prepare('SELECT * FROM library WHERE id = ? AND campaign_id = ?').get(req.params.id, req.campaignId);
+  const row = db.prepare('SELECT * FROM library WHERE id = ?').get(req.params.id);
   if (!row) return res.status(404).json({ code: 'eintrag_nicht_gefunden', error: 'Eintrag nicht gefunden.' });
 
   const body = req.body ?? {};
@@ -102,14 +109,14 @@ router.put('/:id', (req, res) => {
 });
 
 router.delete('/:id', (req, res) => {
-  const info = db.prepare('DELETE FROM library WHERE id = ? AND campaign_id = ?').run(req.params.id, req.campaignId);
+  const info = db.prepare('DELETE FROM library WHERE id = ?').run(req.params.id);
   if (info.changes === 0) return res.status(404).json({ code: 'eintrag_nicht_gefunden', error: 'Eintrag nicht gefunden.' });
   res.status(204).end();
 });
 
 // POST /api/library/:id/add-to-encounter – „3 Goblins“ mit einem Klick
 router.post('/:id/add-to-encounter', (req, res) => {
-  const row = db.prepare('SELECT * FROM library WHERE id = ? AND campaign_id = ?').get(req.params.id, req.campaignId);
+  const row = db.prepare('SELECT * FROM library WHERE id = ?').get(req.params.id);
   if (!row) return res.status(404).json({ code: 'eintrag_nicht_gefunden', error: 'Eintrag nicht gefunden.' });
 
   const body = req.body ?? {};

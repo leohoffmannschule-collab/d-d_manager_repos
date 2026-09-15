@@ -18,14 +18,16 @@ export const FRIST_TAGE = 30;
  * Tabellen, die zu genau einer Kampagne gehören. Kinder daran hängen per
  * Fremdschlüssel mit (Figuren an der Szene, Chronikeinträge an der Sitzung).
  *
- * Nicht dabei und mit Absicht: **maps** und **media**. Die Kartenbibliothek
- * und die Bilddateien gehören der ganzen Runde – dieselbe Taverne liegt in
- * jeder Geschichte. Eine Kampagne zu löschen darf der Runde nicht ihre
- * vorbereiteten Karten wegnehmen.
+ * Nicht dabei und mit Absicht: die **Vorbereitung**, die der ganzen Runde
+ * gehört – Karten (`maps`), Bilddateien (`media`), Bestiarium (`library`),
+ * vorbereitete Begegnungen (`encounters`) und der Klangteppich (`ambience`).
+ * Dieselbe Taverne, derselbe Goblin, dieselbe Musik liegen in jeder
+ * Geschichte bereit; eine beendete Kampagne darf der Runde diese Arbeit
+ * nicht wegnehmen.
  */
 const TABELLEN = [
-  'characters', 'combatants', 'library', 'notes', 'rolls', 'messages',
-  'scenes', 'encounters', 'stash_items', 'ambience', 'game_sessions',
+  'characters', 'combatants', 'notes', 'rolls', 'messages',
+  'scenes', 'stash_items', 'game_sessions',
 ];
 
 /** Wie viele Tage bleiben dieser Kampagne noch im Papierkorb? */

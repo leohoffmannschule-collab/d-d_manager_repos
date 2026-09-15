@@ -8,8 +8,14 @@ import { sendeKampf } from './encounter.js';
 
 const router = Router();
 
-// Vorbereitete Begegnungen sind die halbe Vorbereitung eines Abends – und
-// gehen die Runde nichts an.
+/**
+ * Vorbereitete Begegnungen sind die halbe Vorbereitung eines Abends – und
+ * gehen die Runde nichts an.
+ *
+ * Wie das Bestiarium gehören sie der ganzen Runde: „Wache am Stadttor“ lässt
+ * sich in jeder Geschichte stellen. Gestellt wird sie dann aber in genau
+ * einer Kampagne – die Kämpfer, die dabei entstehen, bleiben dort.
+ */
 router.use(requireDm);
 
 const toNumber = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
@@ -44,7 +50,7 @@ function saubereEintraege(liste) {
 }
 
 router.get('/', (req, res) => {
-  res.json(db.prepare('SELECT * FROM encounters WHERE campaign_id = ? ORDER BY name COLLATE NOCASE').all(req.campaignId).map(rowToEncounter));
+  res.json(db.prepare('SELECT * FROM encounters ORDER BY name COLLATE NOCASE').all().map(rowToEncounter));
 });
 
 router.post('/', (req, res) => {
@@ -65,7 +71,7 @@ router.post('/', (req, res) => {
 });
 
 router.put('/:id', (req, res) => {
-  const row = db.prepare('SELECT * FROM encounters WHERE id = ? AND campaign_id = ?').get(req.params.id, req.campaignId);
+  const row = db.prepare('SELECT * FROM encounters WHERE id = ?').get(req.params.id);
   if (!row) return res.status(404).json({ code: 'begegnung_nicht_gefunden', error: 'Begegnung nicht gefunden.' });
   const body = req.body ?? {};
   db.prepare('UPDATE encounters SET name = ?, notes = ?, entries = ? WHERE id = ?').run(
@@ -78,14 +84,14 @@ router.put('/:id', (req, res) => {
 });
 
 router.delete('/:id', (req, res) => {
-  const info = db.prepare('DELETE FROM encounters WHERE id = ? AND campaign_id = ?').run(req.params.id, req.campaignId);
+  const info = db.prepare('DELETE FROM encounters WHERE id = ?').run(req.params.id);
   if (info.changes === 0) return res.status(404).json({ code: 'begegnung_nicht_gefunden', error: 'Begegnung nicht gefunden.' });
   res.status(204).end();
 });
 
 // POST /api/encounters/:id/stellen – die ganze Begegnung in den Kampf setzen
 router.post('/:id/stellen', (req, res) => {
-  const row = db.prepare('SELECT * FROM encounters WHERE id = ? AND campaign_id = ?').get(req.params.id, req.campaignId);
+  const row = db.prepare('SELECT * FROM encounters WHERE id = ?').get(req.params.id);
   if (!row) return res.status(404).json({ code: 'begegnung_nicht_gefunden', error: 'Begegnung nicht gefunden.' });
 
   const wuerfeln = req.body?.rollInitiative !== false;

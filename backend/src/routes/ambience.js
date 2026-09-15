@@ -16,6 +16,10 @@ router.use(requireAuth);
  * und sagt der Runde, was gerade dran ist. Jeder öffnet es in seinem eigenen
  * Spotify.
  *
+ * Die Sammlung gehört der ganzen Runde: Dieselbe Tavernenmusik passt in jede
+ * Geschichte. Was gerade aufliegt, gilt dagegen nur für die eine Kampagne –
+ * sonst wechselte der anderen Runde mitten im Spiel die Musik.
+ *
  * Das ist bewusst die kleine Lösung. Die große – im Browser abspielen und über
  * alle Fenster gleichschalten – verlangt von Spotify eine verschlüsselte
  * Adresse unter eigenem Namen, ein Premium-Konto je Zuhörer und eine
@@ -87,7 +91,7 @@ function rowToKlang(row) {
   };
 }
 
-const holen = (id, campaignId) => db.prepare('SELECT * FROM ambience WHERE id = ? AND campaign_id = ?').get(id, campaignId);
+const holen = (id) => db.prepare('SELECT * FROM ambience WHERE id = ?').get(id);
 
 /* --- Was gerade aufliegt ------------------------------------------------- */
 
@@ -103,7 +107,7 @@ function setzeKlang(campaignId, werte) {
 
 /** Wird von der Kartenbibliothek gebraucht: Eine Karte bringt ihre Ambiente mit. */
 export function klangAuflegen(ambienceId, campaignId) {
-  const row = holen(ambienceId, campaignId);
+  const row = holen(ambienceId);
   if (!row) return null;
   const eintrag = rowToKlang(row);
   chronik.log(
@@ -135,7 +139,7 @@ router.get('/aktiv', (req, res) => {
 
 // GET /api/ambience – die Sammlung ist Vorbereitung und bleibt beim DM.
 router.get('/', requireDm, (req, res) => {
-  res.json(db.prepare('SELECT * FROM ambience WHERE campaign_id = ? ORDER BY name COLLATE NOCASE').all(req.campaignId).map(rowToKlang));
+  res.json(db.prepare('SELECT * FROM ambience ORDER BY name COLLATE NOCASE').all().map(rowToKlang));
 });
 
 router.post('/', requireDm, (req, res) => {
@@ -164,11 +168,11 @@ router.post('/', requireDm, (req, res) => {
     req.campaignId,
     new Date().toISOString()
   );
-  res.status(201).json(rowToKlang(holen(id, req.campaignId)));
+  res.status(201).json(rowToKlang(holen(id)));
 });
 
 router.put('/:id', requireDm, (req, res) => {
-  const row = holen(req.params.id, req.campaignId);
+  const row = holen(req.params.id);
   if (!row) return res.status(404).json({ code: 'klang_nicht_gefunden', error: 'Ambiente nicht gefunden.' });
   const body = req.body ?? {};
 
@@ -192,7 +196,7 @@ router.put('/:id', requireDm, (req, res) => {
     row.id
   );
 
-  const frisch = rowToKlang(holen(row.id, req.campaignId));
+  const frisch = rowToKlang(holen(row.id));
   // Liegt gerade genau dieses auf, wandert die Änderung sofort mit – sonst
   // stünde am Tisch noch der alte Name oder der alte Verweis.
   if (aktuellerKlang(req.campaignId).ambienceId === frisch.id) {
@@ -209,7 +213,7 @@ router.put('/:id', requireDm, (req, res) => {
 });
 
 router.delete('/:id', requireDm, (req, res) => {
-  const row = holen(req.params.id, req.campaignId);
+  const row = holen(req.params.id);
   if (!row) return res.status(404).json({ code: 'klang_nicht_gefunden', error: 'Ambiente nicht gefunden.' });
 
   db.prepare('DELETE FROM ambience WHERE id = ?').run(row.id);
