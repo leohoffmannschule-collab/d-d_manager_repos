@@ -168,6 +168,10 @@ durch das eine Oberfläche in ihre Kampagnenauswahl schickt.
 Löschen darf nur, wer die Kampagne angelegt hat, und nur mit dem abgetippten
 Namen im Rumpf. Gelöschtes liegt 30 Tage im Papierkorb.
 
+Umbenennen kennt die Schnittstelle nicht – der Name hängt an nichts weiter
+(alles andere zeigt auf die Kennung), deshalb genügt dafür
+`node backend/scripts/umbenennen.mjs "Alter Name" "Neuer Name"`.
+
 **Was der Kampagne gehört und was der Runde.** Vorbereitung gehört der Runde
 und steht in jeder Kampagne bereit: Karten (`/maps`), Bilder (`/media`),
 Bestiarium (`/library`), Begegnungen (`/encounters`), Klang (`/ambience`).
