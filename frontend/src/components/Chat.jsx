@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { IconChat, IconClose, IconEyeOff, IconTrash } from './icons.jsx';
 import { chatApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
-import { useChat } from '../lib/daten.jsx';
+import { useChat } from '../lib/daten.js';
 
 /**
  * Der Chat am Tisch.

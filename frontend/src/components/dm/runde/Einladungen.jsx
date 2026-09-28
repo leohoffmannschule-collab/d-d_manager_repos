@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { authApi } from '../../../lib/api.js';
-import { useEinladungen } from '../../../lib/daten.jsx';
+import { useEinladungen } from '../../../lib/daten.js';
 import { Rubric } from '../../ui.jsx';
 import { IconCheck, IconLink, IconPlus, IconTrash } from '../../icons.jsx';
 

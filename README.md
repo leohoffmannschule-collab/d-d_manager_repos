@@ -401,7 +401,7 @@ frontend/   React 19 + Vite, Tailwind CSS v4, PWA
             src/components/  Spieltisch (Brett, Werkzeuge, Figuren), Spielleitung (Bestiarium,
                              Begegnungen, Karten, Klang, Notizen, Runde),
                              Initiativliste, Würfelbeutel, Chat, Klangleiste, Blattbausteine
-            src/lib/         daten.jsx (Datenschicht), api.js, auth.jsx, live.jsx,
+            src/lib/         daten.js + daten/ (Datenschicht), api.js, auth.jsx, live.jsx,
                              klang.jsx + spotify.js (Ambiente), beschriftung.js,
                              Regelwerk, Rasten
 backend/    Node.js + Express, SQLite über das eingebaute node:sqlite
@@ -457,12 +457,12 @@ Der Almanach ist so geschnitten, dass die Oberfläche austauschbar ist – ohne 
 | Regelwerk                | `frontend/src/lib/dnd5e.js`, `rasten.js`, `wuerfeln.js`     | bleibt     |
 | Zugriff auf den Server   | `frontend/src/lib/api.js`                                   | bleibt     |
 | Anmeldung und Live-Kanal | `frontend/src/lib/auth.jsx`, `live.jsx`                     | bleibt     |
-| **Datenschicht**         | `frontend/src/lib/daten.jsx`                                | bleibt     |
+| **Datenschicht**         | `frontend/src/lib/daten.js`                                | bleibt     |
 | Beschriftung             | `frontend/src/lib/beschriftung.js`                          | anpassen   |
 | Aussehen                 | `frontend/src/index.css` (Farben, Schriften als Variablen)  | anpassen   |
 | Darstellung              | `frontend/src/pages/`, `frontend/src/components/`           | ersetzen   |
 
-In `daten.jsx` steckt das mühsame Stück: wann geladen wird, welches Ereignis welchen Zustand betrifft, was nach
+In `daten.js` steckt das mühsame Stück: wann geladen wird, welches Ereignis welchen Zustand betrifft, was nach
 einem Funkloch nachzuholen ist. Ein Bauteil bekommt fertige Daten und einen Handgriff zum Nachladen – mehr weiß es
 nicht:
 

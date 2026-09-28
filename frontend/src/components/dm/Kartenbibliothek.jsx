@@ -25,7 +25,7 @@
  */
 import { useMemo, useRef, useState } from 'react';
 import { mapsApi, mediaApi, scenesApi } from '../../lib/api.js';
-import { useKarten, useSzene } from '../../lib/daten.jsx';
+import { useKarten, useSzene } from '../../lib/daten.js';
 import { bildUndVorschau } from '../../lib/bilder.js';
 import { IconFog, IconSearch, IconUpload } from '../icons.jsx';
 import Kartenblatt from './karten/Kartenblatt.jsx';

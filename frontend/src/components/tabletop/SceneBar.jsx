@@ -25,7 +25,7 @@
  * Ebene höher, die Regeln liegen im Server.
  */
 import { useEffect, useRef, useState } from 'react';
-import { useKarten, useSzenenListe } from '../../lib/daten.jsx';
+import { useKarten, useSzenenListe } from '../../lib/daten.js';
 import Rasterfeld from './leiste/Rasterfeld.jsx';
 import Szenenlade from './leiste/Szenenlade.jsx';
 import Vorhangriegel from './leiste/Vorhangriegel.jsx';

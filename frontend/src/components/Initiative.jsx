@@ -16,7 +16,7 @@ import { useState } from 'react';
 import { encounterApi } from '../lib/api.js';
 import { blattWurf } from '../lib/wuerfeln.js';
 import { useAuth } from '../lib/auth.jsx';
-import { useCharaktere, useKampf } from '../lib/daten.jsx';
+import { useCharaktere, useKampf } from '../lib/daten.js';
 import { ZUSTAND, benenne } from '../lib/beschriftung.js';
 import {
   IconChevronRight,

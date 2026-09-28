@@ -13,7 +13,7 @@ import { useState } from 'react';
 import { IconClose, IconD20, IconD20Detailed, IconEyeOff, IconTrash } from './icons.jsx';
 import { diceApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
-import { useWuerfe } from '../lib/daten.jsx';
+import { useWuerfe } from '../lib/daten.js';
 
 const DICE = [4, 6, 8, 10, 12, 20, 100];
 

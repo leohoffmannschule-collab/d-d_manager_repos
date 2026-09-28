@@ -20,7 +20,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { chronicleApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
-import { useSitzung, useSitzungen } from '../lib/daten.jsx';
+import { useSitzung, useSitzungen } from '../lib/daten.js';
 import { Card } from '../components/ui.jsx';
 import { CHRONIK_ART, benenne } from '../lib/beschriftung.js';
 import {

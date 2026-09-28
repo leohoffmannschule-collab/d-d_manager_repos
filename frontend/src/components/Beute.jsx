@@ -15,7 +15,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { stashApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
-import { useBeute, useCharaktere } from '../lib/daten.jsx';
+import { useBeute, useCharaktere } from '../lib/daten.js';
 import Kopierziel from './Kopierziel.jsx';
 import { IconCheck, IconPlus, IconTrash, IconUsers } from './icons.jsx';
 

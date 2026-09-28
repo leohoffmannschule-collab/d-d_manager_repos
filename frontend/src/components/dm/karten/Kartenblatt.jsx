@@ -12,7 +12,7 @@
  */
 import { useMemo, useState } from 'react';
 import { mapsApi } from '../../../lib/api.js';
-import { useKlangbibliothek } from '../../../lib/daten.jsx';
+import { useKlangbibliothek } from '../../../lib/daten.js';
 import { EINHEIT, rasterBereich, weite } from '../../../lib/rasterkarte.js';
 import { Rubric } from '../../ui.jsx';
 import { IconCheck } from '../../icons.jsx';

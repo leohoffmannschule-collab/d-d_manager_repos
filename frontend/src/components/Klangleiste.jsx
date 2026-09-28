@@ -1,5 +1,5 @@
 import { useAuth } from '../lib/auth.jsx';
-import { useKlang } from '../lib/daten.jsx';
+import { useKlang } from '../lib/daten.js';
 import { ambienceApi } from '../lib/api.js';
 import { IconLink, IconNote } from './icons.jsx';
 

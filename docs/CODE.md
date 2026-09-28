@@ -106,7 +106,8 @@ Sechs Dateien, und du verstehst das Gerüst. Rechne mit einer knappen Stunde.
    ist *hier* geschützt.
 4. **`frontend/src/App.jsx`** – die drei Tore: angemeldet, Kampagne gewählt,
    Live-Draht offen.
-5. **`frontend/src/lib/daten.jsx`** – wie die Oberfläche an Daten kommt.
+5. **`frontend/src/lib/daten/grundlage.js`** – wie die Oberfläche an Daten
+   kommt. Darauf baut jeder Haken in `lib/daten/` auf.
 6. **`frontend/src/lib/api.js`** – der einzige Ort, an dem `fetch` steht.
 
 Danach such dir eine Sache aus, die du im Almanach benutzt, und verfolge sie
@@ -132,7 +133,7 @@ durch alle Schichten. Der nächste Abschnitt macht das einmal vor.
    Änderung an alle *anderen* Fenster dieser Kampagne. Das eigene wird
    übersprungen – es weiß es ja schon, und ein Echo ließe die Figur kurz
    zurückspringen.
-6. **`lib/daten.jsx`** – in den anderen Fenstern fängt `useLive('figur', …)`
+6. **`lib/daten.js`** – in den anderen Fenstern fängt `useLive('figur', …)`
    die Nachricht und aktualisiert die Liste.
 7. Und auf den Schirmen der anderen bewegt sich die Figur.
 

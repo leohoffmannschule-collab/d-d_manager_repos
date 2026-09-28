@@ -4,7 +4,7 @@
  *
  * „Da!“ – am echten Tisch tippt man auf die Karte. Über drei Städte hinweg
  * geht das nicht, also gibt es das hier. Gespeichert wird nichts; nach
- * wenigen Sekunden ist der Ring fort (siehe lib/daten.jsx, usePings).
+ * wenigen Sekunden ist der Ring fort (siehe lib/daten.js, usePings).
  *
  * Der Ring ist genau ein Feld groß – so zeigt er nicht auf einen Punkt,
  * sondern auf die Stelle, um die es geht.

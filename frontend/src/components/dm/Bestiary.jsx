@@ -16,7 +16,7 @@
  */
 import { useMemo, useState } from 'react';
 import { compendiumApi, libraryApi, mediaApi } from '../../lib/api.js';
-import { useBestiarium } from '../../lib/daten.jsx';
+import { useBestiarium } from '../../lib/daten.js';
 import { Rubric } from '../ui.jsx';
 import { IconBook, IconEyeOff, IconPlus, IconSearch, IconSwords, IconTrash } from '../icons.jsx';
 

@@ -1,4 +1,4 @@
-import { useKonten } from '../../lib/daten.jsx';
+import { useKonten } from '../../lib/daten.js';
 import Einladungen from './runde/Einladungen.jsx';
 import Kampagnenmitglieder from './runde/Kampagnenmitglieder.jsx';
 import Umzugsgut from './runde/Umzugsgut.jsx';

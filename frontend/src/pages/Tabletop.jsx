@@ -6,7 +6,7 @@ import Initiative from '../components/Initiative.jsx';
 import Beute from '../components/Beute.jsx';
 import { scenesApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
-import { useCharaktere, useKampf, useNotizen, usePings, useSzene } from '../lib/daten.jsx';
+import { useCharaktere, useKampf, useNotizen, usePings, useSzene } from '../lib/daten.js';
 import { useLive } from '../lib/live.jsx';
 import { IconFog, IconHeart, IconMap, IconPlus, IconScroll, IconSwords } from '../components/icons.jsx';
 

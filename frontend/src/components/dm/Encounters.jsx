@@ -16,7 +16,7 @@
  */
 import { useState } from 'react';
 import { encountersApi, mediaApi } from '../../lib/api.js';
-import { useBegegnungen, useBestiarium } from '../../lib/daten.jsx';
+import { useBegegnungen, useBestiarium } from '../../lib/daten.js';
 import { Rubric } from '../ui.jsx';
 import { IconEyeOff, IconPlus, IconSearch, IconSwords, IconTrash } from '../icons.jsx';
 

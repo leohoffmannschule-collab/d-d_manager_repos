@@ -16,7 +16,7 @@
  */
 import { useMemo, useState } from 'react';
 import { ambienceApi } from '../../lib/api.js';
-import { useKlang, useKlangbibliothek } from '../../lib/daten.jsx';
+import { useKlang, useKlangbibliothek } from '../../lib/daten.js';
 import { Rubric } from '../ui.jsx';
 import { IconLink, IconNote, IconPlay, IconSearch, IconTrash } from '../icons.jsx';
 

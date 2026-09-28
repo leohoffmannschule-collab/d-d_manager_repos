@@ -19,7 +19,7 @@
  */
 import { useMemo, useState } from 'react';
 import { notesApi } from '../../lib/api.js';
-import { useNotizen } from '../../lib/daten.jsx';
+import { useNotizen } from '../../lib/daten.js';
 import Kopierziel from '../Kopierziel.jsx';
 import { IconEye, IconEyeOff, IconPlus, IconSearch, IconTrash } from '../icons.jsx';
 

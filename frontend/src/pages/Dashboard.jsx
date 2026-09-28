@@ -16,7 +16,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { charactersApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
-import { useCharaktere } from '../lib/daten.jsx';
+import { useCharaktere } from '../lib/daten.js';
 import Kopierziel from '../components/Kopierziel.jsx';
 import { IconCrown, IconEye, IconEyeOff, IconPlus, IconScroll } from '../components/icons.jsx';
 

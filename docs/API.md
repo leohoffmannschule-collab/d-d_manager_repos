@@ -493,14 +493,16 @@ austauschbar ist:
 | Regelwerk | `frontend/src/lib/dnd5e.js`, `rasten.js`, `wuerfeln.js` | bleibt |
 | Zugriff | `frontend/src/lib/api.js` | bleibt |
 | Anmeldung, Live-Kanal | `frontend/src/lib/auth.jsx`, `live.jsx` | bleibt |
-| **Daten** | `frontend/src/lib/daten.jsx` | bleibt |
+| **Daten** | `frontend/src/lib/daten.js` | bleibt |
 | Beschriftung | `frontend/src/lib/beschriftung.js` | anpassen |
 | Aussehen | `frontend/src/index.css` (Farben und Schriften als Variablen) | anpassen |
 | Darstellung | `frontend/src/pages/`, `frontend/src/components/` | ersetzen |
 
-Die Datei `daten.jsx` ist dabei die wichtigste: In ihr steckt, wann geladen
-wird, welches Ereignis welchen Zustand betrifft und was nach einem Funkloch
-nachzuholen ist. Ein Bauteil bekommt fertige Daten und einen Handgriff zum
+Die Datenschicht ist dabei die wichtigste: In ihr steckt, wann geladen wird,
+welches Ereignis welchen Zustand betrifft und was nach einem Funkloch
+nachzuholen ist. `daten.js` ist nur das Inhaltsverzeichnis; die Haken selbst
+liegen daneben in `daten/` – nach Sachgebiet getrennt (Spieltisch, Kampf,
+Kampagne, Runde, Gespräch) und alle auf `daten/grundlage.js` gebaut. Ein Bauteil bekommt fertige Daten und einen Handgriff zum
 Nachladen:
 
 ```jsx
