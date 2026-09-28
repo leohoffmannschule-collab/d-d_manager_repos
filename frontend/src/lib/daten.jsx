@@ -29,6 +29,21 @@ import { useLive, useLiveAlle, useLiveStatus } from './live.jsx';
  * ganz austauscht, wirft Seiten und Bauteile weg und behält diese Datei. Das
  * mühsame Stück – wann geladen wird, welche Ereignisse welchen Zustand
  * betreffen, was beim erneuten Verbinden nachzuholen ist – bleibt erhalten.
+ *
+ * Alles hier sind *Haken* (React Hooks): Funktionen, deren Name mit `use`
+ * beginnt und die nur aus einer Komponente heraus aufgerufen werden dürfen.
+ * Sie geben Daten samt Nachlade-Handgriff zurück, etwa:
+ *
+ *     const { charaktere, laden } = useCharaktere();
+ *
+ * Drei Muster kehren immer wieder, und wer sie kennt, versteht die ganze
+ * Datei:
+ *
+ *   1. *Laden* über useDaten – einmal beim Verbinden, danach auf Zuruf.
+ *   2. *Horchen* über useLive – der Server schiebt Änderungen nach.
+ *   3. *Vorgreifen* – bei Figuren und Nebel wird die Änderung sofort
+ *      örtlich angezeigt und erst danach zum Server geschickt. Ohne das
+ *      ruckelte jede gezogene Figur um die Laufzeit der Anfrage hinterher.
  */
 
 /**
@@ -39,6 +54,9 @@ import { useLive, useLiveAlle, useLiveStatus } from './live.jsx';
  * Funkloch wird dadurch alles nachgezogen, was in der Zwischenzeit geschah.
  */
 export function useDaten(holen, anfang = null) {
+  // Wichtig: `holen` muss vom Aufrufer mit useCallback festgehalten werden.
+  // Eine bei jedem Rendern neue Funktion löste unten den useEffect erneut
+  // aus – das wäre eine Endlosschleife aus Laden und Neuzeichnen.
   const { generation } = useLiveStatus();
   const [daten, setDaten] = useState(anfang);
   const [fehler, setFehler] = useState(null);
@@ -60,6 +78,9 @@ export function useDaten(holen, anfang = null) {
     }
   }, [holen]);
 
+  // Erst laden, wenn der Live-Draht steht (generation > 0). Zwei Fliegen:
+  // Der erste Ladevorgang passiert nicht zu früh, und nach jedem Abriss
+  // wird alles nachgezogen, was während der Unterbrechung geschah.
   useEffect(() => {
     if (generation > 0) laden();
   }, [generation, laden]);
@@ -75,6 +96,8 @@ export function useCharaktere() {
   const { daten, setDaten, laden, fehler, laedt } = useDaten(holen, null);
 
   // Trefferpunkte und Namen laufen live ein, statt neu geladen zu werden.
+  // Beachte: Das Ereignis *ändert* nur vorhandene Einträge. Ein ganz neues
+  // Blatt taucht hier nicht von selbst auf – dafür gibt es `laden()`.
   useLive('charakter:aktualisiert', (nachricht) => {
     setDaten((liste) => {
       if (!liste) return liste;
@@ -89,6 +112,8 @@ export function useCharaktere() {
     setDaten((liste) => liste?.filter((c) => c.id !== id) ?? liste);
   });
 
+  // Zwei fertige Ausschnitte, weil beide an mehreren Stellen gebraucht
+  // werden: die eigenen Blätter und die, die jemand geteilt hat.
   const meine = useMemo(() => (daten ?? []).filter((c) => c.ownerId === user?.id), [daten, user?.id]);
   const geteilte = useMemo(() => (daten ?? []).filter((c) => c.shared), [daten]);
 
@@ -97,6 +122,7 @@ export function useCharaktere() {
 
 /* --- Kampf --------------------------------------------------------------- */
 
+/** Der laufende Kampf: Reihenfolge, wer dran ist, alle Kämpfer. */
 export function useKampf() {
   const holen = useCallback(() => encounterApi.get(), []);
   const { daten, setDaten, laden, fehler, laedt } = useDaten(holen, {
@@ -107,6 +133,8 @@ export function useKampf() {
 
   // Der Server schickt den vollständigen Stand mit – kein Nachladen nötig.
   useLive('kampf', setDaten);
+  // Trefferpunkte stehen auf dem Blatt *und* am Kämpfer. Ändert jemand das
+  // Blatt, muss die Kampfliste nachziehen.
   useLive('charakter:aktualisiert', laden);
 
   return { kampf: daten, laden, fehler, laedt };
@@ -146,13 +174,17 @@ export function useSzene() {
     [gelegt]
   );
 
+  // Die ganze Szene neu – etwa beim Auflegen einer anderen Karte.
   useLive('szene', (neu) => setSzene(neu));
 
-  // Ein Nebelstrich hat eine Figur auf- oder zugedeckt.
+  // Alle Figuren auf einmal: Ein Nebelstrich hat eine Figur auf- oder
+  // zugedeckt, damit ändert sich für die Runde die ganze sichtbare Liste.
   useLive('figuren', (liste) => setFiguren(liste ?? []));
 
+  // Eine einzelne Figur – der häufige Fall beim Ziehen.
   useLive('figur', (figur) => {
     setFiguren((alle) => {
+      // Unbekannte Kennung heißt: neu dazugekommen, also anhängen.
       const index = alle.findIndex((t) => t.id === figur.id);
       if (index === -1) return [...alle, figur];
       const kopie = [...alle];
@@ -170,7 +202,13 @@ export function useSzene() {
     setNebel((alt) => mitFeldern(alt, cells, revealed));
   });
 
-  /** Nebel malen: erst örtlich, damit es sich flüssig anfühlt. */
+  /**
+   * Nebel malen: erst örtlich, damit es sich flüssig anfühlt.
+   *
+   * Diese Funktion schickt *nichts* zum Server – das macht der Aufrufer
+   * (pages/Tabletop.jsx), und zwar gebündelt, damit aus einem Strich über
+   * dreißig Felder nicht dreißig Anfragen werden.
+   */
   const nebelSetzen = useCallback((felder, offen) => {
     setNebel((alt) => mitFeldern(alt, felder, offen));
   }, []);
@@ -191,7 +229,12 @@ export function useSzenenListe() {
   return { szenen: daten ?? [], laden, fehler, laedt };
 }
 
-/** Kurz aufleuchtende Zeigefinger – nichts davon wird gespeichert. */
+/**
+ * Kurz aufleuchtende Zeigefinger – nichts davon wird gespeichert.
+ *
+ * Der Schlüssel aus Zeitpunkt und Name unterscheidet zwei Zeigefinger
+ * derselben Person; React braucht für jede Liste stabile Schlüssel.
+ */
 export function usePings(dauer = 2600) {
   const [pings, setPings] = useState([]);
 
@@ -206,6 +249,14 @@ export function usePings(dauer = 2600) {
 
 /* --- Würfel -------------------------------------------------------------- */
 
+/**
+ * Die Wurfchronik. `ungelesen` treibt den Punkt am Würfelbeutel an, wenn
+ * die Leiste gerade zugeklappt ist.
+ *
+ * `aufnehmen` gibt es nach außen, weil der eigene Wurf sofort dastehen soll
+ * – das Echo über den Live-Kanal käme erst einen Wimpernschlag später. Die
+ * Prüfung auf die Kennung verhindert, dass er dann doppelt erscheint.
+ */
 export function useWuerfe(anzahl = 40) {
   const holen = useCallback(() => diceApi.history(anzahl), [anzahl]);
   const { daten, setDaten, laden, fehler, laedt } = useDaten(holen, []);
@@ -263,6 +314,7 @@ export function useChat(anzahl = 100) {
 
 /* --- Beute --------------------------------------------------------------- */
 
+/** Die gemeinsame Kiste: Gefundenes und Münzen. */
 export function useBeute() {
   const holen = useCallback(() => stashApi.get(), []);
   const { daten, setDaten, laden, fehler, laedt } = useDaten(holen, { items: [], coins: {} });
@@ -272,6 +324,10 @@ export function useBeute() {
 
 /* --- Notizen und Handzettel ---------------------------------------------- */
 
+/**
+ * Notizen der Spielleitung. `handzettel` sind die ausgeteilten davon –
+ * die einzigen, die ein Spielerfenster überhaupt geliefert bekommt.
+ */
 export function useNotizen() {
   const holen = useCallback(() => notesApi.list(), []);
   const { daten, laden, fehler, laedt } = useDaten(holen, []);
@@ -283,12 +339,19 @@ export function useNotizen() {
 
 /* --- Bestiarium und Begegnungen ------------------------------------------ */
 
+/**
+ * Das Bestiarium – Statblöcke für Monster und NSC.
+ *
+ * Kein useLive: Die Sammlung ändert nur die Spielleitung selbst, und die
+ * sitzt in aller Regel an genau einem Schirm. Dafür lohnt kein Ereignis.
+ */
 export function useBestiarium() {
   const holen = useCallback(() => libraryApi.list(), []);
   const { daten, laden, fehler, laedt } = useDaten(holen, []);
   return { eintraege: daten ?? [], laden, fehler, laedt };
 }
 
+/** Vorbereitete Begegnungen („Wache am Stadttor“, „3 Goblins“). */
 export function useBegegnungen() {
   const holen = useCallback(() => encountersApi.list(), []);
   const { daten, laden, fehler, laedt } = useDaten(holen, []);
@@ -297,6 +360,7 @@ export function useBegegnungen() {
 
 /* --- Runde: Konten und Einladungen --------------------------------------- */
 
+/** Alle Konten des Almanachs – nur die Spielleitung darf sie sehen. */
 export function useKonten() {
   const holen = useCallback(() => authApi.users(), []);
   const { daten, laden, fehler, laedt } = useDaten(holen, []);
@@ -304,6 +368,7 @@ export function useKonten() {
   return { konten: daten ?? [], laden, fehler, laedt };
 }
 
+/** Einladungscodes. `offene` sind die noch nicht eingelösten. */
 export function useEinladungen() {
   const holen = useCallback(() => authApi.invites(), []);
   const { daten, laden, fehler, laedt } = useDaten(holen, []);
@@ -313,6 +378,7 @@ export function useEinladungen() {
 
 /* --- Chronik ------------------------------------------------------------- */
 
+/** Die Sitzungen der Chronik. `offene` ist die gerade laufende, falls eine läuft. */
 export function useSitzungen() {
   const holen = useCallback(() => chronicleApi.sessions(), []);
   const { daten, laden, fehler, laedt } = useDaten(holen, []);
@@ -322,6 +388,7 @@ export function useSitzungen() {
   return { sitzungen: daten ?? [], offene, laden, fehler, laedt };
 }
 
+/** Eine einzelne Sitzung samt ihren Einträgen. */
 export function useSitzung(id) {
   const holen = useCallback(() => (id ? chronicleApi.session(id) : Promise.resolve(null)), [id]);
   const { daten, setDaten, laden, fehler, laedt } = useDaten(holen, null);

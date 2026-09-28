@@ -1,5 +1,23 @@
+/**
+ * Die Regeln von D&D 5e, soweit der Almanach sie kennt.
+ *
+ * Hier stehen zwei Sorten Dinge:
+ *
+ *   – *Listen*, die die Oberfläche abarbeitet: die sechs Attribute, die
+ *     achtzehn Fertigkeiten, die Zustände, die Zauberstufen. Sie liegen
+ *     an einem Ort, damit „Wahrnehmung“ überall gleich heißt und in
+ *     derselben Reihenfolge steht.
+ *   – *Rechnungen*, die das Regelwerk vorgibt: Attributsmodifikator,
+ *     Übungsbonus, Zauber-Schwierigkeitsgrad, Traglast.
+ *
+ * Wichtig für das Verständnis des ganzen Blattes: Gespeichert wird immer in
+ * **Fuß und Pfund**, angezeigt wahlweise metrisch. Die Umrechnung passiert
+ * erst beim Anzeigen (siehe „Maße“ weiter unten). So bleibt ein Blatt
+ * dasselbe, gleich wer es aufschlägt.
+ */
 import { newId } from './id.js';
 
+/** Die sechs Attribute, in der Reihenfolge des Charakterbogens. */
 export const ABILITIES = [
   { key: 'str', label: 'Stärke' },
   { key: 'dex', label: 'Geschicklichkeit' },
@@ -9,6 +27,10 @@ export const ABILITIES = [
   { key: 'cha', label: 'Charisma' },
 ];
 
+/**
+ * Die achtzehn Fertigkeiten. `ability` sagt, welches Attribut sie speist –
+ * daraus rechnet `skillModifier` weiter unten den Wurfbonus.
+ */
 export const SKILLS = [
   { key: 'acrobatics', label: 'Akrobatik', ability: 'dex' },
   { key: 'animalHandling', label: 'Tierhandhabung', ability: 'wis' },
@@ -30,6 +52,8 @@ export const SKILLS = [
   { key: 'survival', label: 'Überlebenskunst', ability: 'wis' },
 ];
 
+// Zaubergrade 1 bis 9. Zaubertricks (Grad 0) stehen bewusst nicht drin:
+// Sie brauchen keinen Zauberplatz und tauchen deshalb in Slot-Listen nie auf.
 export const SPELL_LEVELS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 /**

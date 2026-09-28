@@ -10,6 +10,14 @@ const CampaignContext = createContext(null);
  * Konten sind rundenweit gemeinsam, aber was am Tisch entsteht, gehört zu
  * genau einer Kampagne – festgehalten server-seitig in der Sitzung, hier nur
  * gespiegelt. Ohne Anmeldung gibt es nichts zu holen.
+ *
+ * Dass die aktive Kampagne an der *Sitzung* hängt und nicht am Konto, hat
+ * eine angenehme Folge: Dieselbe Spielleitung kann in zwei Browserfenstern
+ * in zwei Kampagnen sitzen. Und es hat eine Pflicht: Jeder Wechsel muss zum
+ * Server (`switchTo`), sonst wüsste der bei der nächsten Anfrage nichts
+ * davon und lieferte weiter die alte Kampagne.
+ *
+ * Aufgebaut wie lib/auth.jsx – ein Anbieter oben, `useCampaign()` unten.
  */
 export function CampaignProvider({ children }) {
   const { user } = useAuth();
@@ -44,6 +52,7 @@ export function CampaignProvider({ children }) {
       loading,
       active: campaigns.find((k) => k.id === activeId) ?? null,
       refresh,
+      /** In eine andere Kampagne wechseln. Siehe App.jsx, was danach passiert. */
       async switchTo(id) {
         await campaignsApi.activate(id);
         setActiveId(id);
@@ -78,6 +87,8 @@ export function CampaignProvider({ children }) {
         await campaignsApi.restore(id);
         await refresh();
       },
+      // Diese beiden reichen nur durch: Der Papierkorb hat keinen Zustand
+      // hier oben, die Ansicht holt ihn sich, wenn sie ihn braucht.
       purge: (id, name) => campaignsApi.purge(id, name),
       papierkorb: () => campaignsApi.papierkorb(),
     }),

@@ -1,10 +1,29 @@
-// structuredClone fehlt auf iPads, die älter als iPadOS 15.4 sind.
+/**
+ * Kleinkram für das Charakterblatt: verschachtelte Werte setzen und lesen,
+ * und ein Bild aus einer Datei in handliche Größe bringen.
+ *
+ * Warum „unveränderlich“ (immutable)? React erkennt Änderungen daran, dass
+ * ein Objekt ein *anderes* ist als vorher – nicht daran, was darin steht.
+ * Wer `data.combat.hp.current = 5` schreibt, ändert zwar den Wert, aber das
+ * Objekt bleibt dasselbe, und die Oberfläche zeichnet nichts neu. Deshalb
+ * gibt `setPath` immer eine frische Kopie zurück.
+ */
+
+/** Tiefe Kopie. structuredClone fehlt auf iPads vor iPadOS 15.4. */
 function deepClone(obj) {
   if (typeof structuredClone === 'function') return structuredClone(obj);
   return JSON.parse(JSON.stringify(obj));
 }
 
-// Immutably sets a nested value, e.g. setPath(obj, 'combat.hp.current', 5)
+/**
+ * Einen verschachtelten Wert setzen, ohne das Original anzufassen:
+ *
+ *   const neu = setPath(blatt, 'combat.hp.current', 5);
+ *
+ * Achtung, bewusste Einfachheit: Der Weg muss vorhanden sein. Fehlt
+ * unterwegs eine Ebene, läuft es in einen Fehler statt sie anzulegen – im
+ * Blatt liegt die Struktur fest, ein Tippfehler im Pfad soll auffallen.
+ */
 export function setPath(obj, path, value) {
   const keys = path.split('.');
   const clone = deepClone(obj);
@@ -16,10 +35,26 @@ export function setPath(obj, path, value) {
   return clone;
 }
 
+/**
+ * Das Gegenstück zum Lesen. `?.` bricht sauber ab, wenn unterwegs etwas
+ * fehlt – hier ist das erwünscht: Ein leeres Feld ist kein Fehler.
+ */
 export function getPath(obj, path) {
   return path.split('.').reduce((cursor, key) => cursor?.[key], obj);
 }
 
+/**
+ * Eine ausgewählte Bilddatei zu einer kleinen `data:`-URL machen.
+ *
+ * Gebraucht für Bildnisse auf dem Charakterblatt: Die liegen *im Blatt
+ * selbst* (also in der Datenbankzeile), nicht als Datei daneben. Ein Foto
+ * aus einer Handykamera hat gern 4 MB – deshalb wird es vorher über ein
+ * Canvas auf `maxSize` Kantenlänge heruntergerechnet und als JPEG mit 85 %
+ * Güte ausgegeben. Aus 4 MB werden so rund 30 KB.
+ *
+ * Die beiden `new Promise(...)` drumherum sind nötig, weil FileReader und
+ * Image noch mit Rückrufen arbeiten statt mit Promises.
+ */
 export async function fileToResizedDataUrl(file, maxSize = 320) {
   const dataUrl = await new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -35,6 +70,7 @@ export async function fileToResizedDataUrl(file, maxSize = 320) {
     image.src = dataUrl;
   });
 
+  // Nur verkleinern, nie vergrößern: Math.min(1, …) deckelt den Faktor.
   const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
   const canvas = document.createElement('canvas');
   canvas.width = Math.round(img.width * scale);

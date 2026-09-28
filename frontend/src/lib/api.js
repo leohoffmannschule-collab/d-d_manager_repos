@@ -1,3 +1,14 @@
+/**
+ * Der einzige Ort, an dem diese Oberfläche den Server anspricht.
+ *
+ * Jede Funktion hier ist ein Weg des Servers, eins zu eins. Kein Bauteil
+ * ruft `fetch` selbst auf – das hat zwei handfeste Gründe: Ändert sich ein
+ * Weg, ist diese Datei die einzige Baustelle; und die Fehlerbehandlung
+ * unten gilt damit für alle Aufrufe gleichermaßen.
+ *
+ * Wer wissen will, was der Server zu einem Weg sagt, findet die Beschreibung
+ * in docs/API.md und den Code in backend/src/routes/.
+ */
 const API_BASE = '/api';
 
 // Kennung des eigenen Fensters am Live-Kanal. Der Server schickt Änderungen
@@ -8,6 +19,13 @@ export function setClientId(id) {
   clientId = id;
 }
 
+/**
+ * Der gemeinsame Unterbau aller Aufrufe.
+ *
+ * `credentials: 'same-origin'` ist die wichtigste Zeile: Nur damit schickt
+ * der Browser das Anmelde-Cookie mit. Ohne sie käme von jedem Weg ein 401
+ * zurück, obwohl man angemeldet ist – ein Fehler, den man lange sucht.
+ */
 async function request(path, options = {}) {
   const headers = { 'Content-Type': 'application/json', ...(options.headers ?? {}) };
   if (clientId) headers['X-Fenster'] = String(clientId);
@@ -18,6 +36,9 @@ async function request(path, options = {}) {
     headers,
   });
 
+  // fetch wirft nur, wenn gar keine Antwort kommt. Ein 404 oder 403 gilt
+  // ihm als erfolgreich zugestellt – deshalb wird der Status hier von Hand
+  // geprüft und in einen Fehler verwandelt, den ein `catch` auffängt.
   if (!res.ok) {
     let message = `Anfrage fehlgeschlagen (${res.status})`;
     let code = null;
@@ -35,10 +56,14 @@ async function request(path, options = {}) {
     error.code = code;
     throw error;
   }
+  // 204 heißt „hat geklappt, es gibt nichts zurückzugeben“ – der Rumpf ist
+  // leer, und res.json() würde daran scheitern.
   if (res.status === 204) return null;
   return res.json();
 }
 
+// Eine Funktion, die Funktionen baut: `senden('POST')` gibt eine Funktion
+// zurück, die mit POST schickt. Spart vier fast gleiche Fassungen.
 const senden = (method) => (path, payload) =>
   request(path, { method, body: payload === undefined ? undefined : JSON.stringify(payload) });
 
@@ -49,6 +74,9 @@ const patch = senden('PATCH');
 // ausdrückliche Bestätigung verlangt (etwa den abgetippten Kampagnennamen).
 const del = senden('DELETE');
 
+/* --- Die Wege, nach Sachgebieten sortiert -------------------------------- */
+
+/** Anmelden, Konten, Einladungscodes. */
 export const authApi = {
   status: () => request('/auth/status'),
   login: (name, password) => post('/auth/login', { name, password }),
@@ -63,6 +91,7 @@ export const authApi = {
   removeInvite: (code) => del(`/auth/invites/${code}`),
 };
 
+/** Kampagnen: anlegen, wechseln, umbenennen, wegräumen, übernehmen. */
 export const campaignsApi = {
   list: () => request('/campaigns'),
   create: (name) => post('/campaigns', { name }),
@@ -81,6 +110,7 @@ export const campaignsApi = {
   purge: (id, name) => del(`/campaigns/${id}/endgueltig`, { name }),
 };
 
+/** Charakterblätter. `all` ist die Verwaltungsansicht der Spielleitung. */
 export const charactersApi = {
   list: () => request('/characters'),
   get: (id) => request(`/characters/${id}`),
@@ -93,11 +123,13 @@ export const charactersApi = {
   all: () => request('/characters/verwaltung/alle'),
 };
 
+/** Das Nachschlagewerk – ein zwischengespeicherter Spiegel der offenen 5e-API. */
 export const compendiumApi = {
   list: (category) => request(`/compendium/${category}`),
   detail: (category, index) => request(`/compendium/${category}/${index}`),
 };
 
+/** Der *laufende* Kampf. Nicht zu verwechseln mit encountersApi unten. */
 export const encounterApi = {
   get: () => request('/encounter'),
   add: (payload) => post('/encounter/combatants', payload),
@@ -112,6 +144,7 @@ export const encounterApi = {
   setInitiative: (id, value) => post(`/encounter/combatants/${id}/initiative`, { value }),
 };
 
+/** Die Beutekiste: Gefundenes, Münzen, Teilen und Auszahlen. */
 export const stashApi = {
   get: () => request('/stash'),
   addItem: (payload) => post('/stash/items', payload),
@@ -123,6 +156,7 @@ export const stashApi = {
   auszahlen: (characterIds) => post('/stash/auszahlen', { characterIds }),
 };
 
+/** Das Bestiarium – Statblöcke, aus denen Kämpfer werden. */
 export const libraryApi = {
   list: () => request('/library'),
   create: (payload) => post('/library', payload),
@@ -132,6 +166,7 @@ export const libraryApi = {
   fromCompendium: (monster) => post('/library/aus-kompendium', monster),
 };
 
+/** *Vorbereitete* Begegnungen, die sich mit einem Klick stellen lassen. */
 export const encountersApi = {
   list: () => request('/encounters'),
   create: (payload) => post('/encounters', payload),
@@ -141,6 +176,7 @@ export const encountersApi = {
   ausKampf: (name) => post('/encounters/aus-kampf', { name }),
 };
 
+/** Die Chronik: Sitzungen, Einträge, Protokoll und KI-Rückblick. */
 export const chronicleApi = {
   sessions: () => request('/chronicle/sessions'),
   session: (id) => request(`/chronicle/sessions/${id}`),
@@ -159,6 +195,7 @@ export const chronicleApi = {
   },
 };
 
+/** Notizen und Handzettel. */
 export const notesApi = {
   list: () => request('/notes'),
   create: (payload) => post('/notes', payload),
@@ -167,12 +204,14 @@ export const notesApi = {
   kopieren: (id, campaignId) => post(`/notes/${id}/kopieren`, { campaignId }),
 };
 
+/** Der Würfelbeutel. Gewürfelt wird auf dem Server – siehe lib/wuerfeln.js. */
 export const diceApi = {
   history: (limit = 50) => request(`/dice/history?limit=${limit}`),
   roll: (payload) => post('/dice/roll', payload),
   clear: () => del('/dice/history'),
 };
 
+/** Der Chat am Tisch, samt Flüstern an einzelne. */
 export const chatApi = {
   history: (limit = 100) => request(`/chat?limit=${limit}`),
   send: (text, an = null) => post('/chat', an ? { text, an } : { text }),
@@ -180,6 +219,7 @@ export const chatApi = {
   clear: () => del('/chat'),
 };
 
+/** Der Spieltisch: Szenen, Figuren, Nebel, Vorhang, Zeigefinger. */
 export const scenesApi = {
   list: () => request('/scenes'),
   active: () => request('/scenes/aktiv'),
@@ -199,12 +239,17 @@ export const scenesApi = {
   nscSicht: (tokenId) => post('/scenes/nsc-sicht', { tokenId }),
 };
 
+/**
+ * Bilder. `url` baut nur die Adresse zusammen – sie landet in einem
+ * `<img src=…>`, der Browser holt das Bild dann selbst.
+ */
 export const mediaApi = {
   upload: (dataUrl, filename) => post('/media', { dataUrl, filename }),
   url: (id) => (id ? `${API_BASE}/media/${id}` : null),
   remove: (id) => del(`/media/${id}`),
 };
 
+/** Die Kartenbibliothek: vorbereitete Karten samt eingestelltem Raster. */
 export const mapsApi = {
   list: () => request('/maps'),
   create: (payload) => post('/maps', payload),
@@ -213,6 +258,7 @@ export const mapsApi = {
   auflegen: (id, payload) => post(`/maps/${id}/auflegen`, payload),
 };
 
+/** Der Klangteppich – hinterlegte Spotify-Links, mehr nicht. */
 export const ambienceApi = {
   aktiv: () => request('/ambience/aktiv'),
   list: () => request('/ambience'),

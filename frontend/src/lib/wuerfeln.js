@@ -1,3 +1,11 @@
+/**
+ * Würfe, die vom Charakterblatt ausgehen.
+ *
+ * Der Witz daran steht im Kommentar unten: Sie laufen über den Server,
+ * nicht im Browser. Ein heimlich im eigenen Fenster gewürfeltes 20 wäre
+ * kein Wurf, sondern eine Behauptung – so aber steht er bei allen am Tisch
+ * in der Wurfchronik, mit Namen und Uhrzeit.
+ */
 import { diceApi } from './api.js';
 import { formatModifier } from './dnd5e.js';
 

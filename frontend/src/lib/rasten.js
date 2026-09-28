@@ -1,3 +1,13 @@
+/**
+ * Kurze und lange Rast – die beiden Erholungsregeln aus D&D 5e.
+ *
+ * Beide Funktionen bekommen das Charakterblatt (`data`) und geben ein
+ * *neues* zurück; das übergebene bleibt unangetastet (siehe setPath.js,
+ * warum das wichtig ist). Gespeichert wird nichts – das erledigt der
+ * Aufrufer, der danach das Blatt speichert.
+ *
+ * Wer hier etwas nachschlagen will: Spielerhandbuch, Kapitel „Abenteuer“.
+ */
 import { SPELL_LEVELS } from './dnd5e.js';
 
 /**
@@ -19,6 +29,8 @@ export function kurzeRast(data) {
  */
 export function langeRast(data) {
   const pool = data.combat?.hitDicePool ?? { total: 1, used: 0 };
+  // Regel: die Hälfte der Trefferwürfel zurück, mindestens einer. Bei einer
+  // Stufe-1-Figur mit einem einzigen Würfel wäre die Hälfte sonst null.
   const zurueck = Math.max(1, Math.floor((pool.total || 1) / 2));
 
   const slots = { ...(data.spellcasting?.slots ?? {}) };
@@ -33,6 +45,8 @@ export function langeRast(data) {
       hp: { ...data.combat.hp, current: data.combat.hp.max, temp: 0 },
       hitDicePool: { ...pool, used: Math.max(0, (pool.used || 0) - zurueck) },
       deathSaves: { successes: 0, failures: 0 },
+      // Erschöpfung geht nur eine Stufe je langer Rast zurück – und nie
+      // unter null.
       exhaustion: Math.max(0, (data.combat?.exhaustion ?? 0) - 1),
       concentration: { active: false, spell: '' },
     },

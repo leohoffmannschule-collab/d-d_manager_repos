@@ -34,8 +34,24 @@ import {
  * Am Ende der Datei steckt außerdem der vollständige Datensatz. Die Datei ist
  * damit zugleich eine Sicherung, aus der sich ein verlorenes Blatt
  * wiederherstellen lässt.
+ *
+ * Wie es gebaut ist: Ein Haufen kleiner Funktionen gibt je einen Abschnitt
+ * als HTML-Zeichenkette zurück (`attribute`, `fertigkeiten`, `zauber`, …),
+ * und `dnd5eKoerper` fügt sie zusammen. Das ist bewusst schlichtes
+ * Zeichenketten-Basteln statt React: Die Datei muss ja *ohne* React laufen,
+ * allein im Browser dessen, der sie doppelklickt.
+ *
+ * Die eine Regel, die man dabei nie vergessen darf, steht gleich darunter:
+ * alles, was aus dem Blatt kommt, muss durch `esc`.
  */
 
+/**
+ * Sonderzeichen entschärfen, bevor sie in das HTML wandern.
+ *
+ * Ohne das würde aus einem Charakternamen wie `<b>Grim` eine Formatierung,
+ * und aus etwas Bösartigerem ausführbarer Code. Faustregel für diese Datei:
+ * **jeder** Wert aus dem Blatt geht durch `esc`, ausnahmslos.
+ */
 const ZEICHEN = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 const esc = (wert) => String(wert ?? '').replace(/[&<>"']/g, (z) => ZEICHEN[z]);
 
@@ -499,6 +515,9 @@ function freiKoerper(character, data, bilder) {
   `;
 }
 
+// Das Aussehen der ausgefuhrenen Datei. Alles muss hier hinein: Die Datei
+// soll ohne Netz auskommen, kann also kein Stylesheet nachladen. Die
+// `@media print`-Regeln am Ende machen daraus einen sauberen Ausdruck.
 const STIL = `
   :root{--grund:#e6d7b0;--tafel:#f4ead2;--sanft:#f8f0dc;--tinte:#2b2114;--sepia:#6d5c45;--blass:#a3927a;
     --linie:#c2a878;--stark:#a3865c;--rubrik:#9a2b22;--gold:#b8912f;
@@ -573,6 +592,12 @@ const STIL = `
 `;
 
 /** Baut die vollständige, alleinstehende Datei. */
+/**
+ * Das fertige HTML-Dokument als Zeichenkette.
+ *
+ * `async`, weil Bildnisse als `data:`-URL geladen und eingebettet werden –
+ * ein Verweis auf den Server würde außerhalb des Almanachs ins Leere zeigen.
+ */
 export async function blattAlsHtml(character) {
   const istDnd = character.system === 'dnd5e';
   const data = istDnd ? withDefaults(character.data) : character.data;
@@ -619,6 +644,13 @@ ${koerper}
 }
 
 /** Datei erzeugen und dem Browser zum Sichern geben. */
+/**
+ * Dasselbe, aber als Download.
+ *
+ * Der Umweg über einen unsichtbaren `<a download>` und eine Blob-URL ist der
+ * übliche Weg, im Browser eine Datei zu erzeugen, die es nie auf einem
+ * Server gab. Das `revokeObjectURL` danach gibt den Speicher wieder frei.
+ */
 export async function ladeBlattHerunter(character) {
   const html = await blattAlsHtml(character);
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
