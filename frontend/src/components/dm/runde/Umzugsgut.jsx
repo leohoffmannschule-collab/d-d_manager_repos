@@ -4,7 +4,7 @@ import { useAuth } from '../../../lib/auth.jsx';
 import { useCampaign } from '../../../lib/campaign.jsx';
 import { Rubric } from '../../ui.jsx';
 import { IconCheck, IconScroll } from '../../icons.jsx';
-import { aufzaehlen, inhalt, menge, satzteil } from './umfangText.js';
+import { aufzaehlen, inhalt, menge, satzteil, stueck } from './umfangText.js';
 
 export default /**
  * Alles in eine andere Kampagne.
