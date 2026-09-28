@@ -142,6 +142,11 @@ schreibst du hier hin. Ausgeteilt wird erst am Abend.
 Hängst du eine Ambiente an eine Karte, legt sie sich mit der Karte auf – die
 Taverne bringt ihre Musik selbst mit.
 
+Am Abend steht unten links die Klangleiste. Klapp sie auf, und du hast den
+Taktstock: **Anhalten**, **Weiter**, **Gleichziehen** – jedes davon gilt für
+alle Fenster zugleich. Sag deiner Runde beim ersten Mal, dass sie einmal auf
+den **Lautsprecher** tippen muss; ungefragt macht kein Browser Ton.
+
 ---
 
 ## 4. Am Abend: den Tisch führen

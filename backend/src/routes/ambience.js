@@ -11,21 +11,32 @@ router.use(requireAuth);
 /**
  * Der Klangteppich.
  *
- * Hier liegen Spotify-Links, sonst nichts. Der Almanach spielt nichts ab und
- * kennt kein Spotify-Konto: Er sammelt, was die Spielleitung vorbereitet hat,
- * und sagt der Runde, was gerade dran ist. Jeder öffnet es in seinem eigenen
- * Spotify.
+ * Hier liegen Spotify-Adressen, sonst nichts – kein Ton geht je durch diesen
+ * Server. Er sammelt, was die Spielleitung vorbereitet hat, sagt der Runde,
+ * was gerade dran ist, und gibt den Takt vor: läuft es gerade, und an welcher
+ * Stelle. Abgespielt wird in den Browsern der Runde, von Spotify selbst.
  *
  * Die Sammlung gehört der ganzen Runde: Dieselbe Tavernenmusik passt in jede
  * Geschichte. Was gerade aufliegt, gilt dagegen nur für die eine Kampagne –
  * sonst wechselte der anderen Runde mitten im Spiel die Musik.
  *
- * Das ist bewusst die kleine Lösung. Die große – im Browser abspielen und über
- * alle Fenster gleichschalten – verlangt von Spotify eine verschlüsselte
- * Adresse unter eigenem Namen, ein Premium-Konto je Zuhörer und eine
- * Freischaltliste. Wer den Almanach ohne eigene Domain betreibt, kann davon
- * nichts erfüllen. Ein hinterlegter Link dagegen funktioniert für jeden,
- * sofort und ohne Anmeldung.
+ * Drei Felder tragen das Gleichschalten, und ihr Zusammenspiel ist der Kern:
+ *
+ *   `spielt`    Soll gerade Musik laufen?
+ *   `position`  An welcher Stelle des Stückes, in Sekunden.
+ *   `stand`     Wann `position` gemessen wurde.
+ *
+ * Aus den letzten beiden rechnet jedes Fenster selbst aus, wo es stehen
+ * müsste: `position + (jetzt − stand)`. Deshalb muss der Server nichts
+ * ticken lassen und nichts nachschicken – ein Fenster, das eine Minute
+ * später dazukommt, findet die Stelle von allein.
+ *
+ * Was der Almanach dabei *nicht* tut: Er verlangt kein Spotify-Konto, keinen
+ * Entwicklerschlüssel und keine Freischaltliste. Das geht, weil die Runde
+ * Spotifys eigenen Einbettungsspieler benutzt (siehe
+ * frontend/src/components/klang/Klangspieler.jsx). Der Preis dafür steht
+ * dort: ohne angemeldetes Premium-Konto im selben Browser gibt es
+ * 30-Sekunden-Ausschnitte statt ganzer Stücke.
  */
 
 const TYPEN = new Set(['playlist', 'album', 'track', 'artist']);
@@ -95,7 +106,22 @@ const holen = (id) => db.prepare('SELECT * FROM ambience WHERE id = ?').get(id);
 
 /* --- Was gerade aufliegt ------------------------------------------------- */
 
-const STILLE = { ambienceId: null, uri: null, webUrl: null, kind: null, name: '', notes: '', seit: null };
+const STILLE = {
+  ambienceId: null,
+  uri: null,
+  webUrl: null,
+  kind: null,
+  name: '',
+  notes: '',
+  seit: null,
+  // Der Takt für alle Fenster – siehe Erklärkopf.
+  spielt: false,
+  position: 0,
+  stand: null,
+};
+
+/** Eine Stelle im Stück, in Sekunden. Vier Stunden sind mehr als genug. */
+const stelle = (wert) => Math.min(4 * 60 * 60, Math.max(0, Number(wert) || 0));
 
 export const aktuellerKlang = (campaignId) => ({ ...STILLE, ...(getState('klang', campaignId) ?? {}) });
 
@@ -127,6 +153,11 @@ export function klangAuflegen(ambienceId, campaignId) {
     name: eintrag.name,
     notes: eintrag.notes,
     seit: new Date().toISOString(),
+    // Aufgelegt heißt aufgelegt: Wer etwas auswählt, will es hören, nicht
+    // danach noch einen zweiten Knopf suchen.
+    spielt: true,
+    position: 0,
+    stand: new Date().toISOString(),
   });
 }
 
@@ -228,6 +259,33 @@ router.post('/:id/auflegen', requireDm, (req, res) => {
   const klang = klangAuflegen(req.params.id, req.campaignId);
   if (!klang) return res.status(404).json({ code: 'klang_nicht_gefunden', error: 'Ambiente nicht gefunden.' });
   res.json(klang);
+});
+
+/**
+ * POST /api/ambience/steuerung  { spielt, position }
+ *
+ * Der Taktstock der Spielleitung: anhalten, weiterlaufen lassen, oder alle
+ * wieder auf dieselbe Stelle ziehen.
+ *
+ * `position` kommt aus dem Fenster der Spielleitung – dort weiß der
+ * Spotify-Spieler, wo er gerade steht. Der Server glaubt es ihr und
+ * vermerkt nur, *wann* sie es gesagt hat; daraus rechnet jedes andere
+ * Fenster seine eigene Stelle aus.
+ *
+ * Liegt nichts auf, gibt es auch nichts zu steuern.
+ */
+router.post('/steuerung', requireDm, (req, res) => {
+  const klang = aktuellerKlang(req.campaignId);
+  if (!klang.uri) return res.status(409).json({ code: 'klang_still', error: 'Es liegt gerade nichts auf.' });
+
+  res.json(
+    setzeKlang(req.campaignId, {
+      ...klang,
+      spielt: req.body?.spielt !== false,
+      position: stelle(req.body?.position),
+      stand: new Date().toISOString(),
+    })
+  );
 });
 
 // POST /api/ambience/stille – nichts liegt mehr auf.

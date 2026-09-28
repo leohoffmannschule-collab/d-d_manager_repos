@@ -649,9 +649,45 @@ try {
     gleich(gehoert.uri, klang.uri, 'Die Runde erfährt, was aufliegt');
     gleich(gehoert.name, 'Schankraum am Abend', 'Mit Namen');
     gleich(gehoert.webUrl, klang.webUrl, 'Und mit dem Verweis zum Öffnen');
+    gleich(gehoert.spielt, true, 'Aufgelegt heißt: es läuft');
+    gleich(gehoert.position, 0, 'Und zwar von vorn');
+    pruefe(typeof gehoert.stand === 'string', 'Mit einem Zeitstempel, an dem die Fenster rechnen können');
+
+    // Der Taktstock: anhalten, weiterlaufen, gleichziehen.
+    gleich(
+      (await spieler.ruf('/ambience/steuerung', { methode: 'POST', koerper: { spielt: false } })).status,
+      403,
+      'Den Takt gibt nur die Spielleitung'
+    );
+
+    const angehalten = (
+      await sl.ruf('/ambience/steuerung', { methode: 'POST', koerper: { spielt: false, position: 42.5 } })
+    ).daten;
+    gleich(angehalten.spielt, false, 'Die Spielleitung hält für alle an');
+    gleich(angehalten.position, 42.5, 'Und sagt dazu, wo sie steht');
+    gleich((await spieler.ruf('/ambience/aktiv')).daten.spielt, false, 'Das Anhalten kommt bei der Runde an');
+    gleich((await spieler.ruf('/ambience/aktiv')).daten.position, 42.5, 'Samt Stelle');
+
+    const weiter = (await sl.ruf('/ambience/steuerung', { methode: 'POST', koerper: { spielt: true, position: 43 } }))
+      .daten;
+    gleich(weiter.spielt, true, 'Und lässt wieder laufen');
+    pruefe(
+      new Date(weiter.stand).getTime() >= new Date(angehalten.stand).getTime(),
+      'Jeder Taktschlag trägt einen neuen Zeitstempel'
+    );
+
+    const unfug = (
+      await sl.ruf('/ambience/steuerung', { methode: 'POST', koerper: { spielt: true, position: -99 } })
+    ).daten;
+    gleich(unfug.position, 0, 'Eine Stelle vor dem Anfang gibt es nicht');
 
     await sl.ruf('/ambience/stille', { methode: 'POST' });
     gleich((await spieler.ruf('/ambience/aktiv')).daten.uri, null, 'Stille kommt bei allen an');
+    gleich(
+      (await sl.ruf('/ambience/steuerung', { methode: 'POST', koerper: { spielt: true } })).status,
+      409,
+      'Was still ist, lässt sich nicht steuern'
+    );
 
     // Eine Karte bringt ihre Ambiente mit auf den Tisch.
     const ort = (

@@ -707,10 +707,15 @@ der freundlichere Weg.
 Freiwillig, aber schnell: Es ist nichts einzurichten. Keine Anwendung bei
 Spotify, keine Kennung, keine Freischaltliste, kein Premium.
 
-**Wie es funktioniert:** Der Almanach spielt keine Musik. Er sammelt
-Spotify-Links, und wenn du einen auflegst, steht bei allen am Tisch, was jetzt
-dran ist – mit einem Knopf, der es in ihrem Spotify öffnet. Jeder hört auf
-seinem eigenen Gerät und dreht so laut auf, wie er mag.
+**Wie es funktioniert:** Du sammelst Spotify-Links. Legst du einen auf, steht
+bei allen am Tisch eine kleine Leiste mit dem Namen – und wer darin auf den
+**Lautsprecher** tippt, hört die Musik direkt im Almanach mit, in Spotifys
+eigenem Spieler. Anhalten, weiterlaufen lassen und „gleichziehen“ gilt dabei
+für die ganze Runde: Du gibst den Takt, alle Fenster folgen.
+
+Wer die Musik lieber in seiner Spotify-App hört, tippt den Lautsprecher nicht
+an und benutzt den Verweis daneben. Beides geht nebeneinander, und niemand
+muss sich erklären.
 
 ### 7.1 Eine Ambiente hinterlegen
 
@@ -730,10 +735,33 @@ hinführen als zu Spotify.
 ### 7.2 Auflegen
 
 **Auflegen** zeigt der ganzen Runde, was jetzt dran ist: unten links erscheint
-eine kleine Leiste mit dem Namen und einem Knopf zum Öffnen. **Stille** nimmt
-sie wieder weg.
+eine kleine Leiste mit dem Namen. **Stille** nimmt sie wieder weg.
 
-Wer nicht mithören will, klickt einfach nicht – niemand merkt es.
+Klappst du die Leiste auf, hast du als Spielleitung drei Knöpfe:
+
+| Knopf | Was er tut |
+| --- | --- |
+| **Anhalten / Weiter** | Hält die Musik in *allen* Fenstern an oder lässt sie weiterlaufen. |
+| **Gleichziehen** | Zieht alle auf die Stelle, an der du gerade stehst – falls jemand auseinandergelaufen ist. |
+| **Stille** | Nimmt die Ambiente ganz vom Tisch. |
+
+**Drei Dinge, die am ersten Abend auffallen – und alle drei sind so gemeint:**
+
+1. **Jede und jeder muss einmal auf den Lautsprecher tippen.** Kein Browser lässt eine
+   Seite ungefragt Ton machen. Das ist keine Lücke im Almanach, sondern eine
+   Regel des Browsers, und eine gute. Danach folgt das Fenster von allein, den
+   ganzen Abend. Der Browser merkt sich die Wahl bis zum nächsten Mal.
+2. **Ohne angemeldetes Spotify-Premium im selben Browser gibt es
+   30-Sekunden-Ausschnitte.** Das ist Spotifys Regel für eingebettete Spieler,
+   nicht unsere. Für Tavernengemurmel reicht das nicht – dafür nimmt man den
+   Verweis daneben und hört in der Spotify-App. Für „und jetzt kommt der
+   Drache“ reicht es gut.
+3. **Bei einer Wiedergabeliste beginnt jeder beim ersten Stück.** Von außen
+   lässt sich nur die Stelle *im laufenden Stück* setzen, nicht das wievielte.
+   Wer eine halbe Stunde später dazukommt, fängt also vorn an. Bei einem
+   einzelnen Titel oder einem Album stimmt die Stelle dagegen auf die Sekunde.
+
+Wer gar nicht mithören will, tippt den Lautsprecher nicht an – niemand merkt es.
 
 ### 7.3 An eine Karte hängen
 
@@ -741,12 +769,17 @@ Der schöne Teil: Unter *Spielleitung → Karten* kannst du einer Karte eine
 Ambiente zuweisen. Wer die Karte auflegt, legt die Musik mit auf. Der
 Schankraum bringt seine Schankraum-Musik selbst mit.
 
-> **Warum nicht mehr?** Spotify kann Musik auch direkt im Browser abspielen
-> und über alle Fenster gleichschalten – das verlangt aber eine verschlüsselte
-> Adresse unter *eigenem* Namen, ein Premium-Konto für jeden Zuhörer und eine
-> Freischaltliste im Entwickler-Dashboard. Ohne eigene Domain ist davon nichts
-> zu erfüllen. Ein hinterlegter Link funktioniert dagegen für jeden, sofort
-> und mit jedem Konto.
+> **Warum nicht mehr?** Es gibt bei Spotify noch einen zweiten, größeren Weg
+> („Web Playback SDK“). Der spielt ganze Stücke statt Ausschnitte und könnte
+> eine Wiedergabeliste auch mitten im dritten Titel gleichschalten – verlangt
+> dafür aber eine Anwendung im Entwickler-Dashboard, eine Freischaltliste mit
+> jedem einzelnen Zuhörer darin und ein **Premium-Konto für jeden**, ohne
+> Ausnahme. Wer keins hat, hört dann gar nichts mehr, nicht einmal Ausschnitte.
+>
+> Der eingebettete Spieler verlangt von dir nichts: kein Konto, keinen
+> Schlüssel, keine Liste, kein Geld. Deshalb steht er hier. Wenn du und deine
+> Runde irgendwann alle Premium habt, ist der andere Weg der bessere – dann
+> sag Bescheid.
 
 ## 8. Sicherung einrichten
 

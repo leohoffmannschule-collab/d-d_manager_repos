@@ -23,6 +23,7 @@
     "drucksatz": "node scripts/drucksatz.mjs",
     "vertrag": "node scripts/vertrag.mjs",
     "blattprobe": "node scripts/blattprobe.mjs",
+    "klangprobe": "node scripts/klangprobe.mjs",
     "einfuhrprobe": "node scripts/einfuhrprobe.mjs"
   },
   "devDependencies": {

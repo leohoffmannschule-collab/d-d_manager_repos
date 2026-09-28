@@ -470,13 +470,26 @@ hinterlegt: Link einfügen, benennen, verschlagworten. **Auflegen** zeigt der
 ganzen Runde, was jetzt dran ist. Hängt eine Ambiente an einer Karte, legt
 sie sich mit der Karte auf.
 
-Am Tisch erscheint unten die **Klangleiste** mit dem Namen und einem Knopf
-*In Spotify öffnen*.
+Am Tisch erscheint unten links die **Klangleiste** mit dem Namen. Darin
+stehen zwei Wege, und beide gehen nebeneinander:
 
-**Der Almanach spielt nichts ab** – er sagt nur, was dran ist. Jeder hört es
-in seinem eigenen Spotify, auf seinem eigenen Gerät, so laut er mag. Das geht
-mit jedem Spotify-Konto, auch ohne Premium, und wer nicht mithören will,
-klickt einfach nicht.
+- **Der Lautsprecher** – mithören, direkt im Almanach. Spotifys eigener Spieler klappt
+  auf, und die Spielleitung gibt den Takt: *Anhalten*, *Weiter* und
+  *Gleichziehen* gelten für alle Fenster zugleich.
+- **Der Verweis** – in Spotify öffnen und dort hören, auf dem eigenen Gerät,
+  so laut man mag.
+
+Drei Dinge dazu, die am ersten Abend auffallen:
+
+- **Einmal tippen muss sein.** Kein Browser lässt eine Seite ungefragt Ton
+  machen. Nach dem ersten Tippen folgt das Fenster von allein.
+- **Ohne angemeldetes Spotify-Premium im selben Browser** gibt es
+  30-Sekunden-Ausschnitte. Das ist Spotifys Regel für eingebettete Spieler.
+  Wer die Stücke ganz hören will, nimmt den Verweis.
+- **Bei einer Wiedergabeliste beginnt jeder beim ersten Stück.** Von außen
+  lässt sich nur die Stelle im laufenden Stück setzen, nicht das wievielte.
+
+Wer gar nicht mithören will, tippt den Lautsprecher nicht an – niemand merkt es.
 
 ---
 

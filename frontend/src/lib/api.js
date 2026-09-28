@@ -266,5 +266,6 @@ export const ambienceApi = {
   update: (id, payload) => put(`/ambience/${id}`, payload),
   remove: (id) => del(`/ambience/${id}`),
   auflegen: (id) => post(`/ambience/${id}/auflegen`),
+  steuerung: (payload) => post('/ambience/steuerung', payload),
   stille: () => post('/ambience/stille'),
 };

@@ -23,7 +23,7 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import Chat from './Chat.jsx';
 import DiceRoller from './DiceRoller.jsx';
-import Klangleiste from './Klangleiste.jsx';
+import Klangleiste from './klang/Klangleiste.jsx';
 import Wurfmeldung from './Wurfmeldung.jsx';
 import { useTheme } from '../lib/useTheme.js';
 import { useAuth } from '../lib/auth.jsx';

@@ -450,17 +450,34 @@ das Protokoll soll nach dem Abend lesbar bleiben.
     PUT    /api/ambience/:id           [SL]
     DELETE /api/ambience/:id           [SL]
     POST   /api/ambience/:id/auflegen  [SL]
+    POST   /api/ambience/steuerung     [SL]
     POST   /api/ambience/stille        [SL]
 
-Hier liegen Spotify-Links, sonst nichts. Der Server spielt nichts ab und kennt
-kein Spotify-Konto; er sagt der Runde nur, was gerade dran ist:
+Hier liegen Spotify-Adressen, sonst nichts – kein Ton geht je durch diesen
+Server. Er sagt der Runde, was dran ist, und gibt den Takt dazu:
 
 ```json
 { "ambienceId": "…", "uri": "spotify:playlist:…",
   "webUrl": "https://open.spotify.com/playlist/…", "kind": "playlist",
   "name": "Schankraum am Abend", "notes": "…",
-  "seit": "2026-09-04T19:12:00.000Z" }
+  "seit": "2026-09-04T19:12:00.000Z",
+  "spielt": true, "position": 42.5, "stand": "2026-09-04T19:13:20.000Z" }
 ```
+
+Die letzten drei Felder tragen das Gleichschalten, und ihr Zusammenspiel ist
+der Kern: `spielt` sagt, ob gerade Musik laufen soll, `position` an welcher
+Stelle des Stückes (in Sekunden), und `stand`, wann das gemessen wurde. Jedes
+Fenster rechnet daraus selbst aus, wo es stehen müsste:
+
+    ziel = spielt ? position + (jetzt − stand) : position
+
+Deshalb muss der Server nichts ticken lassen und nichts nachschicken. Ein
+Fenster, das eine Minute später dazukommt, findet die Stelle von allein.
+
+`POST /steuerung` nimmt `{ spielt, position }` und setzt `stand` auf jetzt.
+Die Stelle kommt aus dem Fenster der Spielleitung – dort weiß der Spieler, wo
+er steht –, wird auf 0 bis 4 Stunden beschnitten, und liegt gar nichts auf,
+antwortet der Zweig mit `klang_still` (409).
 
 `uri` wird beim Anlegen aus dem Teilen-Link normalisiert (Sprachkürzel und
 `?si=…` fallen weg) und auf `playlist`, `album`, `track` oder `artist` mit
@@ -469,8 +486,13 @@ abgewiesen. Das ist keine Kosmetik: `webUrl` wird der Runde als Verweis
 vorgelegt, und der soll nirgendwo anders hinführen als zu Spotify.
 
 Jede Änderung geht als `klang` über den Live-Kanal an alle Fenster. Abgespielt
-wird in Spotify selbst, auf dem Gerät des jeweiligen Zuhörers – das braucht
-weder Premium noch eine verschlüsselte Adresse unter eigenem Namen.
+wird von Spotify selbst, in Spotifys eingebettetem Spieler im Browser des
+jeweiligen Zuhörers. Das braucht vom Almanach keinen Entwicklerschlüssel und
+keine Freischaltliste; es kostet dafür, dass ohne angemeldetes Premium im
+selben Browser nur 30-Sekunden-Ausschnitte laufen und dass sich bei einer
+Wiedergabeliste nur die Stelle im laufenden Stück setzen lässt, nicht das
+wievielte. Beides steht ausführlich in
+`frontend/src/components/klang/Klangspieler.jsx`.
 
 ### Weitere Zweige
 

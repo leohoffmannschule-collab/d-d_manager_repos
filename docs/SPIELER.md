@@ -253,13 +253,25 @@ Beutel schreiben lassen.
 
 ## 10. Musik
 
-Legt die Spielleitung eine Ambiente auf, erscheint unten die **Klangleiste**
-mit dem Namen und einem Knopf *In Spotify öffnen*.
+Legt die Spielleitung eine Ambiente auf, erscheint unten links die
+**Klangleiste** mit dem Namen. Du hast zwei Wege, und beide sind in Ordnung:
 
-Der Almanach spielt nichts ab – er sagt nur, was dran ist. Du hörst es in
-deinem eigenen Spotify, auf deinem eigenen Gerät, so laut du magst. Das geht
-mit jedem Spotify-Konto, auch ohne Premium. Wer nicht mithören will, klickt
-einfach nicht.
+**Der Lautsprecher** – mithören, direkt hier. Tipp einmal darauf, und Spotifys Spieler
+klappt auf. Danach folgt dein Fenster von allein: Hält die Spielleitung an,
+hältst du an; lässt sie weiterlaufen, läufst du weiter.
+
+**Der Verweis daneben** – öffnet das Stück in deinem eigenen Spotify. Dort
+hörst du es ganz und so laut du magst.
+
+Warum einmal tippen? Kein Browser lässt eine Seite ungefragt Ton machen. Das
+ist eine Regel des Browsers, keine Schikane des Almanachs – und sie ist gut so.
+
+Warum hörst du vielleicht nur 30 Sekunden je Stück? Weil der eingebettete
+Spieler nur dann ganze Stücke spielt, wenn du im selben Browser bei Spotify
+angemeldet bist und **Premium** hast. Sonst gibt es Ausschnitte. Willst du das
+Stück ganz hören, nimm den Verweis.
+
+Und wer gar nicht mithören will, tippt den Lautsprecher nicht an. Niemand merkt es.
 
 ---
 

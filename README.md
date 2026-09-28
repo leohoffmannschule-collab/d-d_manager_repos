@@ -130,10 +130,14 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
 - **Notizen** mit Schlagworten – geheim oder als **Handzettel** an die Runde ausgeteilt.
 - **Begegnungen**: Gruppen einmal zusammenstellen und an jedem Abend mit einem Klick stellen – samt gewürfelter
   Initiative und wahlweise verborgen. Ein improvisierter Kampf lässt sich für das nächste Mal sichern.
-- **Klangteppich**: hinterlegte Spotify-Links als Ambiente. Die Spielleitung sammelt Wiedergabelisten
+- **Klangteppich**: Spotify-Ambiente für die ganze Runde. Die Spielleitung sammelt Wiedergabelisten
   („Schankraum“, „Hinterhalt“, „Verlies“), verschlagwortet sie und legt eine mit einem Klick auf – dann
-  steht bei allen am Tisch, was jetzt dran ist, samt Knopf zum Öffnen in Spotify. Jeder hört auf seinem
-  eigenen Gerät und dreht so laut auf, wie er mag; das geht mit jedem Spotify-Konto, auch ohne Premium.
+  steht bei allen am Tisch eine Leiste mit dem Namen. Wer darauf den **Lautsprecher** antippt, hört
+  **direkt im Almanach** mit, in Spotifys eingebettetem Spieler; *Anhalten*, *Weiter* und *Gleichziehen*
+  der Spielleitung gelten für alle Fenster zugleich. Wer die Musik lieber in seiner Spotify-App hört,
+  nimmt den Verweis daneben. Der Almanach braucht dafür weder
+  Entwicklerschlüssel noch Freischaltliste noch Geld – ohne angemeldetes Premium im selben Browser
+  gibt es dafür 30-Sekunden-Ausschnitte statt ganzer Stücke.
   Eine Karte darf ihre Ambiente mitbringen: Wer sie auflegt, legt die Musik mit auf.
 - **Verdeckt würfeln** – der Wurf erscheint nur im eigenen Würfelbeutel.
 - **Konten und Einladungen**: Codes erzeugen, Rollen vergeben, vergessene Passwörter neu setzen,
@@ -351,8 +355,9 @@ Gelesen wird das aus der Umgebung und aus einer `.env` im Projektstamm – `dock
 daraus, und `npm start` liest sie beim Start selbst ein (Node 20.12 oder neuer). Was schon in der
 Umgebung steht, schlägt die Datei. Eine Vorlage liegt als `.env.example` daneben.
 
-Für den Klangteppich ist nichts einzustellen: Die Spielleitung hinterlegt Spotify-Links, und der
-Almanach zeigt der Runde, welcher gerade dran ist. Abgespielt wird in Spotify selbst.
+Für den Klangteppich ist nichts einzustellen – kein Schlüssel, kein Konto, keine Freischaltliste.
+Die Spielleitung hinterlegt Spotify-Links, der Almanach sagt der Runde, welcher gerade dran ist,
+und abgespielt wird von Spotifys eingebettetem Spieler in den Browsern der Runde.
 
 Freiwillig, nur für den erzählenden Rückblick in der Chronik:
 
