@@ -1,11 +1,21 @@
 /**
- * Reiter 2: alles, was im Kampf gebraucht wird – Trefferpunkte,
- * Rüstungsklasse, Angriffe, Zustände, Erschöpfung, Rasten.
+ * Reiter 2 des Charakterblattes: alles, was im Kampf gebraucht wird.
  *
- * Der am meisten benutzte Reiter des Almanachs, und der einzige, der auch
+ * Der am meisten benutzte Reiter des Almanachs – und der einzige, der auch
  * *schreibend* mit dem Rest des Tisches zu tun hat: Trefferpunkte, die hier
  * fallen, stehen sofort in der Kampfliste der Spielleitung, und Schaden von
  * dort steht sofort hier (siehe pages/CharacterSheet.jsx, useLive).
+ *
+ * Diese Datei setzt die Karten zusammen und hält die beiden Rechnungen, die
+ * nirgends sonst hingehören: den Rettungswurf gegen den Tod und die
+ * Konzentrationsprobe. Alles Übrige liegt in `kampf/`:
+ *
+ *   kampf/felder.js             die Spalten der wiederkehrenden Zeilen
+ *   kampf/Todeszeichen.jsx      die drei Kreise für Erfolg und Fehlschlag
+ *   kampf/Wurfknopf.jsx         ein Wert, der sich würfeln lässt
+ *   kampf/Trefferwuerfel.jsx    der Vorrat für die kurze Rast
+ *   kampf/Standardaktionen.jsx  was jede Figur ohne Eintrag kann
+ *   kampf/Ressourcen.jsx        selbstverwaltete Zähler
  *
  * Die Rettungswürfe gegen den Tod sind bewusst dicke Knöpfe: Wer bei 0
  * Trefferpunkten liegt, soll sie im Halbdunkel treffen.
@@ -16,10 +26,8 @@
  */
 import { useState } from 'react';
 import {
-  AKTION_ARTEN,
   CONDITIONS,
   EXHAUSTION_STEPS,
-  STANDARD_AKTIONEN,
   abilityModifier,
   aktionArtLabel,
   formatModifier,
@@ -27,234 +35,15 @@ import {
 } from '../../lib/dnd5e.js';
 import { kurzeRast, langeRast } from '../../lib/rasten.js';
 import { ausdruckWurf, blattWurf } from '../../lib/wuerfeln.js';
-import { newId } from '../../lib/id.js';
 import { Card, NumberField, Stepper, TextField, TextAreaField, Toggle, WeiteField } from '../ui.jsx';
 import RepeatingRows from '../RepeatingRows.jsx';
-import { IconBook, IconCandle, IconD20, IconHeart, IconPlus, IconSun, IconTrash } from '../icons.jsx';
-
-const ATTACK_FIELDS = [
-  { key: 'name', label: 'Angriff / Zauber', wide: true },
-  { key: 'bonus', label: 'Bonus' },
-  { key: 'damage', label: 'Schaden / Art' },
-  { key: 'notes', label: 'Anmerkungen', wide: true },
-];
-
-const AKTION_FIELDS = [
-  { key: 'name', label: 'Was', wide: true },
-  { key: 'art', label: 'Kostet', type: 'select', options: AKTION_ARTEN },
-  { key: 'description', label: 'Wirkung', type: 'textarea', wide: true },
-];
-
-const AUFFRISCHUNG = [
-  ['kurz', 'kurze Rast'],
-  ['lang', 'lange Rast'],
-  ['keine', 'von Hand'],
-];
-
-/**
- * Die drei Kreise für Erfolge bzw. Fehlschläge beim Rettungswurf gegen den
- * Tod. Ein Klick auf den bereits gefüllten Kreis nimmt ihn wieder zurück –
- * verklickt hat man sich hier schneller als irgendwo sonst.
- */
-function DeathSaveRow({ label, count, onChange, filledClass }) {
-  return (
-    <div>
-      <p className="mb-1.5 font-display text-[10px] tracking-[0.16em] text-faint uppercase">{label}</p>
-      <div className="flex gap-2">
-        {[1, 2, 3].map((n) => (
-          <button
-            key={n}
-            type="button"
-            onClick={() => onChange(count === n ? n - 1 : n)}
-            className={`h-7 w-7 rounded-full border-2 ${n <= count ? filledClass : 'border-rule-strong'}`}
-            aria-label={`${label} ${n}`}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/** Ein Knopf, der einen Wurf für alle sichtbar auf den Tisch legt. */
-function Wurfknopf({ label, modifier, name }) {
-  return (
-    <button
-      type="button"
-      onClick={() => blattWurf(name, modifier)}
-      title={`${name} würfeln`}
-      className="flex min-h-9 items-center gap-1 border border-transparent px-1.5 font-display font-semibold text-rubric hover:border-gold"
-    >
-      <IconD20 size={13} className="text-faint" />
-      {label}
-    </button>
-  );
-}
-
-/**
- * Der Vorrat an Trefferwürfeln: die Währung der kurzen Rast. Gezählt wird
- * `used` gegen `total`; eine lange Rast gibt die Hälfte zurück.
- */
-function Trefferwuerfel({ data, update }) {
-  const pool = data.combat.hitDicePool;
-  const uebrig = Math.max(0, (pool.total || 0) - (pool.used || 0));
-  const konMod = abilityModifier(data.abilities.con);
-
-  async function ausgeben() {
-    if (uebrig <= 0) return;
-    const wurf = await ausdruckWurf('Trefferwürfel', `1W${pool.size}${konMod ? formatModifier(konMod) : ''}`);
-    const geheilt = Math.max(0, wurf.total);
-    update('combat.hitDicePool.used', (pool.used || 0) + 1);
-    update('combat.hp.current', Math.min(data.combat.hp.max, (data.combat.hp.current ?? 0) + geheilt));
-  }
-
-  return (
-    <div className="flex flex-wrap items-end gap-3">
-      <NumberField
-        label="Würfelart (W)"
-        value={pool.size}
-        min={4}
-        onChange={(v) => update('combat.hitDicePool.size', v)}
-        className="w-24"
-      />
-      <NumberField
-        label="Vorrat"
-        value={pool.total}
-        min={0}
-        onChange={(v) => update('combat.hitDicePool.total', v)}
-        className="w-24"
-      />
-      <NumberField
-        label="Verbraucht"
-        value={pool.used}
-        min={0}
-        onChange={(v) => update('combat.hitDicePool.used', v)}
-        className="w-24"
-      />
-      <button
-        type="button"
-        onClick={ausgeben}
-        disabled={uebrig <= 0}
-        className="btn btn-plate disabled:opacity-40"
-        title={`1W${pool.size} ${formatModifier(konMod)} würfeln und gutschreiben`}
-      >
-        <IconHeart size={16} />
-        Würfel ausgeben ({uebrig})
-      </button>
-    </div>
-  );
-}
-
-/**
- * Die Handlungen aus dem Grundregelwerk – zum Nachschlagen, nicht zum
- * Ausfüllen. Zugeklappt, weil sie sich nie ändern; wer sie einmal kennt,
- * braucht sie nicht jeden Abend vor Augen.
- */
-function Standardaktionen() {
-  const [offen, setOffen] = useState(false);
-
-  return (
-    <div>
-      <button
-        type="button"
-        onClick={() => setOffen(!offen)}
-        className="btn btn-plate"
-        aria-expanded={offen}
-      >
-        <IconBook size={16} />
-        {offen ? 'Standardhandlungen zuklappen' : 'Was am Tisch immer geht'}
-      </button>
-
-      {offen && (
-        <ul className="mt-3 divide-y divide-dotted divide-rule border border-rule bg-panel-soft/60">
-          {STANDARD_AKTIONEN.map((a) => (
-            <li key={a.name} className="px-3.5 py-2">
-              <div className="flex flex-wrap items-baseline gap-x-2">
-                <b className="font-display text-ink">{a.name}</b>
-                <span className="border border-rule px-1.5 font-display text-[10px] tracking-[0.12em] text-faint uppercase">
-                  {aktionArtLabel(a.art)}
-                </span>
-              </div>
-              <p className="text-[15px] text-sepia">{a.text}</p>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
-
-/**
- * Selbstverwaltete Zähler: Handauflegen, Kampfrausch, Inspiration des
- * Barden. `recharge` sagt, wann sie sich füllen – bei kurzer oder langer
- * Rast; das wendet lib/rasten.js an.
- */
-function Ressourcen({ data, update }) {
-  const liste = data.resources ?? [];
-
-  const setzen = (id, feld, wert) =>
-    update(
-      'resources',
-      liste.map((r) => (r.id === id ? { ...r, [feld]: wert } : r))
-    );
-
-  return (
-    <div className="space-y-2">
-      {liste.length === 0 && (
-        <p className="text-sepia italic">
-          Hier hinein kommt, was gezählt werden muss: Wutanfälle, Ki-Punkte, bardische Inspiration,
-          Handauflegen, Zauberkraft.
-        </p>
-      )}
-
-      {liste.map((r) => (
-        <div key={r.id} className="flex flex-wrap items-end gap-2.5 border border-rule bg-panel-soft p-2.5">
-          <TextField
-            label="Name"
-            value={r.name}
-            onChange={(v) => setzen(r.id, 'name', v)}
-            className="min-w-[9rem] flex-1"
-          />
-          <Stepper label="Übrig" value={r.current} onChange={(v) => setzen(r.id, 'current', v)} max={r.max || 99} />
-          <NumberField label="Höchstens" value={r.max} min={0} onChange={(v) => setzen(r.id, 'max', v)} className="w-24" />
-          <label className="block">
-            <span className="mb-1 block font-display text-[10px] tracking-[0.16em] text-faint uppercase">
-              Erneuert sich
-            </span>
-            <select
-              value={r.recharge}
-              onChange={(e) => setzen(r.id, 'recharge', e.target.value)}
-              className="field-box w-32"
-            >
-              {AUFFRISCHUNG.map(([wert, text]) => (
-                <option key={wert} value={wert}>
-                  {text}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button
-            type="button"
-            onClick={() => update('resources', liste.filter((x) => x.id !== r.id))}
-            className="flex h-11 w-11 items-center justify-center border border-rule text-sepia hover:border-rubric hover:text-rubric"
-            aria-label="Entfernen"
-          >
-            <IconTrash size={16} />
-          </button>
-        </div>
-      ))}
-
-      <button
-        type="button"
-        onClick={() =>
-          update('resources', [...liste, { id: newId(), name: '', current: 0, max: 0, recharge: 'lang' }])
-        }
-        className="btn btn-plate"
-      >
-        <IconPlus size={16} /> Ressource anlegen
-      </button>
-    </div>
-  );
-}
+import { IconCandle, IconD20, IconHeart, IconSun } from '../icons.jsx';
+import { AKTION_FIELDS, ATTACK_FIELDS } from './kampf/felder.js';
+import Todeszeichen from './kampf/Todeszeichen.jsx';
+import Wurfknopf from './kampf/Wurfknopf.jsx';
+import Trefferwuerfel from './kampf/Trefferwuerfel.jsx';
+import Standardaktionen from './kampf/Standardaktionen.jsx';
+import Ressourcen from './kampf/Ressourcen.jsx';
 
 export default function CombatTab({ data, update, replace }) {
   const [rastOffen, setRastOffen] = useState(false);
@@ -376,13 +165,13 @@ export default function CombatTab({ data, update, replace }) {
             Rettungswürfe gegen den Tod
           </p>
           <div className="flex flex-wrap items-end gap-8">
-            <DeathSaveRow
+            <Todeszeichen
               label="Erfolge"
               count={deathSaves.successes}
               onChange={(v) => update('combat.deathSaves.successes', v)}
               filledClass="border-gold bg-gold"
             />
-            <DeathSaveRow
+            <Todeszeichen
               label="Fehlschläge"
               count={deathSaves.failures}
               onChange={(v) => update('combat.deathSaves.failures', v)}

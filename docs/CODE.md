@@ -169,11 +169,20 @@ nicht wie Code.
 ## 7. Bevor du etwas abgibst
 
 ```
-npm run build      # die Oberfläche neu bauen – sonst ändert sich nichts
-npm run vertrag    # der Prüfdurchgang: startet einen eigenen Almanach
-                   # auf einem freien Port mit leerer Datenbank und spielt
-                   # eine ganze Runde durch (über 240 Prüfungen)
+npm run build        # die Oberfläche neu bauen – sonst ändert sich nichts
+npm run vertrag      # der Prüfdurchgang: startet einen eigenen Almanach
+                     # auf einem freien Port mit leerer Datenbank und spielt
+                     # eine ganze Runde durch (über 240 Prüfungen)
+npm run blattprobe   # die Rechnungen des Charakterblattes (340 Prüfungen)
+npm run einfuhrprobe # benutzt jemand etwas, das er nicht eingeführt hat?
 ```
+
+Die **Einfuhrprobe** ist schnell (eine Sekunde) und deckt genau eine Lücke
+ab, die sonst keiner sieht: Beim Zerlegen einer Datei wandert eine Funktion
+in eine neue Datei – und die `import`-Zeile bleibt zurück. Der Bau merkt
+davon **nichts**, weil ein unbekannter Name für ihn eine globale Variable
+ist, die es zur Laufzeit schon geben wird. Auffallen würde es erst, wenn
+jemand die Seite öffnet und ein weißes Fenster bekommt.
 
 `npm run vertrag` ist das Sicherheitsnetz dieses Projekts. Er prüft nicht
 einzelne Funktionen, sondern den **Vertrag zwischen Server und Oberfläche**:

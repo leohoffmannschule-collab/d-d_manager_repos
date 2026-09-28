@@ -22,7 +22,8 @@
     "vorlagen": "node backend/scripts/vorlagen.mjs",
     "drucksatz": "node scripts/drucksatz.mjs",
     "vertrag": "node scripts/vertrag.mjs",
-    "blattprobe": "node scripts/blattprobe.mjs"
+    "blattprobe": "node scripts/blattprobe.mjs",
+    "einfuhrprobe": "node scripts/einfuhrprobe.mjs"
   },
   "devDependencies": {
     "concurrently": "^10.0.5"
