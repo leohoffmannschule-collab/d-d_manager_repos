@@ -35,6 +35,7 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
 | [Betriebsanleitung Spielleitung](docs/SPIELLEITUNG.md) | den Abend führen: vorbereiten, Vorhang, Kampf, Licht, Chronik |
 | [Betriebsanleitung Runde](docs/SPIELER.md) | mitspielen: beitreten, Blatt, Spieltisch, Würfeln, Beute |
 | [API.md](docs/API.md) | wer die Oberfläche umbaut oder austauscht |
+| [Der Almanach von innen](docs/CODE.md) | wer am Code arbeitet: Landkarte, Vokabeln, Lesereihenfolge |
 
 ## Funktionen
 
