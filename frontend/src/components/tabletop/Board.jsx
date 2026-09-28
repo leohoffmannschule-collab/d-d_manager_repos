@@ -153,8 +153,8 @@ function Figur({ token, scene, hp, aktiv, beweglich, ziehend }) {
           style={{ width: groesse * 0.86 }}
         >
           <span
-            className="h-full"
-            style={{ width: `${anteil * 100}%`, backgroundColor: anteil > 0.5 ? '#2f6b4f' : '#9a2b22' }}
+            className={`figur-balken ${anteil > 0.5 ? 'figur-balken-gut' : 'figur-balken-schlecht'}`}
+            style={{ '--anteil': `${anteil * 100}%` }}
           />
         </span>
       )}
@@ -499,8 +499,7 @@ export default function Board({
       onPointerLeave={() => setZeigerFeld(null)}
       className={`relative h-full w-full overflow-hidden bg-[#14100a] ${
         mode === 'bewegen' ? 'cursor-grab' : mode === 'zeigen' ? 'cursor-pointer' : 'cursor-crosshair'
-      }`}
-      style={{ touchAction: 'none' }}
+      } tisch-flaeche`}
     >
       <div
         className="absolute origin-top-left"
@@ -523,12 +522,13 @@ export default function Board({
 
         {scene.gridVisible && g * ansicht.scale >= RASTER_AB && (
           <div
-            className="pointer-events-none absolute inset-0"
+            className="tisch-raster pointer-events-none absolute inset-0"
+            // Wie das Netz gezeichnet wird, steht in stile/spieltisch.css.
+            // Hier steht nur, wie groß seine Felder sind und wo sie anfangen.
             style={{
-              backgroundImage:
-                'linear-gradient(to right, rgba(0,0,0,0.28) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.28) 1px, transparent 1px)',
-              backgroundSize: `${g}px ${g}px`,
-              backgroundPosition: `${scene.gridOffsetX}px ${scene.gridOffsetY}px`,
+              '--feld': `${g}px`,
+              '--versatz-x': `${scene.gridOffsetX}px`,
+              '--versatz-y': `${scene.gridOffsetY}px`,
             }}
           />
         )}
@@ -557,29 +557,22 @@ export default function Board({
 
         {vorschau && (
           <div
-            className="pointer-events-none absolute border-dashed"
+            className={`tisch-vorschau ${mode === 'nebel-auf' ? 'tisch-vorschau-auf' : 'tisch-vorschau-zu'}`}
+            // Die Farben stehen in stile/spieltisch.css. Hier steht, wo das
+            // Rechteck liegt – und wie dick sein Rand sein muss, damit er
+            // bei jedem Zoom gleich dick *aussieht*.
             style={{
               left: scene.gridOffsetX + vorschau.x1 * g,
               top: scene.gridOffsetY + vorschau.y1 * g,
               width: (vorschau.x2 - vorschau.x1 + 1) * g,
               height: (vorschau.y2 - vorschau.y1 + 1) * g,
-              // Gold deckt auf, Rot verhüllt – dieselbe Sprache wie in der
-              // Werkzeugleiste.
-              borderColor: mode === 'nebel-auf' ? '#d9b451' : '#9a2b22',
-              backgroundColor: mode === 'nebel-auf' ? 'rgba(217,180,81,0.16)' : 'rgba(154,43,34,0.20)',
-              borderWidth: Math.max(1, 2 / ansicht.scale),
-              zIndex: 6,
+              '--strichstaerke': `${Math.max(1, 2 / ansicht.scale)}px`,
             }}
           >
             {ziehen?.art === 'nebel-rechteck' && (
               <span
-                className="absolute bottom-full left-0 mb-1 whitespace-nowrap font-display"
-                style={{
-                  fontSize: Math.max(11, 14 / ansicht.scale),
-                  color: '#e8cf8d',
-                  paintOrder: 'stroke',
-                  textShadow: '0 1px 3px #14100a, 0 0 2px #14100a',
-                }}
+                className="tisch-marke absolute bottom-full left-0 mb-1 whitespace-nowrap font-display"
+                style={{ fontSize: Math.max(11, 14 / ansicht.scale) }}
               >
                 {vorschau.x2 - vorschau.x1 + 1} × {vorschau.y2 - vorschau.y1 + 1} Felder
               </span>

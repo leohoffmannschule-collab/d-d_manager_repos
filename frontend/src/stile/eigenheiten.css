@@ -1,0 +1,30 @@
+/**
+ * Was der Browser von sich aus tut und hier abgestellt wird.
+ *
+ * Die Pfeilchen an Zahlenfeldern treffen auf dem iPad ohnehin nur
+ * Ungeübte, und die Bildlaufleiste in Grau passt nicht auf ein Pergament.
+ */
+/* Zahlenfelder ohne Spinner – auf dem iPad stören die Pfeilchen nur */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  appearance: textfield;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-rule);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}

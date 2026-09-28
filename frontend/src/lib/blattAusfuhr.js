@@ -22,6 +22,16 @@ import {
   weiteMitEinheit,
   withDefaults,
 } from './dnd5e.js';
+// Das Stilblatt liegt als echte .css-Datei daneben und wird beim Bauen als
+// Text hereingeholt (`?raw` ist Vites Weg dafür). So hat es im Editor alles,
+// was CSS haben soll – Hervorhebung, Prüfung, Formatierung –, landet aber
+// trotzdem eingebettet in der fertigen Datei, die ja ohne Netz und ohne
+// Almanach funktionieren muss.
+import ROHSTIL from './blattAusfuhr.css?raw';
+
+// Der Erklärkopf des Stilblattes richtet sich an Mitarbeitende am Code und
+// hat im Blatt der Spielerin nichts verloren – also weg damit.
+const STIL = ROHSTIL.replace(/^\s*\/\*\*[\s\S]*?\*\/\s*/, '');
 
 /**
  * Das Blatt zum Mitnehmen.
@@ -514,82 +524,6 @@ function freiKoerper(character, data, bilder) {
       .join('')}
   `;
 }
-
-// Das Aussehen der ausgefuhrenen Datei. Alles muss hier hinein: Die Datei
-// soll ohne Netz auskommen, kann also kein Stylesheet nachladen. Die
-// `@media print`-Regeln am Ende machen daraus einen sauberen Ausdruck.
-const STIL = `
-  :root{--grund:#e6d7b0;--tafel:#f4ead2;--sanft:#f8f0dc;--tinte:#2b2114;--sepia:#6d5c45;--blass:#a3927a;
-    --linie:#c2a878;--stark:#a3865c;--rubrik:#9a2b22;--gold:#b8912f;
-    --schrift:"EB Garamond",Georgia,"Times New Roman",serif;--kapital:Cinzel,Georgia,serif;}
-  *{box-sizing:border-box}
-  body{margin:0;padding:24px 16px 60px;background:var(--grund);color:var(--tinte);font-family:var(--schrift);font-size:17px;line-height:1.5}
-  .blatt{max-width:960px;margin:0 auto}
-  h1{margin:0;font-family:var(--kapital);font-size:31px;font-weight:600;letter-spacing:.04em}
-  h2{margin:0 0 10px;font-family:var(--kapital);font-size:14px;font-weight:600;letter-spacing:.14em;
-    text-transform:uppercase;color:var(--rubrik);border-bottom:1px solid var(--linie);padding-bottom:5px}
-  .kopf{display:flex;align-items:center;gap:18px;flex-wrap:wrap;background:var(--tafel);border:1px solid var(--linie);
-    padding:18px;margin-bottom:16px}
-  .kopf>div:first-of-type,.kopf>div:nth-of-type(1){flex:1 1 240px}
-  .bildnis{width:88px;height:88px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);background:var(--sanft)}
-  .unterzeile{margin:4px 0 0;color:var(--sepia);font-style:italic}
-  .unterzeile.klein{font-size:15px}
-  .kopfwerte{display:flex;gap:14px;flex-wrap:wrap}
-  .tafel{background:var(--tafel);border:1px solid var(--linie);padding:16px;margin-bottom:14px;break-inside:avoid}
-  .label{display:block;font-family:var(--kapital);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--blass)}
-  .wert{display:block;font-family:var(--kapital);font-size:17px}
-  .wert.gross{font-size:23px;font-weight:700;color:var(--rubrik)}
-  .raster{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
-  .raster.schmal{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
-  .feld p{margin:2px 0 0}
-  .feld.breit{grid-column:1/-1}
-  .attribute{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
-  .attribut{border:1px solid var(--stark);background:var(--sanft);padding:8px 4px;text-align:center}
-  .attribut .zahl{display:block;font-family:var(--kapital);font-size:25px;font-weight:700}
-  .attribut .mod{display:block;font-family:var(--kapital);color:var(--rubrik)}
-  .werteliste{list-style:none;margin:0;padding:0}
-  .werteliste.zweispaltig{columns:2;column-gap:26px}
-  .werteliste li{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dotted var(--linie);
-    padding:2px 0;break-inside:avoid}
-  .werteliste li.geuebt b{color:var(--rubrik)}
-  .werteliste i{color:var(--blass);font-size:14px}
-  table{width:100%;border-collapse:collapse;margin-top:4px}
-  th{font-family:var(--kapital);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--blass);
-    text-align:left;padding:3px 6px 3px 0;border-bottom:1px solid var(--linie)}
-  td{padding:4px 6px 4px 0;border-bottom:1px dotted var(--linie);vertical-align:top}
-  .zauberliste{margin-top:10px}
-  .zaubergrad{margin-bottom:8px}
-  .zauber{display:inline-block;border:1px solid var(--linie);padding:1px 7px;margin:2px 4px 2px 0;font-size:15px}
-  .zauber.vorbereitet{border-color:var(--gold);background:rgba(184,145,47,.18);font-weight:600}
-  .zaubergrad .label{margin-bottom:2px;color:var(--rubrik)}
-  .merkmalgruppe{margin-bottom:12px;break-inside:avoid}
-  .merkmalgruppe>.label{margin-bottom:4px;color:var(--rubrik);letter-spacing:.14em;font-size:12px}
-  .merkmal{margin-bottom:10px;break-inside:avoid}
-  .merkmal p{margin:2px 0 0;color:var(--sepia);white-space:pre-line}
-  .klein{font-size:14px;color:var(--sepia)}
-  .fliesstext{margin-top:10px}
-  .fliesstext p{margin:2px 0 0;white-space:normal}
-  .hinweis{margin:8px 0 0;color:var(--blass);font-size:15px;font-style:italic}
-  .zauberblock{margin-bottom:14px;padding-bottom:10px;border-bottom:1px dotted var(--linie);break-inside:avoid}
-  .zauberblock:last-child{border-bottom:0}
-  .zauberblock b{font-family:var(--kapital);font-size:17px}
-  .zauberblock .kopfzeile{color:var(--rubrik);font-size:15px}
-  .zauberwerte{margin:2px 0 6px;color:var(--sepia);font-size:15px}
-  .zauberwerte i{color:var(--blass);font-style:normal;font-family:var(--kapital);font-size:10px;
-    letter-spacing:.12em;text-transform:uppercase}
-  .zauberblock p{margin:4px 0 0}
-  .zauberblock .hoeher{color:var(--sepia)}
-  .leiste{max-width:960px;margin:0 auto 14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;
-    color:var(--sepia);font-size:15px;font-style:italic}
-  .leiste button{font-family:var(--kapital);font-size:12px;letter-spacing:.12em;text-transform:uppercase;
-    padding:9px 16px;color:#f0dca8;background:var(--rubrik);border:1px solid #7d2018;cursor:pointer}
-  @media print{
-    body{background:#fff;padding:0;font-size:11pt}
-    .leiste{display:none}
-    .tafel,.kopf{border-color:#999;background:#fff}
-    .attribut{background:#fff}
-  }
-`;
 
 /** Baut die vollständige, alleinstehende Datei. */
 /**

@@ -60,11 +60,14 @@ function Rastervorschau({ karte, entwurf }) {
       {feld >= 4 && (
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
+          className="karten-raster pointer-events-none absolute inset-0"
+          // Das Netz selbst steht in stile/spieltisch.css (.karten-raster) –
+          // hier nur Linienfarbe, Feldgröße und Versatz der Vorschau.
           style={{
-            backgroundImage: `repeating-linear-gradient(to right, ${linie} 0 1px, transparent 1px ${feld}px),
-                              repeating-linear-gradient(to bottom, ${linie} 0 1px, transparent 1px ${feld}px)`,
-            backgroundPosition: `${entwurf.gridOffsetX * faktor}px ${entwurf.gridOffsetY * faktor}px`,
+            '--linie': linie,
+            '--feld': `${feld}px`,
+            '--versatz-x': `${entwurf.gridOffsetX * faktor}px`,
+            '--versatz-y': `${entwurf.gridOffsetY * faktor}px`,
           }}
         />
       )}

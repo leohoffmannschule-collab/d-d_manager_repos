@@ -1,0 +1,23 @@
+/**
+ * Die Schriften des Almanachs.
+ *
+ * Sie liegen als npm-Paket bei und werden mitgebaut – die Oberfläche braucht
+ * also kein Internet, um richtig auszusehen. Das ist auf einem Raspberry Pi
+ * im Wohnzimmer keine Kleinigkeit, sondern der Unterschied zwischen
+ * „sieht aus wie eine Handschrift“ und „sieht aus wie ein Formular“.
+ *
+ *   Cinzel              – Kapitälchen für Überschriften und Knöpfe
+ *   EB Garamond         – der Lesetext
+ *   UnifrakturMaguntia  – die Initialen auf der Anmeldeseite
+ *
+ * Geladen wird nur, was wirklich gebraucht wird: lateinische Zeichen, vier
+ * Schnitte. Jeder weitere Schnitt kostet Ladezeit auf dem iPad.
+ */
+@import "@fontsource/cinzel/latin-400.css";
+@import "@fontsource/cinzel/latin-600.css";
+@import "@fontsource/cinzel/latin-700.css";
+@import "@fontsource/eb-garamond/latin-400.css";
+@import "@fontsource/eb-garamond/latin-500.css";
+@import "@fontsource/eb-garamond/latin-600.css";
+@import "@fontsource/eb-garamond/latin-400-italic.css";
+@import "@fontsource/unifrakturmaguntia/latin-400.css";

@@ -44,7 +44,7 @@ function Zeile({ zeile, ichBin }) {
         )}
         <span className="ml-auto shrink-0 text-[11px] text-faint">{uhrzeit(zeile.createdAt)}</span>
       </div>
-      <p className="mt-0.5 leading-relaxed text-ink" style={{ overflowWrap: 'anywhere' }}>
+      <p className="umbruch-hart mt-0.5 leading-relaxed text-ink">
         {zeile.text}
       </p>
     </li>
@@ -124,9 +124,8 @@ export default function Chat() {
           onClick={() => setOffen(false)}
         >
           <div
-            className="flex max-h-[85vh] w-full max-w-md flex-col border-t-2 border-gold bg-panel px-5 pt-5 pb-8 shadow-2xl md:border md:border-rule"
+            className="sicherer-fuss-weit flex max-h-[85vh] w-full max-w-md flex-col border-t-2 border-gold bg-panel px-5 pt-5 shadow-2xl md:border md:border-rule"
             onClick={(e) => e.stopPropagation()}
-            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1.25rem)' }}
           >
             <div className="mb-3 flex items-center justify-between">
               <div className="flex items-center gap-2.5 text-rubric">

@@ -24,6 +24,16 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const wurzel = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+// Der Satzspiegel liegt als echte .css-Datei daneben und wird hier als Text
+// hereingeholt. Node kennt kein `?raw` wie Vite – ein Dateilesen tut es
+// genauso, und im Editor ist es trotzdem richtiges CSS.
+//
+// Der Erklärkopf der Datei wird dabei abgeschnitten: Er richtet sich an
+// Mitarbeitende am Code und hat in einer Druckfassung nichts verloren.
+const STIL = fs
+  .readFileSync(path.join(wurzel, 'scripts', 'drucksatz.css'), 'utf8')
+  .replace(/^\s*\/\*\*[\s\S]*?\*\/\s*/, '');
 const quelle = path.join(wurzel, 'docs');
 const ziel = path.join(quelle, 'druck');
 
@@ -216,168 +226,7 @@ function seite(titel, unter, koerper) {
 <head>
 <meta charset="utf-8">
 <title>${schuetzen(titel)} – Abenteuer-Almanach</title>
-<style>
-  @page {
-    size: A4;
-    margin: 20mm 18mm 18mm;
-  }
-
-  :root {
-    --tinte: #241c12;
-    --sepia: #5c4c38;
-    --schwach: #8a7960;
-    --linie: #cbb68d;
-    --rubrik: #8f2820;
-    --gold: #a8842b;
-    --blatt: #fdfaf3;
-  }
-
-  * { box-sizing: border-box; }
-
-  body {
-    margin: 0;
-    background: #fff;
-    color: var(--tinte);
-    font-family: "Liberation Serif", "DejaVu Serif", Georgia, "Times New Roman", serif;
-    font-size: 10.5pt;
-    line-height: 1.55;
-    hyphens: auto;
-  }
-
-  /* --- Titelblatt --- */
-  .titelblatt {
-    height: 245mm;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    page-break-after: always;
-    break-after: page;
-  }
-  .titelblatt .marke {
-    font-size: 9pt;
-    letter-spacing: 0.32em;
-    text-transform: uppercase;
-    color: var(--schwach);
-    margin-bottom: 14mm;
-  }
-  .titelblatt h1 {
-    font-size: 30pt;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--tinte);
-    margin: 0;
-    border: 0;
-    padding: 0;
-  }
-  .titelblatt .unter {
-    font-style: italic;
-    font-size: 13pt;
-    color: var(--sepia);
-    margin-top: 6mm;
-    max-width: 120mm;
-  }
-  .zierat { margin-top: 14mm; color: var(--gold); }
-
-  /* --- Überschriften --- */
-  h1, h2, h3, h4 {
-    font-weight: 600;
-    break-after: avoid;
-    page-break-after: avoid;
-  }
-  h1 {
-    font-size: 19pt;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    border-bottom: 1.5pt solid var(--gold);
-    padding-bottom: 2mm;
-    margin: 0 0 6mm;
-  }
-  h2 {
-    font-size: 14pt;
-    letter-spacing: 0.04em;
-    color: var(--rubrik);
-    margin: 9mm 0 3mm;
-    border-bottom: 0.5pt solid var(--linie);
-    padding-bottom: 1.5mm;
-  }
-  h3 {
-    font-size: 11.5pt;
-    letter-spacing: 0.03em;
-    margin: 6mm 0 2mm;
-  }
-  h4 { font-size: 10.5pt; margin: 4mm 0 1.5mm; }
-
-  p { margin: 0 0 3mm; orphans: 2; widows: 2; }
-
-  a { color: var(--rubrik); text-decoration: none; }
-
-  ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
-  li { margin-bottom: 1.2mm; break-inside: avoid; }
-  li::marker { color: var(--rubrik); }
-
-  code {
-    font-family: "DejaVu Sans Mono", "Liberation Mono", monospace;
-    font-size: 8.8pt;
-    background: #f2ead7;
-    padding: 0.3mm 1mm;
-    border-radius: 0.6mm;
-  }
-
-  pre {
-    background: var(--blatt);
-    border: 0.5pt solid var(--linie);
-    border-left: 2pt solid var(--gold);
-    padding: 2.5mm 3mm;
-    margin: 0 0 3.5mm;
-    break-inside: avoid;
-    white-space: pre-wrap;
-  }
-  pre code { background: none; padding: 0; font-size: 8.5pt; line-height: 1.4; }
-
-  blockquote {
-    margin: 0 0 3.5mm;
-    padding: 2mm 3mm;
-    background: rgba(168, 132, 43, 0.09);
-    border-left: 2pt solid var(--gold);
-    break-inside: avoid;
-  }
-  blockquote p:last-child { margin-bottom: 0; }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 0 0 4mm;
-    font-size: 9.3pt;
-  }
-  thead { display: table-header-group; }
-  tr { break-inside: avoid; }
-  th {
-    text-align: left;
-    font-size: 8pt;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--schwach);
-    border-bottom: 0.8pt solid var(--linie);
-    padding: 1.5mm 2mm 1mm 0;
-    font-weight: 600;
-  }
-  td {
-    vertical-align: top;
-    border-bottom: 0.4pt dotted var(--linie);
-    padding: 1.5mm 2mm 1.5mm 0;
-  }
-  td:first-child { padding-right: 4mm; }
-
-  hr {
-    border: 0;
-    border-top: 0.5pt solid var(--linie);
-    margin: 6mm 0;
-  }
-
-  strong { font-weight: 700; }
-</style>
+<style>${STIL}</style>
 </head>
 <body>
 

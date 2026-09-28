@@ -1,0 +1,34 @@
+/**
+ * Der Untergrund: das Pergament selbst, und was der Browser sonst noch
+ * mitbringt und hier zurechtgerückt wird.
+ *
+ * Das Pergament entsteht aus drei weichen Farbverläufen übereinander statt
+ * aus einem Bild – so kostet es keine Ladezeit, wird bei jeder Fenstergröße
+ * richtig und bleibt beim Blättern stehen (`background-attachment: fixed`).
+ */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 17px;
+  color: var(--color-ink);
+  background-color: var(--color-ground);
+  background-image:
+    radial-gradient(ellipse at 18% 12%, rgba(255, 250, 235, 0.6), transparent 55%),
+    radial-gradient(ellipse at 82% 68%, rgba(150, 120, 78, 0.2), transparent 60%),
+    radial-gradient(ellipse at 45% 98%, rgba(112, 88, 54, 0.14), transparent 55%);
+  background-attachment: fixed;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+[data-theme="kerzenlicht"] body {
+  background-image:
+    radial-gradient(ellipse at 30% 6%, rgba(216, 180, 81, 0.16), transparent 58%),
+    radial-gradient(ellipse at 78% 84%, rgba(154, 43, 34, 0.12), transparent 60%);
+}

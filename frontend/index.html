@@ -11,14 +11,10 @@
     <meta name="apple-mobile-web-app-title" content="Almanach" />
     <meta name="description" content="Charaktermanager für D&D 5e und andere Pen & Paper Rollenspiele – lokal gehostet, für iPad und iPhone." />
     <title>Abenteuer-Almanach</title>
-    <script>
-      // Gewähltes Aussehen sofort setzen, damit beim Start nichts aufblitzt.
-      try {
-        document.documentElement.dataset.theme = localStorage.getItem('almanach-theme') || 'pergament';
-      } catch (e) {
-        document.documentElement.dataset.theme = 'pergament';
-      }
-    </script>
+    <!-- Setzt das gewählte Aussehen, bevor gezeichnet wird – sonst blitzt
+         der Start im Kerzenlicht kurz hell auf. Kein type="module", weil es
+         genau dafür sofort laufen muss und nicht erst nach dem Aufbau. -->
+    <script src="/aussehen.js"></script>
   </head>
   <body>
     <div id="root"></div>

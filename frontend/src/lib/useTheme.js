@@ -11,6 +11,9 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 
+// Achtung: Derselbe Schlüssel steht in public/aussehen.js, das ihn beim
+// Start liest, bevor React überhaupt läuft. Wird er hier umbenannt, muss er
+// dort mit umbenannt werden.
 const STORAGE_KEY = 'almanach-theme';
 export const THEMES = ['pergament', 'kerzenlicht'];
 

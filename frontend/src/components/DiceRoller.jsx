@@ -105,9 +105,8 @@ export default function DiceRoller() {
           onClick={() => setOpen(false)}
         >
           <div
-            className="max-h-[85vh] w-full max-w-md overflow-y-auto border-t-2 border-gold bg-panel px-5 pt-5 pb-8 shadow-2xl md:border md:border-rule"
+            className="sicherer-fuss-hoch max-h-[85vh] w-full max-w-md overflow-y-auto border-t-2 border-gold bg-panel px-5 pt-5 shadow-2xl md:border md:border-rule"
             onClick={(e) => e.stopPropagation()}
-            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 2rem)' }}
           >
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2.5 text-rubric">
