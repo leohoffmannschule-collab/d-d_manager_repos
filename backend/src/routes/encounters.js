@@ -4,7 +4,7 @@ import { db } from '../db.js';
 import { requireDm } from '../auth.js';
 import { rollD20 } from '../dice.js';
 import * as chronik from '../chronicle.js';
-import { sendeKampf } from './encounter.js';
+import { sendeKampf } from '../kampf/sicht.js';
 
 const router = Router();
 

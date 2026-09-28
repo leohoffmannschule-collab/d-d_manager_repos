@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { db } from '../db.js';
 import { requireDm } from '../auth.js';
 import { rollD20 } from '../dice.js';
-import { sendeKampf } from './encounter.js';
+import { sendeKampf } from '../kampf/sicht.js';
 import * as chronik from '../chronicle.js';
 
 const router = Router();
