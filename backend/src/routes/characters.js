@@ -27,7 +27,7 @@ import { db } from '../db.js';
 import { isDm, requireAuth, requireDm } from '../auth.js';
 import { broadcast, originClient } from '../events.js';
 import { kopiereCharakter, zielPruefen } from '../uebernehmen.js';
-import { sendeSzene } from './scenes.js';
+import { sendeSzene } from '../spieltisch/melden.js';
 
 const router = Router();
 

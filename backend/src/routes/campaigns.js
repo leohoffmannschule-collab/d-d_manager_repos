@@ -24,7 +24,7 @@ import { requireAuth, requireCampaign, requireDm, setSessionCampaign } from '../
 import { endgueltigEntfernen, FRIST_TAGE, raeumePapierkorb, verbleibendeTage } from '../kampagnen.js';
 import { ARTEN, meldeNachZiel, uebernimmAlles, umfang, zielPruefen } from '../uebernehmen.js';
 import { saeVorlagen } from '../vorlagen/index.js';
-import { sendeSzene } from './scenes.js';
+import { sendeSzene } from '../spieltisch/melden.js';
 
 const router = Router();
 

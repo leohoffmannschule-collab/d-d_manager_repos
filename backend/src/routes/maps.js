@@ -23,7 +23,7 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { db, mediaDir } from '../db.js';
 import { requireDm } from '../auth.js';
-import { aktiviereSzene } from './scenes.js';
+import { aktiviereSzene } from '../spieltisch/melden.js';
 import { klangAuflegen } from './ambience.js';
 
 const router = Router();
