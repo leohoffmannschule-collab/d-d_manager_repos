@@ -1,3 +1,17 @@
+/**
+ * Der Würfelbeutel.
+ *
+ * Gewürfelt wird **hier**, auf dem Server, nicht im Browser. Das ist der
+ * ganze Sinn der Sache: Ein im eigenen Fenster erzeugtes Ergebnis wäre eine
+ * Behauptung. So steht jeder Wurf mit Namen und Uhrzeit bei allen am Tisch.
+ *
+ * Die Spielleitung darf verdeckt würfeln (`secret`). Solche Würfe werden
+ * gar nicht erst an die Runde geschickt und auch beim Nachladen der
+ * Wurfchronik herausgefiltert.
+ *
+ * Das Würfeln selbst steht in ../dice.js – hier ist nur der Weg dorthin,
+ * samt Chronikeintrag und Verteilung an den Tisch.
+ */
 import { Router } from 'express';
 import { randomUUID } from 'node:crypto';
 import { db } from '../db.js';

@@ -1,3 +1,22 @@
+/**
+ * Notizen und Handzettel – der Reiter „Notizen“ hinter dem Schirm.
+ *
+ * Eine Notiz kennt zwei Zustände, und der Unterschied ist der ganze Sinn
+ * dieser Ansicht:
+ *
+ *   *nur für die Spielleitung* – geheime Vorbereitung. Ein Spielerfenster
+ *   bekommt sie nicht einmal in der Liste geliefert.
+ *
+ *   *Handzettel für die Runde* – ausgeteilt. Steht sofort am Spieltisch im
+ *   Reiter „Handzettel“ und wird in der Chronik vermerkt.
+ *
+ * Umgeschaltet wird mit dem Augenknopf in der Zeile; ausgeteilte Zettel
+ * tragen das goldene Fähnchen. Eingezogen wird genauso – die Runde sieht
+ * den Zettel dann augenblicklich nicht mehr.
+ *
+ * Der Entwurf (`entwurf`) dient sowohl dem Anlegen als auch dem Bearbeiten:
+ * Ist eine `id` darin, wird geändert, sonst neu angelegt.
+ */
 import { useMemo, useState } from 'react';
 import { notesApi } from '../../lib/api.js';
 import { useNotizen } from '../../lib/daten.jsx';
@@ -21,6 +40,11 @@ export default function Notes() {
     );
   }, [notizen, suche]);
 
+  /**
+   * Speichern. Schlagworte kommen aus dem Formular als ein Text mit Kommas
+   * und müssen vor dem Schicken zur Liste werden – der Server erwartet ein
+   * Array.
+   */
   async function speichern(notiz) {
     const nutzlast = {
       title: notiz.title,

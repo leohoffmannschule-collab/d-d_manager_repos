@@ -1,3 +1,21 @@
+/**
+ * Notizen und Handzettel.
+ *
+ * Ein und dieselbe Sache in zwei Zuständen, unterschieden durch
+ * `visibility`:
+ *
+ *   'sl'    – geheime Vorbereitung. Ein Spielerfenster bekommt sie nicht
+ *             einmal in der Liste zu sehen.
+ *   'runde' – ausgeteilter Handzettel. Steht am Spieltisch im Reiter
+ *             „Handzettel“ und wird in der Chronik vermerkt.
+ *
+ * Austeilen und Einziehen ist also nur das Umlegen eines Feldes – deshalb
+ * gibt es dafür keinen eigenen Weg, sondern ein gewöhnliches `PUT`.
+ *
+ * Notizen gehören zu **einer** Kampagne: Ein Steckbrief passt nicht von
+ * selbst in eine andere Geschichte. Was doch überall gelten soll –
+ * Hausregeln etwa –, lässt sich hinüberkopieren (`/:id/kopieren`).
+ */
 import { Router } from 'express';
 import { randomUUID } from 'node:crypto';
 import { db } from '../db.js';

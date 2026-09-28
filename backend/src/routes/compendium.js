@@ -1,3 +1,19 @@
+/**
+ * Das Nachschlagewerk – ein Spiegel der offenen D&D-5e-API.
+ *
+ * Der Browser fragt nicht selbst dort an, sondern immer über diesen Weg.
+ * Das hat drei Gründe:
+ *
+ *   1. *Schnelligkeit.* Jede Antwort wird in `api_cache` abgelegt; beim
+ *      zweiten Mal kommt sie ohne Umweg.
+ *   2. *Am Spieltisch.* Mit wackligem Netz funktioniert das Nachschlagen
+ *      weiter, solange es einmal geladen war.
+ *   3. *Höflichkeit.* Ein fremder Dienst soll nicht für jedes geöffnete
+ *      Fenster erneut angefragt werden.
+ *
+ * Die Adresse lässt sich über die Umgebung umstellen, falls die API einmal
+ * umzieht oder jemand einen eigenen Spiegel betreibt.
+ */
 import { Router } from 'express';
 import { db } from '../db.js';
 

@@ -1,3 +1,30 @@
+/**
+ * Der Spieltisch auf der Serverseite: Szenen, Figuren, Nebel, Vorhang.
+ *
+ * Die anspruchsvollste Datei des Servers, weil hier entschieden wird, **wer
+ * was sieht** – und weil das bei einer Karte mit vierzigtausend Feldern
+ * auch noch schnell gehen muss.
+ *
+ * Drei Begriffe, ohne die nichts davon zu verstehen ist:
+ *
+ *   *Nebel* (fog) – welche Felder überhaupt je aufgedeckt wurden. Gehört
+ *   zur Szene und bleibt, bis jemand ihn ändert.
+ *
+ *   *Sicht* – was gerade wirklich zu sehen ist: gerechnet aus Lichtquellen
+ *   und den Sinnen der eigenen Figuren, je Person verschieden. Entsteht neu
+ *   bei jeder Anfrage und wird nirgends gespeichert (siehe ../sicht.js).
+ *
+ *   *Vorhang* – ist er zu, bekommt die Runde gar nichts: kein Bild, keine
+ *   Figuren, nicht einmal den Namen. Dahinter baut die Spielleitung auf.
+ *
+ * Beides, Nebel und Sicht, wandert als **Bitkarte** zum Browser – ein Bit
+ * je Feld, base64 verpackt. Als Liste von `"x,y"` wären es bei einer großen
+ * Karte 348 KB je Zug und Person, als Bitkarte 6,5 KB.
+ *
+ * Und die Regel, die das Ganze trägt: Was die Runde nicht sehen darf, wird
+ * **nicht geschickt**. Nicht ausgeblendet, nicht durchsichtig gemacht –
+ * nicht geschickt. Eine verborgene Figur steht nicht in der Antwort.
+ */
 import { Router } from 'express';
 import { randomUUID } from 'node:crypto';
 import { db, getState, setState } from '../db.js';

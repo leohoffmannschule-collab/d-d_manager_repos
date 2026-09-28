@@ -1,3 +1,22 @@
+/**
+ * Bilder: hochladen und ausliefern.
+ *
+ * Bilder liegen als **Dateien** neben der Datenbank (im Ordner `medien`),
+ * nicht in ihr. Nur der Verweis steht in der Tabelle `media`. Der Grund:
+ * Eine Battlemap hat gern zehn Megabyte, und eine Datenbank, in der
+ * dreihundert davon stecken, lässt sich weder schnell lesen noch bequem
+ * sichern.
+ *
+ * Hochgeladen wird als `data:`-URL im JSON-Rumpf statt als multipart-
+ * Formular. Das spart ein zusätzliches Paket auf dem Server, und der
+ * Browser erzeugt so eine URL aus einer ausgewählten Datei von selbst.
+ * Deshalb hat dieser Weg auch einen eigenen, größeren Rahmen (20 MB) und
+ * steht in server.js *vor* dem allgemeinen JSON-Leser.
+ *
+ * Bilder gehören der ganzen Runde, nicht einer Kampagne: Dieselbe Karte
+ * soll in jeder Geschichte aufliegen können, ohne ein zweites Mal
+ * hochgeladen zu werden.
+ */
 import { Router } from 'express';
 import express from 'express';
 import fs from 'node:fs';

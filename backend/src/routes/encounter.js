@@ -1,3 +1,25 @@
+/**
+ * Der **laufende** Kampf: Initiative, Trefferpunkte, Zustände, wer dran ist.
+ *
+ * Nicht zu verwechseln mit routes/encounters.js (mit s) – das sind die
+ * *vorbereiteten* Begegnungen. Hier geht es um den Kampf, der gerade
+ * stattfindet.
+ *
+ * Der Kern dieser Datei sind die **zwei Sichten**: Die Spielleitung bekommt
+ * alle Kämpfer mit allen Werten, die Runde bekommt
+ *
+ *   – verborgene Gegner gar nicht,
+ *   – Monster-Trefferpunkte nicht als Zahl, sondern als Zustand
+ *     („verwundet“, „schwer_verwundet“),
+ *   – die eigenen Trefferpunkte dagegen genau.
+ *
+ * Gefiltert wird auf dem Server, nicht in der Oberfläche. Was ein
+ * Spielerfenster nicht wissen soll, bekommt es nicht geschickt – sonst
+ * stünde es im Netzwerkfenster des Browsers.
+ *
+ * Trefferpunkte laufen in beide Richtungen: Schaden, der hier eingetragen
+ * wird, steht sofort auf dem Charakterblatt, und umgekehrt.
+ */
 import { Router } from 'express';
 import { randomUUID } from 'node:crypto';
 import { db, getState, setState } from '../db.js';

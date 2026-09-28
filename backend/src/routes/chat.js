@@ -1,3 +1,15 @@
+/**
+ * Der Chat am Tisch – an alle oder geflüstert.
+ *
+ * `to_user_id` ist leer, wenn die Nachricht an alle geht; steht dort ein
+ * Konto, wurde geflüstert. Und dann bekommen sie **nur die beiden
+ * Beteiligten** – die Spielleitung ausdrücklich nicht. Ein Flüstern, bei
+ * dem jemand mithört, ist kein Flüstern.
+ *
+ * Gefiltert wird beim Verschicken *und* beim Nachladen. Beides ist nötig:
+ * Der Live-Kanal erreicht nur, wer gerade offen hat, das Nachladen jeden,
+ * der später dazukommt.
+ */
 import { Router } from 'express';
 import { randomUUID } from 'node:crypto';
 import { db } from '../db.js';

@@ -81,6 +81,13 @@ function inKapitel(entries) {
   return kapitel;
 }
 
+/**
+ * Eine Zeile der Chronik: Uhrzeit, Symbol, Satz.
+ *
+ * Der Satz kommt fertig vom Server (`text`), das Symbol aus `kind`. Eine
+ * andere Oberfläche könnte aus `kind` und `meta` einen ganz eigenen Satz
+ * bauen – deshalb trägt jeder Eintrag beides.
+ */
 function Eintrag({ eintrag, isDm, onLoeschen }) {
   const Symbol = SYMBOL[eintrag.kind] ?? IconQuill;
   return (

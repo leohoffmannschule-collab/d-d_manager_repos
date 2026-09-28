@@ -66,6 +66,7 @@ function Verbindung({ connected }) {
   );
 }
 
+/** Das eigene Kennwort ändern. Verlangt das alte – auch von der Spielleitung. */
 function PasswortWechsel({ onClose }) {
   const [alt, setAlt] = useState('');
   const [neu, setNeu] = useState('');
@@ -229,6 +230,7 @@ function KampagneSchalter() {
   );
 }
 
+/** Das Menü hinter dem eigenen Namen: Aussehen, Kennwort, Abmelden. */
 function Konto() {
   const { user, logout, isDm } = useAuth();
   const { connected, presence } = useLiveStatus();

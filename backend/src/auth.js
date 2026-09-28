@@ -1,3 +1,28 @@
+/**
+ * Anmeldung und Zutritt: Kennwörter, Sitzungen, Rollen, Kampagnenzugehörigkeit.
+ *
+ * Hier liegen die Wächter, die vor fast jedem Weg des Servers stehen:
+ *
+ *   attachUser      – hängt `req.user` und `req.campaignId` an jede Anfrage
+ *   requireAuth     – ohne Anmeldung ist Schluss (401)
+ *   requireDm       – nur die Spielleitung (403)
+ *   requireCampaign – erst eine Kampagne wählen (409)
+ *
+ * **Das ist der wirkliche Schutz des Almanachs.** Die Oberfläche versteckt
+ * zwar Knöpfe, aber wer die Adresse kennt, kann jeden Weg von Hand
+ * aufrufen. Was hier nicht geprüft wird, ist nicht geschützt.
+ *
+ * Zwei Entscheidungen, die man kennen sollte:
+ *
+ * *Kennwörter* werden mit `scrypt` und einem zufälligen Salz gehasht und
+ * nie im Klartext gespeichert. Verglichen wird mit `timingSafeEqual`, das
+ * immer gleich lange braucht – ein gewöhnlicher Vergleich verriete über die
+ * Antwortzeit, wie viele Zeichen schon stimmen.
+ *
+ * *Sitzungen* liegen als Zufallskennzeichen im Cookie, in der Datenbank
+ * aber nur als Hash davon. Wer die Datenbank in die Hände bekäme, könnte
+ * sich damit also trotzdem nicht anmelden.
+ */
 import { randomBytes, randomUUID, scryptSync, timingSafeEqual, createHash } from 'node:crypto';
 import { db } from './db.js';
 

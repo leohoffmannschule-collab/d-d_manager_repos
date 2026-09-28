@@ -1,3 +1,26 @@
+/**
+ * Der Server: hier läuft alles zusammen.
+ *
+ * Diese Datei ist kurz und soll es bleiben. Sie tut vier Dinge:
+ *
+ *   1. *Vorbereiten* – Umgebung lesen, Datenbank öffnen (durch den Import
+ *      von db.js), Sicherheitskopfzeilen setzen.
+ *   2. *Einhängen* – jeden Zweig der API an seinen Weg hängen. Die Zeile
+ *      `app.use('/api/characters', requireCampaign, charactersRouter)`
+ *      ist zugleich die Zugangsregel: Der Wächter steht *vor* dem Router,
+ *      also gilt er für jeden Weg darin.
+ *   3. *Ausliefern* – die gebaute Oberfläche aus `backend/public`, samt
+ *      der Regel, dass jede unbekannte Adresse die index.html bekommt
+ *      (das braucht der Router im Browser).
+ *   4. *Berichten* – beim Start in Klartext sagen, was los ist: welche
+ *      Datenbank, welcher Datenordner, welche Adressen, was fehlt.
+ *
+ * Die Reihenfolge der `app.use`-Aufrufe ist keine Geschmacksfrage. Express
+ * arbeitet sie von oben nach unten ab: Der erste, der antwortet, gewinnt.
+ * Deshalb steht der Bilderzweig vor dem allgemeinen JSON-Leser (er braucht
+ * einen größeren Rahmen), und der Fehlerbehandler ganz unten.
+ */
+
 // Ganz oben, und das mit Absicht: Diese Zeile liest die Datei `.env` ein, und
 // sie muss gelesen sein, bevor ein anderes Modul die Umgebung befragt – die
 // Datenbank etwa sucht ihren Ordner schon beim Laden.

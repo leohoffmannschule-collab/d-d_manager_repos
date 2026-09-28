@@ -1,3 +1,22 @@
+/**
+ * Die Kartenbibliothek: Battlemaps samt einmal ausgerichtetem Raster.
+ *
+ * Der Unterschied zwischen **Karte** und **Szene** ist der Schlüssel zu
+ * dieser Datei:
+ *
+ *   Karte – Vorbereitung. Bild, Raster, Maßstab, Schlagworte, Notizen.
+ *           Ändert sich im Spiel nicht.
+ *   Szene – eine Karte *im Spiel*: mit Nebel, Figuren und dem, was der
+ *           Abend daraus macht (siehe routes/scenes.js).
+ *
+ * „Auflegen“ holt die zuletzt aus dieser Karte gelegte Szene samt Nebel
+ * zurück; mit `frisch: true` entsteht stattdessen eine neue unter
+ * geschlossenem Nebel. So kann dieselbe Taverne zweimal im Abenteuer
+ * vorkommen, einmal erkundet und einmal nicht.
+ *
+ * Karten gehören der ganzen Runde. Wird eine gelöscht, räumt dieser Weg
+ * auch ihre Bilddateien weg – aber nur, wenn keine Szene mehr darauf zeigt.
+ */
 import { Router } from 'express';
 import fs from 'node:fs';
 import path from 'node:path';

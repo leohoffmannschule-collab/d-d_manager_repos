@@ -638,6 +638,7 @@ export default function Board({
   );
 }
 
+/** Der gestrichelte Ring um die gewählte Figur – nur für die Spielleitung. */
 function SelectionRing({ token, scene }) {
   if (!token) return null;
   const groesse = token.size * scene.gridSize;

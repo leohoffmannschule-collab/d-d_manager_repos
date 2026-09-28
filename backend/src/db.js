@@ -1,3 +1,30 @@
+/**
+ * Die Datenbank – Herzstück und einzige Stelle, an der Daten liegen.
+ *
+ * Drei Aufgaben erledigt diese Datei, in dieser Reihenfolge:
+ *
+ *   1. *Öffnen.* Zwei Wege zu SQLite, damit der Almanach überall ohne
+ *      Bastelei läuft (siehe `openDatabase`).
+ *   2. *Anlegen.* Das ganze Schema als ein großes `CREATE TABLE IF NOT
+ *      EXISTS` – deshalb braucht eine frische Installation keinen
+ *      Einrichtungsschritt.
+ *   3. *Nachrüsten.* Alles, was später dazukam, wird über
+ *      `addColumnIfMissing` ergänzt. Das ist die Wanderung (Migration)
+ *      einer bestehenden Datenbank auf den neuen Stand, und sie läuft bei
+ *      *jedem* Start – deshalb muss jeder Schritt hier gefahrlos
+ *      wiederholbar sein.
+ *
+ * Warum SQLite und keine „richtige“ Datenbank? Weil der Almanach auf einem
+ * Laptop oder Raspberry Pi einer Spielrunde läuft, nicht in einem
+ * Rechenzentrum. Eine Datei, kein Dienst, kein Kennwort, keine Wartung –
+ * und sichern heißt, eine Datei zu kopieren.
+ *
+ * Für Neulinge in SQL: `db.prepare(...)` bereitet eine Abfrage vor,
+ * `.get()` holt eine Zeile, `.all()` alle, `.run()` schreibt. Die
+ * Fragezeichen darin sind Platzhalter, die später gefüllt werden – *nie*
+ * Werte in die Zeichenkette kleben, sonst steht die Tür für SQL-Injection
+ * offen.
+ */
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';

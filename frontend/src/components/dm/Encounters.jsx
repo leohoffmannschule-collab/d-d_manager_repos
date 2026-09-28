@@ -62,6 +62,11 @@ function Posten({ eintrag, onChange, onRemove }) {
   );
 }
 
+/**
+ * Der Bauplan einer Begegnung: welche Gegner in welcher Zahl, wer verborgen
+ * beginnt. Posten kommen aus dem Bestiarium, tragen ihre Werte danach aber
+ * selbst – deshalb übersteht eine Begegnung das Löschen des Statblocks.
+ */
 function Bauplan({ entwurf, setEntwurf, bestiarium, onSpeichern, onAbbrechen }) {
   const [suche, setSuche] = useState('');
   const treffer = bestiarium.filter((e) => e.name.toLowerCase().includes(suche.trim().toLowerCase()));

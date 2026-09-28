@@ -51,6 +51,10 @@ function Wurfwert({ name, modifier, betont = false }) {
 
 const SHORT_ABILITY = { str: 'STÄ', dex: 'GES', con: 'KON', int: 'INT', wis: 'WEI', cha: 'CHA' };
 
+/**
+ * Ein Attribut als Wappenschild: Wert eintippen, Modifikator groß darüber.
+ * Ab +3 wird der Schild golden – eine kleine Freude beim Steigern.
+ */
 function AbilityShield({ label, score, modifier, onChange, name }) {
   const strong = modifier >= 3;
   return (

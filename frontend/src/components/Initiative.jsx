@@ -82,6 +82,14 @@ function Lebensbalken({ hp, maxHp, status }) {
   );
 }
 
+/**
+ * Schaden und Heilung an einem Kämpfer – ein Feld, zwei Knöpfe.
+ *
+ * Geschickt wird immer eine *Änderung*, nie der neue Stand: Der Server
+ * rechnet und kümmert sich um temporäre Trefferpunkte und die Grenze bei
+ * null. Zwei Leute, die gleichzeitig Schaden eintragen, überschreiben sich
+ * so nicht gegenseitig.
+ */
 function Wunden({ combatant, onFertig }) {
   const [wert, setWert] = useState('');
 
@@ -113,6 +121,7 @@ function Wunden({ combatant, onFertig }) {
   );
 }
 
+/** Zustände an- und abwählen. Ein Klick schaltet um, mehr ist es nicht. */
 function Zustandswahl({ combatant, onFertig }) {
   return (
     <div className="mt-2 flex flex-wrap gap-1.5">
@@ -140,6 +149,10 @@ function Zustandswahl({ combatant, onFertig }) {
   );
 }
 
+/**
+ * Eine Zeile der Kampfliste. Aufgeklappt zeigt sie die Werkzeuge darunter –
+ * Schaden, Zustände, Initiative.
+ */
 function Zeile({ combatant, aktiv, isDm, voll }) {
   const [offen, setOffen] = useState(null);
 
@@ -240,6 +253,11 @@ function Zeile({ combatant, aktiv, isDm, voll }) {
   );
 }
 
+/**
+ * Einen Kämpfer von Hand eintragen – für den Wachhund, den niemand
+ * vorbereitet hat. Der gewöhnliche Weg führt über das Bestiarium oder eine
+ * vorbereitete Begegnung.
+ */
 function NeuerKaempfer({ onFertig }) {
   const [werte, setWerte] = useState({ name: '', type: 'monster', initiative: 0, hp: 0, ac: 10 });
   const setzen = (feld) => (e) =>

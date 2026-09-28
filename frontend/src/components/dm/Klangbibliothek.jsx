@@ -29,6 +29,11 @@ const ART = {
   artist: 'Künstler',
 };
 
+/**
+ * Das Formular für eine Ambiente. Geprüft wird die Spotify-Adresse erst auf
+ * dem Server – was kein Link auf eine Wiedergabeliste, ein Album, ein Stück
+ * oder einen Künstler ist, kommt gar nicht erst hinein.
+ */
 function Entwurfsblatt({ entwurf, setEntwurf, onSpeichern, onAbbrechen }) {
   return (
     <form

@@ -56,6 +56,11 @@ function spaltenAus(detail) {
   };
 }
 
+/**
+ * Zaubersuche im Kompendium. Gesucht wird örtlich in der einmal geladenen
+ * Liste aller Zauber – deshalb ohne Verzögerung und ohne Anfrage je
+ * Tastendruck.
+ */
 function SpellSearch({ onAdd }) {
   const [allSpells, setAllSpells] = useState(null);
   const [query, setQuery] = useState('');

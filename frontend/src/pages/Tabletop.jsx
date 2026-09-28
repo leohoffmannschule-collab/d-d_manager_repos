@@ -32,6 +32,7 @@ import { IconFog, IconHeart, IconMap, IconPlus, IconScroll, IconSwords } from '.
 // dreißig Felder eine einzige Anfrage statt dreißig.
 const PINSEL_MS = 120;
 
+/** Die ausgeteilten Handzettel in der Seitenleiste – für alle am Tisch. */
 function Handzettel() {
   const { handzettel } = useNotizen();
 

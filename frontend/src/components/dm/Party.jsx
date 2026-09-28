@@ -24,6 +24,12 @@ import { useLive } from '../../lib/live.jsx';
 import { Rubric } from '../ui.jsx';
 import { IconCheck, IconCrown, IconKey, IconLink, IconPlus, IconQuill, IconScroll, IconTrash, IconUsers } from '../icons.jsx';
 
+/**
+ * Einladungscodes: erzeugen, kopieren, zurückziehen.
+ *
+ * Jeder Code gilt für genau ein Konto und verfällt mit dem Einlösen. Das
+ * ist die einzige Tür in den Almanach hinein – ohne Code kein Konto.
+ */
 function Einladungen() {
   const { einladungen, offene, laden } = useEinladungen();
   const [notiz, setNotiz] = useState('');
@@ -588,6 +594,12 @@ function KampagneEntsorgen() {
   );
 }
 
+/**
+ * Die Konten der Runde: Rolle, Farbe, Kennwort zurücksetzen, entfernen.
+ *
+ * Die Farbe ist mehr als Zierde – an ihr erkennt man am Tisch, wessen Wurf
+ * und wessen Zeigefinger gerade aufleuchtet.
+ */
 function Konten({ users, onChanged }) {
   const { user } = useAuth();
   const [passwort, setPasswort] = useState({});
@@ -668,6 +680,13 @@ function Konten({ users, onChanged }) {
   );
 }
 
+/**
+ * Welches Blatt gehört wem – und wer darf es lesen.
+ *
+ * Gebraucht, wenn jemand neu dazukommt und ein vorbereitetes Blatt
+ * übernimmt, oder wenn ein Blatt aus der Zeit vor den Konten noch niemandem
+ * gehört.
+ */
 function Charakterzuweisung({ users, onChanged }) {
   const [charaktere, setCharaktere] = useState([]);
 

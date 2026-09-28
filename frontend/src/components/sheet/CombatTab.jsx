@@ -51,6 +51,11 @@ const AUFFRISCHUNG = [
   ['keine', 'von Hand'],
 ];
 
+/**
+ * Die drei Kreise für Erfolge bzw. Fehlschläge beim Rettungswurf gegen den
+ * Tod. Ein Klick auf den bereits gefüllten Kreis nimmt ihn wieder zurück –
+ * verklickt hat man sich hier schneller als irgendwo sonst.
+ */
 function DeathSaveRow({ label, count, onChange, filledClass }) {
   return (
     <div>
@@ -85,6 +90,10 @@ function Wurfknopf({ label, modifier, name }) {
   );
 }
 
+/**
+ * Der Vorrat an Trefferwürfeln: die Währung der kurzen Rast. Gezählt wird
+ * `used` gegen `total`; eine lange Rast gibt die Hälfte zurück.
+ */
 function Trefferwuerfel({ data, update }) {
   const pool = data.combat.hitDicePool;
   const uebrig = Math.max(0, (pool.total || 0) - (pool.used || 0));
@@ -174,6 +183,11 @@ function Standardaktionen() {
   );
 }
 
+/**
+ * Selbstverwaltete Zähler: Handauflegen, Kampfrausch, Inspiration des
+ * Barden. `recharge` sagt, wann sie sich füllen – bei kurzer oder langer
+ * Rast; das wendet lib/rasten.js an.
+ */
 function Ressourcen({ data, update }) {
   const liste = data.resources ?? [];
 

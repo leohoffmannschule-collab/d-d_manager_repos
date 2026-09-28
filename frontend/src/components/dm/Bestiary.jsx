@@ -43,6 +43,11 @@ const ATTRIBUTE = [
   ['cha', 'CH'],
 ];
 
+/**
+ * Das Formular für einen Eintrag – dasselbe zum Anlegen und zum Ändern.
+ * Leere Zahlenfelder bleiben leer (nicht 0): Ein Monster ohne eingetragene
+ * Rüstungsklasse ist etwas anderes als eines mit RK 0.
+ */
 function Formular({ eintrag, onSpeichern, onAbbrechen }) {
   const [werte, setWerte] = useState(eintrag ?? LEER);
   const setzen = (feld, wert) => setWerte((w) => ({ ...w, [feld]: wert }));
@@ -153,6 +158,14 @@ function Formular({ eintrag, onSpeichern, onAbbrechen }) {
   );
 }
 
+/**
+ * Ein Monster aus dem Kompendium übernehmen.
+ *
+ * Übernommen wird eine **Abschrift**: Werte, Fähigkeiten und Aktionen
+ * werden in den eigenen Eintrag geschrieben, kein Verweis gespeichert. So
+ * lässt sich der Goblin nach Belieben verbiegen, und er bleibt auch dann
+ * da, wenn die 5e-API gerade nicht antwortet.
+ */
 function AusDemKompendium({ onFertig }) {
   const [monster, setMonster] = useState(null);
   const [suche, setSuche] = useState('');

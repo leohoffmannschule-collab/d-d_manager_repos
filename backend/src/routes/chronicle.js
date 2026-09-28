@@ -1,3 +1,22 @@
+/**
+ * Die Wege zur Chronik: Sitzungen, Einträge, Protokoll, Rückblick.
+ *
+ * Geschrieben wird die Chronik nicht hier, sondern im Vorbeigehen von
+ * überall her (`chronik.log(...)` in ../chronicle.js). Diese Datei liest
+ * sie und gibt sie heraus – in drei Formen:
+ *
+ *   – als Liste von Einträgen für die Chronikseite,
+ *   – als **Protokoll** in Markdown, zum Ausdrucken oder Weitergeben,
+ *   – als **Rückblick**, von einem Sprachmodell erzählt.
+ *
+ * Der Rückblick ist die einzige Stelle im ganzen Almanach, an der etwas
+ * nach außen geht, und er ist freiwillig: Ohne Schlüssel in der `.env`
+ * antwortet der Weg, dass die Chronik-KI nicht eingerichtet ist. Ohne ihn
+ * funktioniert alles andere unverändert.
+ *
+ * Verdeckte Einträge (`secret`) bekommt ein Spielerfenster nicht – gefiltert
+ * wird in `eintraege()` gleich unten, also an einer einzigen Stelle.
+ */
 import { Router } from 'express';
 
 import { db } from '../db.js';
@@ -10,6 +29,7 @@ router.use(requireAuth);
 
 /* --- Sitzungen ----------------------------------------------------------- */
 
+/** Die Einträge einer Sitzung, je nach Rolle vollständig oder gefiltert. */
 function eintraege(sessionId, user) {
   const rows = isDm(user)
     ? db.prepare('SELECT * FROM chronicle WHERE session_id = ? ORDER BY created_at').all(sessionId)
