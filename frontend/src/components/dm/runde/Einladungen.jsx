@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { authApi } from '../../../lib/api.js';
 import { useEinladungen } from '../../../lib/daten.jsx';
 import { Rubric } from '../../ui.jsx';
-import { IconCheck, IconKey, IconLink, IconPlus, IconTrash } from '../../icons.jsx';
+import { IconCheck, IconLink, IconPlus, IconTrash } from '../../icons.jsx';
 
 export default /**
  * Einladungscodes: erzeugen, kopieren, zurückziehen.

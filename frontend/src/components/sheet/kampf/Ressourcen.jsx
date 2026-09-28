@@ -1,6 +1,6 @@
 import { newId } from '../../../lib/id.js';
 import { AUFFRISCHUNG } from './felder.js';
-import { Card, NumberField, Stepper, TextField } from '../../ui.jsx';
+import { NumberField, Stepper, TextField } from '../../ui.jsx';
 import { IconPlus, IconTrash } from '../../icons.jsx';
 
 

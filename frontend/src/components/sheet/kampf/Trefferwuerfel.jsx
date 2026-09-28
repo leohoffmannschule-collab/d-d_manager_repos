@@ -1,6 +1,6 @@
 import { ausdruckWurf } from '../../../lib/wuerfeln.js';
 import { abilityModifier, formatModifier } from '../../../lib/dnd5e.js';
-import { NumberField, Stepper, TextField } from '../../ui.jsx';
+import { NumberField } from '../../ui.jsx';
 import { IconHeart } from '../../icons.jsx';
 
 

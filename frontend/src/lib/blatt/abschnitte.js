@@ -33,7 +33,7 @@ import {
   weiteMitEinheit,
 } from '../dnd5e.js';
 import { AUSSEHEN_FELDER } from '../regeln/blattfelder.js';
-import { KURZ, MUENZEN, esc, escAbsatz, feld, tafel, zeilen } from './werkzeug.js';
+import { KURZ, MUENZEN, esc, escAbsatz, feld, zeilen } from './werkzeug.js';
 
 export function zauberblock(spell, detail) {
   if (!detail) return '';

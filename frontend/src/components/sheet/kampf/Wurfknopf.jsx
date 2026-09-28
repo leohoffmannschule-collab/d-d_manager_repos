@@ -1,5 +1,4 @@
 import { blattWurf } from '../../../lib/wuerfeln.js';
-import { formatModifier } from '../../../lib/dnd5e.js';
 import { IconD20 } from '../../icons.jsx';
 
 

@@ -1,4 +1,3 @@
-import { IconHeart } from '../../icons.jsx';
 
 
 /**

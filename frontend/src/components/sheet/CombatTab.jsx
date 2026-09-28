@@ -29,7 +29,6 @@ import {
   CONDITIONS,
   EXHAUSTION_STEPS,
   abilityModifier,
-  aktionArtLabel,
   formatModifier,
   proficiencyBonus,
 } from '../../lib/dnd5e.js';
@@ -37,7 +36,7 @@ import { kurzeRast, langeRast } from '../../lib/rasten.js';
 import { ausdruckWurf, blattWurf } from '../../lib/wuerfeln.js';
 import { Card, NumberField, Stepper, TextField, TextAreaField, Toggle, WeiteField } from '../ui.jsx';
 import RepeatingRows from '../RepeatingRows.jsx';
-import { IconCandle, IconD20, IconHeart, IconSun } from '../icons.jsx';
+import { IconCandle, IconD20, IconSun } from '../icons.jsx';
 import { AKTION_FIELDS, ATTACK_FIELDS } from './kampf/felder.js';
 import Todeszeichen from './kampf/Todeszeichen.jsx';
 import Wurfknopf from './kampf/Wurfknopf.jsx';

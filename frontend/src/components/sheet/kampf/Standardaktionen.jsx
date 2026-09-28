@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { STANDARD_AKTIONEN, aktionArtLabel } from '../../../lib/dnd5e.js';
-import { Card } from '../../ui.jsx';
 import { IconBook } from '../../icons.jsx';
 
 
