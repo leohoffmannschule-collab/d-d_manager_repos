@@ -20,6 +20,6 @@
  */
 try {
   document.documentElement.dataset.theme = localStorage.getItem('almanach-theme') || 'pergament';
-} catch (e) {
+} catch {
   document.documentElement.dataset.theme = 'pergament';
 }

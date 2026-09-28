@@ -1,22 +1,4 @@
 /**
- * Der Chat am Tisch – an alle oder geflüstert.
- *
- * `to_user_id` ist leer, wenn die Nachricht an alle geht; steht dort ein
- * Konto, wurde geflüstert. Und dann bekommen sie **nur die beiden
- * Beteiligten** – die Spielleitung ausdrücklich nicht. Ein Flüstern, bei
- * dem jemand mithört, ist kein Flüstern.
- *
- * Gefiltert wird beim Verschicken *und* beim Nachladen. Beides ist nötig:
- * Der Live-Kanal erreicht nur, wer gerade offen hat, das Nachladen jeden,
- * der später dazukommt.
- */
-import { Router } from 'express';
-import { randomUUID } from 'node:crypto';
-import { db } from '../db.js';
-import { requireAuth, requireDm } from '../auth.js';
-import { broadcast, originClient, presence } from '../events.js';
-
-/**
  * Der Chat am Tisch.
  *
  * Zwei Arten von Nachrichten, und der Unterschied ist eine Spalte:
@@ -31,11 +13,20 @@ import { broadcast, originClient, presence } from '../events.js';
  *
  * Wie überall im Almanach entscheidet der Server, wer was bekommt: Eine
  * geflüsterte Zeile wird gar nicht erst an die übrigen Fenster geschickt.
+ * Gefiltert wird beim Verschicken *und* beim Nachladen – der Live-Kanal
+ * erreicht nur, wer gerade offen hat, das Nachladen jeden, der später
+ * dazukommt.
  *
  * Nicht in der Chronik: Gerede ist kein Ereignis. Die Chronik soll nach dem
  * Abend lesbar bleiben, und dafür ist es besser, wenn nicht jede Nachfrage
  * nach dem Pizzadienst darin steht.
  */
+import { Router } from 'express';
+import { randomUUID } from 'node:crypto';
+import { db } from '../db.js';
+import { requireAuth, requireDm } from '../auth.js';
+import { broadcast, originClient, presence } from '../events.js';
+
 const router = Router();
 router.use(requireAuth);
 
@@ -87,7 +78,16 @@ router.post('/', (req, res) => {
 
   let empfaenger = null;
   if (an) {
-    empfaenger = db.prepare('SELECT id, name FROM users WHERE id = ?').get(an);
+    // Geflüstert wird nur, wer in *dieser* Kampagne sitzt. Ein Konto der
+    // Runde, das hier nicht mitspielt, fände die Zeile sonst Wochen später
+    // in einem Chat, den es nie gesehen hat.
+    empfaenger = db
+      .prepare(
+        `SELECT u.id, u.name FROM users u
+           JOIN campaign_members m ON m.user_id = u.id
+          WHERE u.id = ? AND m.campaign_id = ?`
+      )
+      .get(an, req.campaignId);
     if (!empfaenger) {
       return res.status(404).json({ code: 'empfaenger_unbekannt', error: 'Diese Person gibt es nicht.' });
     }

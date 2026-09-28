@@ -125,6 +125,20 @@ Manche Ereignisse tragen den neuen Stand mit (`kampf`, `szene`, `beute`),
 andere sind nur ein Wink zum Nachladen. Alle 25 Sekunden kommt ein
 Kommentarzeilen-Herzschlag, damit die Verbindung nicht einschläft.
 
+Der Kanal hält fest, wer beim Verbinden gefragt hat – Rolle und Kampagne.
+Ändert sich das, **schließt der Server ihn**: beim Abmelden, nach einem
+Kennwortwechsel, wenn einem Konto die Rolle geändert oder es gelöscht wird,
+wenn jemand aus einer Kampagne genommen wird und wenn die Kampagne in den
+Papierkorb wandert. Der Browser verbindet sich von selbst neu und bekommt
+den neuen Stand – oder, ohne gültige Sitzung, ein 401/409 statt eines Kanals.
+Eine eigene Oberfläche sollte in diesem Fall nachfragen, ob sie noch
+angemeldet ist und eine Kampagne gewählt hat.
+
+Ein Klient muss für jeden Ereignisnamen einzeln horchen (`addEventListener`),
+SSE kennt kein „alles“. Die Liste oben ist vollständig; wer eine eigene
+Oberfläche baut, meldet sich am besten für jeden Namen an, auf den er
+reagieren will, statt eine feste Liste zu pflegen, die dem Server davonläuft.
+
 ## Die Wege im Einzelnen
 
 `[SL]` heißt: nur für die Spielleitung. „Standard“ nennt den Schutz des
@@ -278,6 +292,12 @@ Trefferpunkte wandern in beide Richtungen zwischen Kampf und Charakterblatt.
 Eine Szene, die aus einer Karte der Bibliothek entstanden ist, trägt deren
 `mapId` und erbt ihren Maßstab.
 
+Eine neue Figur darf nur an einem Blatt und einem Kämpfer *dieser* Kampagne
+hängen (`characterId`, `combatantId`); eine unbekannte Kennung gibt
+400 `verweis_unbekannt`. Ein Zeigefinger hinter geschlossenem Vorhang geht
+nur an die Spielleitung – schon die Stelle verriete, wo gerade aufgebaut
+wird.
+
 ### Maßstab
 
 Ein Rasterfeld steht für eine Spielweite, und die muss nicht 5 Fuß sein:
@@ -429,7 +449,8 @@ seiner Karte.
 
 Eine Nachricht ohne `an` geht an alle. Steht dort eine Kontokennung, wird
 geflüstert: Die Zeile erreicht **nur die beiden Beteiligten** – auch nicht die
-Spielleitung.
+Spielleitung. Geflüstert wird nur an Mitglieder der eigenen Kampagne; jedes
+andere Konto ist `empfaenger_unbekannt`.
 
 Gefiltert wird an beiden Stellen, an denen etwas herausgeht:
 
@@ -505,6 +526,26 @@ wievielte. Beides steht ausführlich in
     /api/media       Bilder: POST als data:-URL, GET liefert sie aus
     /api/compendium  zwischengespeicherter Spiegel der offenen D&D-5e-API
 
+Einige Eigenheiten davon, die man beim Bauen kennen sollte:
+
+- **Beute:** Ein Träger (`holderId`) muss ein Blatt dieser Kampagne sein,
+  sonst 400 `charakter_nicht_gefunden`. Beim Auszahlen zählt jeder
+  Charakter einmal, auch wenn er doppelt genannt ist; Blätter und Kiste
+  werden in einem Zug geschrieben.
+- **Chronik:** `POST /sessions/:id/ende` beendet genau diese Sitzung – 404,
+  wenn es sie nicht gibt, 400 `keine_offene_sitzung`, wenn sie schon zu ist.
+  Der `rueckblick` sieht nur, was die Runde sehen darf: Verdeckte Einträge
+  gehen nicht an das Sprachmodell, denn der fertige Text steht bei allen.
+- **Kampf:** `POST /api/encounter/combatants` mit `characterId` braucht ein
+  Blatt dieser Kampagne (400 `charakter_nicht_gefunden`). Ändert jemand die
+  Trefferpunkte auf dem Blatt, zieht der Server verknüpfte Kämpfer nach und
+  verschickt `kampf` – ein eigenes Nachladen braucht es nicht.
+- **Würfel:** Zwischen zwei Gliedern steht immer `+` oder `-`; `d6d8` oder
+  `1W20 5` sind 400 `wurfausdruck_ungueltig`.
+- **Kompendium:** Pfade, die aus der API hinausführen (auch als `%2e%2e`),
+  sind 400 `ungueltiger_pfad`; ist die API nicht erreichbar und nichts
+  zwischengespeichert, kommt 502 `kompendium_nicht_erreichbar`.
+
 ## Eine andere Oberfläche bauen
 
 Die mitgelieferte Oberfläche ist in Schichten gebaut, damit die oberste
@@ -517,7 +558,7 @@ austauschbar ist:
 | Anmeldung, Live-Kanal | `frontend/src/lib/auth.jsx`, `live.jsx` | bleibt |
 | **Daten** | `frontend/src/lib/daten.js` | bleibt |
 | Beschriftung | `frontend/src/lib/beschriftung.js` | anpassen |
-| Aussehen | `frontend/src/index.css` (Farben und Schriften als Variablen) | anpassen |
+| Aussehen | `frontend/src/stile/` (Farben in `farben.css`, Schriften in `schriften.css`) | anpassen |
 | Darstellung | `frontend/src/pages/`, `frontend/src/components/` | ersetzen |
 
 Die Datenschicht ist dabei die wichtigste: In ihr steckt, wann geladen wird,

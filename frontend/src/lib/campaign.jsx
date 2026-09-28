@@ -36,6 +36,10 @@ export function CampaignProvider({ children }) {
       const { kampagnen, aktive } = await campaignsApi.list();
       setCampaigns(kampagnen);
       setActiveId(aktive);
+    } catch {
+      // Server nicht erreichbar: Der bisherige Stand bleibt stehen. Ohne das
+      // catch liefe die Ablehnung als „unhandled rejection“ ins Leere, denn
+      // aufgerufen wird refresh aus einem useEffect, der nicht wartet.
     } finally {
       setLoading(false);
     }

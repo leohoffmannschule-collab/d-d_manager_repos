@@ -260,13 +260,38 @@ function benutzteNamen(code) {
 /* --- Der Durchgang -------------------------------------------------------- */
 
 const alle = ORDNER.flatMap(dateien);
-const katalog = ausgefuehrteNamen(alle);
+
+/**
+ * Wer kann wen überhaupt einführen?
+ *
+ * Oberfläche und Server sind zwei getrennte Welten: Der Browser bekommt nie
+ * eine Datei aus backend/, der Server nie eine aus frontend/. Ein Name, den
+ * nur der Server ausführt, kann in der Oberfläche also gar keine vergessene
+ * Einfuhr sein – und umgekehrt. Ohne diese Trennung schlug die Probe an,
+ * sobald der Server ein gewöhnliches Wort wie `jetzt` ausführte, das in der
+ * Oberfläche irgendwo im Fließtext steht.
+ *
+ * Nur die Werkzeuge in scripts/ sehen beide Welten: Die Blatt- und die
+ * Klangprobe prüfen Rechnungen der Oberfläche mit Node.
+ */
+const liegtIn = (datei, ordner) => path.relative(wurzel, datei).startsWith(ordner + path.sep);
+const oberflaeche = alle.filter((d) => liegtIn(d, 'frontend'));
+const server = alle.filter((d) => liegtIn(d, 'backend'));
+const kataloge = {
+  oberflaeche: ausgefuehrteNamen(oberflaeche),
+  server: ausgefuehrteNamen(server),
+  beide: ausgefuehrteNamen(alle),
+};
+const katalogFuer = (datei) =>
+  liegtIn(datei, 'frontend') ? kataloge.oberflaeche : liegtIn(datei, 'backend') ? kataloge.server : kataloge.beide;
+
 const maengel = [];
 
 for (const datei of alle) {
   const code = nurCode(fs.readFileSync(datei, 'utf8'));
   const bekannt = bekannteNamen(code);
   const kurz = path.relative(wurzel, datei);
+  const katalog = katalogFuer(datei);
 
   for (const name of benutzteNamen(code)) {
     if (!katalog.has(name)) continue;

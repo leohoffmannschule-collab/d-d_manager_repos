@@ -18,7 +18,14 @@
  */
 import { db } from './verbindung.js';
 
-/** Fügt eine Spalte hinzu, falls eine ältere Datenbank sie noch nicht hat. */
+/**
+ * Fügt eine Spalte hinzu, falls eine ältere Datenbank sie noch nicht hat.
+ *
+ * Tabelle und Spalte stehen hier ausnahmsweise *in* der SQL-Zeichenkette:
+ * Bezeichner lassen sich in SQLite nicht als Platzhalter übergeben. Das ist
+ * nur deshalb in Ordnung, weil alle drei Werte feste Zeichenketten aus dem
+ * Quelltext sind – nie etwas, das aus einer Anfrage stammt.
+ */
 export function addColumnIfMissing(table, column, definition) {
   const columns = db.prepare(`PRAGMA table_info(${table})`).all();
   if (columns.some((c) => c.name === column)) return;
@@ -59,13 +66,13 @@ export function ruesteNach() {
   addColumnIfMissing('tokens', 'light_bright', 'INTEGER NOT NULL DEFAULT 0');
   addColumnIfMissing('tokens', 'light_dim', 'INTEGER NOT NULL DEFAULT 0');
 
-  // Der Maßstab: Wofür steht ein Rasterfeld? Vorgabe bleiben die 5 Fuß aus dem
-  // Regelwerk. Wer in Metern denkt – und eine Karte über zweihundert Meter
-  // legen will –, stellt hier ein Feld auf einen Meter.
   // Eine obere Schranke für alle in dieser Szene, in Fuß – Nebelbank,
   // Schneetreiben, dichter Wald. 0 heißt: Der Blick reicht bis zum Rand.
   addColumnIfMissing('scenes', 'sight', 'REAL NOT NULL DEFAULT 0');
 
+  // Der Maßstab: Wofür steht ein Rasterfeld? Vorgabe bleiben die 5 Fuß aus dem
+  // Regelwerk. Wer in Metern denkt – und eine Karte über zweihundert Meter
+  // legen will –, stellt hier ein Feld auf einen Meter.
   addColumnIfMissing('scenes', 'unit', "TEXT NOT NULL DEFAULT 'fuss'");
   addColumnIfMissing('scenes', 'scale', 'REAL NOT NULL DEFAULT 5');
   addColumnIfMissing('maps', 'unit', "TEXT NOT NULL DEFAULT 'fuss'");

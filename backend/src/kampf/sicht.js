@@ -4,9 +4,11 @@
  * Die Spielleitung bekommt alle Kämpfer mit allen Werten. Die Runde bekommt
  *
  *   – verborgene Gegner gar nicht,
- *   – Monster-Trefferpunkte nicht als Zahl, sondern als Zustand
- *     („verwundet“, „schwer_verwundet“),
- *   – die eigenen Trefferpunkte dagegen genau.
+ *   – bei NSC und Monstern weder Trefferpunkte noch Rüstungsklasse, sondern
+ *     nur einen Zustand („verwundet“, „schwer_verwundet“),
+ *   – bei Helden (`pc`) die Trefferpunkte genau – die eigenen wie die der
+ *     Gefährten; wie es um die Gruppe steht, weiß man am Tisch ohnehin,
+ *   – Notizen der Spielleitung zu keinem Kämpfer.
  *
  * Gefiltert wird hier, auf dem Server, nicht in der Oberfläche. Was ein
  * Spielerfenster nicht wissen soll, bekommt es nicht geschickt – sonst

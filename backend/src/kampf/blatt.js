@@ -18,7 +18,7 @@ export function syncCharakter(combatant, campaignId) {
   if (!row) return;
   const data = JSON.parse(row.data);
   data.combat = data.combat ?? {};
-  data.combat.hp = { ...(data.combat.hp ?? {}), current: combatant.hp, max: combatant.max_hp };
+  data.combat.hp = { ...data.combat.hp, current: combatant.hp, max: combatant.max_hp };
   db.prepare('UPDATE characters SET data = ?, updated_at = ? WHERE id = ?').run(
     JSON.stringify(data),
     new Date().toISOString(),

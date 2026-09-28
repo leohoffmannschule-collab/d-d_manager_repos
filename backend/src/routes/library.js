@@ -1,27 +1,29 @@
-import { Router } from 'express';
-import { randomUUID } from 'node:crypto';
-import { db } from '../db.js';
-import { requireDm } from '../auth.js';
-import { rollD20 } from '../dice.js';
-import { sendeKampf } from '../kampf/sicht.js';
-import * as chronik from '../chronicle.js';
-
-const router = Router();
-
 /**
- * Das Bestiarium ist Sache der Spielleitung – die Runde soll die Statblöcke
- * des heutigen Abends schließlich nicht vorab lesen können.
+ * Das Bestiarium: Statblöcke für Monster und NSC, aus denen mit einem Klick
+ * Kämpfer werden.
+ *
+ * Es ist Sache der Spielleitung – die Runde soll die Statblöcke des heutigen
+ * Abends schließlich nicht vorab lesen können. Deshalb gilt `requireDm` für
+ * jeden Weg hier.
  *
  * Es gehört der ganzen Runde, nicht einer Kampagne: Ein Goblin bleibt ein
  * Goblin, gleich in welcher Geschichte er auftritt. Was daraus im Kampf wird –
  * der einzelne Kämpfer mit seinen Trefferpunkten – gehört dagegen zu genau
  * einer Kampagne.
  */
+import { Router } from 'express';
+import { randomUUID } from 'node:crypto';
+import { db, transaktion } from '../db.js';
+import { requireDm } from '../auth.js';
+import { rollD20 } from '../dice.js';
+import { sendeKampf } from '../kampf/sicht.js';
+import * as chronik from '../chronicle.js';
+import { hatText, texte, toNumber, zahlOderLeer } from '../werte.js';
+
+const router = Router();
 router.use(requireDm);
 
 const KATEGORIEN = new Set(['npc', 'monster']);
-const toNumber = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
-const toNumberOrNull = (value, fallback) => (value === '' || value == null ? fallback : toNumber(value, fallback));
 
 function rowToEntry(row) {
   return {
@@ -43,7 +45,7 @@ function rowToEntry(row) {
 }
 
 function statsAus(quelle, vorgabe = {}) {
-  const feld = (key) => toNumberOrNull(quelle?.[key], vorgabe[key] ?? null);
+  const feld = (key) => zahlOderLeer(quelle?.[key], vorgabe[key] ?? null);
   return { str: feld('str'), dex: feld('dex'), con: feld('con'), int: feld('int'), wis: feld('wis'), cha: feld('cha') };
 }
 
@@ -53,7 +55,7 @@ router.get('/', (req, res) => {
 
 router.post('/', (req, res) => {
   const body = req.body ?? {};
-  if (!body.name || typeof body.name !== 'string' || !body.name.trim()) {
+  if (!hatText(body.name)) {
     return res.status(400).json({ code: 'name_fehlt', error: 'Name ist erforderlich.' });
   }
   const id = randomUUID();
@@ -64,14 +66,16 @@ router.post('/', (req, res) => {
     id,
     body.name.trim().slice(0, 100),
     KATEGORIEN.has(body.category) ? body.category : 'monster',
-    toNumberOrNull(body.ac, null),
-    toNumberOrNull(body.hp, null),
+    zahlOderLeer(body.ac, null),
+    zahlOderLeer(body.hp, null),
     typeof body.speed === 'string' ? body.speed.slice(0, 100) : '',
     JSON.stringify(statsAus(body.stats)),
     typeof body.abilities === 'string' ? body.abilities.slice(0, 4000) : '',
     typeof body.actions === 'string' ? body.actions.slice(0, 4000) : '',
     typeof body.notes === 'string' ? body.notes.slice(0, 2000) : '',
-    JSON.stringify(Array.isArray(body.tags) ? body.tags.filter((t) => typeof t === 'string').slice(0, 20) : []),
+    JSON.stringify(texte(body.tags)),
+    // `mini` stammt aus der Zeit der Figurenschmiede (siehe
+    // datenbank/nachruesten.js) und wird nur noch durchgereicht.
     JSON.stringify(body.mini && typeof body.mini === 'object' ? body.mini : {}),
     body.mediaId ?? null,
     req.campaignId,
@@ -89,18 +93,16 @@ router.put('/:id', (req, res) => {
     `UPDATE library SET name = ?, category = ?, ac = ?, hp = ?, speed = ?, stats = ?,
             abilities = ?, actions = ?, notes = ?, tags = ?, mini = ?, media_id = ? WHERE id = ?`
   ).run(
-    typeof body.name === 'string' && body.name.trim() ? body.name.trim().slice(0, 100) : row.name,
+    hatText(body.name) ? body.name.trim().slice(0, 100) : row.name,
     KATEGORIEN.has(body.category) ? body.category : row.category,
-    'ac' in body ? toNumberOrNull(body.ac, row.ac) : row.ac,
-    'hp' in body ? toNumberOrNull(body.hp, row.hp) : row.hp,
+    'ac' in body ? zahlOderLeer(body.ac, row.ac) : row.ac,
+    'hp' in body ? zahlOderLeer(body.hp, row.hp) : row.hp,
     typeof body.speed === 'string' ? body.speed.slice(0, 100) : row.speed,
     'stats' in body ? JSON.stringify(statsAus(body.stats, JSON.parse(row.stats))) : row.stats,
     typeof body.abilities === 'string' ? body.abilities.slice(0, 4000) : row.abilities,
     typeof body.actions === 'string' ? body.actions.slice(0, 4000) : row.actions,
     typeof body.notes === 'string' ? body.notes.slice(0, 2000) : row.notes,
-    Array.isArray(body.tags)
-      ? JSON.stringify(body.tags.filter((t) => typeof t === 'string').slice(0, 20))
-      : row.tags,
+    Array.isArray(body.tags) ? JSON.stringify(texte(body.tags)) : row.tags,
     'mini' in body && body.mini && typeof body.mini === 'object' ? JSON.stringify(body.mini) : row.mini,
     'mediaId' in body ? (body.mediaId ?? null) : row.media_id,
     row.id
@@ -130,21 +132,25 @@ router.post('/:id/add-to-encounter', (req, res) => {
      VALUES (?, ?, ?, ?, ?, ?, ?, '[]', '', NULL, ?, ?, ?, ?)`
   );
 
-  for (let i = 0; i < anzahl; i++) {
-    einfuegen.run(
-      randomUUID(),
-      anzahl > 1 ? `${row.name} ${i + 1}` : row.name,
-      row.category,
-      wuerfeln ? rollD20() : basis,
-      row.hp ?? 0,
-      row.hp ?? 0,
-      row.ac ?? 10,
-      row.media_id ?? null,
-      body.hidden ? 1 : 0,
-      req.campaignId,
-      now
-    );
-  }
+  // Die Kategorie des Statblocks ('npc' oder 'monster') ist zugleich die Art
+  // des Kämpfers – beide Mengen sind so gewählt, dass das passt.
+  transaktion(() => {
+    for (let i = 0; i < anzahl; i++) {
+      einfuegen.run(
+        randomUUID(),
+        anzahl > 1 ? `${row.name} ${i + 1}` : row.name,
+        row.category,
+        wuerfeln ? rollD20() : basis,
+        row.hp ?? 0,
+        row.hp ?? 0,
+        row.ac ?? 10,
+        row.media_id ?? null,
+        body.hidden ? 1 : 0,
+        req.campaignId,
+        now
+      );
+    }
+  });
 
   chronik.log(
     {
@@ -160,7 +166,13 @@ router.post('/:id/add-to-encounter', (req, res) => {
   res.status(201).json({ created: anzahl });
 });
 
-// POST /api/library/aus-kompendium – Monster aus dem Kompendium übernehmen
+/**
+ * POST /api/library/aus-kompendium – ein Monster aus dem Kompendium übernehmen.
+ *
+ * Der Rumpf ist ein Monster, wie es die 5e-API liefert (`hit_points`,
+ * `armor_class`, `special_abilities` …). Übernommen wird eine Abschrift, kein
+ * Verweis: Danach gehört der Statblock der Spielleitung und darf abweichen.
+ */
 router.post('/aus-kompendium', (req, res) => {
   const m = req.body ?? {};
   if (!m.name) return res.status(400).json({ code: 'monster_fehlt', error: 'Kein Monster übergeben.' });
@@ -178,19 +190,19 @@ router.post('/aus-kompendium', (req, res) => {
   ).run(
     id,
     String(m.name).slice(0, 100),
-    toNumberOrNull(Array.isArray(m.armor_class) ? m.armor_class[0]?.value : m.armor_class, null),
-    toNumberOrNull(m.hit_points, null),
+    zahlOderLeer(Array.isArray(m.armor_class) ? m.armor_class[0]?.value : m.armor_class, null),
+    zahlOderLeer(m.hit_points, null),
     Object.entries(m.speed ?? {})
       .map(([art, wert]) => `${art}: ${wert}`)
       .join(', ')
       .slice(0, 100),
     JSON.stringify({
-      str: toNumberOrNull(m.strength, null),
-      dex: toNumberOrNull(m.dexterity, null),
-      con: toNumberOrNull(m.constitution, null),
-      int: toNumberOrNull(m.intelligence, null),
-      wis: toNumberOrNull(m.wisdom, null),
-      cha: toNumberOrNull(m.charisma, null),
+      str: zahlOderLeer(m.strength, null),
+      dex: zahlOderLeer(m.dexterity, null),
+      con: zahlOderLeer(m.constitution, null),
+      int: zahlOderLeer(m.intelligence, null),
+      wis: zahlOderLeer(m.wisdom, null),
+      cha: zahlOderLeer(m.charisma, null),
     }),
     beschreibe(m.special_abilities),
     beschreibe(m.actions),

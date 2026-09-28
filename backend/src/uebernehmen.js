@@ -1,7 +1,3 @@
-import { randomUUID } from 'node:crypto';
-import { db, getState, setState } from './db.js';
-import { broadcast } from './events.js';
-
 /**
  * Daten von einer Kampagne in eine andere kopieren.
  *
@@ -20,12 +16,11 @@ import { broadcast } from './events.js';
  * „Kampf als Begegnung sichern“, und Begegnungen liegen der ganzen Runde
  * bereit.
  */
-
-/** Die Münzsorten der Beutekiste – dieselbe Ordnung wie in routes/stash.js. */
-const MUENZEN = ['pp', 'gp', 'ep', 'sp', 'cp'];
-const KEINE_MUENZEN = { pp: 0, gp: 0, ep: 0, sp: 0, cp: 0 };
-
-const jetzt = () => new Date().toISOString();
+import { randomUUID } from 'node:crypto';
+import { db, getState, setState, transaktion } from './db.js';
+import { broadcast } from './events.js';
+import { KEINE_MUENZEN, MUENZEN, kiste, muenzen } from './beute.js';
+import { jetzt } from './werte.js';
 
 /**
  * Darf hier hineingelegt werden?
@@ -210,7 +205,7 @@ export function kopiereGegenstand(row, ziel) {
 export function kopiereMuenzen(von, ziel) {
   const hier = getState('beute', von, null);
   if (!hier) return null;
-  const dort = { ...KEINE_MUENZEN, ...(getState('beute', ziel, null) ?? {}) };
+  const dort = muenzen(ziel);
   const summe = { ...KEINE_MUENZEN };
   for (const m of MUENZEN) summe[m] = (Number(dort[m]) || 0) + (Number(hier[m]) || 0);
   setState('beute', ziel, summe);
@@ -283,40 +278,26 @@ export const istArt = (art) => Object.hasOwn(ARTEN, art);
 export function umfang(campaignId) {
   const zahlen = {};
   for (const [art, eintrag] of Object.entries(ARTEN)) zahlen[art] = eintrag.alle(campaignId).length;
-  const muenzen = getState('beute', campaignId, null);
-  return { ...zahlen, muenzen: muenzen ? { ...KEINE_MUENZEN, ...muenzen } : null };
+  // `null` statt einer leeren Börse: „nie etwas hineingelegt“ ist für die
+  // Frage „was nehme ich mit?“ etwas anderes als „gerade leer“.
+  const gelegt = getState('beute', campaignId, null);
+  return { ...zahlen, muenzen: gelegt ? muenzen(campaignId) : null };
 }
 
 /* --- Alles auf einmal ---------------------------------------------------- */
-
-/**
- * Ein Block, der ganz oder gar nicht geschrieben wird.
- *
- * Eine halb kopierte Kampagne – Charaktere da, Szenen nicht – wäre schwerer
- * zu beheben als ein klarer Fehlschlag. Beide Datenbanktreiber verstehen
- * BEGIN und COMMIT; eine eigene Transaktions-API haben sie nicht gemeinsam.
- */
-function imBlock(arbeit) {
-  db.exec('BEGIN');
-  try {
-    const ergebnis = arbeit();
-    db.exec('COMMIT');
-    return ergebnis;
-  } catch (fehler) {
-    db.exec('ROLLBACK');
-    throw fehler;
-  }
-}
 
 /**
  * Alles Gewählte aus einer Kampagne in eine andere.
  *
  * Die Reihenfolge gibt ARTEN vor, nicht der Aufrufer – sie ist keine
  * Geschmacksfrage, sondern hält die Verweise heil.
+ *
+ * Ganz oder gar nicht: Eine halb kopierte Kampagne – Charaktere da, Szenen
+ * nicht – wäre schwerer zu beheben als ein klarer Fehlschlag.
  */
 export function uebernimmAlles(von, ziel, arten) {
   const gewaehlt = Object.keys(ARTEN).filter((art) => arten.includes(art));
-  return imBlock(() => {
+  return transaktion(() => {
     const bericht = {};
     for (const art of gewaehlt) {
       const eintrag = ARTEN[art];
@@ -335,29 +316,9 @@ export function uebernimmAlles(von, ziel, arten) {
  * Wer drüben gerade ein Fenster offen hat, soll nicht erst neu laden müssen.
  *
  * Szenen fehlen hier mit Absicht: Was auf dem Tisch liegt, hängt an der
- * Sicht des Einzelnen und wird von routes/scenes.js verschickt.
+ * Sicht des Einzelnen und wird von spieltisch/melden.js verschickt.
  */
 export function meldeNachZiel(art, ziel) {
   if (art === 'notizen') broadcast('notizen:aktualisiert', {}, { campaignId: ziel });
-  if (art === 'beute') {
-    broadcast(
-      'beute',
-      {
-        items: db
-          .prepare('SELECT * FROM stash_items WHERE campaign_id = ? ORDER BY created_at')
-          .all(ziel)
-          .map((row) => ({
-            id: row.id,
-            name: row.name,
-            qty: row.qty,
-            weight: row.weight,
-            notes: row.notes,
-            holderId: row.holder_id,
-            createdAt: row.created_at,
-          })),
-        coins: { ...KEINE_MUENZEN, ...(getState('beute', ziel, null) ?? {}) },
-      },
-      { campaignId: ziel }
-    );
-  }
+  if (art === 'beute') broadcast('beute', kiste(ziel), { campaignId: ziel });
 }

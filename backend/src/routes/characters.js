@@ -23,11 +23,12 @@
  */
 import { Router } from 'express';
 import { randomUUID } from 'node:crypto';
-import { db } from '../db.js';
+import { db, transaktion } from '../db.js';
 import { isDm, requireAuth, requireDm } from '../auth.js';
 import { broadcast, originClient } from '../events.js';
 import { kopiereCharakter, zielPruefen } from '../uebernehmen.js';
 import { sendeSzene } from '../spieltisch/melden.js';
+import { sendeKampf } from '../kampf/sicht.js';
 
 const router = Router();
 
@@ -175,18 +176,21 @@ router.put('/:id', (req, res) => {
   const row = holen(req.params.id, req.campaignId);
 
   // Trefferpunkte im Kampf mitziehen, damit die Spielleitung sofort sieht,
-  // wenn jemand Schaden einträgt.
+  // wenn jemand Schaden einträgt. Nur was sich wirklich ändert, wird
+  // geschrieben und verkündet: Das Blatt speichert bei jedem Tastendruck,
+  // und nicht jeder davon betrifft die Trefferpunkte.
   const hp = JSON.parse(row.data)?.combat?.hp;
   if (hp && Number.isFinite(Number(hp.current))) {
-    const linked = db.prepare('SELECT id FROM combatants WHERE character_id = ? AND campaign_id = ?').all(row.id, req.campaignId);
-    for (const combatant of linked) {
-      db.prepare('UPDATE combatants SET hp = ?, max_hp = ? WHERE id = ?').run(
-        Number(hp.current) || 0,
-        Number(hp.max) || 0,
-        combatant.id
-      );
+    const aktuell = Number(hp.current) || 0;
+    const hoechst = Number(hp.max) || 0;
+    const veraltet = db
+      .prepare('SELECT id FROM combatants WHERE character_id = ? AND campaign_id = ? AND (hp != ? OR max_hp != ?)')
+      .all(row.id, req.campaignId, aktuell, hoechst);
+    if (veraltet.length) {
+      const setzen = db.prepare('UPDATE combatants SET hp = ?, max_hp = ? WHERE id = ?');
+      for (const { id } of veraltet) setzen.run(aktuell, hoechst, id);
+      sendeKampf(req.campaignId);
     }
-    if (linked.length) broadcast('kampf:aktualisiert', {}, { campaignId: req.campaignId });
   }
 
   if (sinneVorher !== sinneNachher) sendeSzene(req.campaignId);
@@ -205,23 +209,26 @@ router.patch('/:id', (req, res) => {
 
   const { ownerId, shared, npc } = req.body ?? {};
 
-  if (ownerId !== undefined) {
-    // Nur die Spielleitung teilt Charaktere zu.
-    if (!isDm(req.user)) return res.status(403).json({ code: 'nur_spielleitung', error: 'Das darf nur die Spielleitung.' });
-    if (ownerId !== null && !db.prepare('SELECT id FROM users WHERE id = ?').get(ownerId)) {
-      return res.status(400).json({ code: 'konto_nicht_gefunden', error: 'Konto nicht gefunden.' });
+  // Erst alle Rechte prüfen, dann schreiben. Andersherum stünde nach
+  // `{ shared, npc }` von einem Spieler das `shared` schon geändert da, ehe
+  // das `npc` mit 403 abgewiesen wird – eine Absage, die doch etwas getan hat.
+  // Zuteilen und hinter den Schirm holen darf nur die Spielleitung.
+  if ((ownerId !== undefined || npc !== undefined) && !isDm(req.user)) {
+    return res.status(403).json({ code: 'nur_spielleitung', error: 'Das darf nur die Spielleitung.' });
+  }
+  if (ownerId != null && !db.prepare('SELECT id FROM users WHERE id = ?').get(ownerId)) {
+    return res.status(400).json({ code: 'konto_nicht_gefunden', error: 'Konto nicht gefunden.' });
+  }
+
+  transaktion(() => {
+    if (ownerId !== undefined) db.prepare('UPDATE characters SET owner_id = ? WHERE id = ?').run(ownerId, existing.id);
+    if (shared !== undefined) db.prepare('UPDATE characters SET shared = ? WHERE id = ?').run(shared ? 1 : 0, existing.id);
+    // Wer hinter dem Schirm liegt, ist nicht mehr geteilt – steht npc mit im
+    // Rumpf, gewinnt es deshalb gegen ein gleichzeitiges `shared`.
+    if (npc !== undefined) {
+      db.prepare('UPDATE characters SET npc = ?, shared = ? WHERE id = ?').run(npc ? 1 : 0, npc ? 0 : 1, existing.id);
     }
-    db.prepare('UPDATE characters SET owner_id = ? WHERE id = ?').run(ownerId, existing.id);
-  }
-  if (shared !== undefined) {
-    db.prepare('UPDATE characters SET shared = ? WHERE id = ?').run(shared ? 1 : 0, existing.id);
-  }
-  if (npc !== undefined) {
-    // Ein Blatt hinter den Schirm holen darf nur die Spielleitung – und wer
-    // dort liegt, ist nicht mehr geteilt.
-    if (!isDm(req.user)) return res.status(403).json({ code: 'nur_spielleitung', error: 'Das darf nur die Spielleitung.' });
-    db.prepare('UPDATE characters SET npc = ?, shared = ? WHERE id = ?').run(npc ? 1 : 0, npc ? 0 : 1, existing.id);
-  }
+  });
 
   const row = holen(existing.id, req.campaignId);
   meldeAenderung(row, req);
@@ -246,6 +253,13 @@ router.post('/:id/duplicate', (req, res) => {
   if (!existing) return res.status(404).json({ code: 'charakter_nicht_gefunden', error: 'Charakter nicht gefunden' });
   if (!darfSehen(req.user, existing)) return res.status(403).json({ code: 'blatt_nicht_sichtbar', error: 'Dieses Blatt ist nicht für dich bestimmt.' });
 
+  // Die Abschrift ist *nie* ein NSC-Blatt, auch nicht die eines NSC – das
+  // sieht nach einem Versehen aus, ist aber der Weg, auf dem eine Vorlage
+  // vom Schirm auf den Tisch kommt (siehe vorlagen/index.js): Abschrift
+  // nehmen, jemandem zuteilen, fertig. Wer einen NSC doppelt braucht, legt
+  // die Abschrift mit PATCH { npc: true } zurück hinter den Schirm.
+  // `shared` wandert mit; aus einem NSC-Blatt (nie geteilt) wird damit ein
+  // ungeteiltes Blatt der Spielleitung, das die Runde noch nicht sieht.
   const id = randomUUID();
   const now = new Date().toISOString();
   db.prepare(
@@ -277,7 +291,9 @@ router.post('/:id/kopieren', requireDm, zielPruefen, (req, res) => {
   res.status(201).json({ ...kopiert, campaignId: req.ziel });
 });
 
-// GET /api/characters/:id/all – Rohdaten aller Blätter für die Spielleitung
+// GET /api/characters/verwaltung/alle – alle Blätter der Kampagne für die
+// Verwaltung, NSC eingeschlossen. Zwei Pfadteile, damit es sich nie mit
+// `GET /:id` überschneidet.
 router.get('/verwaltung/alle', requireDm, (req, res) => {
   res.json(db.prepare(`${SELECT} WHERE c.campaign_id = ? ORDER BY c.name COLLATE NOCASE`).all(req.campaignId).map(summary));
 });

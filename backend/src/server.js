@@ -26,7 +26,6 @@
 // Datenbank etwa sucht ihren Ordner schon beim Laden.
 import { umgebung } from './umgebung.js';
 import express from 'express';
-import cors from 'cors';
 import os from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs';
@@ -66,15 +65,21 @@ const PORT = Number(process.env.PORT) || 3001;
 const TRUST_PROXY = process.env.TRUST_PROXY || 'loopback';
 app.set('trust proxy', /^\d+$/.test(TRUST_PROXY) ? Number(TRUST_PROXY) : TRUST_PROXY);
 
-// Beim Betrieb über eine feste Adresse kommen Oberfläche und API aus derselben
-// Quelle; die Ausnahme ist die Entwicklung mit Vite auf Port 5173.
-app.use(cors({ origin: true, credentials: true }));
+// Kein CORS, und das mit Absicht. Oberfläche und API kommen immer aus
+// derselben Quelle – im Betrieb liefert dieser Server beides aus, beim
+// Entwickeln reicht Vite `/api` an ihn durch (vite.config.js). Eine
+// CORS-Freigabe mit Anmelde-Cookie für jede beliebige Herkunft, wie sie hier
+// früher stand, hätte jeder Seite im selben Netz (oder auf localhost) erlaubt,
+// im Namen der angemeldeten Spielleitung zu lesen und zu schreiben.
 
 app.use((req, res, next) => {
   // Hochgeladene Karten und Bildnisse gibt der Server so zurück, wie sie
   // abgelegt wurden – der Browser soll den Typ nicht selbst erraten.
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'same-origin');
+  // Keine fremde Seite darf den Almanach in einen Rahmen setzen und darüber
+  // einen unsichtbaren Knopf legen („Kampagne endgültig entfernen“).
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   next();
 });
 
@@ -138,7 +143,7 @@ app.use('/api', (req, res) => {
   res.status(404).json({ code: 'route_unbekannt', error: 'Diesen Weg kennt der Almanach nicht.' });
 });
 
-// Serve the built frontend when it has been copied here (npm run build).
+// Die gebaute Oberfläche, sofern `npm run build` sie hierher kopiert hat.
 const frontendDist = path.join(__dirname, '..', 'public');
 const hasFrontend = fs.existsSync(path.join(frontendDist, 'index.html'));
 if (hasFrontend) {

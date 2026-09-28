@@ -78,9 +78,6 @@ function openDatabase() {
 const { db, driver } = openDatabase();
 export { db, driver };
 
-db.exec('PRAGMA journal_mode = WAL');
-db.exec('PRAGMA foreign_keys = ON');
-
 // WAL: Lesen und Schreiben behindern sich nicht gegenseitig – am Spieltisch
 // liest ein halbes Dutzend Fenster, während die Spielleitung schreibt.
 // Fremdschlüssel sind in SQLite standardmäßig *aus*; ohne diese Zeile

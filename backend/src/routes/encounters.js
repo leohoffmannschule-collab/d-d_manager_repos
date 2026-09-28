@@ -1,24 +1,27 @@
-import { Router } from 'express';
-import { randomUUID } from 'node:crypto';
-import { db } from '../db.js';
-import { requireDm } from '../auth.js';
-import { rollD20 } from '../dice.js';
-import * as chronik from '../chronicle.js';
-import { sendeKampf } from '../kampf/sicht.js';
-
-const router = Router();
-
 /**
- * Vorbereitete Begegnungen sind die halbe Vorbereitung eines Abends – und
- * gehen die Runde nichts an.
+ * Vorbereitete Begegnungen: „Wache am Stadttor“, „3 Goblins im Hohlweg“ –
+ * einmal zusammengestellt, beliebig oft mit einem Klick in den Kampf gesetzt.
+ *
+ * Nicht zu verwechseln mit routes/encounter.js (ohne s), dem *laufenden*
+ * Kampf. Eine Begegnung ist Vorbereitung und geht die Runde nichts an –
+ * deshalb gilt `requireDm` für jeden Weg hier.
  *
  * Wie das Bestiarium gehören sie der ganzen Runde: „Wache am Stadttor“ lässt
  * sich in jeder Geschichte stellen. Gestellt wird sie dann aber in genau
  * einer Kampagne – die Kämpfer, die dabei entstehen, bleiben dort.
  */
-router.use(requireDm);
+import { Router } from 'express';
+import { randomUUID } from 'node:crypto';
+import { db, transaktion } from '../db.js';
+import { requireDm } from '../auth.js';
+import { rollD20 } from '../dice.js';
+import * as chronik from '../chronicle.js';
+import { sendeKampf } from '../kampf/sicht.js';
+import { TYPEN } from '../kampf/umwandlung.js';
+import { hatText, toNumber } from '../werte.js';
 
-const toNumber = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
+const router = Router();
+router.use(requireDm);
 
 function rowToEncounter(row) {
   return {
@@ -37,16 +40,21 @@ function rowToEncounter(row) {
  */
 function saubereEintraege(liste) {
   if (!Array.isArray(liste)) return [];
-  return liste.slice(0, 50).map((e) => ({
-    libraryId: typeof e.libraryId === 'string' ? e.libraryId : null,
-    name: String(e.name ?? 'Namenlos').slice(0, 100),
-    type: ['pc', 'npc', 'monster'].includes(e.type) ? e.type : 'monster',
-    hp: toNumber(e.hp, 0),
-    ac: toNumber(e.ac, 10),
-    count: Math.min(Math.max(parseInt(e.count, 10) || 1, 1), 20),
-    hidden: !!e.hidden,
-    mediaId: typeof e.mediaId === 'string' ? e.mediaId : null,
-  }));
+  return liste
+    // `null` oder eine Zahl in der Liste ließe `e.name` unten werfen – aus
+    // einem kaputten Eintrag würde ein 500 für die ganze Begegnung.
+    .filter((e) => e && typeof e === 'object')
+    .slice(0, 50)
+    .map((e) => ({
+      libraryId: typeof e.libraryId === 'string' ? e.libraryId : null,
+      name: String(e.name ?? 'Namenlos').slice(0, 100),
+      type: TYPEN.has(e.type) ? e.type : 'monster',
+      hp: toNumber(e.hp, 0),
+      ac: toNumber(e.ac, 10),
+      count: Math.min(Math.max(parseInt(e.count, 10) || 1, 1), 20),
+      hidden: !!e.hidden,
+      mediaId: typeof e.mediaId === 'string' ? e.mediaId : null,
+    }));
 }
 
 router.get('/', (req, res) => {
@@ -55,7 +63,7 @@ router.get('/', (req, res) => {
 
 router.post('/', (req, res) => {
   const body = req.body ?? {};
-  if (!body.name || typeof body.name !== 'string' || !body.name.trim()) {
+  if (!hatText(body.name)) {
     return res.status(400).json({ code: 'name_fehlt', error: 'Name ist erforderlich.' });
   }
   const id = randomUUID();
@@ -75,7 +83,7 @@ router.put('/:id', (req, res) => {
   if (!row) return res.status(404).json({ code: 'begegnung_nicht_gefunden', error: 'Begegnung nicht gefunden.' });
   const body = req.body ?? {};
   db.prepare('UPDATE encounters SET name = ?, notes = ?, entries = ? WHERE id = ?').run(
-    typeof body.name === 'string' && body.name.trim() ? body.name.trim().slice(0, 100) : row.name,
+    hatText(body.name) ? body.name.trim().slice(0, 100) : row.name,
     typeof body.notes === 'string' ? body.notes.slice(0, 4000) : row.notes,
     'entries' in body ? JSON.stringify(saubereEintraege(body.entries)) : row.entries,
     row.id
@@ -102,25 +110,31 @@ router.post('/:id/stellen', (req, res) => {
      VALUES (?, ?, ?, ?, ?, ?, ?, '[]', '', NULL, ?, ?, ?, ?)`
   );
 
-  let gestellt = 0;
-  for (const e of eintraege) {
-    for (let i = 0; i < e.count; i++) {
-      einfuegen.run(
-        randomUUID(),
-        e.count > 1 ? `${e.name} ${i + 1}` : e.name,
-        e.type,
-        wuerfeln ? rollD20() : 0,
-        e.hp,
-        e.hp,
-        e.ac,
-        e.mediaId ?? null,
-        e.hidden ? 1 : 0,
-        req.campaignId,
-        now
-      );
-      gestellt += 1;
+  // Bis zu fünfzig Gruppen zu je zwanzig: Einzeln geschrieben wären das bis
+  // zu tausend Schreibvorgänge auf die SD-Karte, und ein Abbruch ließe eine
+  // halbe Begegnung im Kampf stehen. Als ein Block ist es beides nicht.
+  const gestellt = transaktion(() => {
+    let zahl = 0;
+    for (const e of eintraege) {
+      for (let i = 0; i < e.count; i++) {
+        einfuegen.run(
+          randomUUID(),
+          e.count > 1 ? `${e.name} ${i + 1}` : e.name,
+          e.type,
+          wuerfeln ? rollD20() : 0,
+          e.hp,
+          e.hp,
+          e.ac,
+          e.mediaId ?? null,
+          e.hidden ? 1 : 0,
+          req.campaignId,
+          now
+        );
+        zahl += 1;
+      }
     }
-  }
+    return zahl;
+  });
 
   // Verborgene Gegner tauchen nicht in der für alle sichtbaren Chronik auf.
   const offenkundig = eintraege.filter((e) => !e.hidden);
@@ -147,7 +161,7 @@ router.post('/:id/stellen', (req, res) => {
 
 // POST /api/encounters/aus-kampf – den laufenden Kampf als Begegnung sichern
 router.post('/aus-kampf', (req, res) => {
-  const name = typeof req.body?.name === 'string' && req.body.name.trim() ? req.body.name.trim() : 'Gesicherter Kampf';
+  const name = hatText(req.body?.name) ? req.body.name.trim() : 'Gesicherter Kampf';
   const kaempfer = db.prepare("SELECT * FROM combatants WHERE type != 'pc' AND campaign_id = ?").all(req.campaignId);
   if (kaempfer.length === 0) {
     return res.status(400).json({ code: 'kampf_ohne_gegner', error: 'Im Kampf steht gerade kein Gegner, den man sichern könnte.' });

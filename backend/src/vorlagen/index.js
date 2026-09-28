@@ -1,7 +1,3 @@
-import { db, getState, setState } from '../db.js';
-import { blattAus } from './bauen.js';
-import { HELDEN } from './helden.js';
-
 /**
  * Die Vorlagen säen.
  *
@@ -19,6 +15,9 @@ import { HELDEN } from './helden.js';
  * wächst beim nächsten Start nicht nach. Wer sie zurückhaben will, ruft
  * `npm run vorlagen` auf.
  */
+import { db, getState, setState } from '../db.js';
+import { blattAus } from './bauen.js';
+import { HELDEN } from './helden.js';
 
 const SCHLUESSEL = 'vorlagen:gesaet';
 

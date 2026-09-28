@@ -8,7 +8,7 @@
  * angezeigt und dann zum Server geschickt. Käme jede Figur erst nach der
  * Antwort an, ruckelte das Ziehen um die Laufzeit der Anfrage hinterher.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { mapsApi, scenesApi } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import { ausBase64, mitFeldern, rasterBereich } from '../rasterkarte.js';
@@ -110,11 +110,26 @@ export function useSzenenListe() {
  */
 export function usePings(dauer = 2600) {
   const [pings, setPings] = useState([]);
+  // Die laufenden Zeitgeber, damit sie beim Verlassen des Tisches nicht
+  // noch in einen Zustand schreiben, den es nicht mehr gibt.
+  const zeitgeber = useRef(new Set());
+
+  useEffect(() => {
+    const laufend = zeitgeber.current;
+    return () => {
+      for (const t of laufend) clearTimeout(t);
+      laufend.clear();
+    };
+  }, []);
 
   useLive('ping', (ping) => {
     const key = `${ping.at}-${ping.name}`;
     setPings((alle) => [...alle, { ...ping, key }]);
-    setTimeout(() => setPings((alle) => alle.filter((p) => p.key !== key)), dauer);
+    const t = setTimeout(() => {
+      zeitgeber.current.delete(t);
+      setPings((alle) => alle.filter((p) => p.key !== key));
+    }, dauer);
+    zeitgeber.current.add(t);
   });
 
   return pings;

@@ -24,7 +24,9 @@
     "vertrag": "node scripts/vertrag.mjs",
     "blattprobe": "node scripts/blattprobe.mjs",
     "klangprobe": "node scripts/klangprobe.mjs",
-    "einfuhrprobe": "node scripts/einfuhrprobe.mjs"
+    "einfuhrprobe": "node scripts/einfuhrprobe.mjs",
+    "lint": "npm run lint --prefix frontend && node frontend/node_modules/oxlint/bin/oxlint backend/src backend/scripts scripts",
+    "test": "npm run lint && npm run einfuhrprobe && npm run blattprobe && npm run klangprobe && npm run vertrag"
   },
   "devDependencies": {
     "concurrently": "^10.0.5"

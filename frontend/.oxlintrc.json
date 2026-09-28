@@ -3,6 +3,24 @@
   "plugins": ["react", "oxc"],
   "rules": {
     "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
+    "react/only-export-components": ["warn", { "allowConstantExport": true }],
+
+    // Beide Regeln sind Ratschläge für den React Compiler, den der Almanach
+    // nicht benutzt (vite.config.js baut mit dem gewöhnlichen React-Plugin).
+    // `set-state-in-effect` träfe außerdem genau die zwei Muster, die hier
+    // Absicht sind: Laden in einem Effekt (lib/daten/grundlage.js) und das
+    // Zurücksetzen, wenn sich eine Kennung ändert (Charakterblatt).
+    "react/set-state-in-effect": "off",
+    "react/preserve-manual-memoization": "off"
+  },
+  "overrides": [
+    {
+      // Ein Context-Modul führt seinen Anbieter *und* die Haken dazu aus
+      // (`AuthProvider` und `useAuth`) – so gehören sie zusammen. Schnelles
+      // Nachladen im Entwickeln lädt diese Dateien dafür ganz neu; das ist
+      // der Preis, und er ist klein.
+      "files": ["src/lib/auth.jsx", "src/lib/campaign.jsx", "src/lib/live.jsx"],
+      "rules": { "react/only-export-components": "off" }
+    }
+  ]
 }

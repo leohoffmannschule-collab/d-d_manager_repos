@@ -1,20 +1,46 @@
-import { randomInt } from 'node:crypto';
-
 /**
- * Würfelt einen Ausdruck wie `2d6+3`, `1w20-1` oder `4d8`.
+ * Würfelausdrücke auswerten – `2d6+3`, `1w20-1`, `4d8`.
  *
  * Deutsche und englische Schreibweise sind gleichwertig (W wie Würfel,
  * d wie die). Gewürfelt wird mit `randomInt` aus dem Krypto-Modul – nicht
  * weil es hier auf Sicherheit ankäme, sondern weil es gleichmäßig verteilt
  * ist, anders als das gern gesehene `Math.floor(Math.random() * n)`.
  */
+import { randomInt } from 'node:crypto';
+
+// Ein Glied: `2d6`, `d20` oder eine nackte Zahl. Ein ganzer Ausdruck: Glieder,
+// zwischen denen *immer* ein Plus oder Minus steht.
+const GLIED = '(?:\\d*d\\d+|\\d+)';
+const AUSDRUCK = new RegExp(`^[+-]?${GLIED}(?:[+-]${GLIED})*$`);
+
+/**
+ * Einen Ausdruck würfeln.
+ *
+ * Vorteil und Nachteil gelten für den ersten einzelnen W20 im Ausdruck
+ * (`1W20+5`); ein Ausdruck ohne W20 wird davon nicht berührt.
+ *
+ * @param {string} expression z. B. `2W6+3`
+ * @param {'normal'|'advantage'|'disadvantage'} [mode] alles andere gilt als 'normal'
+ * @returns {{ total: number, details: object[] }} Summe und je Glied, was fiel
+ * @throws {Error} mit einem Satz für die Runde, wenn der Ausdruck nicht taugt
+ */
 export function rollDice(expression, mode = 'normal') {
-  const cleaned = String(expression).replace(/\s+/g, '').toLowerCase().replaceAll('w', 'd');
+  const roh = String(expression);
+  // Leerzeichen *zwischen* Gliedern sind erlaubt („2W6 + 3“), mitten in einer
+  // Zahl nicht: Aus „1W20 5“ würde nach dem Entfernen sonst stillschweigend
+  // ein zweihundertfünfseitiger Würfel.
+  if (/\d\s+\d/.test(roh)) throw new Error('Ungültiger Würfelausdruck.');
+  const cleaned = roh.replace(/\s+/g, '').toLowerCase().replaceAll('w', 'd');
   if (!cleaned) throw new Error('Ungültiger Würfelausdruck.');
   if (cleaned.length > 200) throw new Error('Würfelausdruck ist zu lang.');
+  // Der Ausdruck muss als Ganzes passen. Dass jedes Stück für sich ein Glied
+  // ist, genügt nicht – sonst ginge „d6d8“ als stillschweigende Summe durch.
+  if (!AUSDRUCK.test(cleaned)) throw new Error('Ungültiger Würfelausdruck.');
+  // Ein unbekannter Modus darf nicht heimlich zu Nachteil werden (unten
+  // wird nur zwischen „advantage“ und allem anderen unterschieden).
+  if (mode !== 'advantage' && mode !== 'disadvantage') mode = 'normal';
 
   const tokenRegex = /([+-]?)(\d*d\d+|\d+)/g;
-  if (cleaned.replace(tokenRegex, '').length > 0) throw new Error('Ungültiger Würfelausdruck.');
 
   let match;
   let total = 0;

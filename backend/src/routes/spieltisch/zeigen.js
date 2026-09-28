@@ -3,10 +3,15 @@
  *
  * Nichts davon wird gespeichert. Das Ereignis geht hinaus, leuchtet auf den
  * Schirmen kurz auf und ist danach fort.
+ *
+ * Hinter dem Vorhang zeigt die Spielleitung nur sich selbst: Die Runde hat
+ * dort keine Karte, und schon die Stelle eines Zeigefingers verriete, wo auf
+ * dem Brett gerade etwas vorbereitet wird.
  */
 import { Router } from 'express';
 import { broadcast } from '../../events.js';
-import { toNumber } from '../../spieltisch/umwandlung.js';
+import { vorhangZu } from '../../spieltisch/umwandlung.js';
+import { toNumber } from '../../werte.js';
 
 const router = Router();
 
@@ -16,7 +21,7 @@ router.post('/ping', (req, res) => {
   broadcast(
     'ping',
     { x: toNumber(body.x, 0), y: toNumber(body.y, 0), color: req.user.color, name: req.user.name, at: Date.now() },
-    { campaignId: req.campaignId }
+    { campaignId: req.campaignId, ...(vorhangZu(req.campaignId) ? { role: 'sl' } : {}) }
   );
   res.status(204).end();
 });

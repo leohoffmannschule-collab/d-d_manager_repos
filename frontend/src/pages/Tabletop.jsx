@@ -10,7 +10,6 @@ import { useCharaktere, useKampf, useNotizen, usePings, useSzene } from '../lib/
 import { useLive } from '../lib/live.jsx';
 import { IconFog, IconHeart, IconMap, IconPlus, IconScroll, IconSwords } from '../components/icons.jsx';
 
-/** Nebel-Änderungen werden gebündelt gesendet, nicht Feld für Feld. */
 /**
  * Der Spieltisch: Karte, Figuren, Nebel – und rechts die Leiste mit Kampf,
  * Beute und Handzetteln.
@@ -107,7 +106,7 @@ export default function Tabletop() {
    * was sichtbar an seinem eigenen Charakterblatt hängt.
    *
    * Auch das ist nur Höflichkeit – der Server prüft es noch einmal
-   * (siehe backend/src/routes/scenes.js, PATCH /figuren/:id).
+   * (siehe backend/src/spieltisch/melden.js, `darfBewegen`).
    */
   const darfBewegen = useCallback(
     (token) => isDm || (!token.hidden && !!token.characterId && meineKennungen.includes(token.characterId)),
@@ -122,7 +121,14 @@ export default function Tabletop() {
     [figurSetzen, ladeSzene]
   );
 
-  /** Malen fühlt sich flüssig an, weil der Nebel zuerst lokal weicht. */
+  /**
+   * Malen fühlt sich flüssig an, weil der Nebel zuerst lokal weicht.
+   *
+   * Schlägt das Senden fehl, wird die Szene neu geladen – sonst sähe die
+   * Spielleitung aufgedecktes Land, das die Runde nie zu sehen bekommt.
+   * Ein Strich, der beim Verlassen des Tisches noch im Puffer liegt, geht
+   * trotzdem hinaus: Der Zeitgeber läuft weiter, und das ist gewollt.
+   */
   const nebelMalen = useCallback(
     (cells, revealed) => {
       if (!scene) return;
@@ -136,13 +142,14 @@ export default function Tabletop() {
         pinselZeit.current = null;
         const { auf, zu } = pinselPuffer.current;
         pinselPuffer.current = { auf: new Set(), zu: new Set() };
-        if (auf.size) scenesApi.fog(scene.id, [...auf], true).catch(() => {});
-        if (zu.size) scenesApi.fog(scene.id, [...zu], false).catch(() => {});
+        if (auf.size) scenesApi.fog(scene.id, [...auf], true).catch(() => ladeSzene());
+        if (zu.size) scenesApi.fog(scene.id, [...zu], false).catch(() => ladeSzene());
       }, PINSEL_MS);
     },
-    [scene, nebelSetzen]
+    [scene, nebelSetzen, ladeSzene]
   );
 
+  // Ein verlorener Zeigefinger ist kein Fehler, den jemand sehen muss.
   const zeigen = useCallback((punkt) => {
     scenesApi.ping(Math.round(punkt.x), Math.round(punkt.y)).catch(() => {});
   }, []);

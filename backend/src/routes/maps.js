@@ -7,44 +7,38 @@
  *   Karte – Vorbereitung. Bild, Raster, Maßstab, Schlagworte, Notizen.
  *           Ändert sich im Spiel nicht.
  *   Szene – eine Karte *im Spiel*: mit Nebel, Figuren und dem, was der
- *           Abend daraus macht (siehe routes/scenes.js).
+ *           Abend daraus macht (siehe routes/spieltisch/).
  *
  * „Auflegen“ holt die zuletzt aus dieser Karte gelegte Szene samt Nebel
  * zurück; mit `frisch: true` entsteht stattdessen eine neue unter
  * geschlossenem Nebel. So kann dieselbe Taverne zweimal im Abenteuer
  * vorkommen, einmal erkundet und einmal nicht.
  *
- * Karten gehören der ganzen Runde. Wird eine gelöscht, räumt dieser Weg
- * auch ihre Bilddateien weg – aber nur, wenn keine Szene mehr darauf zeigt.
+ * Karten gehören der ganzen Runde, nicht einer Kampagne: Das Raster einer
+ * Taverne einmal auszurichten genügt, dieselbe Taverne steht in jeder
+ * Geschichte gleich da. Was daraus im Spiel wird – die Szene mit Nebel und
+ * Figuren –, gehört dagegen zu genau einer Kampagne; die eine Runde wischt
+ * der anderen also keinen Nebel weg.
+ *
+ * Wird eine Karte gelöscht, räumt dieser Weg auch ihre Bilddateien weg –
+ * aber nur, wenn nichts anderes mehr darauf zeigt.
  */
 import { Router } from 'express';
 import fs from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { db, mediaDir } from '../db.js';
+import { db, mediaDir, transaktion } from '../db.js';
 import { requireDm } from '../auth.js';
 import { aktiviereSzene } from '../spieltisch/melden.js';
-import { klangAuflegen } from './ambience.js';
+import { klangAuflegen } from '../klang.js';
+import { clamp, hatText, schlagworte, toNumber } from '../werte.js';
 
 const router = Router();
 
-/**
- * Die Kartenbibliothek gehört der ganzen Runde, nicht einer Kampagne.
- *
- * Eine Karte ist Vorbereitung: ein Bild samt einmal ausgerichtetem Raster.
- * Diese Arbeit ein zweites Mal zu machen, nur weil eine neue Geschichte
- * beginnt, wäre unsinnig – dieselbe Taverne steht in jeder Kampagne gleich da.
- *
- * Was daraus im Spiel wird, bleibt dagegen streng getrennt: Die **Szene** –
- * also die Karte auf dem Tisch, mit Nebel und Figuren – gehört zu genau einer
- * Kampagne. Die eine Runde wischt der anderen also keinen Nebel weg.
- *
- * Und weiterhin: Was hier liegt, hat die Runde noch nicht gesehen.
- */
+// Was hier liegt, hat die Runde noch nicht gesehen – jeder Weg ist Sache der
+// Spielleitung. Warum Karten der ganzen Runde gehören und Szenen einer
+// Kampagne, steht im Kopf dieser Datei.
 router.use(requireDm);
-
-const toNumber = (wert, ersatz) => (Number.isFinite(Number(wert)) ? Number(wert) : ersatz);
-const clamp = (wert, min, max) => Math.min(max, Math.max(min, wert));
 
 function rowToMap(row) {
   return {
@@ -67,10 +61,6 @@ function rowToMap(row) {
 }
 
 const holen = (id) => db.prepare('SELECT * FROM maps WHERE id = ?').get(id);
-
-const sauberesSchlagwort = (t) => typeof t === 'string' && t.trim();
-const schlagworte = (liste) =>
-  Array.isArray(liste) ? liste.filter(sauberesSchlagwort).map((t) => t.trim().slice(0, 40)).slice(0, 12) : [];
 
 /**
  * Ein Bild löschen, aber nur, wenn es sonst niemand mehr braucht. Eine Szene,
@@ -109,7 +99,7 @@ router.get('/', (req, res) => {
 // POST /api/maps
 router.post('/', (req, res) => {
   const body = req.body ?? {};
-  if (!body.name || typeof body.name !== 'string' || !body.name.trim()) {
+  if (!hatText(body.name)) {
     return res.status(400).json({ code: 'name_fehlt', error: 'Name ist erforderlich.' });
   }
   const id = randomUUID();
@@ -146,7 +136,7 @@ router.put('/:id', (req, res) => {
                      unit = ?, scale = ?, ambience_id = ?
        WHERE id = ?`
   ).run(
-    typeof body.name === 'string' && body.name.trim() ? body.name.trim().slice(0, 120) : row.name,
+    hatText(body.name) ? body.name.trim().slice(0, 120) : row.name,
     'tags' in body ? JSON.stringify(schlagworte(body.tags)) : row.tags,
     typeof body.notes === 'string' ? body.notes.slice(0, 2000) : row.notes,
     'gridSize' in body ? clamp(toNumber(body.gridSize, row.grid_size), 10, 500) : row.grid_size,
@@ -165,10 +155,12 @@ router.delete('/:id', (req, res) => {
   const row = holen(req.params.id);
   if (!row) return res.status(404).json({ code: 'karte_nicht_gefunden', error: 'Karte nicht gefunden.' });
 
-  db.prepare('DELETE FROM maps WHERE id = ?').run(row.id);
-  // Szenen aus dieser Karte bleiben liegen – sie zeigen nur nicht mehr auf ein
-  // Blatt, das es nicht mehr gibt.
-  db.prepare('UPDATE scenes SET map_id = NULL WHERE map_id = ?').run(row.id);
+  transaktion(() => {
+    db.prepare('DELETE FROM maps WHERE id = ?').run(row.id);
+    // Szenen aus dieser Karte bleiben liegen – sie zeigen nur nicht mehr auf ein
+    // Blatt, das es nicht mehr gibt.
+    db.prepare('UPDATE scenes SET map_id = NULL WHERE map_id = ?').run(row.id);
+  });
   // Erst nach dem Löschen prüfen, sonst zählt die Karte sich selbst mit.
   bildFreigeben(row.media_id);
   bildFreigeben(row.thumb_media_id);
@@ -202,7 +194,7 @@ router.post('/:id/auflegen', (req, res) => {
   }
 
   const id = randomUUID();
-  const name = typeof req.body?.name === 'string' && req.body.name.trim() ? req.body.name.trim() : row.name;
+  const name = hatText(req.body?.name) ? req.body.name.trim() : row.name;
 
   db.prepare(
     `INSERT INTO scenes (id, name, media_id, width, height, grid_size, grid_offset_x, grid_offset_y,

@@ -13,12 +13,17 @@ import { db, setState } from '../../db.js';
 import { requireDm } from '../../auth.js';
 import { rollD20 } from '../../dice.js';
 import * as chronik from '../../chronicle.js';
-import { alleKaempfer, meta, toNumber } from '../../kampf/umwandlung.js';
+import { alleKaempfer, meta } from '../../kampf/umwandlung.js';
+import { toNumber } from '../../werte.js';
 import { antwort } from '../../kampf/sicht.js';
 
 const router = Router();
 
-// POST /api/encounter/next-turn  |  /prev-turn
+/**
+ * POST /api/encounter/next-turn  |  /prev-turn
+ *
+ * @param {1|-1} richtung vorwärts oder rückwärts durch die Reihenfolge
+ */
 function zug(richtung) {
   return (req, res) => {
     const kaempfer = alleKaempfer(req.campaignId);
@@ -28,6 +33,8 @@ function zug(richtung) {
       return antwort(req, res);
     }
     const index = kaempfer.findIndex((c) => c.id === aktuell.activeCombatantId);
+    // Noch niemand dran (oder der Aktive wurde entfernt): Vorwärts fängt
+    // beim Ersten an, rückwärts beim Letzten – ohne die Runde zu zählen.
     if (index === -1) {
       setState('kampf', req.campaignId, {
         ...aktuell,
@@ -76,10 +83,13 @@ router.post('/reset', requireDm, (req, res) => {
 
 // POST /api/encounter/roll-initiative – für alle NSC und Monster ohne Wert
 router.post('/roll-initiative', requireDm, (req, res) => {
+  // Helden würfeln selbst (siehe kaempfer.js, /initiative); hier nur, was
+  // die Spielleitung führt. Eine 0 gilt als „noch nicht gewürfelt“.
   const nurLeere = req.body?.onlyEmpty !== false;
+  const setzen = db.prepare('UPDATE combatants SET initiative = ? WHERE id = ?');
   for (const row of db.prepare("SELECT * FROM combatants WHERE type != 'pc' AND campaign_id = ?").all(req.campaignId)) {
     if (nurLeere && row.initiative !== 0) continue;
-    db.prepare('UPDATE combatants SET initiative = ? WHERE id = ?').run(rollD20(), row.id);
+    setzen.run(rollD20(), row.id);
   }
   antwort(req, res);
 });
@@ -92,17 +102,20 @@ router.post('/party', requireDm, (req, res) => {
       .all(req.campaignId)
       .map((r) => r.character_id)
   );
+  // „Die Runde“ sind die geteilten Blätter – NSC-Blätter nie, auch nicht,
+  // wenn eines versehentlich als geteilt markiert ist.
   const charaktere = db.prepare('SELECT * FROM characters WHERE shared = 1 AND npc = 0 AND campaign_id = ?').all(req.campaignId);
   const now = new Date().toISOString();
+  const einfuegen = db.prepare(
+    `INSERT INTO combatants (id, name, type, initiative, hp, max_hp, ac, conditions, notes, character_id, media_id, hidden, campaign_id, created_at)
+     VALUES (?, ?, 'pc', 0, ?, ?, ?, '[]', '', ?, ?, 0, ?, ?)`
+  );
 
   for (const row of charaktere) {
     if (vorhanden.has(row.id)) continue;
     const data = JSON.parse(row.data);
     const hp = data?.combat?.hp ?? {};
-    db.prepare(
-      `INSERT INTO combatants (id, name, type, initiative, hp, max_hp, ac, conditions, notes, character_id, media_id, hidden, campaign_id, created_at)
-       VALUES (?, ?, 'pc', 0, ?, ?, ?, '[]', '', ?, ?, 0, ?, ?)`
-    ).run(
+    einfuegen.run(
       randomUUID(),
       row.name,
       toNumber(hp.current, 0),

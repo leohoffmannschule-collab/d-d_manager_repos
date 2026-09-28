@@ -11,22 +11,29 @@ import { randomUUID } from 'node:crypto';
 import { db, setState } from '../../db.js';
 import { isDm, requireDm } from '../../auth.js';
 import * as chronik from '../../chronicle.js';
-import { TYPEN, alleKaempfer, holen, meta, toNumber } from '../../kampf/umwandlung.js';
-import { antwort, encounterView } from '../../kampf/sicht.js';
+import { TYPEN, alleKaempfer, holen, meta } from '../../kampf/umwandlung.js';
+import { antwort } from '../../kampf/sicht.js';
 import { syncCharakter } from '../../kampf/blatt.js';
+import { hatText, texte, toNumber } from '../../werte.js';
 
+// `GET /api/encounter` steht in ../encounter.js, vor diesem Router – hier
+// stand früher ein zweiter, der nie erreicht wurde.
 const router = Router();
-
-// GET /api/encounter
-router.get('/', (req, res) => {
-  res.json(encounterView(req.user, req.campaignId));
-});
 
 // POST /api/encounter/combatants
 router.post('/combatants', requireDm, (req, res) => {
   const { name, type, initiative, hp, maxHp, ac, conditions, notes, characterId, hidden } = req.body ?? {};
-  if (!name || typeof name !== 'string' || !name.trim()) {
+  if (!hatText(name)) {
     return res.status(400).json({ code: 'name_fehlt', error: 'Name ist erforderlich.' });
+  }
+  // Ein Kämpfer, der an einem Blatt hängt, schreibt dessen Trefferpunkte
+  // mit (kampf/blatt.js). Also nur an ein Blatt dieser Kampagne – und eine
+  // erfundene Kennung ist ein 400, kein Fremdschlüssel-500.
+  if (
+    characterId != null &&
+    !db.prepare('SELECT 1 FROM characters WHERE id = ? AND campaign_id = ?').get(characterId, req.campaignId)
+  ) {
+    return res.status(400).json({ code: 'charakter_nicht_gefunden', error: 'Dieses Blatt gibt es in dieser Kampagne nicht.' });
   }
   const hpValue = toNumber(hp, 0);
   db.prepare(
@@ -40,7 +47,7 @@ router.post('/combatants', requireDm, (req, res) => {
     hpValue,
     toNumber(maxHp, hpValue),
     toNumber(ac, 10),
-    JSON.stringify(Array.isArray(conditions) ? conditions.filter((c) => typeof c === 'string').slice(0, 20) : []),
+    JSON.stringify(texte(conditions)),
     typeof notes === 'string' ? notes.slice(0, 500) : '',
     characterId ?? null,
     req.body?.mediaId ?? null,
@@ -58,16 +65,13 @@ router.put('/combatants/:id', requireDm, (req, res) => {
 
   const body = req.body ?? {};
   const felder = {
-    name: 'name' in body && typeof body.name === 'string' && body.name.trim() ? body.name.trim().slice(0, 100) : row.name,
+    name: hatText(body.name) ? body.name.trim().slice(0, 100) : row.name,
     type: TYPEN.has(body.type) ? body.type : row.type,
     initiative: 'initiative' in body ? toNumber(body.initiative, row.initiative) : row.initiative,
     hp: 'hp' in body ? toNumber(body.hp, row.hp) : row.hp,
     max_hp: 'maxHp' in body ? toNumber(body.maxHp, row.max_hp) : row.max_hp,
     ac: 'ac' in body ? toNumber(body.ac, row.ac) : row.ac,
-    conditions:
-      'conditions' in body && Array.isArray(body.conditions)
-        ? JSON.stringify(body.conditions.filter((c) => typeof c === 'string').slice(0, 20))
-        : row.conditions,
+    conditions: Array.isArray(body.conditions) ? JSON.stringify(texte(body.conditions)) : row.conditions,
     notes: 'notes' in body && typeof body.notes === 'string' ? body.notes.slice(0, 500) : row.notes,
     hidden: 'hidden' in body ? (body.hidden ? 1 : 0) : row.hidden,
   };
@@ -90,6 +94,8 @@ router.put('/combatants/:id', requireDm, (req, res) => {
 
   if (felder.hp !== row.hp || felder.max_hp !== row.max_hp) syncCharakter(holen(row.id, req.campaignId), req.campaignId);
 
+  // Zustände landen als Satz in der Chronik – bei verborgenen Kämpfern
+  // verdeckt, sonst erführe die Runde dort, wer hinter dem Schirm steht.
   if (felder.conditions !== row.conditions) {
     const vorher = new Set(JSON.parse(row.conditions));
     const nachher = JSON.parse(felder.conditions);
@@ -120,6 +126,8 @@ router.post('/combatants/:id/damage', requireDm, (req, res) => {
   const row = holen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'kaempfer_nicht_gefunden', error: 'Kämpfer nicht gefunden.' });
   const amount = toNumber(req.body?.amount, 0);
+  // Nie unter null, und Heilung nie über das Maximum – es sei denn, es ist
+  // keins eingetragen (0), dann darf es beliebig hoch gehen.
   const hp = Math.max(0, Math.min(row.max_hp || Number.MAX_SAFE_INTEGER, row.hp - amount));
   db.prepare('UPDATE combatants SET hp = ? WHERE id = ?').run(hp, row.id);
   syncCharakter(holen(row.id, req.campaignId), req.campaignId);

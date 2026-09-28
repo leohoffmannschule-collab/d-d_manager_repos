@@ -25,6 +25,7 @@ import Chat from './Chat.jsx';
 import DiceRoller from './DiceRoller.jsx';
 import Klangleiste from './klang/Klangleiste.jsx';
 import Wurfmeldung from './Wurfmeldung.jsx';
+import Stoerung from './Stoerung.jsx';
 import { useTheme } from '../lib/useTheme.js';
 import { useAuth } from '../lib/auth.jsx';
 import { IconCandle, IconD20, IconSun } from './icons.jsx';
@@ -92,6 +93,7 @@ export default function Layout() {
       </main>
 
       <Wurfmeldung />
+      <Stoerung />
       <Chat />
       <DiceRoller />
       <Klangleiste />

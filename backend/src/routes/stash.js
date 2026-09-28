@@ -1,127 +1,74 @@
-import { Router } from 'express';
-import { randomUUID } from 'node:crypto';
-import { db, getState, setState } from '../db.js';
-import { requireAuth, requireDm } from '../auth.js';
-import { broadcast, originClient } from '../events.js';
-import * as chronik from '../chronicle.js';
-import { kopiereGegenstand, meldeNachZiel, zielPruefen } from '../uebernehmen.js';
-
-const router = Router();
-router.use(requireAuth);
-
 /**
- * Die Beutekiste.
+ * Die Beutekiste: eintragen, verteilen, teilen, auszahlen.
  *
  * Was die Runde gemeinsam findet, gehört erst einmal allen – und wird am Ende
  * des Abends geteilt. Beides erledigt der Almanach: Gegenstände und Münzen
  * liegen in einer gemeinsamen Kiste, die alle sehen und füllen dürfen, und das
- * Teilen rechnet er aus, statt es dem Tisch zu überlassen.
+ * Teilen rechnet er aus, statt es dem Tisch zu überlassen (die Rechnung selbst
+ * steht in ../beute.js).
+ *
+ * Nur das Auszahlen ist der Spielleitung vorbehalten: Es schreibt in fremde
+ * Charakterblätter.
  */
+import { Router } from 'express';
+import { randomUUID } from 'node:crypto';
+import { db, setState, transaktion } from '../db.js';
+import { requireAuth, requireDm } from '../auth.js';
+import { broadcast, originClient } from '../events.js';
+import * as chronik from '../chronicle.js';
+import { kopiereGegenstand, meldeNachZiel, zielPruefen } from '../uebernehmen.js';
+import { KEINE_MUENZEN, MUENZEN, MUENZNAME, inKupfer, kiste, muenzen, rowToItem, teile } from '../beute.js';
+import { hatText, jetzt, toNumber } from '../werte.js';
 
-// Der übliche Umrechnungskurs: alles in Kupfer, dann wieder hinauf.
-const KURS = { pp: 1000, gp: 100, ep: 50, sp: 10, cp: 1 };
-const MUENZEN = ['pp', 'gp', 'ep', 'sp', 'cp'];
-const MUENZNAME = { pp: 'Platin', gp: 'Gold', ep: 'Elektrum', sp: 'Silber', cp: 'Kupfer' };
+const router = Router();
+router.use(requireAuth);
 
-const LEER = { pp: 0, gp: 0, ep: 0, sp: 0, cp: 0 };
-const toNumber = (wert, ersatz) => (Number.isFinite(Number(wert)) ? Number(wert) : ersatz);
-
-const inKupfer = (muenzen) => MUENZEN.reduce((summe, m) => summe + (toNumber(muenzen?.[m], 0) || 0) * KURS[m], 0);
+const menge = (wert) => Math.max(1, Math.min(9999, parseInt(wert, 10) || 1));
 
 /**
- * Kupfer wieder in Münzen fassen – ohne Elektrum, das am Tisch ohnehin
- * niemand haben will.
+ * Wer einen Gegenstand trägt, muss ein Blatt *dieser* Kampagne sein – oder
+ * niemand. Ohne die Prüfung schlüge eine erfundene Kennung erst am
+ * Fremdschlüssel fehl, und aus einem Tippfehler würde ein 500er.
  */
-function ausKupfer(kupfer) {
-  let rest = Math.max(0, Math.floor(kupfer));
-  const heraus = { ...LEER };
-  for (const m of ['pp', 'gp', 'sp', 'cp']) {
-    heraus[m] = Math.floor(rest / KURS[m]);
-    rest -= heraus[m] * KURS[m];
-  }
-  return heraus;
+function traegerPruefen(holderId, campaignId) {
+  if (holderId == null || holderId === '') return { ok: true, id: null };
+  const da = db.prepare('SELECT 1 FROM characters WHERE id = ? AND campaign_id = ?').get(holderId, campaignId);
+  return da ? { ok: true, id: holderId } : { ok: false };
 }
 
-/**
- * Beute teilen, so wie es am Tisch wirklich zugeht.
- *
- * Es wird von der größten Münze zur kleinsten gegangen. Was sich nicht glatt
- * aufteilen lässt, wird in kleinere Münzen gewechselt und weitergereicht –
- * niemals umgekehrt. Sonst bekäme jemand ein Platinstück ausgezahlt, das die
- * Runde nie besessen hat: Aus 43 Gold werden 14 Gold je Kopf und nicht
- * „1 Platin, 4 Gold“.
- *
- * Elektrum wird dabei nur angenommen, nie ausgegeben: Wer welches in der
- * Kiste hat, bekommt es in Silber gewechselt zurück. An kaum einem Tisch
- * will jemand Elektrumstücke gereicht bekommen.
- *
- * Am Ende bleibt höchstens eine Handvoll Kupfer übrig, die sich nicht mehr
- * teilen lässt. Wer die bekommt, ist eine Frage für den Tisch.
- */
-function teile(vorrat, anteile) {
-  const proKopf = { ...LEER };
-  // Vorhandenes Elektrum wandert gleich in den Übertrag und kommt weiter
-  // unten als Silber und Kupfer wieder heraus.
-  let uebertrag = (toNumber(vorrat.ep, 0) || 0) * KURS.ep;
-
-  for (const m of ['pp', 'gp', 'sp', 'cp']) {
-    const vorhanden = (toNumber(vorrat[m], 0) || 0) * KURS[m] + uebertrag;
-    const stuecke = Math.floor(vorhanden / KURS[m]);
-    proKopf[m] = Math.floor(stuecke / anteile);
-    uebertrag = vorhanden - proKopf[m] * anteile * KURS[m];
-  }
-
-  return { proKopf, rest: ausKupfer(uebertrag), restInKupfer: uebertrag };
-}
-
-const muenzen = (campaignId) => ({ ...LEER, ...(getState('beute', campaignId, LEER) ?? LEER) });
-
-function rowToItem(row) {
-  return {
-    id: row.id,
-    name: row.name,
-    qty: row.qty,
-    weight: row.weight,
-    notes: row.notes,
-    holderId: row.holder_id,
-    createdAt: row.created_at,
-  };
-}
-
-const alleGegenstaende = (campaignId) =>
-  db.prepare('SELECT * FROM stash_items WHERE campaign_id = ? ORDER BY created_at').all(campaignId).map(rowToItem);
+const traegerFehlt = (res) =>
+  res.status(400).json({ code: 'charakter_nicht_gefunden', error: 'Diesen Charakter gibt es in dieser Kampagne nicht.' });
 
 function melden(req) {
-  broadcast(
-    'beute',
-    { items: alleGegenstaende(req.campaignId), coins: muenzen(req.campaignId) },
-    { exceptClient: originClient(req), campaignId: req.campaignId }
-  );
+  broadcast('beute', kiste(req.campaignId), { exceptClient: originClient(req), campaignId: req.campaignId });
 }
 
 // GET /api/stash
 router.get('/', (req, res) => {
-  res.json({ items: alleGegenstaende(req.campaignId), coins: muenzen(req.campaignId) });
+  res.json(kiste(req.campaignId));
 });
 
 // POST /api/stash/items – jede und jeder darf eintragen, was gefunden wurde
 router.post('/items', (req, res) => {
   const body = req.body ?? {};
-  if (!body.name || typeof body.name !== 'string' || !body.name.trim()) {
+  if (!hatText(body.name)) {
     return res.status(400).json({ code: 'name_fehlt', error: 'Ohne Namen kein Eintrag.' });
   }
+  const traeger = traegerPruefen(body.holderId, req.campaignId);
+  if (!traeger.ok) return traegerFehlt(res);
+
   const id = randomUUID();
   db.prepare(
     'INSERT INTO stash_items (id, name, qty, weight, notes, holder_id, campaign_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
   ).run(
     id,
     body.name.trim().slice(0, 120),
-    Math.max(1, Math.min(9999, parseInt(body.qty, 10) || 1)),
+    menge(body.qty),
     Math.max(0, toNumber(body.weight, 0)),
     typeof body.notes === 'string' ? body.notes.slice(0, 500) : '',
-    body.holderId ?? null,
+    traeger.id,
     req.campaignId,
-    new Date().toISOString()
+    jetzt()
   );
   melden(req);
   res.status(201).json(rowToItem(db.prepare('SELECT * FROM stash_items WHERE id = ?').get(id)));
@@ -131,12 +78,15 @@ router.put('/items/:id', (req, res) => {
   const row = db.prepare('SELECT * FROM stash_items WHERE id = ? AND campaign_id = ?').get(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'gegenstand_nicht_gefunden', error: 'Gegenstand nicht gefunden.' });
   const body = req.body ?? {};
+  const traeger = 'holderId' in body ? traegerPruefen(body.holderId, req.campaignId) : { ok: true, id: row.holder_id };
+  if (!traeger.ok) return traegerFehlt(res);
+
   db.prepare('UPDATE stash_items SET name = ?, qty = ?, weight = ?, notes = ?, holder_id = ? WHERE id = ?').run(
-    typeof body.name === 'string' && body.name.trim() ? body.name.trim().slice(0, 120) : row.name,
-    'qty' in body ? Math.max(1, Math.min(9999, parseInt(body.qty, 10) || 1)) : row.qty,
+    hatText(body.name) ? body.name.trim().slice(0, 120) : row.name,
+    'qty' in body ? menge(body.qty) : row.qty,
     'weight' in body ? Math.max(0, toNumber(body.weight, row.weight)) : row.weight,
     typeof body.notes === 'string' ? body.notes.slice(0, 500) : row.notes,
-    'holderId' in body ? (body.holderId ?? null) : row.holder_id,
+    traeger.id,
     row.id
   );
   melden(req);
@@ -153,7 +103,7 @@ router.delete('/items/:id', (req, res) => {
 // PUT /api/stash/coins
 router.put('/coins', (req, res) => {
   const body = req.body ?? {};
-  const naechste = { ...LEER };
+  const naechste = { ...KEINE_MUENZEN };
   const vorher = muenzen(req.campaignId);
   for (const m of MUENZEN) naechste[m] = Math.max(0, Math.floor(toNumber(body[m], vorher[m])));
   setState('beute', req.campaignId, naechste);
@@ -183,12 +133,14 @@ router.get('/teilung', (req, res) => {
  * darf es nur die Spielleitung.
  */
 router.post('/auszahlen', requireDm, (req, res) => {
-  const ids = Array.isArray(req.body?.characterIds) ? req.body.characterIds.slice(0, 20) : [];
+  // Doppelt genannt heißt nicht doppelt bezahlt: Ohne das Entdoppeln zählte
+  // ein zweimal geschickter Charakter als zwei Köpfe – und strich zwei
+  // Anteile ein, während alle anderen weniger bekämen.
+  const ids = Array.isArray(req.body?.characterIds) ? [...new Set(req.body.characterIds)].slice(0, 20) : [];
   if (ids.length === 0) return res.status(400).json({ code: 'empfaenger_fehlen', error: 'Es wurde niemand genannt, der etwas bekommen soll.' });
 
-  const charaktere = ids
-    .map((id) => db.prepare('SELECT * FROM characters WHERE id = ? AND campaign_id = ?').get(id, req.campaignId))
-    .filter(Boolean);
+  const holen = db.prepare('SELECT * FROM characters WHERE id = ? AND campaign_id = ?');
+  const charaktere = ids.map((id) => holen.get(id, req.campaignId)).filter(Boolean);
   if (charaktere.length === 0) return res.status(400).json({ code: 'charakter_nicht_gefunden', error: 'Keiner dieser Charaktere ist verzeichnet.' });
 
   const vorrat = muenzen(req.campaignId);
@@ -197,25 +149,31 @@ router.post('/auszahlen', requireDm, (req, res) => {
     return res.status(400).json({ code: 'beute_zu_klein', error: 'In der Kiste liegt zu wenig, um sie zu teilen.' });
   }
 
-  const jetzt = new Date().toISOString();
+  // Blätter und Kiste gehen zusammen: Bräche es nach dem dritten von fünf
+  // Blättern ab, wäre das Gold aus der Kiste nicht fort, aber drei hätten es
+  // schon – und beim zweiten Versuch bekämen sie es noch einmal.
+  const stand = jetzt();
+  const schreiben = db.prepare('UPDATE characters SET data = ?, updated_at = ? WHERE id = ?');
+  const bezahlt = transaktion(() => {
+    const blaetter = charaktere.map((row) => {
+      const data = JSON.parse(row.data);
+      data.currency = { ...KEINE_MUENZEN, ...data.currency };
+      for (const m of MUENZEN) data.currency[m] = toNumber(data.currency[m], 0) + anteil[m];
+      schreiben.run(JSON.stringify(data), stand, row.id);
+      return { row, data };
+    });
+    setState('beute', req.campaignId, rest);
+    return blaetter;
+  });
 
-  for (const row of charaktere) {
-    const data = JSON.parse(row.data);
-    data.currency = { ...LEER, ...(data.currency ?? {}) };
-    for (const m of MUENZEN) data.currency[m] = (toNumber(data.currency[m], 0) || 0) + anteil[m];
-    db.prepare('UPDATE characters SET data = ?, updated_at = ? WHERE id = ?').run(
-      JSON.stringify(data),
-      jetzt,
-      row.id
-    );
+  // Verkündet wird erst, was wirklich geschrieben ist.
+  for (const { row, data } of bezahlt) {
     broadcast(
       'charakter:aktualisiert',
       { id: row.id, name: row.name, hp: data?.combat?.hp ?? null, ownerId: row.owner_id, shared: !!row.shared },
       { campaignId: req.campaignId }
     );
   }
-
-  setState('beute', req.campaignId, rest);
 
   const beschreibung = MUENZEN.filter((m) => anteil[m])
     .map((m) => `${anteil[m]} ${MUENZNAME[m]}`)

@@ -23,17 +23,21 @@
  * `.all()` alle, `.run()` schreibt. Die Fragezeichen darin sind
  * Platzhalter – *nie* Werte in die Zeichenkette kleben, sonst steht die Tür
  * für SQL-Injection offen.
+ *
+ * Wer mehr als eine Zeile schreibt, nimmt `transaktion(() => …)` – siehe
+ * datenbank/transaktion.js.
  */
 import { db, dataDir, driver, mediaDir } from './datenbank/verbindung.js';
 import { SCHEMA } from './datenbank/schema.js';
 import { addColumnIfMissing, ruesteNach } from './datenbank/nachruesten.js';
 import { KAMPAGNEN_TABELLEN, ruesteKampagnenNach } from './datenbank/kampagnenwanderung.js';
+import { transaktion } from './datenbank/transaktion.js';
 
 db.exec(SCHEMA);
 ruesteNach();
 ruesteKampagnenNach();
 
-export { db, dataDir, driver, mediaDir, addColumnIfMissing, KAMPAGNEN_TABELLEN };
+export { db, dataDir, driver, mediaDir, addColumnIfMissing, KAMPAGNEN_TABELLEN, transaktion };
 export default db;
 
 /* --- Der kleine Schlüssel-Wert-Speicher ---------------------------------- */

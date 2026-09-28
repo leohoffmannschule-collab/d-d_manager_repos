@@ -11,16 +11,37 @@ import { randomUUID } from 'node:crypto';
 import { db, getState, setState } from '../../db.js';
 import { isDm, requireDm } from '../../auth.js';
 import { broadcast } from '../../events.js';
-import { clamp, holeFigur, holeSzene, rowToToken, toNumber } from '../../spieltisch/umwandlung.js';
+import { holeFigur, holeSzene, rowToToken } from '../../spieltisch/umwandlung.js';
 import { darfBewegen, meldeFigur, sendeSzene } from '../../spieltisch/melden.js';
+import { clamp, istFarbe, toNumber } from '../../werte.js';
 
 const router = Router();
+
+/**
+ * Eine Figur darf nur an einem Blatt *dieser* Kampagne hängen.
+ *
+ * Ohne die Prüfung liefe eine erfundene Kennung erst am Fremdschlüssel auf
+ * (500 statt 400), und eine echte aus einer fremden Kampagne ginge sogar
+ * durch: Dann dürfte deren Besitzer die Figur hier bewegen (`darfBewegen`),
+ * obwohl er an diesem Tisch gar nicht sitzt.
+ */
+function blattDieserKampagne(characterId, campaignId) {
+  if (characterId == null) return true;
+  return !!db.prepare('SELECT 1 FROM characters WHERE id = ? AND campaign_id = ?').get(characterId, campaignId);
+}
+
+const kaempferDieserKampagne = (combatantId, campaignId) =>
+  combatantId == null ||
+  !!db.prepare('SELECT 1 FROM combatants WHERE id = ? AND campaign_id = ?').get(combatantId, campaignId);
 
 router.post('/:id/figuren', requireDm, (req, res) => {
   const szene = holeSzene(req.params.id, req.campaignId);
   if (!szene) return res.status(404).json({ code: 'szene_nicht_gefunden', error: 'Szene nicht gefunden.' });
 
   const body = req.body ?? {};
+  if (!blattDieserKampagne(body.characterId, req.campaignId) || !kaempferDieserKampagne(body.combatantId, req.campaignId)) {
+    return res.status(400).json({ code: 'verweis_unbekannt', error: 'Blatt oder Kämpfer gibt es in dieser Kampagne nicht.' });
+  }
   const id = randomUUID();
   db.prepare(
     `INSERT INTO tokens (id, scene_id, name, x, y, size, color, media_id, character_id, combatant_id,
@@ -33,7 +54,7 @@ router.post('/:id/figuren', requireDm, (req, res) => {
     toNumber(body.x, 0),
     toNumber(body.y, 0),
     clamp(toNumber(body.size, 1), 1, 6),
-    /^#[0-9a-f]{6}$/i.test(body.color ?? '') ? body.color : '#9a2b22',
+    istFarbe(body.color) ? body.color : '#9a2b22',
     body.mediaId ?? null,
     body.characterId ?? null,
     body.combatantId ?? null,
@@ -54,6 +75,10 @@ router.patch('/figuren/:id', (req, res) => {
   if (!darfBewegen(req.user, row)) return res.status(403).json({ code: 'figur_fremd', error: 'Diese Figur gehört jemand anderem.' });
 
   const body = req.body ?? {};
+  // Die Runde darf ihre Figur schieben, sonst nichts: Name, Größe, Licht und
+  // Unsichtbarkeit bleiben Sache der Spielleitung, auch wenn der Rumpf sie
+  // mitschickt. Stilles Übergehen statt 403, weil die Oberfläche beim
+  // Ziehen ohnehin nur x und y schickt.
   const nurBewegen = !isDm(req.user);
 
   db.prepare(
@@ -64,7 +89,7 @@ router.patch('/figuren/:id', (req, res) => {
     'y' in body ? toNumber(body.y, row.y) : row.y,
     !nurBewegen && typeof body.name === 'string' ? body.name.slice(0, 60) : row.name,
     !nurBewegen && 'size' in body ? clamp(toNumber(body.size, row.size), 1, 6) : row.size,
-    !nurBewegen && /^#[0-9a-f]{6}$/i.test(body.color ?? '') ? body.color : row.color,
+    !nurBewegen && istFarbe(body.color) ? body.color : row.color,
     !nurBewegen && 'mediaId' in body ? (body.mediaId ?? null) : row.media_id,
     !nurBewegen && 'hidden' in body ? (body.hidden ? 1 : 0) : row.hidden,
     !nurBewegen && 'lightBright' in body ? clamp(toNumber(body.lightBright, row.light_bright), 0, 200) : row.light_bright,
@@ -100,6 +125,7 @@ router.post('/:id/figuren/aus-kampf', requireDm, (req, res) => {
       .map((r) => r.combatant_id)
   );
   const kaempfer = db.prepare('SELECT * FROM combatants WHERE campaign_id = ? ORDER BY initiative DESC').all(req.campaignId);
+  // Farbe nach Art, damit man am Tisch Freund und Feind auf einen Blick trennt.
   const now = new Date().toISOString();
   const raster = szene.grid_size;
 
@@ -120,7 +146,7 @@ router.post('/:id/figuren/aus-kampf', requireDm, (req, res) => {
       (platz % 12) * raster,
       Math.floor(platz / 12) * raster,
       k.type === 'pc' ? '#2d4f7c' : k.type === 'npc' ? '#2f6b4f' : '#9a2b22',
-      // Wer eine Figur gegossen hat, steht damit auf der Karte.
+      // Ein Kämpfer mit Figurenbild steht damit auch auf der Karte.
       k.media_id ?? null,
       k.character_id,
       k.id,

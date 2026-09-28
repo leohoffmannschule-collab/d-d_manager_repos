@@ -40,15 +40,23 @@ Port 5173 daneben und lädt Änderungen sofort nach.
 ```
 backend/src/
   server.js          alles wird eingehängt – die kürzeste Übersicht des Servers
-  db.js              Datenbank öffnen, Schema anlegen, Altes nachrüsten
+  db.js              der Eingang zur Datenbank; datenbank/ macht die Arbeit
+  datenbank/         öffnen, Schema, Nachrüsten, Transaktionen
   auth.js            Kennwörter, Sitzungen, die Wächter requireAuth/requireDm/…
   events.js          der Live-Kanal (SSE): wer hängt dran, wer bekommt was
+  werte.js           Eingaben säubern: Zahlen, Farben, Textlisten
+  asynchron.js       async-Wege für Express 4
   sicht.js           was eine Figur sieht – Licht, Dunkelsicht, Nebel
+  spieltisch/        Szenen umwandeln, Sichtbarkeit je Person, verschicken
+  kampf/             Kämpfer umwandeln, die zwei Sichten, TP aufs Blatt
+  beute.js           die Beutekiste: Inhalt und Teilen
+  klang.js           der Klangteppich: was aufliegt, wo es steht
   chronicle.js       die Chronik mitschreiben
   uebernehmen.js     Daten in eine andere Kampagne kopieren
   kampagnen.js       Papierkorb und endgültiges Entfernen
   dice.js            Würfelausdrücke auswerten („2W6+3“)
-  routes/            je eine Datei für einen Zweig der API
+  routes/            je eine Datei für einen Zweig der API – nur Wege,
+                     gerechnet wird in den Modulen darüber
   vorlagen/          die zwölf fertigen Charaktere für eine frische Kampagne
 
 frontend/src/
@@ -126,13 +134,16 @@ durch alle Schichten. Der nächste Abschnitt macht das einmal vor.
    **sofort örtlich** (damit nichts ruckelt) und schickt sie dann los.
 3. **`lib/api.js`** – `scenesApi.moveToken` schickt ein `PATCH` samt
    Anmelde-Cookie und der eigenen Fensterkennung.
-4. **`backend/src/routes/scenes.js`** – der Server prüft: angemeldet?
-   Kampagne gewählt? Gehört diese Figur zu einem Charakterblatt dieser
-   Person? Erst dann schreibt er.
-5. **`backend/src/events.js`** – `broadcast('figur', …)` schickt die
-   Änderung an alle *anderen* Fenster dieser Kampagne. Das eigene wird
-   übersprungen – es weiß es ja schon, und ein Echo ließe die Figur kurz
-   zurückspringen.
+4. **`backend/src/routes/spieltisch/figuren.js`** – der Server prüft:
+   angemeldet? Kampagne gewählt? Gehört diese Figur zu einem
+   Charakterblatt dieser Person (`darfBewegen` in `spieltisch/melden.js`)?
+   Erst dann schreibt er.
+5. **`backend/src/spieltisch/melden.js`** – `meldeFigur` schickt die
+   Änderung hinaus, über `broadcast` aus `events.js`. Die Spielleitung
+   bekommt die eine Figur, und zwar in allen Fenstern außer dem eigenen –
+   es weiß es ja schon, und ein Echo ließe die Figur kurz zurückspringen.
+   Die Runde bekommt die ganze Szene neu, je Person gerechnet: Ein Schritt
+   zur Seite kann ändern, wer was sieht.
 6. **`lib/daten.js`** – in den anderen Fenstern fängt `useLive('figur', …)`
    die Nachricht und aktualisiert die Liste.
 7. Und auf den Schirmen der anderen bewegt sich die Figur.
@@ -165,6 +176,28 @@ einem Jahr ein und wundert sich.
 **Deutsch, ganze Sätze.** Auch in Kommentaren. Sie werden gelesen wie Text,
 nicht wie Code.
 
+**Mehr als eine Zeile schreiben heißt: `transaktion(() => …)`.** Aus
+`db.js`. Ganz oder gar nicht – ein halb angelegtes Konto, eine halb
+ausgezahlte Beute ist schwerer zu beheben als ein klarer Fehler. Die Arbeit
+darin muss synchron sein; wer vorher etwas `await`en muss (ein Kennwort
+hashen etwa), tut das *vor* dem Block, nicht darin.
+
+**Erst prüfen, dann schreiben.** Ein Weg, der mit 400 oder 403 antwortet,
+hat nichts geändert. Wer mehrere Felder auf einmal annimmt, prüft alle,
+bevor er das erste schreibt.
+
+**Wer ändert, wer jemand ist, trennt dessen Live-Kanal.** Ein offenes
+Fenster hält Rolle und Kampagne vom Moment des Verbindens fest. Nach
+Abmelden, Rollenwechsel oder dem Entfernen aus einer Kampagne muss
+`trenne()` aus `events.js` laufen – sonst hört das Fenster mit dem alten
+Stand weiter mit. `auth.js` tut das für alles rund um Sitzungen von selbst.
+
+**Eingaben gehen durch `werte.js`.** `toNumber`, `clamp`, `istFarbe`,
+`texte` – nicht in jeder Datei eine eigene, leicht andere Fassung davon.
+Verweise auf andere Zeilen (ein Blatt, ein Kämpfer) werden gegen die
+eigene Kampagne geprüft, bevor sie geschrieben werden: Ein Tippfehler soll
+ein 400 sein, kein Fremdschlüssel-500.
+
 ---
 
 ## 7. Bevor du etwas abgibst
@@ -173,9 +206,12 @@ nicht wie Code.
 npm run build        # die Oberfläche neu bauen – sonst ändert sich nichts
 npm run vertrag      # der Prüfdurchgang: startet einen eigenen Almanach
                      # auf einem freien Port mit leerer Datenbank und spielt
-                     # eine ganze Runde durch (über 240 Prüfungen)
+                     # eine ganze Runde durch (über 270 Prüfungen)
 npm run blattprobe   # die Rechnungen des Charakterblattes (340 Prüfungen)
 npm run einfuhrprobe # benutzt jemand etwas, das er nicht eingeführt hat?
+npm run klangprobe   # die Gleichschaltung des Klangteppichs
+npm run lint         # oxlint über Oberfläche, Server und Werkzeuge
+npm run pruefe       # alles oben der Reihe nach – vor jedem Commit
 ```
 
 Die **Einfuhrprobe** ist schnell (eine Sekunde) und deckt genau eine Lücke

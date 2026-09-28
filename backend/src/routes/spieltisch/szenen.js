@@ -13,7 +13,8 @@ import { isDm, requireDm } from '../../auth.js';
 import { broadcast } from '../../events.js';
 import * as chronik from '../../chronicle.js';
 import { kopiereSzene, zielPruefen } from '../../uebernehmen.js';
-import { aktiveSzeneId, clamp, figuren, holeFigur, holeSzene, rowToScene, toNumber, vorhangZu } from '../../spieltisch/umwandlung.js';
+import { aktiveSzeneId, holeFigur, holeSzene, rowToScene, vorhangZu } from '../../spieltisch/umwandlung.js';
+import { clamp, hatText, toNumber } from '../../werte.js';
 import { szenenSicht } from '../../spieltisch/sichtbarkeit.js';
 import { aktiviereSzene, sendeSzene } from '../../spieltisch/melden.js';
 
@@ -26,11 +27,16 @@ router.get('/', (req, res) => {
     return res.json(sicht ? [sicht] : []);
   }
   const aktiv = aktiveSzeneId(req.campaignId);
+  // Gezählt wird in derselben Abfrage – nicht je Szene alle Figuren laden,
+  // nur um die Länge der Liste zu nehmen.
   res.json(
     db
-      .prepare('SELECT * FROM scenes WHERE campaign_id = ? ORDER BY created_at DESC')
+      .prepare(
+        `SELECT s.*, (SELECT COUNT(*) FROM tokens t WHERE t.scene_id = s.id) AS token_count
+           FROM scenes s WHERE s.campaign_id = ? ORDER BY s.created_at DESC`
+      )
       .all(req.campaignId)
-      .map((row) => ({ ...rowToScene(row), aktiv: row.id === aktiv, tokenCount: figuren(row.id).length }))
+      .map((row) => ({ ...rowToScene(row), aktiv: row.id === aktiv, tokenCount: row.token_count }))
   );
 });
 
@@ -41,7 +47,7 @@ router.get('/aktiv', (req, res) => {
 
 router.post('/', requireDm, (req, res) => {
   const body = req.body ?? {};
-  if (!body.name || typeof body.name !== 'string' || !body.name.trim()) {
+  if (!hatText(body.name)) {
     return res.status(400).json({ code: 'name_fehlt', error: 'Name ist erforderlich.' });
   }
   const id = randomUUID();

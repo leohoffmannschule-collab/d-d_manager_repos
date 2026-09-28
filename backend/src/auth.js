@@ -23,8 +23,10 @@
  * aber nur als Hash davon. Wer die Datenbank in die Hände bekäme, könnte
  * sich damit also trotzdem nicht anmelden.
  */
-import { randomBytes, randomUUID, scryptSync, timingSafeEqual, createHash } from 'node:crypto';
+import { randomBytes, randomUUID, scrypt, timingSafeEqual, createHash } from 'node:crypto';
+import { promisify } from 'node:util';
 import { db } from './db.js';
+import { trenne } from './events.js';
 
 export const COOKIE_NAME = 'almanach_sitzung';
 const SESSION_DAYS = 30;
@@ -35,20 +37,34 @@ const SESSION_DAYS = 30;
 // müsste. Die Parameter sind so gewählt, dass ein Anmeldeversuch auf einem
 // Raspberry Pi 5 rund eine Zehntelsekunde kostet: für uns unmerklich, für
 // jemanden, der Passwörter durchprobiert, teuer.
+//
+// Gerechnet wird *asynchron*, im Hintergrund-Faden von Node. Die
+// synchrone Fassung hielte für diese Zehntelsekunde den ganzen Server an –
+// jeder Live-Kanal, jeder Wurf am Tisch stünde still, solange sich jemand
+// anmeldet. Und wer es darauf anlegt, könnte ihn mit Anmeldeversuchen
+// lahmlegen, ohne je ein Kennwort zu treffen.
 const SCRYPT = { N: 16384, r: 8, p: 1, keylen: 64 };
+const scryptAsync = promisify(scrypt);
 
-export function hashPassword(password) {
+/** @returns {Promise<string>} `scrypt$N$r$p$salz$hash`, alles zum Prüfen Nötige in einer Zeile */
+export async function hashPassword(password) {
   const salt = randomBytes(16);
-  const hash = scryptSync(password, salt, SCRYPT.keylen, SCRYPT);
+  const hash = await scryptAsync(password, salt, SCRYPT.keylen, SCRYPT);
   return `scrypt$${SCRYPT.N}$${SCRYPT.r}$${SCRYPT.p}$${salt.toString('base64')}$${hash.toString('base64')}`;
 }
 
-export function verifyPassword(password, stored) {
+/**
+ * Stimmt das Kennwort? Die Parameter stehen im gespeicherten Hash selbst –
+ * so bleiben alte Hashes prüfbar, auch wenn `SCRYPT` oben einmal steigt.
+ *
+ * @returns {Promise<boolean>} nie eine Ausnahme: ein kaputter Hash heißt „nein“
+ */
+export async function verifyPassword(password, stored) {
   try {
     const [scheme, N, r, p, salt, hash] = String(stored).split('$');
     if (scheme !== 'scrypt') return false;
     const expected = Buffer.from(hash, 'base64');
-    const actual = scryptSync(password, Buffer.from(salt, 'base64'), expected.length, {
+    const actual = await scryptAsync(password, Buffer.from(salt, 'base64'), expected.length, {
       N: Number(N),
       r: Number(r),
       p: Number(p),
@@ -57,6 +73,20 @@ export function verifyPassword(password, stored) {
   } catch {
     return false;
   }
+}
+
+/**
+ * Ein Hash, gegen den geprüft wird, wenn es den Namen gar nicht gibt.
+ *
+ * Ohne ihn verriete die Antwortzeit, welche Namen der Almanach kennt: Ein
+ * unbekannter Name käme sofort zurück, ein bekannter erst nach der
+ * Zehntelsekunde scrypt. So kostet beides gleich viel. Einmal gerechnet und
+ * dann behalten – er muss nur *irgendein* gültiger Hash sein.
+ */
+let scheinHash = null;
+export function vergleichsHash() {
+  scheinHash ??= hashPassword(randomBytes(16).toString('hex'));
+  return scheinHash;
 }
 
 /* --- Anmeldungen -------------------------------------------------------- */
@@ -89,13 +119,21 @@ export function createSession(userId) {
   return token;
 }
 
+/**
+ * Eine Anmeldung beenden – und mit ihr die offenen Live-Kanäle dieser
+ * Anmeldung. Ohne das Zweite hörte ein abgemeldetes Fenster weiter mit,
+ * was am Tisch geschieht, bis jemand es schließt.
+ */
 export function destroySession(token) {
   if (!token) return;
   db.prepare('DELETE FROM auth_sessions WHERE token_hash = ?').run(tokenHash(token));
+  trenne({ sitzung: token });
 }
 
+/** Alle Anmeldungen eines Kontos beenden – nach Kennwortwechsel oder Löschen. */
 export function destroyAllSessions(userId) {
   db.prepare('DELETE FROM auth_sessions WHERE user_id = ?').run(userId);
+  trenne({ userId });
 }
 
 function userForToken(token) {
@@ -155,13 +193,16 @@ export function readCookie(req, name) {
     const index = part.indexOf('=');
     if (index === -1) continue;
     if (part.slice(0, index).trim() !== name) continue;
-    return decodeURIComponent(part.slice(index + 1).trim());
+    // attachUser läuft vor *jeder* Anfrage. Ein kaputt kodiertes Cookie
+    // („%E0“) darf deshalb nicht werfen – sonst bekäme dieser Browser auf
+    // jeden Weg ein 500 statt schlicht „nicht angemeldet“.
+    try {
+      return decodeURIComponent(part.slice(index + 1).trim());
+    } catch {
+      return null;
+    }
   }
   return null;
-}
-
-function isSecureRequest(req) {
-  return req.secure || req.headers['x-forwarded-proto'] === 'https';
 }
 
 export function setSessionCookie(req, res, token) {
@@ -175,7 +216,12 @@ export function setSessionCookie(req, res, token) {
   // Über den Cloudflare-Tunnel kommt alles als HTTPS an; im Heimnetz per
   // http:// darf das Merkmal nicht gesetzt werden, sonst kommt das Cookie
   // gar nicht erst an.
-  if (isSecureRequest(req)) parts.push('Secure');
+  //
+  // `req.secure` und nichts sonst: Express wertet `X-Forwarded-Proto` nur
+  // aus, wenn der Absender ein vertrauenswürdiger Zwischenschritt ist
+  // (`trust proxy` in server.js). Den Kopf hier selbst zu lesen, hieße
+  // jedem zu glauben, der ihn mitschickt.
+  if (req.secure) parts.push('Secure');
   res.append('Set-Cookie', parts.join('; '));
 }
 
@@ -185,6 +231,7 @@ export function clearSessionCookie(res) {
 
 /* --- Middleware --------------------------------------------------------- */
 
+/** Vor jedem Weg: Wer fragt, und in welcher Kampagne sitzt er gerade? */
 export function attachUser(req, res, next) {
   req.sessionToken = readCookie(req, COOKIE_NAME);
   req.user = userForToken(req.sessionToken);
@@ -227,10 +274,16 @@ export function countUsers() {
   return db.prepare('SELECT COUNT(*) AS n FROM users').get().n;
 }
 
-export function createUser({ name, password, role, color }) {
+/**
+ * Ein Konto anlegen. Erwartet den schon gerechneten Hash, nicht das
+ * Kennwort: Das Rechnen ist asynchron, das Anlegen soll es nicht sein –
+ * sonst könnte zwischen „Name frei?“ und „Name belegt“ eine zweite Anfrage
+ * denselben Namen einschieben (siehe routes/auth.js, /register).
+ */
+export function createUser({ name, passwordHash, role, color }) {
   const id = randomUUID();
   db.prepare(
     'INSERT INTO users (id, name, name_key, password_hash, role, color, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
-  ).run(id, name.trim(), nameKey(name), hashPassword(password), role, color, new Date().toISOString());
+  ).run(id, name.trim(), nameKey(name), passwordHash, role, color, new Date().toISOString());
   return db.prepare('SELECT id, name, role, color, created_at FROM users WHERE id = ?').get(id);
 }

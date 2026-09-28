@@ -23,10 +23,11 @@ export function useKampf() {
   });
 
   // Der Server schickt den vollständigen Stand mit – kein Nachladen nötig.
+  // Das gilt auch, wenn jemand die Trefferpunkte auf seinem *Blatt* ändert:
+  // Der Server zieht den verknüpften Kämpfer nach und verschickt den Kampf
+  // (routes/characters.js). Früher lud hier jedes Fenster bei jedem
+  // gespeicherten Tastendruck an irgendeinem Blatt die Kampfliste neu.
   useLive('kampf', setDaten);
-  // Trefferpunkte stehen auf dem Blatt *und* am Kämpfer. Ändert jemand das
-  // Blatt, muss die Kampfliste nachziehen.
-  useLive('charakter:aktualisiert', laden);
 
   return { kampf: daten, laden, fehler, laedt };
 }

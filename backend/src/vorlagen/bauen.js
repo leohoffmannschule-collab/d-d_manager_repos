@@ -135,7 +135,7 @@ export function blattAus(vorlage) {
       manualAttackBonus: null,
       slots: {
         ...Object.fromEntries([1, 2, 3, 4, 5, 6, 7, 8, 9].map((grad) => [grad, { max: 0, used: 0 }])),
-        ...(zauber?.plaetze ?? {}),
+        ...zauber?.plaetze,
       },
       spells: mitKennung(schluessel, 'zbr', zauber?.liste),
     },

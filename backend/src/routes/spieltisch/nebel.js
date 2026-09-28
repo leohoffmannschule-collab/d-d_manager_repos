@@ -1,15 +1,17 @@
 /**
  * Der Nebel des Krieges: Striche setzen, alles verhüllen, alles aufdecken.
  *
- * Der Nebel liegt als Bitkarte in der Szene – ein Bit je Feld, in Base64.
- * Das ist knauserig gemeint: Eine große Karte hat zehntausende Felder, und
- * die wandern bei jedem Strich über die Leitung.
+ * Gespeichert wird der Nebel als JSON-Liste der aufgedeckten Felder
+ * (`["3,4", "3,5", …]`) in `scenes.fog`. Zum Browser wandert er dagegen als
+ * Bitkarte, ein Bit je Feld (siehe ../../sicht.js, `alsBitkarte`) – und ein
+ * einzelner Strich nur als die Felder, die er berührt.
  */
 import { Router } from 'express';
 import { db } from '../../db.js';
 import { requireDm } from '../../auth.js';
 import { broadcast, originClient } from '../../events.js';
-import { holeSzene } from '../../spieltisch/umwandlung.js';
+import { holeSzene, offeneFelder, rowToScene } from '../../spieltisch/umwandlung.js';
+import { rasterBereich } from '../../sicht.js';
 import { sendeFigurenWennGeaendert, sendeSzene } from '../../spieltisch/melden.js';
 
 const router = Router();
@@ -30,7 +32,7 @@ router.post('/:id/nebel', requireDm, (req, res) => {
   if (cells.length === 0) return res.json({ ok: true });
 
   const revealed = req.body?.revealed !== false;
-  const offen = new Set(JSON.parse(row.fog));
+  const offen = offeneFelder(row);
   for (const cell of cells) {
     if (revealed) offen.add(cell);
     else offen.delete(cell);
@@ -54,13 +56,10 @@ router.post('/:id/nebel/alles', requireDm, (req, res) => {
 
   let fog = [];
   if (revealed) {
-    // Dieselbe Feldrechnung wie im Browser: Bei verschobenem Raster fängt
-    // das erste Feld links oben bei einem negativen Index an.
-    const g = row.grid_size;
-    const minX = Math.floor(-row.grid_offset_x / g);
-    const minY = Math.floor(-row.grid_offset_y / g);
-    const maxX = Math.floor((Math.max(1, row.width) - 1 - row.grid_offset_x) / g);
-    const maxY = Math.floor((Math.max(1, row.height) - 1 - row.grid_offset_y) / g);
+    // Dieselbe Feldrechnung wie überall (sicht.js, und im Browser
+    // lib/rasterkarte.js): Bei verschobenem Raster fängt das erste Feld links
+    // oben bei einem negativen Index an.
+    const { minX, minY, maxX, maxY } = rasterBereich(rowToScene(row));
     for (let y = minY; y <= maxY && fog.length < MAX_FELDER; y++) {
       for (let x = minX; x <= maxX && fog.length < MAX_FELDER; x++) fog.push(`${x},${y}`);
     }

@@ -18,6 +18,7 @@
 import { randomUUID } from 'node:crypto';
 import { db } from './verbindung.js';
 import { addColumnIfMissing } from './nachruesten.js';
+import { transaktion } from './transaktion.js';
 
 /**
  * Jede Tabelle, die am Tisch entsteht, bekommt eine `campaign_id`.
@@ -25,6 +26,14 @@ import { addColumnIfMissing } from './nachruesten.js';
  * Nicht dabei und mit Absicht: `users`, `invites` und `auth_sessions` –
  * Konten gehören der ganzen Runde, nicht einer Geschichte. Und `api_cache`,
  * der Spiegel des Kompendiums, der niemandem gehört.
+ *
+ * Achtung, die Spalte bedeutet nicht überall dasselbe. Bei allem, was am
+ * Tisch *gespielt* wird (Charaktere, Szenen, Würfe …), grenzt sie ab: Jede
+ * Abfrage filtert danach. Bei der *Vorbereitung* – `maps`, `media`,
+ * `library`, `encounters`, `ambience` – hält sie nur fest, in welcher
+ * Kampagne etwas angelegt wurde. Gefiltert wird dort nicht, denn
+ * Vorbereitung gehört der ganzen Runde (siehe ../kampagnen.js, wo genau
+ * diese Tabellen beim endgültigen Entfernen stehen bleiben).
  */
 export const KAMPAGNEN_TABELLEN = [
   'characters', 'combatants', 'library', 'notes', 'rolls', 'messages',
@@ -55,10 +64,18 @@ export function ruesteKampagnenNach() {
  *   – Gibt es noch keine Konten, ist der Almanach frisch eingerichtet und
  *     legt seine erste Kampagne beim ersten Konto selbst an
  *     (siehe routes/auth.js).
+ *
+ * Der erste Ausstieg ist zugleich der Grund für die Transaktion: Bräche der
+ * Umzug nach dem Anlegen der Kampagne ab (Strom weg, volle Karte), hielte
+ * jeder weitere Start ihn für erledigt – und die übrigen Zeilen blieben ohne
+ * Kampagne liegen, für niemanden mehr sichtbar. Also ganz oder gar nicht.
  */
 function ersteKampagneSichern() {
   if (db.prepare('SELECT COUNT(*) AS n FROM campaigns').get().n > 0) return;
+  transaktion(umziehen);
+}
 
+function umziehen() {
   const nutzer = db.prepare('SELECT id FROM users ORDER BY created_at').all();
   if (nutzer.length === 0) return;
 

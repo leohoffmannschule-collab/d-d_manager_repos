@@ -12,9 +12,6 @@
  */
 import { db, getState } from '../db.js';
 
-export const toNumber = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
-export const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
-
 /* --- Umwandlung ---------------------------------------------------------- */
 
 export function rowToScene(row) {

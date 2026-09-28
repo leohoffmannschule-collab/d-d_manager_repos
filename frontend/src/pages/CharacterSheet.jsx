@@ -56,6 +56,15 @@ export default function CharacterSheet() {
   // Solange hier noch ungesicherte Änderungen liegen, darf nichts von außen
   // hereinschreiben – sonst überholt die Spielleitung den eigenen Federstrich.
   const offeneAenderung = useRef(false);
+  // Zählt jede Speicheranfrage. Nur die jüngste – und nur, wenn nicht schon
+  // die nächste wartet – darf `offeneAenderung` wieder freigeben: Sonst gäbe
+  // eine langsame ältere Anfrage bei ihrer Rückkehr den Live-Draht frei,
+  // während die nächste Änderung noch ungesichert hier liegt.
+  const speicherStand = useRef(0);
+  // Steht auf true, wenn die nächste Änderung am Blatt von *hier* kam und
+  // gespeichert werden muss – im Gegensatz zu einer, die über den
+  // Live-Draht hereinkam und schon gespeichert ist.
+  const zuSpeichern = useRef(false);
 
   useEffect(() => {
     setCharacter(null);
@@ -94,46 +103,50 @@ export default function CharacterSheet() {
       offeneAenderung.current = true;
       setSaveStatus('pending');
       saveTimer.current = setTimeout(async () => {
+        saveTimer.current = null;
+        const dieser = ++speicherStand.current;
         setSaveStatus('saving');
         try {
           await charactersApi.update(id, { name: next.name, data: next.data });
-          setSaveStatus('saved');
+          if (dieser === speicherStand.current) setSaveStatus('saved');
         } catch (err) {
           setSaveStatus('error');
           setError(err.message);
         } finally {
-          offeneAenderung.current = false;
+          if (dieser === speicherStand.current && !saveTimer.current) offeneAenderung.current = false;
         }
       }, 600);
     },
     [id]
   );
 
-  function updateName(name) {
-    setCharacter((prev) => {
-      const next = { ...prev, name };
-      persist(next);
-      return next;
-    });
+  /**
+   * Das Blatt örtlich ändern und zum Speichern vormerken.
+   *
+   * Gespeichert wird *nicht* im Rückruf von setCharacter: Der soll rein
+   * sein, und React ruft ihn im Entwicklungsmodus absichtlich doppelt auf.
+   * Stattdessen merkt sich `zuSpeichern`, dass die nächste Änderung von hier
+   * kam, und der Effekt darunter speichert, sobald sie gerendert ist.
+   */
+  function aendern(bauen) {
+    zuSpeichern.current = true;
+    offeneAenderung.current = true;
+    setCharacter(bauen);
   }
+
+  useEffect(() => {
+    if (!zuSpeichern.current || !character) return;
+    zuSpeichern.current = false;
+    persist(character);
+  }, [character, persist]);
+
+  const updateName = (name) => aendern((prev) => ({ ...prev, name }));
 
   /** Ein einzelnes Feld: `updateData('combat.hp.current', 5)`. */
-  function updateData(path, value) {
-    setCharacter((prev) => {
-      const next = { ...prev, data: setPath(prev.data, path, value) };
-      persist(next);
-      return next;
-    });
-  }
+  const updateData = (path, value) => aendern((prev) => ({ ...prev, data: setPath(prev.data, path, value) }));
 
   // Für Vorgänge, die viele Felder auf einmal betreffen – etwa eine Rast.
-  function replaceData(data) {
-    setCharacter((prev) => {
-      const next = { ...prev, data };
-      persist(next);
-      return next;
-    });
-  }
+  const replaceData = (data) => aendern((prev) => ({ ...prev, data }));
 
   /**
    * Das Bildnis. Es landet als `data:`-URL *im Blatt selbst*, nicht als
@@ -143,8 +156,13 @@ export default function CharacterSheet() {
   async function handlePortrait(e) {
     const file = e.target.files?.[0];
     if (!file) return;
-    const dataUrl = await fileToResizedDataUrl(file);
-    updateData('portrait', dataUrl);
+    try {
+      updateData('portrait', await fileToResizedDataUrl(file));
+    } catch {
+      // Ein Bild, das der Browser nicht lesen kann (HEIC vom iPhone etwa),
+      // soll nicht stumm verpuffen.
+      setError('Dieses Bild ließ sich nicht lesen. Am sichersten sind JPEG und PNG.');
+    }
   }
 
   // Das Blatt als eigenständige Datei mitnehmen – für die Vorbereitung,
@@ -163,8 +181,12 @@ export default function CharacterSheet() {
 
   async function handleDelete() {
     if (!confirm(`„${character.name}“ wirklich unwiderruflich aus dem Almanach tilgen?`)) return;
-    await charactersApi.remove(id);
-    navigate('/');
+    try {
+      await charactersApi.remove(id);
+      navigate('/');
+    } catch (err) {
+      setError(err.message);
+    }
   }
 
   if (error) return <p className="panel border-rubric p-4 text-rubric">{error}</p>;

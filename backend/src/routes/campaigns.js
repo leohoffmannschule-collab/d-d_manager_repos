@@ -19,10 +19,11 @@
  */
 import { Router } from 'express';
 import { randomUUID } from 'node:crypto';
-import { db } from '../db.js';
-import { requireAuth, requireCampaign, requireDm, setSessionCampaign } from '../auth.js';
+import { db, transaktion } from '../db.js';
+import { istMitglied, requireAuth, requireCampaign, requireDm, setSessionCampaign } from '../auth.js';
+import { trenne } from '../events.js';
 import { endgueltigEntfernen, FRIST_TAGE, raeumePapierkorb, verbleibendeTage } from '../kampagnen.js';
-import { ARTEN, meldeNachZiel, uebernimmAlles, umfang, zielPruefen } from '../uebernehmen.js';
+import { ARTEN, istArt, meldeNachZiel, uebernimmAlles, umfang, zielPruefen } from '../uebernehmen.js';
 import { saeVorlagen } from '../vorlagen/index.js';
 import { sendeSzene } from '../spieltisch/melden.js';
 
@@ -87,30 +88,35 @@ router.post('/', requireDm, (req, res) => {
 
   const id = randomUUID();
   const jetzt = new Date().toISOString();
-  db.prepare('INSERT INTO campaigns (id, name, created_by, created_at) VALUES (?, ?, ?, ?)').run(
-    id,
-    req.body.name.trim(),
-    req.user.id,
-    jetzt
-  );
-  db.prepare('INSERT INTO campaign_members (campaign_id, user_id, joined_at) VALUES (?, ?, ?)').run(
-    id,
-    req.user.id,
-    jetzt
-  );
-  // Eine frische Kampagne ist leer, und leer lässt sich schwer beurteilen –
-  // deshalb liegen von Anfang an zwölf fertige Charaktere hinter dem Schirm.
-  saeVorlagen(id);
+  transaktion(() => {
+    db.prepare('INSERT INTO campaigns (id, name, created_by, created_at) VALUES (?, ?, ?, ?)').run(
+      id,
+      req.body.name.trim(),
+      req.user.id,
+      jetzt
+    );
+    db.prepare('INSERT INTO campaign_members (campaign_id, user_id, joined_at) VALUES (?, ?, ?)').run(
+      id,
+      req.user.id,
+      jetzt
+    );
+    // Eine frische Kampagne ist leer, und leer lässt sich schwer beurteilen –
+    // deshalb liegen von Anfang an zwölf fertige Charaktere hinter dem Schirm.
+    saeVorlagen(id);
+  });
   setSessionCampaign(req.sessionToken, id);
   res.status(201).json({ id, name: req.body.name.trim(), created_at: jetzt });
 });
 
 // POST /api/campaigns/:id/aktiv – in diese Kampagne wechseln.
+//
+// Dieselbe Prüfung wie requireCampaign: Eine Kampagne im Papierkorb zählt
+// nicht. Sonst ließe sie sich hier wählen, und jeder folgende Weg wiese die
+// Sitzung mit 409 zurück in die Auswahl – ein Kreis ohne Ausgang.
 router.post('/:id/aktiv', (req, res) => {
-  const mitglied = db
-    .prepare('SELECT 1 FROM campaign_members WHERE campaign_id = ? AND user_id = ?')
-    .get(req.params.id, req.user.id);
-  if (!mitglied) return res.status(403).json({ code: 'nicht_dabei', error: 'Du bist kein Mitglied dieser Kampagne.' });
+  if (!istMitglied(req.params.id, req.user.id)) {
+    return res.status(403).json({ code: 'nicht_dabei', error: 'Du bist kein Mitglied dieser Kampagne.' });
+  }
 
   setSessionCampaign(req.sessionToken, req.params.id);
   res.status(204).end();
@@ -159,6 +165,9 @@ router.delete('/:id/mitglieder/:userId', requireDm, (req, res) => {
     req.params.id,
     req.params.userId
   );
+  // Und ein offenes Fenster hörte sonst weiter mit – Chat, Würfe, Tisch –,
+  // obwohl jede neue Anfrage schon abgewiesen würde.
+  trenne({ userId: req.params.userId, campaignId: req.params.id });
   res.status(204).end();
 });
 
@@ -191,7 +200,9 @@ router.get('/umfang', requireDm, requireCampaign, (req, res) => {
  * gar nicht – eine halb umgezogene Kampagne wäre schlimmer als keine.
  */
 router.post('/uebernehmen', requireDm, requireCampaign, zielPruefen, (req, res) => {
-  const gewaehlt = Array.isArray(req.body?.arten) ? req.body.arten.filter((art) => art in ARTEN) : [];
+  // `istArt` statt `art in ARTEN`: `in` fände auch „toString“ und
+  // „constructor“ auf der Prototypkette und hielte sie für eine Auswahl.
+  const gewaehlt = Array.isArray(req.body?.arten) ? req.body.arten.filter(istArt) : [];
   if (gewaehlt.length === 0) {
     return res.status(400).json({ code: 'nichts_gewaehlt', error: 'Es wurde nicht gesagt, was mitkommen soll.' });
   }
@@ -199,7 +210,7 @@ router.post('/uebernehmen', requireDm, requireCampaign, zielPruefen, (req, res) 
   const bericht = uebernimmAlles(req.campaignId, req.ziel, gewaehlt);
   for (const art of gewaehlt) meldeNachZiel(art, req.ziel);
   // Szenen melden sich nicht über meldeNachZiel: Was auf dem Tisch liegt,
-  // hängt an der Sicht des Einzelnen und kommt aus routes/scenes.js.
+  // hängt an der Sicht des Einzelnen und kommt aus spieltisch/melden.js.
   if (gewaehlt.includes('szenen')) sendeSzene(req.ziel);
 
   const ziel = db.prepare('SELECT id, name FROM campaigns WHERE id = ?').get(req.ziel);
@@ -268,10 +279,13 @@ router.delete('/:id', (req, res) => {
     });
   }
 
-  db.prepare('UPDATE campaigns SET deleted_at = ? WHERE id = ?').run(new Date().toISOString(), kampagne.id);
-  // Alle, die gerade darin sitzen, landen bei der nächsten Anfrage wieder in
-  // der Kampagnenauswahl – sonst liefen sie ins Leere.
-  db.prepare('UPDATE auth_sessions SET campaign_id = NULL WHERE campaign_id = ?').run(kampagne.id);
+  transaktion(() => {
+    db.prepare('UPDATE campaigns SET deleted_at = ? WHERE id = ?').run(new Date().toISOString(), kampagne.id);
+    // Alle, die gerade darin sitzen, landen bei der nächsten Anfrage wieder in
+    // der Kampagnenauswahl – sonst liefen sie ins Leere.
+    db.prepare('UPDATE auth_sessions SET campaign_id = NULL WHERE campaign_id = ?').run(kampagne.id);
+  });
+  trenne({ campaignId: kampagne.id });
   res.json({ id: kampagne.id, name: kampagne.name, frist: FRIST_TAGE });
 });
 

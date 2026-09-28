@@ -6,7 +6,7 @@
  * fängt hier an: `useDaten` nimmt eine Funktion, die etwas vom Server holt,
  * und gibt die Daten samt Nachlade-Handgriff zurück.
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLiveStatus } from '../live.jsx';
 
 /**
@@ -15,6 +15,11 @@ import { useLiveStatus } from '../live.jsx';
  *
  * `generation` zählt hoch, sobald die Verbindung (neu) steht. Nach einem
  * Funkloch wird dadurch alles nachgezogen, was in der Zwischenzeit geschah.
+ *
+ * @template T
+ * @param {() => Promise<T>} holen mit useCallback festgehalten (siehe unten)
+ * @param {T} [anfang] was bis zur ersten Antwort gilt
+ * @returns {{ daten: T, setDaten: Function, laden: () => Promise<T|null>, fehler: Error|null, laedt: boolean }}
  */
 export function useDaten(holen, anfang = null) {
   // Wichtig: `holen` muss vom Aufrufer mit useCallback festgehalten werden.
@@ -24,20 +29,28 @@ export function useDaten(holen, anfang = null) {
   const [daten, setDaten] = useState(anfang);
   const [fehler, setFehler] = useState(null);
   const [laedt, setLaedt] = useState(true);
+  // Welcher Ladevorgang der jüngste ist. Zwei können sich überholen – etwa
+  // das Nachladen nach einem Funkloch und ein Live-Ereignis, das ebenfalls
+  // `laden` ruft. Ohne diese Zählung gewönne, wer *zuletzt ankommt*, nicht
+  // wer zuletzt gefragt hat, und ein alter Stand überschriebe den neuen.
+  const juengster = useRef(0);
 
   // `laden` gibt das Geladene auch zurück – manchmal braucht der Aufrufer
   // den frischen Stand sofort und nicht erst beim nächsten Rendern.
   const laden = useCallback(async () => {
+    const dieser = ++juengster.current;
     try {
       const frisch = await holen();
-      setDaten(frisch);
-      setFehler(null);
+      if (dieser === juengster.current) {
+        setDaten(frisch);
+        setFehler(null);
+      }
       return frisch;
     } catch (err) {
-      setFehler(err);
+      if (dieser === juengster.current) setFehler(err);
       return null;
     } finally {
-      setLaedt(false);
+      if (dieser === juengster.current) setLaedt(false);
     }
   }, [holen]);
 

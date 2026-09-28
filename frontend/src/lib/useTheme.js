@@ -1,9 +1,9 @@
 /**
  * Pergament oder Kerzenlicht – hell oder dunkel.
  *
- * Die Farben selbst stehen nicht hier, sondern in index.css: Dort hängen
- * zwei Sätze von CSS-Variablen an `html[data-theme="…"]`. Diese Datei setzt
- * nur das Attribut; das Umfärben erledigt der Browser.
+ * Die Farben selbst stehen nicht hier, sondern in stile/farben.css: Dort
+ * hängen zwei Sätze von CSS-Variablen an `html[data-theme="…"]`. Diese Datei
+ * setzt nur das Attribut; das Umfärben erledigt der Browser.
  *
  * Gemerkt wird die Wahl im localStorage, also je Browser und Gerät. Das ist
  * Absicht: Wer am Tisch auf dem iPad spielt und daheim am Schirm, will dort

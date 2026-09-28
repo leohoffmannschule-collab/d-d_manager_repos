@@ -1,5 +1,3 @@
-import { db } from './db.js';
-
 /**
  * Der Papierkorb für Kampagnen.
  *
@@ -11,6 +9,8 @@ import { db } from './db.js';
  *
  * Das ist Absicht: Was hier gelöscht wird, sind Monate an Spielabenden.
  */
+import { db, transaktion } from './db.js';
+import { trenne } from './events.js';
 
 export const FRIST_TAGE = 30;
 
@@ -43,20 +43,31 @@ export function verbleibendeTage(deletedAt) {
  * Karten und Bilddateien bleiben ausdrücklich liegen: Sie gehören der Runde
  * und werden anderswo weiterbenutzt. Was eine Karte nicht mehr braucht, räumt
  * die Bibliothek beim Löschen der Karte selbst weg (siehe routes/maps.js).
+ *
+ * Ganz oder gar nicht: Ein Abbruch mittendrin hinterließe eine Kampagne ohne
+ * Charaktere, aber mit Szenen – und die Frist liefe für sie nie wieder ab,
+ * weil sie ja noch im Papierkorb steht.
  */
 export function endgueltigEntfernen(campaignId) {
-  for (const tabelle of TABELLEN) {
-    db.prepare(`DELETE FROM ${tabelle} WHERE campaign_id = ?`).run(campaignId);
-  }
+  transaktion(() => {
+    // Die Tabellennamen stammen aus der festen Liste oben, nie aus einer
+    // Anfrage – nur deshalb dürfen sie in der Zeichenkette stehen.
+    for (const tabelle of TABELLEN) {
+      db.prepare(`DELETE FROM ${tabelle} WHERE campaign_id = ?`).run(campaignId);
+    }
 
-  // Der Kleinkram der Kampagne: aktive Szene, Vorhang, Kampfrunde, Beute.
-  db.prepare("DELETE FROM app_state WHERE key LIKE ? ESCAPE '\\'").run(`${campaignId.replace(/[%_\\]/g, '\\$&')}:%`);
+    // Der Kleinkram der Kampagne: aktive Szene, Vorhang, Kampfrunde, Beute.
+    // Die Kennung wird für LIKE entschärft, damit ein `_` darin nicht als
+    // Platzhalter die Werte einer fremden Kampagne mitnimmt.
+    db.prepare("DELETE FROM app_state WHERE key LIKE ? ESCAPE '\\'").run(`${campaignId.replace(/[%_\\]/g, '\\$&')}:%`);
 
-  // Sitzungen, die noch auf diese Kampagne zeigen, stehen sonst im Leeren.
-  db.prepare('UPDATE auth_sessions SET campaign_id = NULL WHERE campaign_id = ?').run(campaignId);
+    // Sitzungen, die noch auf diese Kampagne zeigen, stehen sonst im Leeren.
+    db.prepare('UPDATE auth_sessions SET campaign_id = NULL WHERE campaign_id = ?').run(campaignId);
 
-  // Mitgliedschaften hängen per Fremdschlüssel daran und gehen mit.
-  db.prepare('DELETE FROM campaigns WHERE id = ?').run(campaignId);
+    // Mitgliedschaften hängen per Fremdschlüssel daran und gehen mit.
+    db.prepare('DELETE FROM campaigns WHERE id = ?').run(campaignId);
+  });
+  trenne({ campaignId });
 }
 
 /**

@@ -1,7 +1,3 @@
-import { randomUUID } from 'node:crypto';
-import { db } from './db.js';
-import { broadcast } from './events.js';
-
 /**
  * Die Chronik der Sitzung.
  *
@@ -14,6 +10,9 @@ import { broadcast } from './events.js';
  * Es wird nichts gehört und nichts aufgenommen: Grundlage sind allein die
  * Handlungen, die ohnehin durch den Server laufen.
  */
+import { randomUUID } from 'node:crypto';
+import { db } from './db.js';
+import { broadcast } from './events.js';
 
 const KIND_LABELS = {
   wurf: 'Wurf',

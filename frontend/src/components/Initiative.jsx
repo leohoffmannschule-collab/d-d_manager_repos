@@ -34,7 +34,7 @@ import {
 // fürs Charakterblatt, hier für die Kampfliste. Doppelt, weil beide Listen
 // unabhängig wachsen dürfen: Im Kampf kommt „Erschöpft“ dazu, das auf dem
 // Blatt eine eigene Stufenleiste hat.
-export const ZUSTAENDE = [
+const ZUSTAENDE = [
   'Bezaubert',
   'Betäubt',
   'Blind',

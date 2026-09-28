@@ -12,8 +12,6 @@ import { db, getState } from '../db.js';
 /** Die drei Arten von Kämpfern: Held, NSC, Monster. */
 export const TYPEN = new Set(['pc', 'npc', 'monster']);
 
-export const toNumber = (value, fallback) => (Number.isFinite(Number(value)) ? Number(value) : fallback);
-
 /** Runde und wer dran ist – das steht im kleinen Schlüssel-Wert-Speicher. */
 export function meta(campaignId) {
   return getState('kampf', campaignId, { round: 1, activeCombatantId: null });

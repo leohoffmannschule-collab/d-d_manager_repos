@@ -58,9 +58,10 @@ router.post('/roll', (req, res) => {
     return res.status(400).json({ code: 'wurfausdruck_fehlt', error: 'Würfelausdruck ist erforderlich.' });
   }
 
+  const art = mode === 'advantage' || mode === 'disadvantage' ? mode : 'normal';
   let ergebnis;
   try {
-    ergebnis = rollDice(expression, mode === 'advantage' || mode === 'disadvantage' ? mode : 'normal');
+    ergebnis = rollDice(expression, art);
   } catch (err) {
     return res.status(400).json({ code: 'wurfausdruck_ungueltig', error: err.message });
   }
@@ -75,7 +76,7 @@ router.post('/roll', (req, res) => {
     userName: req.user.name,
     label: typeof label === 'string' ? label.slice(0, 100) : '',
     expression: expression.slice(0, 200),
-    mode: mode === 'advantage' || mode === 'disadvantage' ? mode : 'normal',
+    mode: art,
     details: ergebnis.details,
     total: ergebnis.total,
     secret,

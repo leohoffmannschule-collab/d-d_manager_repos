@@ -544,7 +544,7 @@ frontend/   React 19, Vite, Tailwind CSS v4, PWA
 backend/    Node.js, Express, SQLite über das eingebaute node:sqlite
 ```
 
-**Keine neuen Abhängigkeiten für den Kern:** express und cors, mehr nicht.
+**Keine neuen Abhängigkeiten für den Kern:** express, mehr nicht.
 SQLite steckt seit Node 22.5 in Node selbst – nichts muss kompiliert werden,
 kein node-gyp, keine Bauwerkzeuge.
 
@@ -576,9 +576,14 @@ Wer den Almanach neu gestaltet, übersetzt oder in eine ganz andere Anwendung
 ### 13.4 Der Vertrag
 
 `npm run vertrag` startet einen eigenen Almanach auf einem freien Port mit
-frischer Datenbank, spielt eine Runde durch und prüft in **144 Prüfungen**,
-dass die Schnittstelle sich verhält, wie die Oberfläche es erwartet – samt
-der Frage, ob wirklich verborgen bleibt, was verborgen bleiben soll.
+frischer Datenbank, spielt eine Runde durch und prüft in **über 270
+Prüfungen**, dass die Schnittstelle sich verhält, wie die Oberfläche es
+erwartet – samt der Frage, ob wirklich verborgen bleibt, was verborgen
+bleiben soll.
+
+Vor jedem Commit genügt ein Befehl: `npm test` lässt Linter, Einfuhr-,
+Blatt- und Klangprobe und den Vertrag nacheinander laufen und bricht beim
+ersten Fehler ab.
 
 Wer die Oberfläche umbaut, weist damit nach, dass der Unterbau unangetastet
 blieb. Wer am Server schraubt, merkt sofort, wenn er etwas bricht.

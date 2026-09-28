@@ -82,7 +82,7 @@ router.post('/', express.json({ limit: '20mb' }), (req, res) => {
  * Zu sehen bekommt sie ohnehin nur, wer angemeldet ist *und* die Kennung
  * kennt – und die steht nur in einer Szene, die die Spielleitung aufgelegt hat.
  */
-router.get('/:id', (req, res) => {
+router.get('/:id', (req, res, next) => {
   const row = db.prepare('SELECT * FROM media WHERE id = ?').get(req.params.id);
   if (!row) {
     return res.status(404).json({ code: 'bild_nicht_gefunden', error: 'Bild nicht gefunden.' });
@@ -99,9 +99,24 @@ router.get('/:id', (req, res) => {
 
   // Der Inhalt zu einer Kennung ändert sich nie – der Browser darf ihn also
   // behalten. Auf dem Spieltisch spart das jede Menge Nachladen.
-  res.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
-  res.setHeader('Content-Type', row.mime);
-  fs.createReadStream(datei).pipe(res);
+  //
+  // `sendFile` statt eines eigenen Lesestroms: Ein Strom ohne Fehlerhörer
+  // reißt bei einem Lesefehler (Datei zwischen Prüfen und Öffnen weg,
+  // fehlende Rechte) den ganzen Server mit. `sendFile` meldet den Fehler an
+  // `next`, und nebenbei beherrscht es Teilanfragen und ETags.
+  //
+  // Mit `root` und dem nackten Dateinamen, nicht mit dem ganzen Pfad:
+  // `sendFile` verweigert Pfade mit einem Punktordner darin – und läge der
+  // Datenordner etwa unter `~/.almanach`, gäbe es sonst kein einziges Bild.
+  res.sendFile(
+    row.filename,
+    { root: mediaDir, headers: { 'Content-Type': row.mime, 'Cache-Control': 'private, max-age=31536000, immutable' } },
+    (fehler) => {
+      // Ein abgebrochener Abruf (Seite weitergeblättert) ist kein Fehler des
+      // Servers und gehört nicht ins Protokoll.
+      if (fehler && fehler.code !== 'ECONNABORTED') next(fehler);
+    }
+  );
 });
 
 // DELETE /api/media/:id

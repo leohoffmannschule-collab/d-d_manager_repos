@@ -21,6 +21,17 @@ function write(client, event, data) {
   }
 }
 
+/**
+ * Ein Fenster an den Kanal hängen.
+ *
+ * `user` und `campaignId` werden beim Verbinden *festgehalten*, nicht bei
+ * jedem Ereignis neu nachgeschlagen – das ist billig, heißt aber auch: Ändert
+ * sich danach, wer jemand ist (Rolle entzogen, abgemeldet, aus der Kampagne
+ * genommen), hört das offene Fenster mit dem alten Stand weiter mit. Wer so
+ * etwas ändert, muss deshalb `trenne()` rufen; auth.js und die Wege der
+ * Kampagnen tun das. Der Browser klopft danach von selbst wieder an und
+ * bekommt den neuen Stand – oder, ohne gültige Sitzung, gar keinen Kanal.
+ */
 export function addClient(req, res, user, campaignId) {
   res.writeHead(200, {
     'Content-Type': 'text/event-stream; charset=utf-8',
@@ -31,7 +42,7 @@ export function addClient(req, res, user, campaignId) {
   });
   res.flushHeaders?.();
 
-  const client = { id: nextClientId++, res, user, campaignId };
+  const client = { id: nextClientId++, res, user, campaignId, sitzung: req.sessionToken ?? null };
   clients.add(client);
 
   // Ein erster Datensatz, damit der Browser die Verbindung als offen ansieht,
@@ -52,8 +63,11 @@ export function addClient(req, res, user, campaignId) {
     clients.delete(client);
     broadcast('anwesenheit', presence(campaignId), { campaignId });
   };
-  req.on('close', close);
-  req.on('error', close);
+  // Am Antwortstrom horchen, nicht an der Anfrage: `req` meldet sein 'close'
+  // je nach Node-Fassung schon, wenn der (leere) Rumpf gelesen ist, `res`
+  // erst, wenn die Verbindung wirklich weg ist.
+  res.on('close', close);
+  res.on('error', close);
 
   broadcast('anwesenheit', presence(campaignId), { campaignId });
   return client;
@@ -83,6 +97,33 @@ export function broadcast(event, data, options = {}) {
     if (campaignId !== undefined && client.campaignId !== campaignId) continue;
     write(client, event, data);
   }
+}
+
+/**
+ * Offene Fenster schließen, auf die die Auswahl passt – alle Angaben müssen
+ * zutreffen.
+ *
+ * @param {object} auswahl
+ * @param {string} [auswahl.userId]     alle Fenster dieses Kontos
+ * @param {string} [auswahl.sitzung]    alle Fenster dieser einen Anmeldung
+ * @param {string} [auswahl.campaignId] alle Fenster in dieser Kampagne
+ * @returns {number} wie viele geschlossen wurden
+ */
+export function trenne({ userId, sitzung, campaignId } = {}) {
+  // Ohne jede Angabe würde alles getrennt – das ist nie gemeint.
+  if (userId === undefined && sitzung === undefined && campaignId === undefined) return 0;
+  let getrennt = 0;
+  // Gestrichen wird im 'close'-Handler. Selbst wenn der schon während dieser
+  // Schleife liefe: Ein Set verträgt das Löschen beim Durchlaufen.
+  for (const client of clients) {
+    if (userId !== undefined && client.user?.id !== userId) continue;
+    if (sitzung !== undefined && client.sitzung !== sitzung) continue;
+    if (campaignId !== undefined && client.campaignId !== campaignId) continue;
+    // Das Aufräumen (Menge, Anwesenheit) erledigt der 'close'-Handler oben.
+    client.res.end();
+    getrennt += 1;
+  }
+  return getrennt;
 }
 
 /** Wer ist gerade in dieser Kampagne am Tisch? Mehrere Fenster einer Person zählen einmal. */

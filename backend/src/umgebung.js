@@ -1,7 +1,3 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
 /**
  * Die eigene Umgebung aus der Datei `.env` neben dem Almanach.
  *
@@ -18,6 +14,9 @@ import { fileURLToPath } from 'node:url';
  * bevor ein anderes sie liest (der Datenordner etwa wird beim Laden der
  * Datenbank gebraucht, nicht erst beim ersten Zugriff).
  */
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const wurzel = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 

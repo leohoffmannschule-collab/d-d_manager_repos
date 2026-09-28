@@ -18,7 +18,6 @@
  * wird in `eintraege()` gleich unten, also an einer einzigen Stelle.
  */
 import { Router } from 'express';
-
 import { db } from '../db.js';
 import { isDm, requireAuth, requireDm } from '../auth.js';
 import { broadcast } from '../events.js';
@@ -69,9 +68,14 @@ router.post('/sessions', requireDm, (req, res) => {
   res.status(201).json(rowToSession(chronik.starteSitzung(req.body?.title, req.campaignId), req.user));
 });
 
+// Es läuft höchstens eine Sitzung je Kampagne. Die Kennung im Pfad muss
+// trotzdem stimmen: Sonst beendete ein veraltetes Fenster, das eine längst
+// geschlossene Sitzung anzeigt, stillschweigend die gerade laufende.
 router.post('/sessions/:id/ende', requireDm, (req, res) => {
+  const row = sitzungHolen(req.params.id, req.campaignId);
+  if (!row) return res.status(404).json({ code: 'sitzung_nicht_gefunden', error: 'Sitzung nicht gefunden.' });
+  if (row.ended_at) return res.status(400).json({ code: 'keine_offene_sitzung', error: 'Diese Sitzung ist schon beendet.' });
   const beendet = chronik.beendeSitzung(req.campaignId);
-  if (!beendet) return res.status(400).json({ code: 'keine_offene_sitzung', error: 'Es läuft gerade keine Sitzung.' });
   res.json(rowToSession(beendet, req.user));
 });
 
@@ -192,10 +196,18 @@ router.get('/sessions/:id/protokoll', (req, res) => {
  *
  * Eingestellt wird es über drei Umgebungsvariablen; die Schnittstelle ist die
  * von OpenAI, die auch llama.cpp und Ollama örtlich anbieten.
+ *
+ * Das Sprachmodell bekommt nur, was die Runde ohnehin sehen darf – keine
+ * verdeckten Einträge. Der Rückblick steht hinterher bei *allen* in der
+ * Chronik; ein verborgener Gegner oder ein verdeckter Wurf im Protokoll
+ * stünde sonst, schön ausformuliert, im Text für die ganze Runde.
  */
 const KI_URL = process.env.CHRONIK_KI_URL || '';
 const KI_MODELL = process.env.CHRONIK_KI_MODELL || 'gpt-4o-mini';
 const KI_SCHLUESSEL = process.env.CHRONIK_KI_SCHLUESSEL || '';
+// Ein Sprachmodell auf dem Pi braucht gern eine Minute; länger heißt: hängt.
+// Ohne Frist bliebe die Anfrage der Spielleitung sonst ewig offen.
+const KI_FRIST_MS = 3 * 60 * 1000;
 
 router.get('/ki', (req, res) => {
   res.json({ verfuegbar: !!KI_URL, modell: KI_URL ? KI_MODELL : null });
@@ -214,13 +226,17 @@ router.post('/sessions/:id/rueckblick', requireDm, async (req, res) => {
   const row = sitzungHolen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'sitzung_nicht_gefunden', error: 'Sitzung nicht gefunden.' });
 
-  const liste = db.prepare('SELECT * FROM chronicle WHERE session_id = ? ORDER BY created_at').all(row.id);
+  // Die Sicht der Runde, nicht die der Spielleitung – siehe oben.
+  const liste = eintraege(row.id, { role: 'spieler' });
   if (liste.length === 0) return res.status(400).json({ code: 'sitzung_leer', error: 'In dieser Sitzung steht noch nichts.' });
 
-  const roh = protokoll(row, liste.map(chronik.rowToEntry));
+  // Ohne den alten Rückblick: Das Modell soll aus dem Abend erzählen, nicht
+  // aus seiner eigenen früheren Fassung.
+  const roh = protokoll({ ...row, summary: '' }, liste);
 
   try {
     const antwort = await fetch(KI_URL, {
+      signal: AbortSignal.timeout(KI_FRIST_MS),
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

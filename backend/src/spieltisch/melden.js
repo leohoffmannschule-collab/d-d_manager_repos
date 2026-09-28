@@ -17,7 +17,7 @@
  *   meldeFigur              die eine Figur an die Spielleitung, die ganze
  *                           Szene an die Runde
  *
- * `letzteFiguren` merkt sich je Person, welche Figuren sie zuletzt sah.
+ * `letzteFiguren` merkt sich je Kampagne und Person, welche Figuren sie zuletzt sah.
  * Ohne dieses Gedächtnis löste jeder Pinselstrich über schon aufgedecktes
  * Land eine Runde Figurenlisten aus – bei einem gezogenen Strich hundert
  * Mal in der Sekunde.
@@ -29,15 +29,51 @@ import * as chronik from '../chronicle.js';
 import { rowToToken, vorhangZu } from './umwandlung.js';
 import { szenenSicht } from './sichtbarkeit.js';
 
+/**
+ * Wer sieht zuletzt welche Figuren – je Kampagne und Person.
+ *
+ * Die Kampagne gehört mit in den Schlüssel: Dieselbe Spielleitung kann in
+ * zwei Fenstern an zwei Tischen sitzen, und ein gemeinsamer Eintrag ließe
+ * den einen Tisch glauben, der andere habe schon Bescheid bekommen.
+ */
+const letzteFiguren = new Map();
+const schluessel = (campaignId, userId) => `${campaignId}:${userId}`;
+
+function figurenKennung(sicht) {
+  return (sicht?.tokens ?? []).map((t) => t.id).join('|');
+}
+
+function merke(campaignId, userId, sicht) {
+  letzteFiguren.set(schluessel(campaignId, userId), figurenKennung(sicht));
+}
+
+/**
+ * Jede verbundene Person mit ihrer eigenen Sicht auf den Tisch.
+ *
+ * Die Sicht der Spielleitung ist für alle Spielleitungen dieselbe und wird
+ * deshalb nur einmal gerechnet; jede andere Person bekommt ihre eigene.
+ * Wer nicht verbunden ist, bekommt nichts – er holt sich beim Verbinden
+ * ohnehin den ganzen Stand.
+ */
+function sichtenJePerson(campaignId) {
+  let slSicht;
+  let slGerechnet = false;
+  return presence(campaignId).map((person) => {
+    if (person.role !== 'sl') return { person, sicht: szenenSicht(person, campaignId) };
+    if (!slGerechnet) {
+      slSicht = szenenSicht({ role: 'sl' }, campaignId);
+      slGerechnet = true;
+    }
+    return { person, sicht: slSicht };
+  });
+}
+
+/** Die ganze Szene an alle – jede Person in ihrer eigenen Fassung. */
 export function sendeSzene(campaignId) {
-  broadcast('szene', szenenSicht({ role: 'sl' }, campaignId), { role: 'sl', campaignId });
-  // Jede Person am Tisch sieht etwas anderes – also bekommt auch jede ihre
-  // eigene Fassung. Nur wer verbunden ist, bekommt überhaupt eine.
-  for (const person of presence(campaignId)) {
-    if (person.role === 'sl') continue;
-    broadcast('szene', szenenSicht(person, campaignId), { userIds: [person.id], campaignId });
+  for (const { person, sicht } of sichtenJePerson(campaignId)) {
+    broadcast('szene', sicht, { userIds: [person.id], campaignId });
+    merke(campaignId, person.id, sicht);
   }
-  merkeFiguren(campaignId);
 }
 
 /**
@@ -46,24 +82,11 @@ export function sendeSzene(campaignId) {
  * Gesendet wird nur, wenn sich wirklich etwas geändert hat; ein Pinselstrich
  * über schon aufgedecktes Land soll nicht fünf Figurenlisten auslösen.
  */
-const letzteFiguren = new Map();
-
-function figurenKennung(sicht) {
-  return (sicht?.tokens ?? []).map((t) => t.id).join('|');
-}
-
-function merkeFiguren(campaignId) {
-  for (const person of presence(campaignId)) {
-    letzteFiguren.set(person.id, figurenKennung(szenenSicht(person, campaignId)));
-  }
-}
-
 export function sendeFigurenWennGeaendert(campaignId) {
-  for (const person of presence(campaignId)) {
-    const sicht = szenenSicht(person, campaignId);
+  for (const { person, sicht } of sichtenJePerson(campaignId)) {
     const kennung = figurenKennung(sicht);
-    if (letzteFiguren.get(person.id) === kennung) continue;
-    letzteFiguren.set(person.id, kennung);
+    if (letzteFiguren.get(schluessel(campaignId, person.id)) === kennung) continue;
+    letzteFiguren.set(schluessel(campaignId, person.id), kennung);
     broadcast('figuren', sicht?.tokens ?? [], { userIds: [person.id], campaignId });
   }
 }
@@ -89,25 +112,26 @@ export function darfBewegen(user, tokenRow) {
  * damit die gezogene Figur nicht kurz zurückspringt.
  */
 export function meldeFigur(row, req) {
+  const { campaignId } = req;
   // Schaut die Spielleitung durch fremde Augen, gilt für sie dieselbe
   // Rechnung wie für die Runde – dann genügt die einzelne Figur nicht.
-  if (getState('nsc_sicht', req.campaignId, null)) {
-    broadcast('szene', szenenSicht({ role: 'sl' }, req.campaignId), { role: 'sl', campaignId: req.campaignId });
-  } else {
-    broadcast('figur', rowToToken(row), { role: 'sl', exceptClient: originClient(req), campaignId: req.campaignId });
+  const durchFremdeAugen = !!getState('nsc_sicht', campaignId, null);
+
+  for (const { person, sicht } of sichtenJePerson(campaignId)) {
+    merke(campaignId, person.id, sicht);
+    if (person.role === 'sl' && !durchFremdeAugen) continue;
+    broadcast('szene', sicht, { userIds: [person.id], campaignId });
   }
 
-  for (const person of presence(req.campaignId)) {
-    if (person.role === 'sl') continue;
-    broadcast('szene', szenenSicht(person, req.campaignId), { userIds: [person.id], campaignId: req.campaignId });
+  if (!durchFremdeAugen) {
+    broadcast('figur', rowToToken(row), { role: 'sl', exceptClient: originClient(req), campaignId });
   }
-  merkeFiguren(req.campaignId);
 }
 
-/** Eine Szene auf den Tisch legen – auch aus der Kartenbibliothek heraus. */
 /**
- * Eine Szene auf den Tisch legen. Mit `verdeckt` geht vorher der Vorhang zu –
- * dann baut die Spielleitung dahinter auf, und die Runde merkt nichts davon.
+ * Eine Szene auf den Tisch legen – aus der Szenenliste wie aus der
+ * Kartenbibliothek. Mit `verdeckt` geht vorher der Vorhang zu: Dann baut die
+ * Spielleitung dahinter auf, und die Runde merkt nichts davon.
  */
 export function aktiviereSzene(row, campaignId, optionen = {}) {
   if (optionen.verdeckt) setState('vorhang', campaignId, true);

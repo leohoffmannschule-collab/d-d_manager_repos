@@ -449,6 +449,8 @@ Nützliche Befehle im Projektstamm:
 | `npm run serve`     | Nur den Server starten (ohne zu bauen)                                |
 | `npm run vertrag`   | Die Schnittstelle gegen einen eigenen Testserver prüfen               |
 | `npm run blattprobe`| Nachrechnen, was das Charakterblatt ausrechnet                        |
+| `npm run lint`      | oxlint über Oberfläche, Server und Werkzeuge                          |
+| `npm test`          | Alles davon der Reihe nach: Lint, Einfuhr-, Blatt-, Klangprobe, Vertrag |
 | `npm run vorlagen`  | Gelöschte Vorlagen-Charaktere nachlegen                               |
 
 `npm start` nimmt außerdem `-- --neu-bauen` (Bau erzwingen) und `-- --ohne-bau` (Bau überspringen).
@@ -464,7 +466,7 @@ Der Almanach ist so geschnitten, dass die Oberfläche austauschbar ist – ohne 
 | Anmeldung und Live-Kanal | `frontend/src/lib/auth.jsx`, `live.jsx`                     | bleibt     |
 | **Datenschicht**         | `frontend/src/lib/daten.js`                                | bleibt     |
 | Beschriftung             | `frontend/src/lib/beschriftung.js`                          | anpassen   |
-| Aussehen                 | `frontend/src/index.css` (Farben, Schriften als Variablen)  | anpassen   |
+| Aussehen                 | `frontend/src/stile/` (Farben, Schriften als Variablen)     | anpassen   |
 | Darstellung              | `frontend/src/pages/`, `frontend/src/components/`           | ersetzen   |
 
 In `daten.js` steckt das mühsame Stück: wann geladen wird, welches Ereignis welchen Zustand betrifft, was nach
@@ -521,8 +523,9 @@ Velin-Tafeln, Rubrikrot für Überschriften, Blattgold als Zierrat, Attribute al
 Überschriften und Zahlen stehen in *Cinzel*, Fließtext in *EB Garamond*, Initialen in
 *UnifrakturMaguntia*. Die Entwürfe dazu liegen als Artboards in `design/`.
 
-Farben und Schriften sind als CSS-Variablen in `frontend/src/index.css` gebündelt – wer etwas umfärben
-möchte, ändert sie dort einmal, und beide Fassungen (Pergament und Kerzenlicht) ziehen mit.
+Farben und Schriften sind als CSS-Variablen in `frontend/src/stile/` gebündelt (`farben.css`,
+`schriften.css`) – wer etwas umfärben möchte, ändert sie dort einmal, und beide Fassungen (Pergament
+und Kerzenlicht) ziehen mit.
 
 ## Quellen & Credits
 
