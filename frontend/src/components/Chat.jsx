@@ -10,6 +10,13 @@ import { useChat } from '../lib/daten.jsx';
  * Wie der Würfelbeutel: ein runder Knopf unten rechts, dahinter das Fenster.
  * Wer geflüstert hat, sieht das an der Zeile; wer nicht gemeint war, bekommt
  * sie gar nicht erst – das entscheidet der Server.
+ *
+ * Geflüstertes erreicht ausdrücklich auch die Spielleitung nicht. Das ist
+ * eine bewusste Entscheidung: Ein Flüstern, bei dem jemand mithört, ist
+ * kein Flüstern, und am Tisch tuschelt man auch, ohne zu fragen.
+ *
+ * Gezeichnet wird das Fenster von unten nach oben (`flex-col-reverse`), damit
+ * die jüngste Zeile ohne Nachhelfen unten steht.
  */
 
 /** Nur die Uhrzeit; das Datum steht in der Chronik, hier stört es. */
@@ -17,6 +24,7 @@ function uhrzeit(iso) {
   return new Date(iso).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
 }
 
+/** Eine Zeile. Geflüstertes bekommt den roten Rand und einen Vermerk. */
 function Zeile({ zeile, ichBin }) {
   const geflüstert = !!zeile.toUserId;
   const vonMir = zeile.userId === ichBin;

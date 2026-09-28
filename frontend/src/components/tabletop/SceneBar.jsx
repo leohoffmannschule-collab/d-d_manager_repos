@@ -1,3 +1,22 @@
+/**
+ * Die Werkzeugleiste über dem Spieltisch – nur für die Spielleitung.
+ *
+ * Vier Dinge stecken darin, von links nach rechts:
+ *
+ *   1. *Der Vorhang.* Steht ganz vorn und wird rot, wenn er zu ist. Wer ihn
+ *      vergisst, spielt vor einer Runde, die nichts sieht – deshalb die
+ *      auffälligste Anzeige der ganzen Oberfläche.
+ *   2. *Die Werkzeuge* (Bewegen, Aufdecken, Verhüllen, Messen, Zeigen) samt
+ *      Pinselbreite. Welches gewählt ist, hält pages/Tabletop.jsx; hier
+ *      wird nur gezeigt und gemeldet.
+ *   3. *Das Raster* zum Ausklappen: Feldgröße, Versatz, Maßstab, dunkle
+ *      Szene, Sichtweite. Alles davon gehört zur Szene und wird gespeichert.
+ *   4. *Die Szenenlade*: neue Szene aus einer Karte, aus einer Datei oder
+ *      ganz ohne, und die Liste der vorhandenen.
+ *
+ * Diese Datei zeigt viel und entscheidet wenig – der Zustand liegt eine
+ * Ebene höher, die Regeln liegen im Server.
+ */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { mapsApi, mediaApi, scenesApi } from '../../lib/api.js';
 import { useKarten, useSzenenListe } from '../../lib/daten.jsx';
@@ -17,6 +36,9 @@ import {
   IconUpload,
 } from '../icons.jsx';
 
+// Die Werkzeuge des Tisches. `id` ist zugleich der Wert von `mode` in
+// pages/Tabletop.jsx und wird in Board.jsx abgefragt – wer eines ergänzt,
+// muss es also an drei Stellen kennen.
 const WERKZEUGE = [
   { id: 'bewegen', label: 'Bewegen', Icon: IconMap, hinweis: 'Karte schieben, Figuren ziehen' },
   { id: 'nebel-auf', label: 'Aufdecken', Icon: IconEye, hinweis: 'Nebel wegwischen' },
@@ -43,6 +65,7 @@ const PINSEL = [
   { id: 'rechteck', label: 'Rechteck', hinweis: 'Aufziehen und alles darin auf einmal – für Säle und Gänge' },
 ];
 
+/** Ein Leistenknopf. Golden umrandet, solange er gewählt ist. */
 function Knopf({ aktiv, children, ...rest }) {
   return (
     <button

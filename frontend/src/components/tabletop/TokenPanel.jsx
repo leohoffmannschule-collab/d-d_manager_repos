@@ -1,3 +1,19 @@
+/**
+ * Die gewählte Figur bearbeiten – Name, Farbe, Größe, Bildnis, Lichtquelle.
+ *
+ * Steht am Spieltisch im Reiter „Figur“ und nur für die Spielleitung.
+ *
+ * Zwei Dinge, die mehr tun, als sie aussehen:
+ *
+ *   *verbergen* – eine verborgene Figur wird einem Spielerfenster gar nicht
+ *   erst geschickt. Der Hinterhalt steht also wirklich nicht da, statt nur
+ *   durchsichtig zu sein.
+ *
+ *   *Lichtquelle* – hell und dämmrig in Fuß. In einer dunklen Szene
+ *   erhellt sie die Karte für alle; sie ist damit das Gegenstück zur
+ *   Dunkelsicht, die am Charakterblatt hängt. Gerechnet wird beides auf dem
+ *   Server (backend/src/sicht.js).
+ */
 import { useRef, useState } from 'react';
 import { mediaApi, scenesApi } from '../../lib/api.js';
 import { bildLesen } from '../../lib/bilder.js';

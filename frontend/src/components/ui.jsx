@@ -1,3 +1,16 @@
+/**
+ * Die kleinen, immer wiederkehrenden Bausteine der Oberfläche:
+ * Überschriften, Karten, beschriftete Eingabefelder, Zähler, Schalter.
+ *
+ * Warum eigene statt roher `<input>`? Damit ein Zahlenfeld im ganzen
+ * Almanach gleich aussieht und gleich heißt – und damit eine Änderung am
+ * Aussehen an einer Stelle passiert statt an sechzig.
+ *
+ * Alle hier arbeiten „gesteuert“ (controlled): Sie merken sich nichts
+ * selbst, sondern bekommen `value` und melden über `onChange` zurück. Den
+ * Zustand hält immer der Aufrufer. Das ist in React die Regel, nicht die
+ * Ausnahme, und der Grund, warum das Charakterblatt alles an einem Ort hat.
+ */
 import { Fleuron, IconCheck, IconMinus, IconPlus } from './icons.jsx';
 import { weiteAnzeigen, weiteEinheit, weiteNachFuss } from '../lib/dnd5e.js';
 
@@ -22,6 +35,7 @@ export function Card({ title, children, className = '' }) {
   );
 }
 
+/** Die kleine Kapitälchen-Beschriftung über einem Feld. */
 export function FieldLabel({ children }) {
   return (
     <span className="mb-1 block font-display text-[10px] tracking-[0.16em] text-faint uppercase">{children}</span>

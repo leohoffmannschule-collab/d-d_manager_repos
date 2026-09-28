@@ -1,3 +1,14 @@
+/**
+ * Das freie Blatt – für alles, was nicht D&D 5e ist.
+ *
+ * Ein Charakter mit `system !== 'dnd5e'` bekommt statt der fünf Reiter
+ * diese Seite: eine Kurzbeschreibung und beliebig viele selbst benannte
+ * Abschnitte mit freiem Text. Keine Attribute, keine Rechnung, keine Regel.
+ *
+ * Damit taugt der Almanach auch für Call of Cthulhu, Vampire oder ein
+ * selbstgebautes System – man verliert nur die Hilfen, die auf 5e-Regeln
+ * beruhen (Würfelknöpfe am Wert, Traglast, Zauberplätze).
+ */
 import { Card, TextAreaField } from '../ui.jsx';
 import { IconPlus } from '../icons.jsx';
 import { newId } from '../../lib/id.js';

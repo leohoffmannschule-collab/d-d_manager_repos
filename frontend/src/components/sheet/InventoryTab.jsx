@@ -1,3 +1,16 @@
+/**
+ * Reiter 3: Ausrüstung, Münzen und Traglast.
+ *
+ * Gewichte liegen im Blatt immer in **Pfund**, Weiten in **Fuß** – auch bei
+ * jemandem, der metrisch spielt. Umgerechnet wird erst beim Anzeigen
+ * (lib/dnd5e.js). Der Grund: Ein Blatt soll dasselbe bleiben, gleich wer es
+ * aufschlägt, und Rundungsfehler sollen sich nicht bei jedem Speichern
+ * aufsummieren.
+ *
+ * Die Traglaststufen folgen dem Regelwerk (Stärke × 15 Pfund). Die meisten
+ * Runden spielen ohne sie – deshalb steht sie als Hinweis da und nicht als
+ * Verbot.
+ */
 import {
   getragenesGewicht,
   gewichtAnzeigen,

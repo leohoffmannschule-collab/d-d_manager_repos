@@ -1,3 +1,12 @@
+/**
+ * Reiter 5: alles, was die Figur zu einer Person macht – Aussehen,
+ * Wesenszüge, Bindungen, Makel, Vorgeschichte, Verbündete und die Merkmale
+ * aus Klasse, Spezies, Hintergrund und Talenten.
+ *
+ * Der einzige Reiter, auf dem nichts gerechnet wird. Er ordnet nur: Die
+ * Merkmale werden nach Herkunft gruppiert, weil man am Tisch genau so
+ * sucht („was gibt mir noch mal mein Hintergrund?“).
+ */
 import { AUSSEHEN_FELDER, MERKMAL_ARTEN, merkmalArtLabel } from '../../lib/dnd5e.js';
 import { Card, TextAreaField, TextField } from '../ui.jsx';
 import RepeatingRows from '../RepeatingRows.jsx';

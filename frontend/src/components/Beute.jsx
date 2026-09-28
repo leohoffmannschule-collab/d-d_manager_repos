@@ -1,3 +1,17 @@
+/**
+ * Die Beutekiste – am Spieltisch im Reiter „Beute“.
+ *
+ * Eintragen darf jede und jeder: Was die Runde findet, gehört erst einmal
+ * allen. Auszahlen darf nur die Spielleitung, denn dabei wird in fremde
+ * Charakterblätter geschrieben.
+ *
+ * Das Teilen rechnet der **Server** aus (backend/src/routes/stash.js) – und
+ * zwar so, wie es am Tisch wirklich zugeht: von der größten Münze zur
+ * kleinsten, Unteilbares wird gewechselt und weitergereicht, nie umgekehrt.
+ * Aus 43 Gold für drei werden so 14 Gold je Kopf und nicht „1 Platin, 4
+ * Gold“. Was übrig bleibt, bleibt liegen – wer den Rest bekommt, ist eine
+ * Frage für den Tisch und nicht für den Almanach.
+ */
 import { useEffect, useMemo, useState } from 'react';
 import { stashApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';

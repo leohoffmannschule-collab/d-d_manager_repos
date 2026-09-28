@@ -1,5 +1,19 @@
-// Gezeichnete Symbole statt Emoji – so passen sie zum Stil, lassen sich
-// einfärben und bleiben auf jedem Gerät gleich.
+/**
+ * Alle Symbole des Almanachs, als SVG von Hand gezeichnet.
+ *
+ * Warum keine Emoji? Sie sehen auf jedem Gerät anders aus, lassen sich nicht
+ * einfärben und passen selten zu einem Pergament. Warum keine Symbol-
+ * Bibliothek? Weil der Almanach ohne Netz laufen soll und ein Paket für
+ * dreißig Symbole schwerer wöge als diese Datei.
+ *
+ * Alle bauen auf `Icon` auf und erben von dort `stroke="currentColor"`: Das
+ * Symbol nimmt die Textfarbe seiner Umgebung an. Deshalb genügt ein
+ * `className="text-gold"` am Symbol, und es ist golden – ohne eine einzige
+ * Zeile über Farben hier drin.
+ *
+ * Ein neues Symbol: `Icon` umhüllen, Pfade hinein, in Vierundzwanzigstel
+ * denken (das `viewBox` ist 24×24), und `strokeWidth` dem Rest überlassen.
+ */
 function Icon({ size = 20, children, ...rest }) {
   return (
     <svg

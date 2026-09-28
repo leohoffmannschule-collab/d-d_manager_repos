@@ -1,3 +1,19 @@
+/**
+ * Vorbereitete Begegnungen: „Wache am Stadttor“, „3 Goblins und ein Wolf“.
+ *
+ * Der Unterschied zum Bestiarium: Dort steht *ein* Statblock, hier eine
+ * ganze Aufstellung samt Anzahl. Einmal gebaut, steht sie mit einem Klick
+ * auf dem Tisch – mit gewürfelter Initiative und wahlweise verborgen, bis
+ * der Hinterhalt zuschnappt.
+ *
+ * Ein Posten hält alle nötigen Werte **selbst** fest und verweist nur
+ * nebenbei auf das Bestiarium. Deshalb lässt sich eine Begegnung auch dann
+ * noch stellen, wenn der Statblock dahinter längst gelöscht wurde.
+ *
+ * Umgekehrt geht es auch: „Kampf sichern“ macht aus der laufenden
+ * Aufstellung eine Begegnung – gleichnamige Gegner werden dabei wieder zu
+ * einer Gruppe zusammengefasst.
+ */
 import { useState } from 'react';
 import { encountersApi, mediaApi } from '../../lib/api.js';
 import { useBegegnungen, useBestiarium } from '../../lib/daten.jsx';

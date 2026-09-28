@@ -1,3 +1,17 @@
+/**
+ * Reiter 1 des Charakterblattes: alles, was oben auf dem gedruckten Bogen
+ * steht – Name, Volk, Klasse, die sechs Attribute, Rettungswürfe und die
+ * achtzehn Fertigkeiten.
+ *
+ * Das Muster, das alle fünf Reiter teilen: Sie bekommen `data` (das Blatt)
+ * und `update(pfad, wert)` und halten *keinen* eigenen Zustand. Geändert
+ * wird immer oben in pages/CharacterSheet.jsx, das auch das Speichern
+ * besorgt. So kann kein Reiter einen Stand halten, der vom Blatt abweicht.
+ *
+ * Gerechnet wird nichts von Hand: Modifikatoren, Übungsbonus und passive
+ * Werte kommen aus lib/dnd5e.js. Steht eine Regel dort falsch, ist sie
+ * überall falsch – und nur an einer Stelle zu richten.
+ */
 import {
   ABILITIES,
   MASSSYSTEME,

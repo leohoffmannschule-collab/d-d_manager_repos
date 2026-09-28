@@ -1,3 +1,19 @@
+/**
+ * Das Bestiarium: die Sammlung von Statblöcken, aus denen im Kampf Kämpfer
+ * werden.
+ *
+ * Zwei Wege hinein: von Hand eintippen, oder aus dem Kompendium übernehmen
+ * („aus dem Kompendium“). Übernommen wird dabei eine **Abschrift** – der
+ * Eintrag gehört danach dem Almanach und lässt sich beliebig verbiegen, ohne
+ * dass das Kompendium dazu erreichbar sein muss.
+ *
+ * Ein Weg hinaus: „in den Kampf“, wahlweise mehrfach und wahlweise
+ * verborgen. Der Server würfelt dabei gleich die Initiative und legt für
+ * jeden Gegner einen Kämpfer an.
+ *
+ * Das Bestiarium gehört der **ganzen Runde**, nicht einer Kampagne: Ein
+ * Goblin bleibt ein Goblin, gleich in welcher Geschichte er auftritt.
+ */
 import { useMemo, useState } from 'react';
 import { compendiumApi, libraryApi, mediaApi } from '../../lib/api.js';
 import { useBestiarium } from '../../lib/daten.jsx';

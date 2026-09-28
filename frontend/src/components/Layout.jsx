@@ -1,3 +1,17 @@
+/**
+ * Der Rahmen um jede Seite: Kopfleiste oben, Seiteninhalt darunter, und die
+ * drei schwebenden Dinge, die es überall gibt – Würfelbeutel, Chat und
+ * Klangleiste.
+ *
+ * `<Outlet />` weiter unten ist der Platzhalter, an dem React Router die
+ * jeweilige Seite einsetzt. In App.jsx stehen die Seiten deshalb als
+ * Kinder von `<Route element={<Layout />}>`: Alles darin bekommt diesen
+ * Rahmen, die Anmeldung und die Kampagnenwahl nicht.
+ *
+ * Dass Würfelbeutel und Chat *hier* hängen und nicht auf den einzelnen
+ * Seiten, ist der Grund, warum ein Wurf nicht verlorengeht, wenn jemand
+ * mitten im Kampf auf sein Charakterblatt wechselt.
+ */
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import Chat from './Chat.jsx';
@@ -26,6 +40,7 @@ import {
   IconUsers,
 } from './icons.jsx';
 
+/** Die Hauptnavigation. Der Schirm der Spielleitung kommt nur für sie dazu. */
 function navItems(isDm) {
   return [
     { to: '/', label: 'Charaktere', Icon: IconScroll, end: true },
@@ -36,7 +51,12 @@ function navItems(isDm) {
   ];
 }
 
-/** Kleiner Punkt, der zeigt, ob der Draht zum Spieltisch steht. */
+/**
+ * Kleiner Punkt, der zeigt, ob der Draht zum Spieltisch steht.
+ *
+ * Unscheinbar, aber wichtig: Wer im Funkloch sitzt, sieht sonst eine Karte,
+ * auf der sich nichts mehr bewegt, und hält sie für richtig.
+ */
 function Verbindung({ connected }) {
   return (
     <span

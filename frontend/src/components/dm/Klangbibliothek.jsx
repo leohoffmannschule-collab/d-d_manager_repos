@@ -1,3 +1,19 @@
+/**
+ * Der Klangteppich hinter dem Schirm: hinterlegte Spotify-Links.
+ *
+ * Der Almanach spielt **nichts** ab und kennt kein Spotify-Konto. Er
+ * sammelt, was die Spielleitung vorbereitet hat, und sagt der Runde, was
+ * gerade dran ist; abgespielt wird bei jedem im eigenen Spotify.
+ *
+ * Das ist die kleine Lösung, und zwar mit Absicht: Im Browser abspielen und
+ * über alle Fenster gleichschalten verlangte von Spotify eine verschlüsselte
+ * Adresse unter eigenem Namen, ein Premium-Konto je Zuhörer und eine
+ * Freischaltliste. Ein hinterlegter Link dagegen funktioniert für jeden,
+ * sofort und ohne Anmeldung.
+ *
+ * Eine Karte kann ihre Ambiente mitbringen: Wird sie aufgelegt, legt sich
+ * die Musik von selbst mit auf (siehe Kartenbibliothek).
+ */
 import { useMemo, useState } from 'react';
 import { ambienceApi } from '../../lib/api.js';
 import { useKlang, useKlangbibliothek } from '../../lib/daten.jsx';

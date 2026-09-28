@@ -1,3 +1,25 @@
+/**
+ * Der Spieltisch selbst: Karte, Raster, Figuren, Nebel, Lineal, Zeigefinger.
+ *
+ * Das größte Stück Oberfläche im Almanach – und das einzige, das mit
+ * Koordinaten hantiert. Wer hier etwas ändert, sollte die **drei
+ * Koordinatensysteme** auseinanderhalten:
+ *
+ *   1. Bildschirmpunkte – was ein Mausereignis liefert (`e.clientX`).
+ *   2. Kartenpunkte     – Bildpunkte auf der Karte selbst, unabhängig von
+ *                         Zoom und Verschiebung. `zuSzene()` rechnet um.
+ *   3. Rasterfelder     – „3,7“, die Sprache des Nebels. `feldKoord()`
+ *                         rechnet Kartenpunkte in Felder um.
+ *
+ * Gezoomt und geschoben wird nicht durch Umrechnen jedes einzelnen Dings,
+ * sondern durch *eine* CSS-Transformation auf dem Behälter: alles darin
+ * (Karte, Figuren, Nebel) wandert mit. Deshalb dürfen Figuren in
+ * Kartenpunkten positioniert werden und niemand muss beim Zoomen rechnen.
+ *
+ * Bedient wird mit *Pointer Events* statt Maus- und Berührungsereignissen:
+ * ein Satz Rückrufe für Maus, Finger und Stift. Zwei Finger heißen
+ * Schieben und Zoomen, einer je nach Werkzeug Ziehen, Malen oder Messen.
+ */
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { mediaApi } from '../../lib/api.js';
 import {
@@ -86,6 +108,14 @@ function Nebel({ scene, fog, sicht, dm }) {
   );
 }
 
+/**
+ * Eine Figur auf der Karte.
+ *
+ * Steht in Kartenpunkten (`left`/`top`), nicht in Bildschirmpunkten – die
+ * Transformation des Behälters erledigt den Rest. Der Balken darunter
+ * erscheint nur, wenn Trefferpunkte bekannt sind: Bei Monstern bekommt die
+ * Runde sie nicht, und dann soll dort auch nichts stehen.
+ */
 function Figur({ token, scene, hp, aktiv, beweglich, ziehend }) {
   const g = scene.gridSize;
   const groesse = token.size * g;
@@ -234,7 +264,11 @@ export default function Board({
     [feldKoord, scene, pinselGroesse, onPaintFog, mode]
   );
 
-  // Beim ersten Anzeigen die Karte einpassen.
+  // Beim ersten Anzeigen die Karte einpassen. useLayoutEffect wäre hier
+  // falsch herum – wir brauchen die *gemessene* Größe der Hülle, und die
+  // steht erst, wenn der Browser gezeichnet hat. `gepasst` merkt sich die
+  // Szene, damit das Einpassen nicht bei jedem Neuzeichnen wieder zuschlägt
+  // und einen mitten im Verschieben zurückwirft.
   useEffect(() => {
     if (gepasst.current === scene.id || !huelle.current || !scene.width) return;
     gepasst.current = scene.id;
@@ -286,11 +320,25 @@ export default function Board({
     return () => el.removeEventListener('wheel', beiRad);
   }, [zoomen]);
 
+  /**
+   * Ein Finger, eine Maustaste oder ein Stift setzt auf.
+   *
+   * `setPointerCapture` ist die wichtige Zeile: Von da an bekommt dieses
+   * Element alle weiteren Ereignisse dieses Zeigers, auch wenn er die Hülle
+   * verlässt. Ohne das bliebe eine Figur hängen, sobald man sie über den
+   * Rand des Tisches zieht.
+   *
+   * Was dann geschieht, hängt vom Werkzeug ab – die Reihenfolge der
+   * Abfragen ist die Rangfolge: Zeigen und Messen gehen vor, dann der
+   * Nebel, dann das Ziehen einer Figur, und ganz zuletzt das Schieben der
+   * Karte als Rückfallebene.
+   */
   function beiZeigerAb(e) {
     huelle.current.setPointerCapture(e.pointerId);
     zeiger.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
-    // Zwei Finger: nur schieben und zoomen.
+    // Zwei Finger heißen immer Kneifen und Schieben – nie Malen. Sonst
+    // zöge man beim Aufziehen der Karte eine Nebelspur hinter sich her.
     if (zeiger.current.size > 1) {
       setZiehen(null);
       return;
@@ -383,6 +431,11 @@ export default function Board({
     }
   }
 
+  /**
+   * Der Zeiger hebt ab. Hier wird abgeschlossen, was begonnen wurde: Die
+   * Figur schnappt aufs Raster ein, das Rechteck wird angewendet, das
+   * Lineal verschwindet.
+   */
   function beiZeigerAuf(e) {
     zeiger.current.delete(e.pointerId);
     huelle.current.releasePointerCapture?.(e.pointerId);
@@ -399,7 +452,8 @@ export default function Board({
     }
     letzterAbdruck.current = null;
     if (ziehen?.art === 'figur') {
-      // Auf das Raster einschnappen.
+      // Auf das Raster einschnappen. Gerundet, nicht abgeschnitten – sonst
+      // rutschte jede Figur beim Loslassen nach links oben.
       const x = Math.round((ziehen.x - scene.gridOffsetX) / g) * g + scene.gridOffsetX;
       const y = Math.round((ziehen.y - scene.gridOffsetY) / g) * g + scene.gridOffsetY;
       onMoveToken?.(ziehen.id, x, y);

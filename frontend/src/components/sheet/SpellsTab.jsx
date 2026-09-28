@@ -1,3 +1,16 @@
+/**
+ * Reiter 4: Zauberplätze, Zaubertricks und die Zauberliste.
+ *
+ * Die Besonderheit gegenüber den anderen Reitern: Hier hängt das Kompendium
+ * mit dran. Wer einen Zauber sucht, bekommt ihn aus der 5e-API und
+ * übernimmt Reichweite, Wirkzeit und Komponenten mit einem Klick ins Blatt.
+ * Übernommen wird dabei eine *Abschrift*, kein Verweis – das Blatt soll
+ * auch dann vollständig sein, wenn das Kompendium gerade nicht erreichbar
+ * ist oder der Zauber dort verschwindet.
+ *
+ * Zauberplätze sind Verbrauch, kein Vorrat: Gezählt wird `used` gegen `max`.
+ * Eine lange Rast setzt `used` auf null (lib/rasten.js).
+ */
 import { useEffect, useMemo, useState } from 'react';
 import { ABILITIES, SPELL_LEVELS, abilityModifier, formatModifier, proficiencyBonus } from '../../lib/dnd5e.js';
 import { compendiumApi } from '../../lib/api.js';

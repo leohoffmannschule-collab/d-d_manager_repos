@@ -1,3 +1,19 @@
+/**
+ * Die Einzelheiten eines Kompendium-Eintrags.
+ *
+ * Die Besonderheit: Wir wissen vorher *nicht*, welche Felder kommen. Ein
+ * Zauber hat andere als ein Monster, und die 5e-API darf jederzeit neue
+ * hinzufügen. Deshalb wird hier nichts fest verdrahtet, sondern durch das
+ * Objekt gelaufen und jedes Feld nach bestem Wissen dargestellt:
+ *
+ *   – `SKIP_KEYS` wirft technischen Kram weg (Kennungen, Adressen).
+ *   – `humanizeKey` macht aus „casting_time“ eine deutsche Beschriftung.
+ *   – `renderValue` kommt mit Text, Zahlen, Listen und verschachtelten
+ *     Objekten zurecht.
+ *
+ * Der Preis dafür ist, dass es nie so schön aussieht wie eine von Hand
+ * gebaute Ansicht. Der Gewinn: Es bricht nicht, wenn die API sich ändert.
+ */
 import { Fleuron } from './icons.jsx';
 import { SRD_FELD } from '../lib/beschriftung.js';
 
@@ -11,6 +27,7 @@ function humanizeKey(key) {
   return SRD_FELD[key] ?? key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+/** Einen beliebigen Wert anzeigbar machen – rekursiv, notfalls als Liste. */
 function renderValue(value) {
   if (value === null || value === undefined || value === '') return null;
   if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {

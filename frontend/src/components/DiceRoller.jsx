@@ -1,3 +1,14 @@
+/**
+ * Der Würfelbeutel: unten rechts der Knopf, dahinter die Wurfchronik der
+ * ganzen Runde.
+ *
+ * Gewürfelt wird auf dem *Server*. Das ist der Kern der Sache: Ein im
+ * eigenen Browser erzeugtes Ergebnis wäre eine Behauptung, kein Wurf. So
+ * steht jeder Wurf mit Namen und Uhrzeit bei allen am Tisch.
+ *
+ * Die Spielleitung kann verdeckt würfeln (`secret`) – solche Würfe bekommt
+ * ein Spielerfenster gar nicht erst geschickt.
+ */
 import { useState } from 'react';
 import { IconClose, IconD20, IconD20Detailed, IconEyeOff, IconTrash } from './icons.jsx';
 import { diceApi } from '../lib/api.js';
@@ -6,6 +17,14 @@ import { useWuerfe } from '../lib/daten.jsx';
 
 const DICE = [4, 6, 8, 10, 12, 20, 100];
 
+/**
+ * Eine Zeile der Chronik. `hervorgehoben` ist der eigene jüngste Wurf – er
+ * steht größer da, damit man ihn im Gewimmel wiederfindet.
+ *
+ * `details` enthält die einzelnen Würfel, nicht nur die Summe: Bei Vorteil
+ * sind das zwei W20, von denen einer zählt. Sie in Klammern zu zeigen, ist
+ * das, was am echten Tisch das Hinschauen ersetzt.
+ */
 function Wurfzeile({ wurf, hervorgehoben }) {
   const wuerfe = wurf.details
     .flatMap((d) => d.rolls ?? [])

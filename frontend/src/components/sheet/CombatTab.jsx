@@ -1,3 +1,19 @@
+/**
+ * Reiter 2: alles, was im Kampf gebraucht wird – Trefferpunkte,
+ * Rüstungsklasse, Angriffe, Zustände, Erschöpfung, Rasten.
+ *
+ * Der am meisten benutzte Reiter des Almanachs, und der einzige, der auch
+ * *schreibend* mit dem Rest des Tisches zu tun hat: Trefferpunkte, die hier
+ * fallen, stehen sofort in der Kampfliste der Spielleitung, und Schaden von
+ * dort steht sofort hier (siehe pages/CharacterSheet.jsx, useLive).
+ *
+ * Die Rettungswürfe gegen den Tod sind bewusst dicke Knöpfe: Wer bei 0
+ * Trefferpunkten liegt, soll sie im Halbdunkel treffen.
+ *
+ * Kurze und lange Rast ändern ein Dutzend Felder auf einmal. Die Regeln
+ * dafür stehen nicht hier, sondern in lib/rasten.js – hier steht nur der
+ * Knopf, der sie anwendet.
+ */
 import { useState } from 'react';
 import {
   AKTION_ARTEN,

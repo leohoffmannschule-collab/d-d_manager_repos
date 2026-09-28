@@ -1,6 +1,25 @@
+/**
+ * Eine Liste gleichartiger Zeilen, die sich erweitern und kürzen lässt:
+ * Angriffe, Ausrüstung, Merkmale, Ressourcen – überall auf dem Blatt
+ * dasselbe Muster.
+ *
+ * Statt das fünfmal zu bauen, beschreibt der Aufrufer nur die Spalten:
+ *
+ *     <RepeatingRows
+ *       items={data.attacks}
+ *       onChange={(neu) => updateData('attacks', neu)}
+ *       fields={[{ key: 'name', label: 'Waffe' }, { key: 'bonus', label: '+' }]}
+ *     />
+ *
+ * Jede Zeile bekommt beim Anlegen eine eigene Kennung (`newId`). Die ist
+ * nicht Zierde: React braucht für Listen einen stabilen `key`, und der
+ * Listenindex taugt dafür nicht – löscht man die erste Zeile, rutschen alle
+ * anderen eine Stelle hoch, und React ordnet die Eingabefelder falsch zu.
+ */
 import { IconPlus } from './icons.jsx';
 import { newId } from '../lib/id.js';
 
+/** Eine frische Zeile, je nach Spaltentyp mit 0 oder leerem Text vorbelegt. */
 function emptyRow(fields) {
   const row = { id: newId() };
   fields.forEach((f) => {

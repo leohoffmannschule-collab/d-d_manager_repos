@@ -1,3 +1,20 @@
+/**
+ * Die Verwaltung der Runde – der Reiter „Runde“ hinter dem Schirm.
+ *
+ * Fünf Abteilungen, und sie betreffen zwei verschiedene Ebenen, was beim
+ * Lesen leicht durcheinandergeht:
+ *
+ *   Einladungen       – die **Runde**: wer überhaupt ein Konto bekommt
+ *   Mitglieder        – die **Kampagne**: wer bei dieser Geschichte dabei ist
+ *   Umzugsgut         – die Kampagne: was in eine andere kopiert wird
+ *   Konten            – die Runde: Rollen, Farben, Kennwörter
+ *   Charakterzuweisung– die Kampagne: welches Blatt wem gehört
+ *   Umbenennen/Löschen– die Kampagne selbst
+ *
+ * Merksatz: **Konten gehören der Runde, alles Gespielte einer Kampagne.**
+ * Wer neu im Almanach ist, braucht beides – ein Konto *und* einen Platz in
+ * einer Kampagne.
+ */
 import { useCallback, useEffect, useState } from 'react';
 import { authApi, campaignsApi, charactersApi } from '../../lib/api.js';
 import { useAuth } from '../../lib/auth.jsx';

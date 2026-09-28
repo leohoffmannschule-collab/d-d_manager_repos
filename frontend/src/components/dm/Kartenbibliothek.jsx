@@ -1,3 +1,21 @@
+/**
+ * Die Kartenbibliothek: Battlemaps, bevor sie jemand sieht.
+ *
+ * Hier liegt der Unterschied zwischen **Karte** und **Szene**, und wer den
+ * kennt, versteht den halben Spieltisch:
+ *
+ *   Karte  – Vorbereitung. Das Bild samt einmal ausgerichtetem Raster,
+ *            Schlagworten und Notizen. Ändert sich im Spiel nie.
+ *   Szene  – eine Karte *im Spiel*. Mit Nebel, Figuren und allem, was
+ *            der Abend daraus macht.
+ *
+ * Aus einer Karte lassen sich beliebig viele Szenen legen, ohne das Bild
+ * erneut hochzuladen oder das Raster neu auszurichten. „Auflegen“ holt die
+ * zuletzt gelegte Szene samt Nebel zurück, „frisch“ beginnt eine neue.
+ *
+ * Karten gehören der ganzen Runde, nicht einer Kampagne – dieselbe Taverne
+ * steht in jeder Geschichte bereit.
+ */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { mapsApi, mediaApi, scenesApi } from '../../lib/api.js';
 import { useKarten, useKlangbibliothek, useSzene } from '../../lib/daten.jsx';

@@ -1,3 +1,17 @@
+/**
+ * Die Kampfliste: wer wann dran ist, wie es ihm geht, was ihn plagt.
+ *
+ * Zwei Gesichter, gesteuert über `variant`:
+ *   'voll'  – hinter dem Schirm (Spielleitung → Kampf): alle Werte, alle
+ *             Knöpfe, auch die verborgenen Gegner.
+ *   sonst   – am Spieltisch für die Runde: Monster-Trefferpunkte bleiben
+ *             ein Wort („verwundet“) statt einer Zahl, Verborgenes fehlt
+ *             ganz. Gefiltert hat das schon der Server – diese Datei
+ *             *zeigt* nur weniger an, sie versteckt nichts.
+ *
+ * Die Initiative darf jeder für seine eigene Figur eintragen; das ist der
+ * einzige Eingriff in den Kampf, der nicht der Spielleitung vorbehalten ist.
+ */
 import { useState } from 'react';
 import { encounterApi } from '../lib/api.js';
 import { blattWurf } from '../lib/wuerfeln.js';
@@ -16,6 +30,10 @@ import {
   IconUsers,
 } from './icons.jsx';
 
+// Die Zustände aus dem Regelwerk. Sie stehen auch in lib/dnd5e.js – dort
+// fürs Charakterblatt, hier für die Kampfliste. Doppelt, weil beide Listen
+// unabhängig wachsen dürfen: Im Kampf kommt „Erschöpft“ dazu, das auf dem
+// Blatt eine eigene Stufenleiste hat.
 export const ZUSTAENDE = [
   'Bezaubert',
   'Betäubt',
