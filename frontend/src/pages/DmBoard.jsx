@@ -1,3 +1,15 @@
+/**
+ * Der Schirm der Spielleitung: sieben Reiter, hinter denen die Runde nichts
+ * zu suchen hat.
+ *
+ * Die Seite selbst tut fast nichts – sie merkt sich nur, welcher Reiter
+ * offen ist, und zeigt das passende Bauteil. Die Arbeit steckt in den
+ * Bauteilen unter components/dm/.
+ *
+ * Geschützt wird sie an zwei Stellen: `NurSpielleitung` in App.jsx hält
+ * Spieler von der Adresse fern, und jeder Weg des Servers dahinter prüft
+ * die Rolle noch einmal selbst. Das zweite ist das, worauf es ankommt.
+ */
 import { useState } from 'react';
 import Initiative from '../components/Initiative.jsx';
 import Bestiary from '../components/dm/Bestiary.jsx';
@@ -8,6 +20,8 @@ import Notes from '../components/dm/Notes.jsx';
 import Party from '../components/dm/Party.jsx';
 import { IconBook, IconCrown, IconMap, IconNote, IconQuill, IconShield, IconSwords, IconUsers } from '../components/icons.jsx';
 
+// Reihenfolge nach Häufigkeit im Spiel: Der Kampf steht vorn, weil er am
+// Abend am meisten gebraucht wird; die Verwaltung der Runde hinten.
 const REITER = [
   { id: 'kampf', label: 'Kampf', Icon: IconSwords },
   { id: 'bestiarium', label: 'Bestiarium', Icon: IconBook },

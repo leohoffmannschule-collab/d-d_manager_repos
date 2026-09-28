@@ -1,3 +1,21 @@
+/**
+ * Das Charakterblatt – die Seite, an der die Runde am meisten sitzt.
+ *
+ * Sie hält das Blatt als *einen* Zustand (`character`) und reicht ihn an
+ * fünf Reiter weiter, die jeweils einen Ausschnitt anzeigen. Geändert wird
+ * nie direkt: Die Reiter rufen `updateData('combat.hp.current', 5)` auf,
+ * und diese Seite baut daraus ein neues Blatt (siehe lib/setPath.js).
+ *
+ * Zwei Dinge lohnen besondere Aufmerksamkeit, weil sie leicht zu übersehen
+ * und schwer zu finden sind, wenn sie fehlen:
+ *
+ *   1. *Gespeichert wird von selbst*, 600 ms nach dem letzten Tastendruck
+ *      (siehe `persist`). Es gibt keinen Speichern-Knopf und soll keinen
+ *      geben – niemand soll mitten im Kampf ans Sichern denken müssen.
+ *   2. *Von außen kommt auch etwas herein*: Teilt die Spielleitung Schaden
+ *      aus, wandern die Trefferpunkte über den Live-Draht aufs Blatt. Damit
+ *      beides sich nicht in die Quere kommt, gibt es `offeneAenderung`.
+ */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { charactersApi } from '../lib/api.js';
@@ -13,6 +31,9 @@ import SpellsTab from '../components/sheet/SpellsTab.jsx';
 import BackgroundTab from '../components/sheet/BackgroundTab.jsx';
 import FreeformSheet from '../components/sheet/FreeformSheet.jsx';
 
+// Die Reiter des 5e-Blattes. Ein Blatt mit `system !== 'dnd5e'` bekommt
+// stattdessen das freie Blatt (FreeformSheet) – ein leeres Textfeld für
+// alles, was nicht D&D ist.
 const DND_TABS = [
   { key: 'overview', label: 'Übersicht', Component: OverviewTab },
   { key: 'combat', label: 'Kampf', Component: CombatTab },
@@ -29,6 +50,8 @@ export default function CharacterSheet() {
   const [saveStatus, setSaveStatus] = useState('idle');
   const [tab, setTab] = useState('overview');
   const [mitnehmen, setMitnehmen] = useState('bereit');
+  // Der laufende Zeitgeber fürs verzögerte Speichern. Als useRef, weil sein
+  // Wechsel kein Neuzeichnen auslösen soll und er in Rückrufen gebraucht wird.
   const saveTimer = useRef(null);
   // Solange hier noch ungesicherte Änderungen liegen, darf nichts von außen
   // hereinschreiben – sonst überholt die Spielleitung den eigenen Federstrich.
@@ -54,6 +77,17 @@ export default function CharacterSheet() {
     );
   });
 
+  /**
+   * Speichern mit Verzögerung („debounce“).
+   *
+   * Jeder Tastendruck ruft das hier auf. Statt jedes Mal zu schicken, wird
+   * der vorige Zeitgeber verworfen und ein neuer gesetzt: Erst wenn 600 ms
+   * lang nichts mehr passiert, geht *eine* Anfrage hinaus. Ohne das würde
+   * ein getippter Name zehn Anfragen auslösen.
+   *
+   * `offeneAenderung` steht währenddessen auf true und hält den Live-Draht
+   * davon ab, dazwischenzufunken.
+   */
   const persist = useCallback(
     (next) => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
@@ -83,6 +117,7 @@ export default function CharacterSheet() {
     });
   }
 
+  /** Ein einzelnes Feld: `updateData('combat.hp.current', 5)`. */
   function updateData(path, value) {
     setCharacter((prev) => {
       const next = { ...prev, data: setPath(prev.data, path, value) };
@@ -100,6 +135,11 @@ export default function CharacterSheet() {
     });
   }
 
+  /**
+   * Das Bildnis. Es landet als `data:`-URL *im Blatt selbst*, nicht als
+   * Datei daneben – deshalb wird es vorher kräftig verkleinert
+   * (siehe lib/setPath.js, fileToResizedDataUrl).
+   */
   async function handlePortrait(e) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -251,6 +291,7 @@ export default function CharacterSheet() {
   );
 }
 
+/** Die kleine Anzeige „gesichert“ / „sichert …“ neben dem Namen. */
 function SaveStatus({ status }) {
   if (status === 'idle') return null;
 

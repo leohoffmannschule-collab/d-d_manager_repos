@@ -7,6 +7,16 @@ import { Fleuron, IconCrown, IconPlus, IconScroll } from '../components/icons.js
  * Die Weiche zwischen Anmeldung und Tisch: Wer an mehreren Kampagnen
  * teilnimmt (oder noch an keiner sitzt), landet hier statt direkt im
  * Almanach. Erst wenn eine Kampagne aktiv ist, öffnen sich die Türen dahinter.
+ *
+ * Aufgerufen wird die Seite nicht über eine Adresse, sondern vom
+ * `KampagnenTor` in App.jsx – sie *ersetzt* dort alles andere, solange keine
+ * Kampagne gewählt ist. Deshalb bringt sie ihr eigenes Gerüst mit
+ * (ganzseitig, mittig) statt im gewohnten Layout zu stecken.
+ *
+ * Die Seite richtet sich an zwei sehr verschiedene Leute: Die Spielleitung
+ * darf hier eine Kampagne eröffnen; ein Spieler ohne Kampagne kann gar
+ * nichts tun außer warten, bis ihn jemand einträgt – und bekommt deshalb
+ * einen Satz zu lesen, der genau das sagt.
  */
 export default function Kampagnenwahl() {
   const { isDm, logout } = useAuth();
@@ -15,6 +25,10 @@ export default function Kampagnenwahl() {
   const [laeuft, setLaeuft] = useState(false);
   const [fehler, setFehler] = useState('');
 
+  /**
+   * Anlegen. `laeuft` sperrt den Knopf solange – ein zweiter Klick, weil der
+   * erste nicht sofort etwas tat, legte sonst zwei Kampagnen an.
+   */
   async function anlegen(e) {
     e.preventDefault();
     if (!name.trim()) return;
@@ -66,6 +80,8 @@ export default function Kampagnenwahl() {
                 {campaigns.map((k) => (
                   <li key={k.id}>
                     <button
+                      // Danach zeigt das Tor in App.jsx alles Weitere; hier
+                      // ist nichts mehr zu tun.
                       onClick={() => switchTo(k.id)}
                       className="btn-plate flex min-h-11 w-full items-center justify-between gap-3 px-4"
                     >

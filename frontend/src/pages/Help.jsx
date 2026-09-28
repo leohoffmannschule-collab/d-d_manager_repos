@@ -1,3 +1,15 @@
+/**
+ * Die Hilfeseite – das Handbuch im Almanach selbst.
+ *
+ * Reiner Text, keine Logik: Sie holt nichts vom Server und rechnet nichts
+ * aus. Die einzige Verzweigung ist `isDm` – die Spielleitung bekommt
+ * zusätzliche Abschnitte, die für die Runde nur verwirrend wären.
+ *
+ * Für Mitarbeitende am Code: Wer ein Werkzeug ändert oder hinzufügt, ändert
+ * es bitte auch hier. Eine Hilfe, die etwas anderes behauptet als die
+ * Oberfläche, ist schlimmer als gar keine. Dasselbe gilt für docs/ –
+ * SPIELLEITUNG.md und SPIELER.md sind die ausführlichen Fassungen davon.
+ */
 import { Card } from '../components/ui.jsx';
 import { useAuth } from '../lib/auth.jsx';
 

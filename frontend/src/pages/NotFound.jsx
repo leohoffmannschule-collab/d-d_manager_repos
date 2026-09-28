@@ -1,3 +1,10 @@
+/**
+ * Die Seite für Adressen, die es nicht gibt.
+ *
+ * Eingehängt in App.jsx als `path="*"` – der Stern greift, wenn keine der
+ * davor genannten Adressen passt. Sie steht *innerhalb* des Layouts, damit
+ * die Kopfleiste stehen bleibt und man mit einem Klick zurückfindet.
+ */
 import { Link } from 'react-router-dom';
 import { IconMap } from '../components/icons.jsx';
 

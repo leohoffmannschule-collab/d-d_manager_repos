@@ -11,6 +11,25 @@ import { useLive } from '../lib/live.jsx';
 import { IconFog, IconHeart, IconMap, IconPlus, IconScroll, IconSwords } from '../components/icons.jsx';
 
 /** Nebel-Änderungen werden gebündelt gesendet, nicht Feld für Feld. */
+/**
+ * Der Spieltisch: Karte, Figuren, Nebel – und rechts die Leiste mit Kampf,
+ * Beute und Handzetteln.
+ *
+ * Diese Seite ist der *Dirigent*, nicht der Zeichner. Gezeichnet wird in
+ * components/tabletop/Board.jsx; die Werkzeugleiste der Spielleitung steckt
+ * in SceneBar.jsx. Hier liegen nur der Zustand, der beide angeht (welches
+ * Werkzeug, welche Figur gewählt, wie breit der Pinsel), und die Handgriffe,
+ * die zum Server führen.
+ *
+ * Die wichtigste Eigenheit ist das *Vorgreifen*: Eine gezogene Figur und ein
+ * Pinselstrich werden sofort örtlich angezeigt und erst danach geschickt.
+ * Würde man auf die Antwort warten, ruckelte jeder Strich um die Laufzeit
+ * der Anfrage hinterher.
+ */
+
+// So lange werden Pinselstriche gesammelt, bevor sie gebündelt hinausgehen.
+// 120 ms fühlen sich noch unmittelbar an, sparen aber aus einem Strich über
+// dreißig Felder eine einzige Anfrage statt dreißig.
 const PINSEL_MS = 120;
 
 function Handzettel() {
@@ -71,6 +90,9 @@ export default function Tabletop() {
   const [reiter, setReiter] = useState('kampf');
   const [seite, setSeite] = useState(false);
 
+  // Zwei Töpfe, weil ein Strich beides enthalten kann: aufgedeckte und
+  // wieder verhüllte Felder. Mengen (Set), damit ein doppelt überstrichenes
+  // Feld nur einmal hinausgeht.
   const pinselPuffer = useRef({ auf: new Set(), zu: new Set() });
   const pinselZeit = useRef(null);
 
@@ -79,6 +101,13 @@ export default function Tabletop() {
 
   /* --- Handlungen ------------------------------------------------------- */
 
+  /**
+   * Wer darf diese Figur ziehen? Die Spielleitung alles; ein Spieler nur,
+   * was sichtbar an seinem eigenen Charakterblatt hängt.
+   *
+   * Auch das ist nur Höflichkeit – der Server prüft es noch einmal
+   * (siehe backend/src/routes/scenes.js, PATCH /figuren/:id).
+   */
   const darfBewegen = useCallback(
     (token) => isDm || (!token.hidden && !!token.characterId && meineKennungen.includes(token.characterId)),
     [isDm, meineKennungen]

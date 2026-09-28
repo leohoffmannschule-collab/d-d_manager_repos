@@ -1,3 +1,15 @@
+/**
+ * Ein neues Charakterblatt anlegen.
+ *
+ * Bewusst karg: Name, System, dazu Volk und Klasse als Vorschlagsliste.
+ * Alles Weitere trägt man auf dem Blatt selbst ein. Ein Assistent über
+ * sechs Schritte wäre beim ersten Mal hübsch und ab dem zweiten lästig.
+ *
+ * Volk und Klasse kommen aus dem Kompendium (der offenen 5e-API, gespiegelt
+ * auf unserem Server). Ist es nicht erreichbar, erscheint ein Hinweis und
+ * es geht trotzdem weiter – eine Nachschlageliste darf das Anlegen eines
+ * Charakters nicht verhindern.
+ */
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth.jsx';

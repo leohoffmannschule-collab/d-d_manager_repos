@@ -1,3 +1,22 @@
+/**
+ * Die Chronik: was an den Spielabenden geschah.
+ *
+ * Der Almanach schreibt sie im Vorbeigehen mit – jeder Wurf, jeder Schaden,
+ * jede aufgelegte Szene hinterlässt einen Eintrag (siehe
+ * backend/src/chronicle.js). Diese Seite macht daraus etwas Lesbares.
+ *
+ * Drei Dinge, die man wissen sollte:
+ *
+ *   – Einträge tragen `kind` und `meta`, also *Struktur*, nicht nur einen
+ *     fertigen Satz. Das Symbol links kommt aus `SYMBOL`, der Text bei
+ *     Bedarf aus lib/beschriftung.js. Eine andere Oberfläche könnte daraus
+ *     ganz andere Sätze bauen.
+ *   – Verdeckte Einträge (`secret`) bekommt ein Spielerfenster gar nicht
+ *     erst geschickt – das entscheidet der Server.
+ *   – Der Rückblick ist die einzige Stelle im Almanach, an der ein
+ *     Sprachmodell mitarbeitet, und er ist freiwillig: ohne Schlüssel in
+ *     der .env bleibt der Knopf fort.
+ */
 import { useEffect, useMemo, useState } from 'react';
 import { chronicleApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
@@ -18,6 +37,8 @@ import {
   IconUpload,
 } from '../components/icons.jsx';
 
+// Ein Symbol je Art von Eintrag. Fehlt eine Art hier, bleibt die Zeile
+// schlicht – das ist gewollt, damit eine neue Art nichts kaputt macht.
 const SYMBOL = {
   wurf: IconD20,
   schaden: IconSwords,
@@ -35,7 +56,13 @@ const SYMBOL = {
 
 const uhrzeit = (iso) => new Date(iso).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
 
-/** Aus der Folge von Einträgen Kapitel machen – wie im Protokoll. */
+/**
+ * Aus der Folge von Einträgen Kapitel machen – wie im Protokoll.
+ *
+ * Die Einträge kommen als flache, zeitlich sortierte Liste. Hier werden sie
+ * an den Szenenwechseln aufgeteilt, damit der Abend gegliedert dasteht
+ * statt als eine Wand aus zweihundert Zeilen.
+ */
 function inKapitel(entries) {
   const kapitel = [];
   let aktuell = null;

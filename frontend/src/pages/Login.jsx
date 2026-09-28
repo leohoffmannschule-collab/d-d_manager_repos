@@ -1,3 +1,20 @@
+/**
+ * Die Pforte: anmelden, einrichten oder der Runde beitreten.
+ *
+ * Eine Seite, drei Gesichter – welches sie zeigt, steht in `aktuellerModus`:
+ *
+ *   einrichten – der Almanach ist noch leer. Das erste Konto führt die
+ *                Spielleitung; das entscheidet der Server, nicht diese
+ *                Seite. Solange `needsSetup` gilt, gibt es keinen anderen
+ *                Weg, deshalb überstimmt es die Wahl des Nutzers.
+ *   anmelden   – der gewöhnliche Fall.
+ *   beitreten  – mit einem Einladungscode. Ohne Code kein Konto: Sonst
+ *                stünde ein Almanach, der im Netz erreichbar ist, jedem
+ *                offen, der die Adresse kennt.
+ *
+ * Gezeigt wird sie von App.jsx, wenn niemand angemeldet ist – sie hat
+ * bewusst keine eigene Adresse.
+ */
 import { useState } from 'react';
 import { useAuth } from '../lib/auth.jsx';
 import { Fleuron, IconD20Detailed, IconKey, IconQuill } from '../components/icons.jsx';
@@ -12,8 +29,15 @@ export default function Login() {
   const [fehler, setFehler] = useState('');
   const [laeuft, setLaeuft] = useState(false);
 
+  // `needsSetup` sticht: Solange es kein Konto gibt, hilft weder Anmelden
+  // noch ein Einladungscode – es *muss* erst eingerichtet werden.
   const aktuellerModus = needsSetup ? 'einrichten' : modus;
 
+  /**
+   * Beides läuft über denselben Knopf. Was danach geschieht, steht nicht
+   * hier: `login`/`register` setzen den Nutzer im AuthProvider, und App.jsx
+   * zeigt daraufhin von selbst den Almanach statt dieser Seite.
+   */
   async function absenden(e) {
     e.preventDefault();
     setFehler('');

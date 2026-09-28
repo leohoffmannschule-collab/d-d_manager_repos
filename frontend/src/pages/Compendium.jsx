@@ -1,8 +1,23 @@
+/**
+ * Das Nachschlagewerk: Völker, Klassen, Zauber, Monster und was sonst im
+ * Regelwerk steht.
+ *
+ * Die Daten stammen von der offenen D&D-5e-API. Der Almanach fragt sie
+ * nicht direkt vom Browser aus ab, sondern über den eigenen Server, der
+ * jede Antwort zwischenspeichert (backend/src/routes/compendium.js). Das
+ * hat zwei Gründe: Es geht beim zweiten Mal sofort, und am Spieltisch mit
+ * wackligem Netz funktioniert es weiter.
+ *
+ * Links die Liste, rechts die Einzelheiten – auf dem Telefon untereinander.
+ * Gesucht wird örtlich in der schon geladenen Liste, ohne neue Anfrage.
+ */
 import { useEffect, useMemo, useState } from 'react';
 import { compendiumApi } from '../lib/api.js';
 import CompendiumDetail from '../components/CompendiumDetail.jsx';
 import { IconChevronRight, IconClock, IconSearch } from '../components/icons.jsx';
 
+// Die Schlüssel links sind die Wege der 5e-API, die Beschriftungen rechts
+// unsere. Wer eine Gattung ergänzen will, braucht beides.
 const CATEGORIES = [
   { key: 'races', label: 'Völker' },
   { key: 'classes', label: 'Klassen' },

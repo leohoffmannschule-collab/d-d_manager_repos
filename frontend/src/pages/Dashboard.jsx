@@ -1,3 +1,18 @@
+/**
+ * Die Startseite: alle Charaktere der Kampagne auf einen Blick.
+ *
+ * Zwei Abteilungen, und der Unterschied ist wichtig: „Die Runde“ sind die
+ * Blätter der Spielenden, „Hinter dem Schirm“ die NSC-Blätter (`npc`) –
+ * der Wirt, der Räuberhauptmann, der Drache. Letztere sieht nur die
+ * Spielleitung, und zwar nicht, weil diese Seite sie versteckt, sondern
+ * weil der Server sie einem Spielerfenster gar nicht erst schickt.
+ *
+ * Was hier mit einem Blatt geschehen kann:
+ *   – Abschrift  – eine Kopie *in dieser* Kampagne (etwa aus einer Vorlage)
+ *   – In Kampagne … – eine Kopie in einer *anderen* Kampagne, nur für die
+ *                     Spielleitung (siehe components/Kopierziel.jsx)
+ *   – Löschen    – das eigene Blatt, oder jedes, wenn man die Runde führt
+ */
 import { Link, useNavigate } from 'react-router-dom';
 import { charactersApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
@@ -12,7 +27,14 @@ function subtitle(count) {
 }
 
 
-/** Ein Blatt in der Übersicht. Zweimal gebraucht: für die Runde und hinter dem Schirm. */
+/**
+ * Ein Blatt in der Übersicht. Zweimal gebraucht: für die Runde und hinter
+ * dem Schirm.
+ *
+ * Die `e.preventDefault(); e.stopPropagation();` in den Knöpfen sind kein
+ * Zierrat: Die ganze Karte ist anklickbar (sie öffnet das Blatt). Ohne das
+ * Anhalten würde jeder Klick auf „Löschen“ zusätzlich das Blatt aufschlagen.
+ */
 function Blatt({ c, user, isDm, onOeffnen, onAbschrift, onLoeschen }) {
   const hp = c.hp;
   const eigenes = c.ownerId === user.id;
