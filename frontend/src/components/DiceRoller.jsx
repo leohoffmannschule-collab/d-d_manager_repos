@@ -36,7 +36,7 @@ function Wurfzeile({ wurf, hervorgehoben }) {
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: wurf.color ?? '#a3927a' }} />
+            <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: wurf.color ?? 'var(--color-faint)' }} />
             <span className="truncate font-display text-[12px] tracking-[0.08em] text-sepia uppercase">
               {wurf.userName}
             </span>
@@ -92,7 +92,7 @@ export default function DiceRoller() {
           setOpen(true);
           gelesen();
         }}
-        className="fixed right-4 bottom-24 z-40 flex h-16 w-16 items-center justify-center rounded-full bg-rubric text-[#f0dca8] shadow-lg shadow-black/40 ring-2 ring-gold active:scale-95 md:bottom-6"
+        className="fixed right-4 bottom-24 z-40 flex h-16 w-16 items-center justify-center rounded-full bg-rubric text-[var(--marke-schrift)] shadow-lg shadow-black/40 ring-2 ring-gold active:scale-95 md:bottom-6"
         aria-label="Würfelbeutel öffnen"
       >
         <IconD20Detailed size={32} />

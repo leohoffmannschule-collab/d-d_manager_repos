@@ -39,12 +39,13 @@ export function useTheme() {
 
   useEffect(() => {
     // `dataset.theme = 'kerzenlicht'` schreibt data-theme="kerzenlicht" an
-    // das <html>-Element – daran hängen die Farbvariablen in index.css.
+    // das <html>-Element – daran hängen die Farbvariablen in stile/farben.css.
     document.documentElement.dataset.theme = theme;
-    // Und die Farbe der Browserleiste auf dem Handy gleich mit.
-    document
-      .querySelector('meta[name="theme-color"]')
-      ?.setAttribute('content', theme === 'kerzenlicht' ? '#100c07' : '#382718');
+    // Und die Farbe der Browserleiste auf dem Handy gleich mit – gelesen aus
+    // derselben Variable statt hier ein drittes Mal hinterlegt: Ändert sich
+    // `--color-leather` in farben.css, folgt die Browserleiste von selbst.
+    const leder = getComputedStyle(document.documentElement).getPropertyValue('--color-leather').trim();
+    if (leder) document.querySelector('meta[name="theme-color"]')?.setAttribute('content', leder);
     try {
       localStorage.setItem(STORAGE_KEY, theme);
     } catch {

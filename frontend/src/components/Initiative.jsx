@@ -69,9 +69,12 @@ function Lebensbalken({ hp, maxHp, status }) {
   return (
     <span className="flex items-center gap-1.5">
       <span className="flex h-2 w-12 overflow-hidden border border-rule-strong bg-panel-soft">
+        {/* Derselbe Balken wie unter einer Figur auf dem Tisch (siehe
+            stile/spieltisch.css) – über der Hälfte grün, darunter rot. Eine
+            Farbe, ein Name, zwei Stellen, die ihn benutzen. */}
         <span
-          className="h-full"
-          style={{ width: `${anteil * 100}%`, backgroundColor: anteil > 0.5 ? '#2f6b4f' : '#9a2b22' }}
+          className={`figur-balken ${anteil > 0.5 ? 'figur-balken-gut' : 'figur-balken-schlecht'}`}
+          style={{ '--anteil': `${anteil * 100}%` }}
         />
       </span>
       <span className="font-display text-[14px] text-sepia">

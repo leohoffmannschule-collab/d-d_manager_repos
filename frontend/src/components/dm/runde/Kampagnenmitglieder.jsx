@@ -39,7 +39,7 @@ function Kampagnenmitglieder({ users }) {
         {mitglieder.map((m) => (
           <li key={m.id} className="flex items-center gap-3 border border-rule bg-panel-soft px-3 py-2">
             <span
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-display text-[12px] font-semibold text-[#f0dca8]"
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-display text-[12px] font-semibold text-[var(--marke-schrift)]"
               style={{ backgroundColor: m.color }}
             >
               {m.name.charAt(0).toUpperCase()}

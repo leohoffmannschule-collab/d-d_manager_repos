@@ -38,7 +38,7 @@ export default function Konto() {
       >
         <Verbindung connected={connected} />
         <span
-          className="flex h-7 w-7 items-center justify-center rounded-full font-display text-[13px] font-semibold text-[#f0dca8]"
+          className="flex h-7 w-7 items-center justify-center rounded-full font-display text-[13px] font-semibold text-[var(--marke-schrift)]"
           style={{ backgroundColor: user.color }}
         >
           {user.name.charAt(0).toUpperCase()}

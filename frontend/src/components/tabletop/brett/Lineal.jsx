@@ -26,19 +26,20 @@ export default function Lineal({ lineal, scene, feld, massstab }) {
         y1={lineal.von.y}
         x2={lineal.bis.x}
         y2={lineal.bis.y}
-        stroke="#d9b451"
+        stroke="var(--tisch-akzent-auf)"
         strokeWidth={Math.max(2, 3 / massstab)}
         strokeDasharray={`${feld / 4} ${feld / 6}`}
       />
       {/* Heller Text mit dunklem Rand ringsum: So bleibt er über jeder Karte
           lesbar. In SVG macht das `stroke` samt `paint-order`, nicht ein
-          Schatten wie im übrigen HTML. */}
+          Schatten wie im übrigen HTML – dieselben zwei Tischfarben wie
+          überall sonst am Spieltisch, nur auf dem anderen Weg aufgetragen. */}
       <text
         x={lineal.bis.x + 8}
         y={lineal.bis.y - 8}
-        fill="#e8cf8d"
+        fill="var(--tisch-schrift)"
         style={{ fontSize: Math.max(12, 16 / massstab), paintOrder: 'stroke' }}
-        stroke="#14100a"
+        stroke="var(--tisch-grund)"
         strokeWidth={Math.max(2, 4 / massstab)}
       >
         {felder} Felder · {weiteText(scene, felder)}

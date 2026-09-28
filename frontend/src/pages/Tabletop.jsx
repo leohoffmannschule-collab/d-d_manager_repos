@@ -209,14 +209,14 @@ export default function Tabletop() {
               }}
             />
           ) : (
-            <div className="flex h-full flex-col items-center justify-center gap-3 bg-[#14100a] px-6 text-center">
+            <div className="flex h-full flex-col items-center justify-center gap-3 bg-[var(--tisch-grund)] px-6 text-center">
               {vorhang ? (
                 <>
                   <IconFog size={36} className="text-[#7a5f2c]" />
                   <p className="font-display text-[15px] tracking-[0.14em] text-[#c9b189] uppercase">
                     Der Vorhang ist zu
                   </p>
-                  <p className="max-w-sm text-[#a89372] italic">
+                  <p className="max-w-sm text-[var(--tisch-schrift-matt)] italic">
                     {isDm
                       ? 'Die Runde sieht gerade nichts vom Tisch. Leg in Ruhe auf, stell die Gegner, mal den Nebel – und öffne oben, wenn du so weit bist.'
                       : 'Die Spielleitung baut auf. Gleich geht es weiter – Kampf, Beute und Handzettel stehen rechts schon bereit.'}
@@ -225,7 +225,7 @@ export default function Tabletop() {
               ) : (
                 <>
                   <IconMap size={34} className="text-[#5a4526]" />
-                  <p className="max-w-sm text-[#a89372] italic">
+                  <p className="max-w-sm text-[var(--tisch-schrift-matt)] italic">
                     {isDm
                       ? 'Noch liegt keine Karte auf dem Tisch. Lade eine hoch – bis dahin lässt sich rechts trotzdem kämpfen, teilen und lesen.'
                       : 'Die Spielleitung hat noch keine Karte aufgelegt. Kampf, Beute und Handzettel stehen rechts trotzdem bereit.'}
@@ -236,14 +236,14 @@ export default function Tabletop() {
           )}
 
           {scene && (
-            <div className="pointer-events-none absolute top-3 left-3 bg-black/45 px-2.5 py-1 font-display text-[12px] tracking-[0.12em] text-[#e8cf8d] uppercase">
+            <div className="tisch-marke pointer-events-none absolute top-3 left-3 bg-black/45 px-2.5 py-1 font-display text-[12px] tracking-[0.12em] uppercase">
               {scene.name}
             </div>
           )}
 
           <button
             onClick={() => setSeite((s) => !s)}
-            className="absolute top-3 right-3 border border-gold bg-black/55 px-3 py-2 font-display text-[11px] tracking-[0.10em] text-[#e8cf8d] uppercase lg:hidden"
+            className="tisch-marke absolute top-3 right-3 border border-gold bg-black/55 px-3 py-2 font-display text-[11px] tracking-[0.10em] uppercase lg:hidden"
           >
             {seite ? 'Karte' : 'Kampf & Runde'}
           </button>

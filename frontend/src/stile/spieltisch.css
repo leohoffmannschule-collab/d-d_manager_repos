@@ -13,6 +13,24 @@
  * Stilblatt nichts zu suchen.
  */
 
+/* --- Farben, die nicht mit dem Aussehen wechseln -------------------------- */
+
+/**
+ * Der Tisch sieht aus wie ein Tisch – ob ringsum Pergament oder Kerzenlicht
+ * gilt, spielt keine Rolle. Wie eine echte Tischplatte unter beliebigem
+ * Deckenlicht bleibt die Fläche selbst gleich dunkel. Deshalb folgen diese
+ * Farben nicht `[data-theme]` wie die in farben.css, sondern stehen einmal
+ * fest – und zwar hier benannt, statt als Zahl in fünf Dateien verstreut.
+ */
+:root {
+  --tisch-grund: #14100a; /* die Fläche selbst, und der Schatten um jede Beschriftung */
+  --tisch-leer: #241c12; /* eine Szene ohne aufgelegte Karte */
+  --tisch-schrift: #e8cf8d; /* Beschriftungen über der Karte */
+  --tisch-schrift-matt: #a89372; /* Fließtext auf dem leeren Tisch */
+  --tisch-akzent-auf: #d9b451; /* Gold deckt auf – dieselbe Sprache wie in der Werkzeugleiste */
+  --tisch-akzent-zu: #9a2b22; /* Rot verhüllt */
+}
+
 /* --- Die Fläche ---------------------------------------------------------- */
 
 /* Ohne das versucht der Browser auf dem iPad zu blättern, sobald jemand
@@ -53,14 +71,15 @@
   pointer-events: none;
 }
 
-/* Gold deckt auf, Rot verhüllt – dieselbe Sprache wie in der Werkzeugleiste. */
+/* Gold deckt auf, Rot verhüllt – dieselbe Sprache wie in der Werkzeugleiste,
+   über die beiden gemeinsamen Werte oben statt über eine zweite Abschrift. */
 .tisch-vorschau-auf {
-  border-color: #d9b451;
+  border-color: var(--tisch-akzent-auf);
   background-color: rgba(217, 180, 81, 0.16);
 }
 
 .tisch-vorschau-zu {
-  border-color: #9a2b22;
+  border-color: var(--tisch-akzent-zu);
   background-color: rgba(154, 43, 34, 0.2);
 }
 
@@ -69,11 +88,11 @@
 /* Ein heller Text auf einer unbekannten Karte ist mal lesbar und mal nicht.
    Der Schattenrand macht ihn über jedem Untergrund lesbar. */
 .tisch-marke {
-  color: #e8cf8d;
+  color: var(--tisch-schrift);
   paint-order: stroke;
   text-shadow:
-    0 1px 3px #14100a,
-    0 0 2px #14100a;
+    0 1px 3px var(--tisch-grund),
+    0 0 2px var(--tisch-grund);
 }
 
 /* --- Der Lebensbalken unter einer Figur ---------------------------------- */
@@ -83,11 +102,13 @@
   height: 100%;
 }
 
-/* Über der Hälfte grün, darunter rot – der schnellste Blick am Tisch. */
+/* Über der Hälfte grün, darunter rot – der schnellste Blick am Tisch. Rot
+   ist dasselbe Rot wie beim Nebel-Verhüllen weiter oben; Grün hat sonst
+   nirgends eine Rolle und steht deshalb nur hier. */
 .figur-balken-gut {
   background-color: #2f6b4f;
 }
 
 .figur-balken-schlecht {
-  background-color: #9a2b22;
+  background-color: var(--tisch-akzent-zu);
 }

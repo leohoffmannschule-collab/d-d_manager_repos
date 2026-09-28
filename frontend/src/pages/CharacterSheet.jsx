@@ -192,7 +192,7 @@ export default function CharacterSheet() {
                 {character.name.trim().charAt(0).toUpperCase() || '?'}
               </span>
             )}
-            <span className="absolute inset-0 hidden items-center justify-center bg-black/55 font-display text-[11px] tracking-[0.1em] text-[#f0dca8] uppercase group-hover:flex">
+            <span className="absolute inset-0 hidden items-center justify-center bg-black/55 font-display text-[11px] tracking-[0.1em] text-[var(--marke-schrift)] uppercase group-hover:flex">
               Bildnis
             </span>
             <input type="file" accept="image/*" onChange={handlePortrait} disabled={!schreibbar} className="hidden" />

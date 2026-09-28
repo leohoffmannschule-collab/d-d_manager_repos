@@ -32,7 +32,7 @@ function Zeile({ zeile, ichBin }) {
   return (
     <li className={`px-3.5 py-2 ${geflüstert ? 'border-l-[3px] border-rubric bg-rubric/8' : ''}`}>
       <div className="flex items-baseline gap-1.5">
-        <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: zeile.color ?? '#a3927a' }} />
+        <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: zeile.color ?? 'var(--color-faint)' }} />
         <span className="truncate font-display text-[12px] tracking-[0.08em] text-sepia uppercase">
           {zeile.userName}
         </span>
@@ -112,7 +112,7 @@ export default function Chat() {
       >
         <IconChat size={28} />
         {ungelesen > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-6 min-w-6 items-center justify-center rounded-full bg-rubric px-1 font-display text-[12px] text-[#f0dca8] ring-2 ring-gold">
+          <span className="absolute -top-1 -right-1 flex h-6 min-w-6 items-center justify-center rounded-full bg-rubric px-1 font-display text-[12px] text-[var(--marke-schrift)] ring-2 ring-gold">
             {ungelesen > 99 ? '99+' : ungelesen}
           </span>
         )}

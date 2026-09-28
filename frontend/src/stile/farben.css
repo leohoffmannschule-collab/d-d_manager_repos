@@ -56,3 +56,17 @@
   --color-leather-ink: #e8cf8d;
   --color-leather-dim: #a89372;
 }
+
+/**
+ * Und eine Farbe, die *nicht* umschaltet.
+ *
+ * Der Anfangsbuchstabe auf einem Konto-Kreis oder einem roten Abzeichen
+ * muss lesbar bleiben, ganz gleich, welche Farbe der Kreis gerade hat (die
+ * wählt sich jede Person selbst) und ganz gleich, ob Pergament oder
+ * Kerzenlicht gerade gilt. Deshalb steht sie hier fest statt im `@theme`
+ * oben – und vor allem: an *einer* Stelle statt als Zahl in sieben
+ * Dateien.
+ */
+:root {
+  --marke-schrift: #f0dca8;
+}

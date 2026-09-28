@@ -253,7 +253,7 @@ export default function Board({
       onPointerUp={beiZeigerAuf}
       onPointerCancel={beiZeigerAuf}
       onPointerLeave={() => setZeigerFeld(null)}
-      className={`tisch-flaeche relative h-full w-full overflow-hidden bg-[#14100a] ${
+      className={`tisch-flaeche relative h-full w-full overflow-hidden bg-[var(--tisch-grund)] ${
         mode === 'bewegen' ? 'cursor-grab' : mode === 'zeigen' ? 'cursor-pointer' : 'cursor-crosshair'
       }`}
     >
@@ -275,7 +275,7 @@ export default function Board({
             className="absolute inset-0 h-full w-full select-none"
           />
         ) : (
-          <div className="absolute inset-0 bg-[#241c12]" />
+          <div className="absolute inset-0 bg-[var(--tisch-leer)]" />
         )}
 
         <Rasternetz scene={scene} feld={g} massstab={ansicht.scale} />
@@ -316,7 +316,7 @@ export default function Board({
         <Zeigefinger pings={pings} feld={g} />
       </div>
 
-      <div className="pointer-events-none absolute right-3 bottom-3 flex items-center gap-2 bg-black/45 px-2.5 py-1 font-display text-[11px] tracking-[0.10em] text-[#e8cf8d] uppercase">
+      <div className="tisch-marke pointer-events-none absolute right-3 bottom-3 flex items-center gap-2 bg-black/45 px-2.5 py-1 font-display text-[11px] tracking-[0.10em] uppercase">
         {Math.round(ansicht.scale * 100)} %
       </div>
     </div>
