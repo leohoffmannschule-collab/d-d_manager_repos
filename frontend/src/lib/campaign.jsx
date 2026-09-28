@@ -48,6 +48,16 @@ export function CampaignProvider({ children }) {
         await campaignsApi.activate(id);
         setActiveId(id);
       },
+      /**
+       * Umbenennen. Danach wird die Liste neu geholt, damit der neue Name
+       * überall steht, wo er steht – Umschalter, Überschriften, der Satz
+       * über dem Löschen-Feld.
+       */
+      async rename(id, name) {
+        const neu = await campaignsApi.rename(id, name);
+        await refresh();
+        return neu;
+      },
       async create(name) {
         const neu = await campaignsApi.create(name);
         setActiveId(neu.id);

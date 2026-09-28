@@ -149,6 +149,7 @@ gesamten Zweigs.
     GET    /api/campaigns                    eigene Kampagnen + welche aktiv ist
     POST   /api/campaigns                    [SL]  { name }
     POST   /api/campaigns/:id/aktiv                in diese Kampagne wechseln
+    PATCH  /api/campaigns/:id                      { name }  – umbenennen
     GET    /api/campaigns/:id/mitglieder     [SL]
     POST   /api/campaigns/:id/mitglieder     [SL]  { userId }
     DELETE /api/campaigns/:id/mitglieder/:userId   [SL]
@@ -168,9 +169,15 @@ durch das eine Oberfläche in ihre Kampagnenauswahl schickt.
 Löschen darf nur, wer die Kampagne angelegt hat, und nur mit dem abgetippten
 Namen im Rumpf. Gelöschtes liegt 30 Tage im Papierkorb.
 
-Umbenennen kennt die Schnittstelle nicht – der Name hängt an nichts weiter
-(alles andere zeigt auf die Kennung), deshalb genügt dafür
-`node backend/scripts/umbenennen.mjs "Alter Name" "Neuer Name"`.
+Umbenennen (`PATCH`) verlangt dieselbe Herkunft, ist aber der harmlose
+Eingriff: Der Name hängt an nichts weiter – Charaktere, Szenen und Beute
+zeigen auf die Kennung der Kampagne, nie auf ihren Namen. Wer keinen Browser
+zur Hand hat, kommt über `node backend/scripts/umbenennen.mjs "Alt" "Neu"`
+zum selben Ziel.
+
+Jede Kampagne in der Liste trägt `darfVerwalten`: Damit weiß die Oberfläche,
+wem sie Umbenennen und Löschen überhaupt anbieten darf. `angelegtVon` nennt
+im Zweifel, wer es stattdessen dürfte.
 
 **Was der Kampagne gehört und was der Runde.** Vorbereitung gehört der Runde
 und steht in jeder Kampagne bereit: Karten (`/maps`), Bilder (`/media`),

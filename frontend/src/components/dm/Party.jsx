@@ -5,7 +5,7 @@ import { useCampaign } from '../../lib/campaign.jsx';
 import { useEinladungen, useKonten } from '../../lib/daten.jsx';
 import { useLive } from '../../lib/live.jsx';
 import { Rubric } from '../ui.jsx';
-import { IconCheck, IconCrown, IconKey, IconLink, IconPlus, IconScroll, IconTrash, IconUsers } from '../icons.jsx';
+import { IconCheck, IconCrown, IconKey, IconLink, IconPlus, IconQuill, IconScroll, IconTrash, IconUsers } from '../icons.jsx';
 
 function Einladungen() {
   const { einladungen, offene, laden } = useEinladungen();
@@ -375,9 +375,14 @@ function menge(umfang, art) {
  */
 function KampagneEntsorgen() {
   const { isDm } = useAuth();
-  const { active, remove, restore, purge, papierkorb } = useCampaign();
+  const { active, rename, remove, restore, purge, papierkorb } = useCampaign();
   const [name, setName] = useState('');
   const [fehler, setFehler] = useState('');
+  // Der Umbenennen-Kasten führt seinen eigenen Entwurf und seine eigene
+  // Rückmeldung – sonst stünde ein Fehler vom Löschen über dem Umbenennen.
+  const [neuerName, setNeuerName] = useState('');
+  const [umbenannt, setUmbenannt] = useState('');
+  const [umbenennFehler, setUmbenennFehler] = useState('');
   const [korb, setKorb] = useState([]);
   const [endgueltig, setEndgueltig] = useState({});
 
@@ -391,17 +396,75 @@ function KampagneEntsorgen() {
 
   return (
     <>
-      {isDm && active && !active.darfLoeschen && (
+      {isDm && active && !active.darfVerwalten && (
         <section className="panel p-4">
-          <Rubric>Diese Kampagne löschen</Rubric>
+          <Rubric>Diese Kampagne</Rubric>
           <p className="text-sepia italic">
-            „{active.name}“ kann nur {active.angelegtVon ? `${active.angelegtVon} löschen` : 'die Spielleitung löschen'} –
-            wer eine Kampagne anlegt, entscheidet auch über ihr Ende.
+            Über „{active.name}“ bestimmt nur{' '}
+            {active.angelegtVon ?? 'die Spielleitung'} – wer eine Kampagne anlegt, entscheidet auch über ihren
+            Namen und ihr Ende.
           </p>
         </section>
       )}
 
-      {active?.darfLoeschen && (
+      {/* Umbenennen steht vor dem Löschen und ohne rote Umrandung: Es ist
+          der harmlose der beiden Eingriffe. Der Name hängt an nichts –
+          Charaktere, Szenen und Beute zeigen auf die Kennung der Kampagne. */}
+      {active?.darfVerwalten && (
+        <section className="panel p-4">
+          <Rubric>Diese Kampagne umbenennen</Rubric>
+          <p className="mb-3 text-sepia italic">
+            Ändert nur den Namen; alles, was darin liegt, bleibt unberührt. Bei den Mitspielern steht der neue Name,
+            sobald sie die Seite das nächste Mal laden.
+          </p>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setUmbenennFehler('');
+              setUmbenannt('');
+              try {
+                const vorher = active.name;
+                await rename(active.id, neuerName);
+                setNeuerName('');
+                setUmbenannt(`Aus „${vorher}“ wurde „${neuerName.trim()}“.`);
+              } catch (err) {
+                setUmbenennFehler(err.message);
+              }
+            }}
+            className="flex flex-wrap gap-2"
+          >
+            <input
+              value={neuerName}
+              onChange={(e) => setNeuerName(e.target.value)}
+              placeholder={active.name}
+              maxLength={60}
+              className="field-box min-w-[12rem] flex-1"
+            />
+            <button
+              type="submit"
+              disabled={neuerName.trim().length < 2 || neuerName.trim() === active.name}
+              className="btn btn-seal disabled:opacity-40"
+              title={
+                neuerName.trim().length < 2
+                  ? 'Mindestens zwei Zeichen'
+                  : neuerName.trim() === active.name
+                    ? 'Das ist schon der Name'
+                    : 'Umbenennen'
+              }
+            >
+              <IconQuill size={16} /> Umbenennen
+            </button>
+          </form>
+          {umbenennFehler && <p className="mt-3 text-rubric">{umbenennFehler}</p>}
+          {umbenannt && (
+            <p className="mt-3 flex items-center gap-1.5 text-gold">
+              <IconCheck size={14} /> {umbenannt}
+            </p>
+          )}
+        </section>
+      )}
+
+      {active?.darfVerwalten && (
         <section className="panel border-rubric/40 p-4">
           <Rubric>Diese Kampagne löschen</Rubric>
           <p className="mb-3 text-sepia italic">

@@ -41,9 +41,11 @@ export default function Help() {
         {isDm && (
           <>
             <p className="mt-3 leading-relaxed text-ink">
-              Neue Kampagnen legt die Spielleitung im Kampagnenmenü an. Löschen darf nur, wer eine Kampagne angelegt
-              hat – und nur, indem der Name abgetippt wird. Danach liegt sie 30 Tage im Papierkorb und lässt sich
-              zurückholen.
+              Neue Kampagnen legt die Spielleitung im Kampagnenmenü an. Über eine bestehende bestimmt, wer sie
+              angelegt hat: Unter <span className="font-display">Spielleitung → Runde</span> steht für sie{' '}
+              <span className="font-display">Diese Kampagne umbenennen</span> – das ändert nur den Namen, alles darin
+              bleibt unberührt – und darunter das Löschen. Gelöscht wird nur, indem der Name abgetippt wird; danach
+              liegt die Kampagne 30 Tage im Papierkorb und lässt sich zurückholen.
             </p>
             <p className="mt-3 leading-relaxed text-ink">
               <span className="font-display">Etwas hinüberkopieren:</span> An jedem Charakterblatt, jedem Handzettel,

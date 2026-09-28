@@ -18,12 +18,15 @@ function pruefeName(name) {
 }
 
 /**
- * Löschen darf nur, wer die Kampagne angelegt hat – und niemand sonst, auch
- * keine andere Spielleitung. Bei alten Kampagnen ohne vermerkten Urheber
- * (aus der Zeit vor den Kampagnen) tritt die Spielleitung an diese Stelle,
- * sonst ließen sie sich nie wieder loswerden.
+ * Wer über diese Kampagne bestimmt: umbenennen, wegräumen, endgültig
+ * entfernen.
+ *
+ * Das darf nur, wer sie angelegt hat – und niemand sonst, auch keine andere
+ * Spielleitung. Bei alten Kampagnen ohne vermerkten Urheber (aus der Zeit
+ * vor den Kampagnen) tritt die Spielleitung an diese Stelle, sonst ließen
+ * sie sich nie wieder loswerden.
  */
-function darfLoeschen(kampagne, user) {
+function darfVerwalten(kampagne, user) {
   if (kampagne.created_by) return kampagne.created_by === user.id;
   return user.role === 'sl';
 }
@@ -49,9 +52,9 @@ router.get('/', (req, res) => {
   res.json({
     kampagnen: rows.map(({ created_by: von, urheber, ...rest }) => ({
       ...rest,
-      // Beides, damit die Oberfläche nicht nur weiß, *ob* jemand löschen darf,
-      // sondern im Zweifel auch sagen kann, wer es stattdessen dürfte.
-      darfLoeschen: darfLoeschen({ created_by: von }, req.user),
+      // Beides, damit die Oberfläche nicht nur weiß, *ob* jemand hier
+      // bestimmen darf, sondern im Zweifel auch sagen kann, wer sonst.
+      darfVerwalten: darfVerwalten({ created_by: von }, req.user),
       angelegtVon: urheber ?? null,
     })),
     aktive: req.campaignId,
@@ -184,9 +187,41 @@ router.post('/uebernehmen', requireDm, requireCampaign, zielPruefen, (req, res) 
   res.json({ ziel, bericht });
 });
 
-/* --- Papierkorb ---------------------------------------------------------- */
+/* --- Diese eine Kampagne -------------------------------------------------- */
 
 const holen = (id) => db.prepare('SELECT * FROM campaigns WHERE id = ?').get(id);
+
+/**
+ * PATCH /api/campaigns/:id  { name }
+ *
+ * Umbenennen. Harmloser als alles andere hier: Der Name hängt an nichts –
+ * Charaktere, Szenen und Beute zeigen auf die Kennung der Kampagne, nie auf
+ * ihren Namen. Es gibt deshalb auch nichts nachzuziehen.
+ *
+ * Bestimmen darf trotzdem nur, wer die Kampagne angelegt hat: Es ist ihr
+ * Name, und in den Listen der Mitspieler steht er ebenfalls.
+ */
+router.patch('/:id', (req, res) => {
+  const kampagne = holen(req.params.id);
+  if (!kampagne || kampagne.deleted_at) {
+    return res.status(404).json({ code: 'kampagne_nicht_gefunden', error: 'Kampagne nicht gefunden.' });
+  }
+  if (!darfVerwalten(kampagne, req.user)) {
+    return res.status(403).json({
+      code: 'nicht_angelegt',
+      error: 'Umbenennen darf nur, wer diese Kampagne angelegt hat.',
+    });
+  }
+
+  const fehler = pruefeName(req.body?.name);
+  if (fehler) return res.status(400).json({ code: 'name_ungueltig', error: fehler });
+
+  const name = req.body.name.trim();
+  db.prepare('UPDATE campaigns SET name = ? WHERE id = ?').run(name, kampagne.id);
+  res.json({ id: kampagne.id, name, vorher: kampagne.name });
+});
+
+/* --- Papierkorb ---------------------------------------------------------- */
 
 /**
  * DELETE /api/campaigns/:id  { name }
@@ -201,7 +236,7 @@ router.delete('/:id', (req, res) => {
   if (!kampagne || kampagne.deleted_at) {
     return res.status(404).json({ code: 'kampagne_nicht_gefunden', error: 'Kampagne nicht gefunden.' });
   }
-  if (!darfLoeschen(kampagne, req.user)) {
+  if (!darfVerwalten(kampagne, req.user)) {
     return res.status(403).json({
       code: 'nicht_angelegt',
       error: 'Löschen darf nur, wer diese Kampagne angelegt hat.',
@@ -227,7 +262,7 @@ router.get('/papierkorb', (req, res) => {
   const rows = db
     .prepare('SELECT id, name, created_by, deleted_at FROM campaigns WHERE deleted_at IS NOT NULL ORDER BY deleted_at DESC')
     .all()
-    .filter((k) => darfLoeschen(k, req.user))
+    .filter((k) => darfVerwalten(k, req.user))
     .map((k) => ({ id: k.id, name: k.name, geloeschtAm: k.deleted_at, tageUebrig: verbleibendeTage(k.deleted_at) }));
   res.json(rows);
 });
@@ -238,7 +273,7 @@ router.post('/:id/wiederherstellen', (req, res) => {
   if (!kampagne || !kampagne.deleted_at) {
     return res.status(404).json({ code: 'kampagne_nicht_gefunden', error: 'Im Papierkorb liegt sie nicht.' });
   }
-  if (!darfLoeschen(kampagne, req.user)) {
+  if (!darfVerwalten(kampagne, req.user)) {
     return res.status(403).json({ code: 'nicht_angelegt', error: 'Das darf nur, wer die Kampagne angelegt hat.' });
   }
   db.prepare('UPDATE campaigns SET deleted_at = NULL WHERE id = ?').run(kampagne.id);
@@ -261,7 +296,7 @@ router.delete('/:id/endgueltig', (req, res) => {
       error: 'Endgültig entfernen lässt sich nur, was schon im Papierkorb liegt.',
     });
   }
-  if (!darfLoeschen(kampagne, req.user)) {
+  if (!darfVerwalten(kampagne, req.user)) {
     return res.status(403).json({ code: 'nicht_angelegt', error: 'Das darf nur, wer die Kampagne angelegt hat.' });
   }
   if (!nameBestaetigt(kampagne, req.body?.name)) {

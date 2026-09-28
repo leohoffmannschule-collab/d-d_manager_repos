@@ -67,6 +67,7 @@ export const campaignsApi = {
   list: () => request('/campaigns'),
   create: (name) => post('/campaigns', { name }),
   activate: (id) => post(`/campaigns/${id}/aktiv`),
+  rename: (id, name) => patch(`/campaigns/${id}`, { name }),
   members: (id) => request(`/campaigns/${id}/mitglieder`),
   addMember: (id, userId) => post(`/campaigns/${id}/mitglieder`, { userId }),
   removeMember: (id, userId) => del(`/campaigns/${id}/mitglieder/${userId}`),

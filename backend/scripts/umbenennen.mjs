@@ -5,10 +5,10 @@
  *   node backend/scripts/umbenennen.mjs "Alter Name" "Neuer Name"
  *   node backend/scripts/umbenennen.mjs                 (zeigt alle Namen)
  *
- * Der Almanach kann Kampagnen anlegen, wechseln und wegräumen – nur
- * umbenennen kann er sie nicht. Bis das in der Oberfläche steht, führt der
- * Weg über dieses Skript; es fasst genau ein Feld an (`campaigns.name`) und
- * sonst nichts.
+ * In der Oberfläche steht das unter Spielleitung → Runde. Dieses Skript ist
+ * der zweite Weg – für den Fall, dass gerade kein Browser zur Hand ist oder
+ * niemand mehr hineinkommt, der die Kampagne angelegt hat. Es fasst genau
+ * ein Feld an (`campaigns.name`) und sonst nichts.
  *
  * Der Name ist nirgends sonst gespeichert: Figuren, Szenen und Beute hängen
  * an der Kennung der Kampagne, nicht an ihrem Namen. Umbenennen ist deshalb

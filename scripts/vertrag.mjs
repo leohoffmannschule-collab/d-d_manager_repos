@@ -164,6 +164,7 @@ try {
   {
     pruefe(typeof kampagne?.id === 'string', 'Die Spielleitung hat vom ersten Tag an eine Kampagne');
     gleich((await sl.ruf('/campaigns')).daten?.aktive, kampagne?.id, 'Und sitzt auch gleich darin');
+    pruefe(kampagne?.darfVerwalten === true, 'Wer sie angelegt hat, bestimmt über sie');
 
     const konten = (await sl.ruf('/auth/users')).daten;
     for (const [name, wer] of [['Vertrag-Spielerin', spieler], ['Vertrag-Zweite', zweite]]) {
@@ -1117,6 +1118,49 @@ try {
     const strom = gelesen.join('');
     pruefe(strom.includes('event: willkommen'), 'Der Kanal begrüßt mit der Fensterkennung');
     pruefe(strom.includes('event: kampf'), 'Änderungen am Kampf laufen über den Kanal ein');
+  }
+
+  // --- Umbenennen --------------------------------------------------------
+  //
+  // Der Name hängt an nichts: Alles darin zeigt auf die Kennung. Genau das
+  // wird hier nachgewiesen – nach dem Umbenennen steht dieselbe Habe da.
+  {
+    const vorher = (await sl.ruf('/campaigns')).daten.kampagnen.find((k) => k.id === kampagne.id).name;
+    const habe = (await sl.ruf('/characters')).daten.length;
+
+    const zuKurz = await sl.ruf(`/campaigns/${kampagne.id}`, { methode: 'PATCH', koerper: { name: 'X' } });
+    gleich(zuKurz.status, 400, 'Ein Name aus einem Zeichen wird abgewiesen');
+    gleich(zuKurz.daten?.code, 'name_ungueltig', 'Mit Schlüssel');
+
+    const fremd = await spieler.ruf(`/campaigns/${kampagne.id}`, {
+      methode: 'PATCH',
+      koerper: { name: 'Heimlich umbenannt' },
+    });
+    gleich(fremd.status, 403, 'Umbenennen darf nur, wer die Kampagne angelegt hat');
+    gleich(fremd.daten?.code, 'nicht_angelegt', 'Mit Schlüssel');
+
+    const benannt = await sl.ruf(`/campaigns/${kampagne.id}`, {
+      methode: 'PATCH',
+      koerper: { name: '  Der Preis von Klarwasser  ' },
+    });
+    gleich(benannt.status, 200, 'Die Spielleitung darf ihre Kampagne umbenennen');
+    gleich(benannt.daten?.name, 'Der Preis von Klarwasser', 'Rundherum Leerzeichen fallen weg');
+    gleich(benannt.daten?.vorher, vorher, 'Der Bericht nennt auch den alten Namen');
+
+    const liste = (await sl.ruf('/campaigns')).daten.kampagnen.find((k) => k.id === kampagne.id);
+    gleich(liste?.name, 'Der Preis von Klarwasser', 'Und die Liste zeigt ihn');
+    gleich((await sl.ruf('/characters')).daten.length, habe, 'Die Habe der Kampagne bleibt unberührt');
+
+    // Unter dem neuen Namen wird gelöscht – der alte gilt nicht mehr.
+    const alterName = await sl.ruf(`/campaigns/${kampagne.id}`, { methode: 'DELETE', koerper: { name: vorher } });
+    gleich(alterName.status, 400, 'Zum Löschen zählt der neue Name, nicht der alte');
+
+    await sl.ruf(`/campaigns/${kampagne.id}`, { methode: 'PATCH', koerper: { name: vorher } });
+    gleich(
+      (await sl.ruf('/campaigns')).daten.kampagnen.find((k) => k.id === kampagne.id)?.name,
+      vorher,
+      'Und wieder zurück'
+    );
   }
 
   // --- Daten in eine andere Kampagne kopieren ----------------------------
