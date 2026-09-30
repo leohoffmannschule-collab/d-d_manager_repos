@@ -13,7 +13,8 @@
  *      der Regel, dass jede unbekannte Adresse die index.html bekommt
  *      (das braucht der Router im Browser).
  *   4. *Berichten* – beim Start in Klartext sagen, was los ist: welche
- *      Datenbank, welcher Datenordner, welche Adressen, was fehlt.
+ *      Datenbank, welcher Datenordner, welche Adressen, was fehlt (das steht
+ *      in start/bericht.js).
  *
  * Die Reihenfolge der `app.use`-Aufrufe ist keine Geschmacksfrage. Express
  * arbeitet sie von oben nach unten ab: Der erste, der antwortet, gewinnt.
@@ -24,17 +25,17 @@
 // Ganz oben, und das mit Absicht: Diese Zeile liest die Datei `.env` ein, und
 // sie muss gelesen sein, bevor ein anderes Modul die Umgebung befragt – die
 // Datenbank etwa sucht ihren Ordner schon beim Laden.
-import { umgebung } from './umgebung.js';
+import './umgebung.js';
 import express from 'express';
-import os from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import db, { dataDir, driver, mediaDir } from './db.js';
+import db, { driver } from './db.js';
 import { festeAdresse } from './domaene.js';
-import { attachUser, countUsers, requireAuth, requireCampaign } from './auth.js';
+import { attachUser, requireAuth, requireCampaign } from './auth.js';
 import { addClient, presence } from './events.js';
 import { raeumePapierkorb } from './kampagnen.js';
+import { berichteStart, portBelegt } from './start/bericht.js';
 import ambienceRouter from './routes/ambience.js';
 import authRouter from './routes/auth.js';
 import campaignsRouter from './routes/campaigns.js';
@@ -165,96 +166,11 @@ app.use((err, req, res, next) => {
   res.status(500).json({ code: 'serverfehler', error: 'Im Almanach ist etwas schiefgegangen.' });
 });
 
-/**
- * Karten und Bildnisse liegen als Dateien neben der Datenbank. Beim Umzug auf
- * ein anderes Gerät bleibt der Ordner gern zurück (oder landet eine Ebene zu
- * tief) – dann steht jeder Eintrag noch, aber der Spieltisch bleibt leer. Das
- * fällt sonst erst mitten im Spielabend auf, deshalb steht es beim Start da.
- */
-function fehlendeBilder() {
-  const alle = db.prepare('SELECT filename FROM media').all();
-  const fehlen = alle.filter(({ filename }) => !fs.existsSync(path.join(mediaDir, filename)));
-  return { gesamt: alle.length, fehlen: fehlen.length };
-}
-
-function localAddresses() {
-  return Object.values(os.networkInterfaces())
-    .flat()
-    .filter((iface) => iface && iface.family === 'IPv4' && !iface.internal)
-    .map((iface) => iface.address);
-}
-
 // Die feste Adresse, unter der die Runde spielt – sofern eine eingetragen ist.
 const domaene = festeAdresse();
 
 // Was länger als die Frist im Papierkorb lag, wird beim Start geräumt.
 const geraeumt = raeumePapierkorb();
 
-const server = app.listen(PORT, () => {
-  console.log('');
-  console.log('  Abenteuer-Almanach läuft');
-  console.log(`  Datenbank      : ${driver}`);
-  // Wer zwei Ordner nebeneinander betreibt – den laufenden Almanach und einen
-  // zum Ausprobieren –, sieht hier auf einen Blick, welcher von beiden gerade
-  // spricht. Beide heißen sonst gleich und sehen gleich aus.
-  console.log(`  Datenordner    : ${dataDir}`);
-  console.log(`  Oberfläche     : ${hasFrontend ? 'wird mit ausgeliefert' : 'separat über "npm run dev" (Port 5173)'}`);
-  if (domaene.adresse) {
-    console.log(`  Für die Runde  : ${domaene.adresse}   (solange der Weg nach außen offen ist)`);
-  }
-  console.log(`  Auf diesem PC  : http://localhost:${PORT}`);
-  for (const address of localAddresses()) {
-    console.log(`  Im Netzwerk    : http://${address}:${PORT}   (für iPad/iPhone)`);
-  }
-  if (domaene.gesetzt && !domaene.adresse) {
-    console.log('');
-    console.log(`  DOMAENE=${domaene.roh} ergibt keinen Domainnamen – bitte in .env nachsehen.`);
-    console.log('  Erwartet wird der nackte Name, etwa: DOMAENE=www.deinemudda.fun');
-  }
-  if (umgebung.grund === 'node_zu_alt') {
-    console.log('');
-    console.log('  Es liegt eine .env daneben, aber dieses Node kann sie nicht lesen');
-    console.log(`  (${process.version}, nötig wäre 20.12 oder neuer). Alles darin bleibt unbeachtet.`);
-  }
-  if (umgebung.grund === 'fehler') {
-    console.log('');
-    console.log(`  Die .env ließ sich nicht lesen: ${umgebung.fehler}`);
-  }
-  const bilder = fehlendeBilder();
-  if (bilder.fehlen > 0) {
-    console.log('');
-    console.log(`  ${bilder.fehlen} von ${bilder.gesamt} Bildern fehlen auf der Platte.`);
-    console.log(`  Erwartet werden sie in: ${mediaDir}`);
-    console.log('  Beim Umzug ist der Ordner "medien" wohl nicht (oder eine Ebene zu tief) mitgekommen.');
-  }
-  if (geraeumt > 0) {
-    console.log('');
-    console.log(`  ${geraeumt} Kampagne(n) im Papierkorb waren über die Frist – endgültig entfernt.`);
-  }
-  if (countUsers() === 0) {
-    console.log('');
-    console.log('  Noch kein Konto vorhanden: Das erste angelegte Konto führt die Spielleitung.');
-  }
-  console.log('');
-});
-
-/**
- * Zwei Almanache auf demselben Port gehen nicht – und das ist gut so.
- *
- * Wer einen zweiten Ordner zum Ausprobieren betreibt, soll ihn nicht
- * versehentlich neben den laufenden stellen: Über die Domain käme sonst mal
- * der eine und mal der andere. Statt eines Stapelauszugs sagt der Almanach
- * deshalb geradeheraus, was zu tun ist.
- */
-server.on('error', (err) => {
-  if (err.code !== 'EADDRINUSE') throw err;
-  console.log('');
-  console.log(`  Auf Port ${PORT} lauscht schon jemand – sehr wahrscheinlich ein anderer Almanach.`);
-  console.log('  Es kann immer nur einer den Port haben, und nur wer ihn hat, wird über die');
-  console.log('  Domain ausgeliefert.');
-  console.log('');
-  console.log('  Also: im anderen Fenster mit Strg+C beenden, dann hier neu starten.');
-  console.log(`  (Oder diesen hier auf einen eigenen Port legen: PORT=3002 in die .env.)`);
-  console.log('');
-  process.exit(1);
-});
+const server = app.listen(PORT, () => berichteStart({ PORT, hasFrontend, domaene, geraeumt }));
+server.on('error', (err) => portBelegt(err, PORT));

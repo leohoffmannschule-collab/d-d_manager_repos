@@ -179,6 +179,12 @@ function bekannteNamen(code) {
     for (const teil of m[1].split(',')) merken(teil.split(/\s+as\s+/).pop());
   }
 
+  // Weiterreichen: `export { a, b } from './x.js'` holt a und b herein und
+  // gibt sie gleich weiter – eine Einfuhr, keine Benutzung.
+  for (const m of code.matchAll(/export\s*\{([^}]*)\}\s*from/g)) {
+    for (const teil of m[1].split(',')) merken(teil.split(/\s+as\s+/)[0]);
+  }
+
   // Eigene Erklärungen.
   for (const m of code.matchAll(/(?:^|[;{}\s])(?:function|class)\s+(\w+)/g)) merken(m[1]);
   for (const m of code.matchAll(/(?:const|let|var)\s+(\w+)/g)) merken(m[1]);
