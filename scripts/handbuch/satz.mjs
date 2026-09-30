@@ -106,14 +106,14 @@ const ROEMISCH = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X
 /**
  * @param {object} args
  * @param {ReturnType<import('./gliederung.mjs').gliederung>} args.gliederung
- * @param {string} args.stil           das Stilblatt, ohne Erklärkopf
+ * @param {string} args.stilDatei      Name des Stilblatts neben der HTML-Datei (drucksatz/seite.mjs, `beigaben`)
  * @param {string} args.ausgabe        Pfad der HTML-Datei, die entsteht (für Bildpfade)
  * @param {string} args.unter          die Zeile unter dem Titel
  * @param {string} args.stand          „Stand: …“ auf dem Titelblatt
  * @param {Map<string, number>|null} args.seiten  Seiten je Anker aus dem ersten Durchgang
  * @returns {{ html: string, kapitelZahl: number }}
  */
-export function setzeBuch({ gliederung, stil, ausgabe, unter, stand, seiten }) {
+export function setzeBuch({ gliederung, stilDatei, ausgabe, unter, stand, seiten }) {
   const ausgabeOrdner = path.dirname(ausgabe);
   const buchOrdner = path.dirname(gliederung.teile[0]?.kapitel[0]?.datei ?? ausgabeOrdner);
 
@@ -210,7 +210,7 @@ ${html}
 <head>
 <meta charset="utf-8">
 <title>${schuetzen(gliederung.titel)}</title>
-<style>${stil}</style>
+<link rel="stylesheet" href="${stilDatei}">
 </head>
 <body>
 

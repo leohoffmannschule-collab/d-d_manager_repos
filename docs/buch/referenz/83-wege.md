@@ -3,7 +3,7 @@
 > Dieses Kapitel schreibt `npm run handbuch` aus dem Code (scripts/handbuch/referenz/).
 > Änderungen gehören in den Code und seine Kommentare, nicht hierher.
 
-Alle 123 Wege der Schnittstelle, nach Bereichen, in der Reihenfolge, in der Express sie prüft. „Wer darf“ setzt sich aus den Wächtern zusammen, die davor stehen: *angemeldet* (requireAuth), *Kampagne gewählt* (requireCampaign – schließt die Anmeldung ein) und *Spielleitung* (requireDm).
+Alle 124 Wege der Schnittstelle, nach Bereichen, in der Reihenfolge, in der Express sie prüft. „Wer darf“ setzt sich aus den Wächtern zusammen, die davor stehen: *angemeldet* (requireAuth), *Kampagne gewählt* (requireCampaign – schließt die Anmeldung ein) und *Spielleitung* (requireDm).
 
 Die Beschreibung jedes Weges ist der Kommentar, der im Code über ihm steht. Beispiele für Anfragen und Antworten stehen im Kapitel über die Schnittstelle.
 
@@ -53,7 +53,7 @@ deshalb über `bildFreigeben` nur ab, was niemand mehr braucht.
 
 ### GET /api/health
 
-*backend/src/server.js, Zeile 103 · jeder*
+*backend/src/server.js, Zeile 98 · jeder*
 
 Lebenszeichen – auch für den Healthcheck des Containers.
 
@@ -70,7 +70,7 @@ stille Ruine am Laufen zu halten.
 
 ### GET /api/stream
 
-*backend/src/server.js, Zeile 116 · angemeldet, Kampagne gewählt*
+*backend/src/server.js, Zeile 113 · angemeldet, Kampagne gewählt*
 
 Der Live-Kanal. Alle offenen Fenster hängen hier und bekommen Änderungen
 an Kampf, Spieltisch, Würfen und Charakteren zugeschickt.
@@ -83,7 +83,7 @@ an Kampf, Spieltisch, Würfen und Charakteren zugeschickt.
 
 ### GET /api/anwesenheit
 
-*backend/src/server.js, Zeile 125 · angemeldet, Kampagne gewählt*
+*backend/src/server.js, Zeile 122 · angemeldet, Kampagne gewählt*
 
 GET /api/anwesenheit – wer gerade mit einem offenen Fenster in dieser Kampagne sitzt
 (für den Punkt neben dem Namen und die Auswahl beim Flüstern).
@@ -414,7 +414,7 @@ abgetippt werden, und liegen muss sie ohnehin schon im Papierkorb.
 | GET | `/api/characters` | angemeldet, Kampagne gewählt | eigene Charaktere, dazu die geteilten der Mitspieler |
 | GET | `/api/characters/:id` | angemeldet, Kampagne gewählt | ein Blatt vollständig, samt `editable`: ob der Fragende es ändern darf (eigenes Blatt oder Spielleitung). |
 | GET | `/api/characters/verwaltung/alle` | Spielleitung, Kampagne gewählt | alle Blätter der Kampagne für die Verwaltung, NSC eingeschlossen. |
-| POST | `/api/characters` | angemeldet, Kampagne gewählt | create |
+| POST | `/api/characters` | angemeldet, Kampagne gewählt | ein neues Blatt anlegen: aus „Neuer Charakter“ oder aus einer mitgenommenen Datei. |
 | PUT | `/api/characters/:id` | angemeldet, Kampagne gewählt | full update (autosave from the sheet editor) |
 | PATCH | `/api/characters/:id` | angemeldet, Kampagne gewählt | Besitz und Sichtbarkeit |
 | DELETE | `/api/characters/:id` | angemeldet, Kampagne gewählt | ein Blatt löschen. |
@@ -445,25 +445,26 @@ Verwaltung, NSC eingeschlossen. Zwei Pfadteile, damit es sich nie mit
 
 ### POST /api/characters
 
-*backend/src/routes/charaktere/schreiben.js, Zeile 23 · angemeldet, Kampagne gewählt*
+*backend/src/routes/charaktere/schreiben.js, Zeile 27 · angemeldet, Kampagne gewählt*
 
-POST /api/characters – create
+POST /api/characters  { name, system?, data?, npc? } – ein neues Blatt
+anlegen: aus „Neuer Charakter“ oder aus einer mitgenommenen Datei.
 
 ### PUT /api/characters/:id
 
-*backend/src/routes/charaktere/schreiben.js, Zeile 42 · angemeldet, Kampagne gewählt*
+*backend/src/routes/charaktere/schreiben.js, Zeile 53 · angemeldet, Kampagne gewählt*
 
 PUT /api/characters/:id – full update (autosave from the sheet editor)
 
 ### PATCH /api/characters/:id
 
-*backend/src/routes/charaktere/schreiben.js, Zeile 94 · angemeldet, Kampagne gewählt*
+*backend/src/routes/charaktere/schreiben.js, Zeile 105 · angemeldet, Kampagne gewählt*
 
 PATCH /api/characters/:id – Besitz und Sichtbarkeit
 
 ### DELETE /api/characters/:id
 
-*backend/src/routes/charaktere/schreiben.js, Zeile 136 · angemeldet, Kampagne gewählt*
+*backend/src/routes/charaktere/schreiben.js, Zeile 147 · angemeldet, Kampagne gewählt*
 
 DELETE /api/characters/:id – ein Blatt löschen. Das darf, wem es gehört,
 und die Spielleitung; Figuren auf dem Tisch verlieren dabei nur ihren
@@ -672,7 +673,7 @@ Anfrage der Spielleitung – nie von selbst.
 | POST | `/api/encounter/next-turn` | Spielleitung, Kampagne gewählt | und /prev-turn – der Nächste ist dran, oder zurück zum Vorigen. |
 | POST | `/api/encounter/prev-turn` | Spielleitung, Kampagne gewählt | und /prev-turn – der Nächste ist dran, oder zurück zum Vorigen. |
 | POST | `/api/encounter/reset` | Spielleitung, Kampagne gewählt | den Kampf beenden: alle Kämpfer weg, zurück auf Runde 1. |
-| POST | `/api/encounter/roll-initiative` | Spielleitung, Kampagne gewählt | für alle NSC und Monster ohne Wert |
+| POST | `/api/encounter/roll-initiative` | Spielleitung, Kampagne gewählt | für alle NSC und Monster ohne Wert: W20 plus ihr Initiativebonus. |
 | POST | `/api/encounter/party` | Spielleitung, Kampagne gewählt | die Charaktere der Runde in den Kampf holen |
 
 ### GET /api/encounter
@@ -683,16 +684,16 @@ GET /api/encounter – der ganze Kampf, in der Sicht des Fragenden
 
 ### POST /api/encounter/combatants
 
-*backend/src/routes/kampf/kaempfer.js, Zeile 27 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/kampf/kaempfer.js, Zeile 30 · Spielleitung, Kampagne gewählt*
 
-POST /api/encounter/combatants  { name, type?, initiative?, hp?, maxHp?, ac?,
-conditions?, notes?, characterId?, hidden? } – einen Kämpfer von Hand in den
+POST /api/encounter/combatants  { name, type?, initiative?, initiativeBonus?,
+hp?, maxHp?, ac?, conditions?, notes?, characterId?, hidden? } – einen Kämpfer von Hand in den
 Kampf setzen. Meist kommen Kämpfer über „Runde holen“, das Bestiarium oder
 eine vorbereitete Begegnung; dieser Weg ist für den Rest.
 
 ### PUT /api/encounter/combatants/:id
 
-*backend/src/routes/kampf/kaempfer.js, Zeile 67 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/kampf/kaempfer.js, Zeile 72 · Spielleitung, Kampagne gewählt*
 
 PUT /api/encounter/combatants/:id – Werte eines Kämpfers ändern: Initiative,
 Zustände, verborgen oder nicht. Trefferpunkte gehen besser über /damage,
@@ -700,13 +701,13 @@ das mit temporären TP und der Null richtig umgeht.
 
 ### POST /api/encounter/combatants/:id/damage
 
-*backend/src/routes/kampf/kaempfer.js, Zeile 130 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/kampf/kaempfer.js, Zeile 143 · Spielleitung, Kampagne gewählt*
 
 POST /api/encounter/combatants/:id/damage – negative Werte heilen
 
 ### POST /api/encounter/combatants/:id/initiative
 
-*backend/src/routes/kampf/kaempfer.js, Zeile 175 · angemeldet, Kampagne gewählt*
+*backend/src/routes/kampf/kaempfer.js, Zeile 188 · angemeldet, Kampagne gewählt*
 
 POST /api/encounter/combatants/:id/initiative  { value }
 
@@ -716,7 +717,7 @@ Wurf selbst ein. Fremde Zeilen bleiben tabu.
 
 ### DELETE /api/encounter/combatants/:id
 
-*backend/src/routes/kampf/kaempfer.js, Zeile 194 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/kampf/kaempfer.js, Zeile 207 · Spielleitung, Kampagne gewählt*
 
 DELETE /api/encounter/combatants/:id – einen Kämpfer aus dem Kampf nehmen.
 War er gerade dran, ist es danach der, der in der Reihenfolge an seine
@@ -747,13 +748,14 @@ Runde 1. Die Chronik vermerkt, wie viele Runden es waren.
 
 ### POST /api/encounter/roll-initiative
 
-*backend/src/routes/kampf/ablauf.js, Zeile 89 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/kampf/ablauf.js, Zeile 90 · Spielleitung, Kampagne gewählt*
 
-POST /api/encounter/roll-initiative – für alle NSC und Monster ohne Wert
+POST /api/encounter/roll-initiative  { onlyEmpty? } – für alle NSC und
+Monster ohne Wert: W20 plus ihr Initiativebonus.
 
 ### POST /api/encounter/party
 
-*backend/src/routes/kampf/ablauf.js, Zeile 102 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/kampf/ablauf.js, Zeile 103 · Spielleitung, Kampagne gewählt*
 
 POST /api/encounter/party – die Charaktere der Runde in den Kampf holen
 
@@ -770,40 +772,40 @@ POST /api/encounter/party – die Charaktere der Runde in den Kampf holen
 
 ### GET /api/encounters
 
-*backend/src/routes/encounters.js, Zeile 62 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/encounters.js, Zeile 68 · Spielleitung, Kampagne gewählt*
 
 GET /api/encounters – alle vorbereiteten Begegnungen, nach Namen.
 Sie gehören der ganzen Runde und stehen in jeder Kampagne bereit.
 
 ### POST /api/encounters
 
-*backend/src/routes/encounters.js, Zeile 68 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/encounters.js, Zeile 74 · Spielleitung, Kampagne gewählt*
 
 POST /api/encounters  { name, notes?, entries } – eine Begegnung anlegen.
 Jeder Posten trägt seine Werte selbst (siehe saubereEintraege oben).
 
 ### PUT /api/encounters/:id
 
-*backend/src/routes/encounters.js, Zeile 86 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/encounters.js, Zeile 92 · Spielleitung, Kampagne gewählt*
 
 PUT /api/encounters/:id – ändern; nur, was mitgeschickt wird.
 
 ### DELETE /api/encounters/:id
 
-*backend/src/routes/encounters.js, Zeile 101 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/encounters.js, Zeile 107 · Spielleitung, Kampagne gewählt*
 
 DELETE /api/encounters/:id – löschen. Ein laufender Kampf, der aus ihr
 gestellt wurde, bleibt davon unberührt.
 
 ### POST /api/encounters/:id/stellen
 
-*backend/src/routes/encounters.js, Zeile 108 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/encounters.js, Zeile 114 · Spielleitung, Kampagne gewählt*
 
 POST /api/encounters/:id/stellen – die ganze Begegnung in den Kampf setzen
 
 ### POST /api/encounters/aus-kampf
 
-*backend/src/routes/encounters.js, Zeile 170 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/encounters.js, Zeile 179 · Spielleitung, Kampagne gewählt*
 
 POST /api/encounters/aus-kampf – den laufenden Kampf als Begegnung sichern
 
@@ -815,7 +817,7 @@ POST /api/encounters/aus-kampf – den laufenden Kampf als Begegnung sichern
 | POST | `/api/library` | Spielleitung, Kampagne gewählt | einen Statblock von Hand anlegen. |
 | PUT | `/api/library/:id` | Spielleitung, Kampagne gewählt | ändern; nur, was mitgeschickt wird. |
 | DELETE | `/api/library/:id` | Spielleitung, Kampagne gewählt | löschen. |
-| POST | `/api/library/:id/add-to-encounter` | Spielleitung, Kampagne gewählt | „3 Goblins“ mit einem Klick |
+| POST | `/api/library/:id/add-to-encounter` | Spielleitung, Kampagne gewählt | „3 Goblins“ mit einem Klick. |
 | POST | `/api/library/aus-kompendium` | Spielleitung, Kampagne gewählt | ein Monster aus dem Kompendium übernehmen. |
 
 ### GET /api/library
@@ -847,13 +849,15 @@ Werte, denn jeder Posten hat eine eigene Abschrift.
 
 ### POST /api/library/:id/add-to-encounter
 
-*backend/src/routes/library.js, Zeile 128 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/library.js, Zeile 130 · Spielleitung, Kampagne gewählt*
 
-POST /api/library/:id/add-to-encounter – „3 Goblins“ mit einem Klick
+POST /api/library/:id/add-to-encounter  { count?, rollInitiative?,
+initiative?, hidden? } – „3 Goblins“ mit einem Klick. Gewürfelt wird W20
+plus Geschicklichkeitsbonus des Statblocks.
 
 ### POST /api/library/aus-kompendium
 
-*backend/src/routes/library.js, Zeile 184 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/library.js, Zeile 191 · Spielleitung, Kampagne gewählt*
 
 POST /api/library/aus-kompendium – ein Monster aus dem Kompendium übernehmen.
 
@@ -978,7 +982,7 @@ Götterkatalog, dieselbe Karte in Worten.
 | POST | `/api/scenes/:id/nebel` | Spielleitung, Kampagne gewählt | Felder aufdecken oder wieder verhüllen – ein Pinselstrich der Spielleitung. |
 | POST | `/api/scenes/:id/nebel/alles` | Spielleitung, Kampagne gewählt | die ganze Karte auf einmal aufdecken oder zudecken. |
 | POST | `/api/scenes/:id/figuren` | Spielleitung, Kampagne gewählt | eine Figur auslegen. |
-| PATCH | `/api/scenes/figuren/:id` | angemeldet, Kampagne gewählt | Bewegen darf auch, wem die Figur gehört |
+| PATCH | `/api/scenes/figuren/:id` | angemeldet, Kampagne gewählt | Bewegen darf auch, wem die Figur gehört; alles andere nur die Spielleitung. |
 | DELETE | `/api/scenes/figuren/:id` | Spielleitung, Kampagne gewählt | eine Figur vom Tisch nehmen. |
 | POST | `/api/scenes/:id/figuren/aus-kampf` | Spielleitung, Kampagne gewählt | alle Kämpfer als Figuren auslegen |
 | POST | `/api/scenes/ping` | angemeldet, Kampagne gewählt | ein kurzes Aufleuchten für alle, nichts wird gespeichert |
@@ -1089,7 +1093,7 @@ auf einmal aufdecken oder zudecken.
 
 ### POST /api/scenes/:id/figuren
 
-*backend/src/routes/spieltisch/figuren.js, Zeile 41 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/spieltisch/figuren.js, Zeile 43 · Spielleitung, Kampagne gewählt*
 
 POST /api/scenes/:id/figuren  { name, x, y, size?, color?, mediaId?,
 characterId?, combatantId?, hidden? } – eine Figur auslegen. Ein Blatt oder
@@ -1097,19 +1101,21 @@ Kämpfer, an den sie gebunden wird, muss zu dieser Kampagne gehören.
 
 ### PATCH /api/scenes/figuren/:id
 
-*backend/src/routes/spieltisch/figuren.js, Zeile 76 · angemeldet, Kampagne gewählt*
+*backend/src/routes/spieltisch/figuren.js, Zeile 80 · angemeldet, Kampagne gewählt*
 
-PATCH /api/scenes/figuren/:id – Bewegen darf auch, wem die Figur gehört
+PATCH /api/scenes/figuren/:id  { x?, y?, name?, size?, color?, mediaId?,
+hidden?, lightBright?, lightDim?, characterId? } – Bewegen darf auch, wem
+die Figur gehört; alles andere nur die Spielleitung.
 
 ### DELETE /api/scenes/figuren/:id
 
-*backend/src/routes/spieltisch/figuren.js, Zeile 110 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/spieltisch/figuren.js, Zeile 136 · Spielleitung, Kampagne gewählt*
 
 DELETE /api/scenes/figuren/:id – eine Figur vom Tisch nehmen.
 
 ### POST /api/scenes/:id/figuren/aus-kampf
 
-*backend/src/routes/spieltisch/figuren.js, Zeile 122 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/spieltisch/figuren.js, Zeile 148 · Spielleitung, Kampagne gewählt*
 
 POST /api/scenes/:id/figuren/aus-kampf – alle Kämpfer als Figuren auslegen
 
@@ -1194,3 +1200,18 @@ POST /api/stash/items/:id/kopieren  { campaignId }
 Ein Fund in einer anderen Kampagne – der Dolch, der in zwei Geschichten
 vorkommen soll. Getragen wird er drüben nur, wenn dort jemand gleichen
 Namens steht; sonst liegt er einfach in der Kiste.
+
+## /almanach-stamm.crt
+
+| Methode | Pfad | Wer darf | Was |
+|---|---|---|---|
+| GET | `/almanach-stamm.crt` | jeder | Das Stammzertifikat für HTTPS im Heimnetz (https/zertifikat.js), zum Installieren auf den Geräten der Runde. |
+
+### GET /almanach-stamm.crt
+
+*backend/src/server.js, Zeile 150 · jeder*
+
+Das Stammzertifikat für HTTPS im Heimnetz (https/zertifikat.js), zum
+Installieren auf den Geräten der Runde. Es ist öffentlich – geheim ist nur
+sein Schlüssel, und der verlässt den Datenordner nie. Wer es über http
+lädt, vergleicht den Fingerabdruck mit dem aus dem Startbericht.

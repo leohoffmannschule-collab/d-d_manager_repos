@@ -144,7 +144,8 @@ Der **Status** sagt die Art, der **Schlüssel** die Sache, der **Satz** ist für
 | Eine Heldin fehlt in der Kampfliste nach „Runde holen“ | Ihr Blatt ist nicht geteilt, oder es ist ein NSC-Blatt. | Blatt teilen (unter *Spielleitung → Runde*). |
 | „Eigene Initiative würfeln“ fehlt | Die eigene Heldin steht nicht in der Liste. | „Runde holen“. |
 | Schaden steht in der Liste, aber nicht auf dem Blatt | Der Kämpfer ist nicht mit dem Blatt verknüpft (von Hand angelegt), oder die Spielerin tippt gerade selbst auf ihrem Blatt. | Über „Runde holen“ verknüpfen. Im zweiten Fall gleicht es sich beim nächsten Speichern an. |
-| Die Initiative der Monster wirkt zu niedrig | Gewürfelt wird ein nackter W20, ohne Geschicklichkeit. | Von Hand nachtragen, wenn es darauf ankommt. |
+| Die Initiative eines Monsters wirkt zu niedrig | Sein Statblock hat keine Geschicklichkeit eingetragen – dann ist der Bonus 0. | Im Bestiarium GE nachtragen; bei einem Kämpfer von Hand den „Bonus“ beim Eintragen setzen. |
+| Ein aufgedeckter Gegner steht noch unsichtbar auf der Karte | Seine Figur hängt an keinem Kämpfer (von Hand ausgelegt statt über „Figuren aus dem Kampf“). | Die Figur im Figurenfeld selbst zeigen – nur verbundene Figuren gehen mit. |
 
 ### Charakterblatt
 
@@ -187,10 +188,15 @@ Der **Status** sagt die Art, der **Schlüssel** die Sache, der **Satz** ist für
 | Von außen Error 1033 oder 502 | Der Tunnel läuft nicht oder zeigt auf den falschen Dienst. | Tunnel-Protokoll; beim benannten Tunnel das Ziel `http://dnd-manager:3001` (Docker) bzw. `http://localhost:3001` (Laptop). |
 | Nach `git pull` sieht alles aus wie vorher | Die Oberfläche wurde nicht neu gebaut. | `npm start -- --neu-bauen` bzw. `--build`. |
 | `npm run vorlagen` bricht ab | Fassungen vor diesem Buch hatten dort einen Fehler. | Aktualisieren. |
+| Der Browser warnt bei `https://…:3443` („nicht privat“, „nicht sicher“) | Das Stammzertifikat ist auf diesem Gerät nicht installiert. | Einmal installieren (Einrichtung, „HTTPS im Heimnetz“); vorher den Fingerabdruck mit dem Startbericht vergleichen. |
+| `https://…:3443` antwortet gar nicht | Kein Zertifikat angelegt, der Server nicht neu gestartet, oder (Docker) der Port nicht freigegeben. | `npm run zertifikat`, neu starten; der Startbericht nennt „Verschlüsselt: …“. In Docker `3443:3443` in der compose-Datei. |
+| Zertifikat gilt nicht für die Adresse („falscher Name“) | Der Router hat dem Gerät eine neue Adresse gegeben, oder im Container kennt das Skript die Adresse des Pi nicht. | `npm run zertifikat` erneut (im Container mit der Adresse des Pi als Angabe), neu starten. An den Geräten ist nichts zu tun. |
+| Über https angemeldet, über http nicht mehr | Absicht: Das Cookie ist dann `Secure` und geht nie unverschlüsselt. | Beim verschlüsselten Eingang bleiben. |
+| Musik legt nicht auf, in der Konsole „Content Security Policy“ | Spotify hat den Ort seiner Einbettung geändert. | Die Zeile `script-src`/`frame-src` in `backend/src/kopfzeilen.js` um die neue Adresse ergänzen. |
 
 ## Bekannte Grenzen
 
-Manches, was nach einem Fehler aussieht, ist eine bewusste Grenze – oder eine, die noch niemand behoben hat. Beides gehört hierher, damit niemand lange sucht.
+Manches, was nach einem Fehler aussieht, ist eine bewusste Grenze. Sie steht hier, damit niemand lange sucht.
 
 **Bewusst so:**
 
@@ -201,13 +207,13 @@ Manches, was nach einem Fehler aussieht, ist eine bewusste Grenze – oder eine,
 - **Der Almanach braucht seinen Server.** Ohne ihn geht nichts außer den mitgenommenen Blattdateien.
 - **Musik nur über das eigene Spotify-Konto** jeder Person; der Almanach speichert und sendet keine Musik.
 
-**Noch offen:**
+**Inzwischen geschlossen.** Frühere Fassungen dieses Buches führten hier fünf Lücken auf. Alle sind behoben, jede mit Prüfungen im Vertrag (Kapitel 21, `scripts/vertrag/21-luecken.mjs`):
 
-- **Eine Figur lässt sich im Figurenfeld nicht von Hand an ein Blatt binden.** Verknüpfte Heldenfiguren entstehen nur über „Runde holen“ und „Figuren aus dem Kampf“ – was nebenbei die Kampfliste füllt und einen Eintrag „Ein Kampf beginnt“ schreibt.
-- **Kämpfer und Figur werden getrennt verborgen und gezeigt.** Wer einen Gegner aufdeckt, muss es in der Kampfliste und im Figurenfeld tun.
-- **Die Initiative aus Bestiarium und Begegnungen ist ein nackter W20**, ohne den Geschicklichkeitsbonus des Statblocks.
-- **Mitgenommene Blattdateien lassen sich nicht per Knopf einlesen**; der Weg über die Konsole steht im Kapitel „Betrieb im Alltag“.
-- **Manuelle Zauber-SG und -Angriffsbonus** stehen im Datenmodell, aber auf dem Reiter gibt es noch kein Feld dafür.
+- Eine Figur lässt sich im Figurenfeld von Hand an ein Blatt binden (Auswahl „Blatt“).
+- Kämpfer und Figur verbergen und zeigen sich gemeinsam – wer eine Seite umlegt, legt beide um.
+- Gegner aus Bestiarium und Begegnungen würfeln ihre Initiative mit dem Geschicklichkeitsbonus des Statblocks, auch bei „Initiative würfeln“.
+- Mitgenommene Blattdateien liest der Knopf „Blatt einlesen“ in der Übersicht wieder ein.
+- Zauber-SG und -Angriffsbonus lassen sich auf dem Reiter „Zauber“ von Hand überschreiben.
 
 ## Einen Fehler melden
 

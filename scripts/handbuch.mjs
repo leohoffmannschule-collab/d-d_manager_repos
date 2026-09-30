@@ -32,6 +32,7 @@ import { setzeBuch } from './handbuch/satz.mjs';
 import { drucken, findeBrowser } from './handbuch/drucker.mjs';
 import { seitenzahlen } from './handbuch/seitenzahlen.mjs';
 import { schreibeVerzeichnisse } from './handbuch/referenz.mjs';
+import { beigaben } from './drucksatz/seite.mjs';
 
 const wurzel = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ohnePdf = process.argv.includes('--ohne-pdf');
@@ -70,14 +71,16 @@ if (fehlt.length) {
 const setzen = (seiten) =>
   setzeBuch({
     gliederung: plan,
-    stil: STIL,
+    stilDatei: 'buch.css',
     ausgabe: HTML,
     unter: 'Die vollständige Beschreibung – für die Runde, die Spielleitung und alle, die am Code arbeiten',
     stand: `Stand: ${heute} · Fassung ${paket.version}`,
     seiten,
   });
 
-fs.mkdirSync(path.dirname(HTML), { recursive: true });
+// Stilblatt und Zierrat liegen neben der gesetzten Fassung; sie verweist
+// darauf, statt sie in sich zu tragen.
+beigaben(path.dirname(HTML), 'buch.css', STIL);
 const erster = setzen(null);
 fs.writeFileSync(HTML, erster.html);
 sagen(`  Gesetzt: ${kurz(HTML)} (${erster.kapitelZahl} Kapitel)`);

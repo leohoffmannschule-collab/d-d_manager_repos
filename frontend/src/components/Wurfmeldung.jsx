@@ -12,6 +12,7 @@
 import { useState } from 'react';
 import { useLive } from '../lib/live.jsx';
 import { IconEyeOff } from './icons.jsx';
+import Laufwert from './Laufwert.jsx';
 
 export default function Wurfmeldung() {
   const [wurf, setWurf] = useState(null);
@@ -40,7 +41,7 @@ export default function Wurfmeldung() {
           zwanzig ? 'border-gold ring-1 ring-gold' : eins ? 'border-rubric' : ''
         }`}
       >
-        <span className="farbpunkt h-2.5 w-2.5 shrink-0 rounded-full" style={{ '--farbe': wurf.color }} />
+        <Laufwert className="farbpunkt h-2.5 w-2.5 shrink-0 rounded-full" werte={{ '--farbe': wurf.color }} />
         <span className="min-w-0">
           <span className="block truncate font-display text-[11px] tracking-[0.12em] text-faint uppercase">
             {wurf.userName}

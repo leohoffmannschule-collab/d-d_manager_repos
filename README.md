@@ -455,6 +455,7 @@ Nützliche Befehle im Projektstamm:
 | `npm test`          | Alles davon der Reihe nach: Lint, Einfuhr-, Stil-, Kommentar-, Blatt-, Klangprobe, Vertrag |
 | `npm run vorlagen`  | Gelöschte Vorlagen-Charaktere nachlegen (alle Kampagnen, oder `-- "Name"` für eine) |
 | `npm run kennwort -- "Name"` | Ein vergessenes Kennwort neu setzen – auch das der Spielleitung |
+| `npm run zertifikat` | HTTPS im Heimnetz: eigenes, beschränktes Zertifikat ausstellen oder erneuern (danach neu starten; Port 3443) |
 
 `npm start` nimmt außerdem `-- --neu-bauen` (Bau erzwingen) und `-- --ohne-bau` (Bau überspringen).
 

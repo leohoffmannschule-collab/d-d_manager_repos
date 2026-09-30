@@ -15,6 +15,10 @@
          der Start im Kerzenlicht kurz hell auf. Kein type="module", weil es
          genau dafür sofort laufen muss und nicht erst nach dem Aufbau. -->
     <script src="/aussehen.js"></script>
+    <!-- Leer: Hierhin schreibt src/lib/laufstil.js die Werte, die erst im
+         Browser feststehen – nur auf Geräten, die keine eigenen
+         Stilblätter bauen lassen. -->
+    <link rel="stylesheet" id="laufstil" href="/laufstil.css" />
   </head>
   <body>
     <div id="root"></div>

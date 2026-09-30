@@ -64,4 +64,4 @@ export {
   IconChat,
 } from './icons/runde.jsx';
 export { IconNote, IconPlay, IconPause, IconSync, IconSpeaker } from './icons/klang.jsx';
-export { Fleuron } from './icons/zierrat.jsx';
+export { Fleuron, Wappenschild } from './icons/zierrat.jsx';

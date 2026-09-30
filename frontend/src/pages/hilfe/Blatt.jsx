@@ -34,6 +34,11 @@ export default function Blatt() {
             Kompendium mitten im Zug.
           </li>
           <li>
+            <span className="font-display">Zauber-SG und Angriffsbonus</span> rechnet das Blatt selbst. Trägst du einen
+            Stab des Zauberers oder gilt eine Hausregel, tippst du den eigenen Wert einfach in das Feld; „zurück“
+            nimmt ihn wieder heraus.
+          </li>
+          <li>
             Der <span className="font-display">Rettungswurf gegen den Tod</span> trägt sich selbst ein: Eine 20
             richtet dich mit einem Trefferpunkt wieder auf, eine 1 zählt doppelt.
           </li>
@@ -63,12 +68,14 @@ export default function Blatt() {
           Oben auf deinem Blatt liegt der Knopf <span className="font-display">Mitnehmen</span>. Er sichert dein
           Blatt als einzelne Datei auf dein Gerät – mit Bildnis und allem, was darauf steht. Diese Datei
           braucht weder Netz noch Server: Ein Doppelklick genügt, auf jedem Rechner, Tablet oder Telefon. Gedruckt
-          sieht sie aus wie ein Charakterbogen.
+          (Strg+P, am iPad Teilen → Drucken) sieht sie aus wie ein Charakterbogen.
         </p>
         <p className="mt-3 leading-relaxed text-ink">
           Das ist gedacht für die Vorbereitung, wenn der Almanach gerade nicht läuft – oder für den Zug zur Runde.
-          Ändern lässt sich in der Datei nichts, was zurückwandert: Am Spieltisch gilt das Blatt im Almanach. Ganz
-          hinten in der Datei steckt außerdem der vollständige Datensatz, sie ist also zugleich eine Sicherung.
+          Was du in der Datei änderst, wandert nicht von selbst zurück: Am Spieltisch gilt das Blatt im Almanach.
+          Ganz hinten in der Datei steckt aber der vollständige Datensatz, sie ist also zugleich eine Sicherung: In
+          der Übersicht liest <span className="font-display">Blatt einlesen</span> sie wieder ein – als neues Blatt,
+          dein altes bleibt unangetastet.
         </p>
       </Card>
     </>

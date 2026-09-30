@@ -3,7 +3,7 @@
 > Dieses Kapitel schreibt `npm run handbuch` aus dem Code (scripts/handbuch/referenz/).
 > Änderungen gehören in den Code und seine Kommentare, nicht hierher.
 
-Alle Dateien der Oberfläche (200 Dateien, 17.213 Zeilen): Seiten, Bauteile, die Datenschicht in lib/, die Stilblätter und der Bau. Zu jeder Datei ihr Kopfkommentar und ihre Ausfuhren.
+Alle Dateien der Oberfläche (204 Dateien, 17.760 Zeilen): Seiten, Bauteile, die Datenschicht in lib/, die Stilblätter und der Bau. Zu jeder Datei ihr Kopfkommentar und ihre Ausfuhren.
 
 Sammelstellen wie icons.jsx oder lib/api.js führen nichts Eigenes aus, sondern reichen weiter – bei ihnen steht, woher.
 
@@ -101,9 +101,25 @@ NeuerFund; die Münzsorten in beute/muenzen.js.
 
 - `Beute` (default function)
 
+### frontend/src/components/BlattEinlesen.jsx
+
+*63 Zeilen*
+
+Ein mitgenommenes Blatt wieder einlesen – der Gegenknopf zu „Mitnehmen“.
+
+Steht in der Übersicht neben „Neuer Charakter“. Die gewählte Datei wird
+im Browser gelesen (lib/blattEinfuhr.js) und als neues Blatt in der
+gewählten Kampagne angelegt; es gehört danach der Person, die angemeldet
+ist. Ein vorhandenes Blatt wird nie überschrieben – wer zwei Stände hat,
+soll beide vor sich sehen und selbst entscheiden.
+
+**Ausfuhren**
+
+- `BlattEinlesen` (default function)
+
 ### frontend/src/components/Chat.jsx
 
-*216 Zeilen*
+*217 Zeilen*
 
 Der Chat am Tisch.
 
@@ -147,7 +163,7 @@ gebaute Ansicht. Der Gewinn: Es bricht nicht, wenn die API sich ändert.
 
 ### frontend/src/components/DiceRoller.jsx
 
-*248 Zeilen*
+*249 Zeilen*
 
 Der Würfelbeutel: unten rechts der Knopf, dahinter die Wurfchronik der
 ganzen Runde.
@@ -162,6 +178,29 @@ ein Spielerfenster gar nicht erst geschickt.
 **Ausfuhren**
 
 - `DiceRoller` (default function)
+
+### frontend/src/components/HttpsHinweis.jsx
+
+*51 Zeilen*
+
+Ein Hinweis auf der Anmeldeseite: „Hier geht dein Kennwort unverschlüsselt
+durchs WLAN – nimm lieber den verschlüsselten Eingang.“
+
+Erscheint nur, wenn alle drei Dinge zutreffen:
+
+- die Seite kam über `http://`,
+- nicht vom eigenen Rechner (localhost verlässt das Gerät nie),
+- und der Almanach hat einen HTTPS-Eingang offen (npm run zertifikat;
+  der Server nennt seinen Port unter /api/health).
+
+Über den Tunnel kommt die Seite ohnehin als `https://` – dort schweigt
+der Hinweis. Weitergeleitet wird bewusst nicht von selbst: Wer das
+Stammzertifikat noch nicht installiert hat, stünde sonst vor einer
+Warnseite, ohne zu wissen, warum.
+
+**Ausfuhren**
+
+- `HttpsHinweis` (default function)
 
 ### frontend/src/components/icons.jsx
 
@@ -236,6 +275,7 @@ Symbol braucht, soll nicht wissen müssen, in welcher Schublade es liegt.
 - `IconSync` (aus ./icons/klang.jsx)
 - `IconSpeaker` (aus ./icons/klang.jsx)
 - `Fleuron` (aus ./icons/zierrat.jsx)
+- `Wappenschild` (aus ./icons/zierrat.jsx)
 
 ### frontend/src/components/Initiative.jsx
 
@@ -292,6 +332,28 @@ danach kurz da, wohin es gegangen ist, statt dass etwas verschwindet.
 **Ausfuhren**
 
 - `Kopierziel` (default function)
+
+### frontend/src/components/Laufwert.jsx
+
+*20 Zeilen*
+
+Ein Element mit Werten, die erst im Browser feststehen – ohne `style`.
+
+Der Haken `useLaufstil` (lib/laufstil.js) darf nicht in einer Schleife
+stehen. In Listen – die Farbpunkte der Konten, die Zeilen im Chat, die
+Farben im Figurenfeld – trägt deshalb jedes Element sein eigenes kleines
+Bauteil:
+
+```
+<Laufwert als="span" className="farbpunkt h-3 w-3" werte={{ '--farbe': konto.color }} />
+```
+
+Alles außer `als`, `werte` und `className` geht unverändert an das
+Element (Rückrufe, aria-…, title, ref).
+
+**Ausfuhren**
+
+- `Laufwert` (default function)
 
 ### frontend/src/components/Layout.jsx
 
@@ -408,7 +470,7 @@ Ausnahme, und der Grund, warum das Charakterblatt alles an einem Ort hat.
 
 ### frontend/src/components/Wurfmeldung.jsx
 
-*65 Zeilen*
+*66 Zeilen*
 
 Kurze Anzeige des jüngsten Wurfs – damit ein Wurf vom Charakterblatt
 nicht stumm im Würfelbeutel verschwindet, sondern am Tisch auffällt.
@@ -502,7 +564,7 @@ lässt sich, wer bei diesem Fund nicht dabei war.
 
 ### frontend/src/components/dm/begegnungen/Bauplan.jsx
 
-*110 Zeilen*
+*114 Zeilen*
 
 Der Bauplan einer Begegnung: welche Gegner in welcher Zahl, wer verborgen
 beginnt. Posten kommen aus dem Bestiarium, tragen ihre Werte danach aber
@@ -514,7 +576,7 @@ selbst – deshalb übersteht eine Begegnung das Löschen des Statblocks.
 
 ### frontend/src/components/dm/begegnungen/Posten.jsx
 
-*49 Zeilen*
+*54 Zeilen*
 
 Eine Zeile im Bauplan einer Begegnung: wer, wie viele, verborgen oder
 nicht.
@@ -806,7 +868,7 @@ ist der Knopf zum Aufschlagen.
 
 ### frontend/src/components/dm/karten/Rastervorschau.jsx
 
-*56 Zeilen*
+*58 Zeilen*
 
 Ein Rasternetz über der Vorschau. Damit lässt sich die Feldgröße
 ausrichten, ohne die Karte erst auf den Tisch legen zu müssen – und die
@@ -864,7 +926,7 @@ Umrandung, deshalb das Abtippen.
 
 ### frontend/src/components/dm/runde/Kampagnenmitglieder.jsx
 
-*92 Zeilen*
+*93 Zeilen*
 
 Wer aus der Runde ist in *dieser* Kampagne dabei? Andere Kampagnen sehen sie nicht.
 
@@ -889,7 +951,7 @@ auf ihren Namen. Es gibt also nichts nachzuziehen.
 
 ### frontend/src/components/dm/runde/Konten.jsx
 
-*92 Zeilen*
+*93 Zeilen*
 
 Die Konten der Runde: Rolle, Farbe, Kennwort zurücksetzen, entfernen.
 
@@ -1116,9 +1178,10 @@ neues Symbol entsteht.
 
 ### frontend/src/components/icons/zierrat.jsx
 
-*15 Zeilen*
+*31 Zeilen*
 
-Zierrat: der vierstrahlige Stern vor jeder Rubrik.
+Zierrat: der vierstrahlige Stern vor jeder Rubrik und der Wappenschild
+hinter jedem Attribut.
 
 Kein Symbol im engeren Sinn – er bedeutet nichts, er schmückt. Deshalb
 gefüllt statt gezeichnet und ohne den Rahmen aus rahmen.jsx.
@@ -1126,6 +1189,7 @@ gefüllt statt gezeichnet und ohne den Rahmen aus rahmen.jsx.
 **Ausfuhren**
 
 - `Fleuron` (function) – Vierstrahliger Stern – der goldene Zierrat vor jeder Rubrik.
+- `Wappenschild` (function) – Der Wappenschild hinter einem Attribut auf der Übersicht des Blattes.
 
 ## frontend/src/components/initiative/
 
@@ -1146,7 +1210,7 @@ Formular für neue Kämpfer) und keines von ihnen der natürliche Besitzer ist.
 
 ### frontend/src/components/initiative/Lebensbalken.jsx
 
-*28 Zeilen*
+*29 Zeilen*
 
 Ein Balken für die Trefferpunkte, wo Zahlen zu viel verraten würden.
 
@@ -1156,7 +1220,7 @@ Ein Balken für die Trefferpunkte, wo Zahlen zu viel verraten würden.
 
 ### frontend/src/components/initiative/NeuerKaempfer.jsx
 
-*60 Zeilen*
+*64 Zeilen*
 
 Einen Kämpfer von Hand eintragen – für den Wachhund, den niemand
 vorbereitet hat. Der gewöhnliche Weg führt über das Bestiarium oder eine
@@ -1183,7 +1247,7 @@ so nicht gegenseitig.
 
 ### frontend/src/components/initiative/Zeile.jsx
 
-*112 Zeilen*
+*119 Zeilen*
 
 Eine Zeile der Kampfliste. Aufgeklappt zeigt sie die Werkzeuge darunter –
 Schaden, Zustände, Initiative.
@@ -1334,7 +1398,7 @@ Geschichte und muss frisch geholt werden.
 
 ### frontend/src/components/rahmen/Konto.jsx
 
-*106 Zeilen*
+*107 Zeilen*
 
 Das Menü hinter dem eigenen Namen: Aussehen, Kennwort, Abmelden.
 
@@ -1493,7 +1557,7 @@ Verbot.
 
 ### frontend/src/components/sheet/OverviewTab.jsx
 
-*249 Zeilen*
+*242 Zeilen*
 
 Reiter 1 des Charakterblattes: alles, was oben auf dem gedruckten Bogen
 steht – Name, Volk, Klasse, die sechs Attribute, Rettungswürfe und die
@@ -1514,7 +1578,7 @@ Werte kommen aus lib/dnd5e.js. Steht eine Regel dort falsch, ist sie
 
 ### frontend/src/components/sheet/SpellsTab.jsx
 
-*152 Zeilen*
+*149 Zeilen*
 
 Reiter 4: Zauberplätze, Zaubertricks und die Zauberliste.
 
@@ -1531,7 +1595,7 @@ Eine lange Rast setzt `used` auf null (lib/rasten.js).
 Der Reiter hält den Zustand (was aufgeschlagen ist, was nachgeschlagen
 wurde) und ordnet die Liste; gezeichnet wird in zauber/:
 ```
-Zauberwirken.jsx   – Attribut, SG, Angriffsbonus
+Zauberwirken.jsx   – Attribut, SG, Angriffsbonus (gerechnet oder von Hand)
 Zauberplaetze.jsx  – verbraucht / höchstens je Grad
 Zaubersuche.jsx    – Suche im Kompendium
 Zaubereintrag.jsx  – ein Zauber, zugeklappt oder aufgeschlagen
@@ -1810,13 +1874,18 @@ Tastendruck.
 
 ### frontend/src/components/sheet/zauber/Zauberwirken.jsx
 
-*41 Zeilen*
+*85 Zeilen*
 
 Die Karte „Zauberwirken“: Zauberattribut, Zauber-SG und Angriffsbonus.
 
-SG und Bonus werden im Reiter berechnet (SpellsTab) und hier nur
-gezeigt – dieselben Zahlen braucht die Blattausfuhr, und dort rechnet
-lib/blatt/ sie auf demselben Weg.
+SG und Bonus rechnet `zauberwerte()` (lib/regeln/rechnen.js) – dieselbe
+Funktion, die auch die Blattausfuhr benutzt. Beide lassen sich hier von
+Hand überschreiben: für den Stab des Zauberers, einen Pakt, eine
+Hausregel. Das Feld zeigt dann den eigenen Wert und darunter, was die
+Regeln ergäben; „gerechnet“ nimmt den eigenen Wert wieder zurück.
+
+Ein leeres Feld heißt „rechnen“ (gespeichert als null) – nicht 0. Ein SG
+von 0 wäre eine Zahl, die jemand absichtlich eingetragen hätte.
 
 **Ausfuhren**
 
@@ -1826,7 +1895,7 @@ lib/blatt/ sie auf demselben Weg.
 
 ### frontend/src/components/tabletop/Board.jsx
 
-*200 Zeilen*
+*202 Zeilen*
 
 Der Spieltisch: Karte, Raster, Figuren, Nebel, Lineal, Zeigefinger.
 
@@ -1904,18 +1973,24 @@ Ebene höher, die Regeln liegen im Server.
 
 ### frontend/src/components/tabletop/TokenPanel.jsx
 
-*194 Zeilen*
+*226 Zeilen*
 
 Die gewählte Figur bearbeiten – Name, Farbe, Größe, Bildnis, Lichtquelle.
 
 Steht am Spieltisch im Reiter „Figur“ und nur für die Spielleitung.
 
-Zwei Dinge, die mehr tun, als sie aussehen:
+Drei Dinge, die mehr tun, als sie aussehen:
 
 ```
+*Blatt* – an welchem Charakterblatt die Figur hängt. Das entscheidet,
+wer sie ziehen darf (die Besitzerin des Blattes) und wessen Sinne die
+Sicht bestimmen. Ein NSC-Blatt macht sie zur Figur, durch deren Augen
+die Spielleitung schauen kann.
+
 *verbergen* – eine verborgene Figur wird einem Spielerfenster gar nicht
 erst geschickt. Der Hinterhalt steht also wirklich nicht da, statt nur
-durchsichtig zu sein.
+durchsichtig zu sein. Hängt die Figur an einem Kämpfer, verbirgt oder
+zeigt sich seine Zeile in der Kampfliste mit (der Server tut das).
 
 *Lichtquelle* – hell und dämmrig in Fuß. In einer dunklen Szene
 erhellt sie die Karte für alle; sie ist damit das Gegenstück zur
@@ -2010,7 +2085,7 @@ Der Pinselabdruck braucht es, bevor dieser Haken überhaupt läuft.
 
 ### frontend/src/components/tabletop/brett/Figur.jsx
 
-*99 Zeilen*
+*110 Zeilen*
 
 Eine Figur auf dem Tisch: runde Scheibe mit Bild oder Anfangsbuchstabe,
 darunter Lebensbalken und Namensschild – und der Auswahlring, der zeigt,
@@ -2035,7 +2110,7 @@ stile/spieltisch/figuren.css.
 
 ### frontend/src/components/tabletop/brett/Lineal.jsx
 
-*52 Zeilen*
+*58 Zeilen*
 
 Das Lineal: eine gestrichelte Linie mit der Entfernung daran.
 
@@ -2053,7 +2128,7 @@ aber immer gleich aussehen.
 
 ### frontend/src/components/tabletop/brett/Nebelschicht.jsx
 
-*66 Zeilen*
+*68 Zeilen*
 
 Der Nebel als Bildpunkte: ein Punkt je Rasterfeld, hochskaliert vom
 Browser. Das ist um Größenordnungen billiger, als tausend Rechtecke zu
@@ -2077,7 +2152,7 @@ hat; sonst bleibt es beim alten Zweiklang aus auf und zu.
 
 ### frontend/src/components/tabletop/brett/Nebelvorschau.jsx
 
-*45 Zeilen*
+*48 Zeilen*
 
 Was der nächste Nebelstrich träfe.
 
@@ -2095,7 +2170,7 @@ Feldern in Bildpunkte.
 
 ### frontend/src/components/tabletop/brett/Rasternetz.jsx
 
-*29 Zeilen*
+*31 Zeilen*
 
 Das Rasternetz über der Karte.
 
@@ -2112,7 +2187,7 @@ kein Raster mehr, sondern ein Grauschleier.
 
 ### frontend/src/components/tabletop/brett/Zeigefinger.jsx
 
-*28 Zeilen*
+*29 Zeilen*
 
 Die Zeigefinger: kurz aufleuchtende Ringe mit dem Namen dessen, der
 gezeigt hat.
@@ -2345,7 +2420,7 @@ dann hilft ein kleineres Bild oder eine geteilte Karte.
 
 ### frontend/src/lib/blattAusfuhr.js
 
-*139 Zeilen*
+*146 Zeilen*
 
 Das Blatt zum Mitnehmen.
 
@@ -2354,9 +2429,10 @@ steht – samt Bildnis als eingebettetem Bild. Sie braucht keinen Server,
 kein Netz und keine App: doppelklicken genügt, auf jedem Rechner, Tablet
 oder Telefon. Gedruckt sieht sie aus wie ein Charakterbogen.
 
-Am Ende der Datei steckt außerdem der vollständige Datensatz. Die Datei
-ist damit zugleich eine Sicherung, aus der sich ein verlorenes Blatt
-wiederherstellen lässt.
+Am Ende der Datei steckt außerdem der vollständige Datensatz, in einem
+`<template>` – Daten, kein Skript. Die Datei ist damit zugleich eine
+Sicherung: „Blatt einlesen“ in der Übersicht legt daraus wieder ein Blatt
+an (blattEinfuhr.js).
 
 Diese Datei setzt nur noch zusammen; gebaut wird nebenan:
 
@@ -2365,18 +2441,54 @@ blatt/werkzeug.js    entschärfen, einrahmen, Bilder einbetten
 blatt/abschnitte.js  je eine Funktion für je eine Karte des Bogens
 blatt/koerper.js     welche Karte in welcher Reihenfolge
 blatt/stil/*.css     das Aussehen, als richtige Stilblätter
-blatt/drucken.js     der Druckknopf, als richtiges Skript
 ```
 
-Die fertige Datei trägt ihr Stilblatt und ihr Skript in sich – sie muss
-ohne Netz funktionieren, einen Verweis auf eine zweite Datei gäbe es beim
-Doppelklick nicht. Geschrieben aber werden beide als echte Dateien; hier
-werden sie beim Bauen nur eingesetzt.
+**Skript enthält die Datei keines.** Früher trug sie einen Druckknopf mit
+einer Zeile JavaScript; jetzt steht dort, wie man druckt (Strg+P, am iPad
+Teilen → Drucken) – das kann jeder Browser ohnehin, und die Datei führt
+nichts aus.
+
+**Das Stilblatt ist die eine Stelle im ganzen Almanach, an der CSS in
+einer Seite eingebettet steht** – und zwar nur in dieser erzeugten
+Datei, nicht im Quelltext: Geschrieben wird es als richtige .css-Dateien
+(blatt/stil/), eingesetzt erst beim Bauen. Anders geht es nicht, ohne
+die Datei unbrauchbar zu machen: Sie muss mit einem Doppelklick auf
+jedem Gerät funktionieren, ohne Netz und ohne Almanach dahinter – ein
+Verweis auf eine zweite Datei ginge beim Verschicken per Mail oder beim
+Öffnen aus der Dateien-App verloren. Die Stilprobe lässt diese eine
+Stelle zu und keine andere.
 
 **Ausfuhren**
 
 - `blattAlsHtml` (async function) – Das fertige HTML-Dokument als Zeichenkette.
 - `ladeBlattHerunter` (async function) – Dasselbe als Datei, die der Browser zum Sichern anbietet.
+
+### frontend/src/lib/blattEinfuhr.js
+
+*66 Zeilen*
+
+Das mitgenommene Blatt wieder hereinholen.
+
+Die Datei, die „Mitnehmen“ erzeugt (blattAusfuhr.js), trägt am Ende den
+vollständigen Datensatz des Blattes, als entschärften Text:
+
+```
+<template id="almanach-daten">{ &quot;name&quot;: …, &quot;system&quot;: …, &quot;data&quot;: … }</template>
+```
+
+Ältere Dateien trugen ihn in einem `<script type="application/json">`
+(roh, mit `\u003c` statt `<`); auch die werden gelesen. Angenommen wird
+die HTML-Datei selbst oder – für alle, die den Datensatz schon
+herauskopiert haben – der nackte JSON-Text.
+
+Gelesen wird mit einem regulären Ausdruck statt mit DOMParser: Ein
+DOMParser baute die ganze fremde Seite als Dokument auf, samt Bildern.
+Gebraucht wird nur der eine Block, und der steht in einer Form da, die
+blattAusfuhr.js selbst schreibt.
+
+**Ausfuhren**
+
+- `leseBlattdatei` (function) – Den Datensatz aus einer mitgenommenen Blattdatei holen.
 
 ### frontend/src/lib/campaign.jsx
 
@@ -2481,6 +2593,55 @@ die Funktion – deshalb hier ein Ersatz, der überall funktioniert.
 **Ausfuhren**
 
 - `newId` (function) – Erzeugt eine eindeutige Kennung für Würfe, Gegenstände, Zauber usw.
+
+### frontend/src/lib/laufstil.js
+
+*128 Zeilen*
+
+Werte, die erst im Browser feststehen – ohne ein einziges `style`-Attribut.
+
+Die Regel des Almanachs heißt: Wie etwas aussieht, steht im Stilblatt
+(`stile/`); im Markup steht nur, *was* da ist. Einige Werte kennt aber
+kein Stilblatt im Voraus: wo eine Figur steht, wie weit die Karte gerade
+verschoben ist, welche Farbe sich jemand gewählt hat, wie voll ein
+Lebensbalken ist. Früher kamen sie als CSS-Variable im `style`-Attribut
+(`style={{ '--x': '140px' }}`) – eingebettetes CSS, wenn auch nur ein
+Wert.
+
+Jetzt bekommt jedes Bauteil, das solche Werte hat, eine eigene Klasse
+(`lauf-1f`) und dazu eine Regel in einem Stilblatt, das es nur zur
+Laufzeit gibt:
+
+```
+.lauf-1f { --x: 140px; --y: 210px; }
+```
+
+Die Stilblätter in `stile/` lesen die Variablen wie bisher
+(`left: var(--x)`). Ändert sich ein Wert – beim Ziehen sechzigmal in der
+Sekunde –, wird die eine Regel geändert, keine neue angelegt; verschwindet
+das Bauteil, verschwindet seine Regel mit.
+
+Das Stilblatt entsteht über das CSSOM (`new CSSStyleSheet()` bzw.
+`insertRule`), nicht als `<style>` mit Text. Das ist auch der Grund, warum
+die Content-Security-Policy ohne `'unsafe-inline'` auskommt: Sie verbietet
+eingebettetes CSS im Markup, nicht Regeln, die ein erlaubtes Skript über
+das CSSOM setzt. Die Werte gehen dabei über `setProperty` hinein, nie als
+zusammengesetzter Text – ein Wert kann die Regel also nicht verlassen,
+auch wenn er von außen käme (eine Farbe, die jemand gespeichert hat).
+
+Zwei Wege, dasselbe zu benutzen:
+
+```
+useLaufstil(werte)    ein Haken, gibt den Klassennamen zurück – für
+                      Bauteile mit Verweisen und Rückrufen (die Bühne)
+<Laufwert als="span" werte={…} className="…" />
+                      ein Element mit Werten – auch in Listen, wo kein
+                      Haken stehen darf (components/Laufwert.jsx)
+```
+
+**Ausfuhren**
+
+- `useLaufstil` (function) – Eine eigene Klasse für dieses Bauteil, mit einer Regel, die `werte` trägt.
 
 ### frontend/src/lib/live.jsx
 
@@ -2590,24 +2751,24 @@ gibt `setPath` immer eine frische Kopie zurück.
 
 *26 Zeilen*
 
-Werte für CSS-Variablen – die einzige Brücke zwischen JSX und Stilblatt.
+Werte für CSS-Variablen – Einheiten, die das Stilblatt erwartet.
 
 Die Regel des Almanachs: Wie etwas aussieht, steht im Stilblatt
 (`stile/`). Was sich erst im Browser ergibt – wo eine Figur steht, welche
-Farbe sich jemand gewählt hat, wie voll ein Balken ist –, übergibt das JSX
-als CSS-Variable, und das Stilblatt setzt sie ein:
+Farbe sich jemand gewählt hat, wie voll ein Balken ist –, geht als
+CSS-Variable in eine Laufzeit-Regel (lib/laufstil.js), und das Stilblatt
+setzt sie ein:
 
 ```
-<span className="farbpunkt" style={{ '--farbe': farbe }} />
+<Laufwert className="farbpunkt" werte={{ '--farbe': farbe }} />
 .farbpunkt { background-color: var(--farbe); }
 ```
 
-Ein `style={{ left: 5 }}` mit einer echten CSS-Eigenschaft gibt es damit
-nicht mehr; die Stilprobe (scripts/stilprobe.mjs) passt darauf auf.
+Ein `style`-Attribut gibt es im Almanach nicht mehr, auch nicht für eine
+einzelne Variable; die Stilprobe (scripts/stilprobe.mjs) passt darauf auf.
 
-Diese beiden Helfer gibt es, weil React eine Zahl in einer CSS-*Variable*
-nicht mit einer Einheit versieht (anders als bei `left: 5`, das zu `5px`
-wird). `'--x': 5` käme als nacktes `5` an – und `left: var(--x)` wäre
+Diese beiden Helfer gibt es, weil eine nackte Zahl in einer CSS-Variable
+keine Einheit hat: `'--x': 5` käme als `5` an, und `left: var(--x)` wäre
 dann ungültig.
 
 **Ausfuhren**
@@ -2716,7 +2877,7 @@ Begegnungen und die Beutekiste, in der landet, was danach übrig bleibt.
 
 ### frontend/src/lib/api/konten.js
 
-*40 Zeilen*
+*43 Zeilen*
 
 Wege zu Konten und Kampagnen: anmelden, Konten verwalten, Einladungen,
 Kampagnen anlegen, wechseln, umbenennen, wegräumen und übernehmen.
@@ -2785,21 +2946,6 @@ Welcher Abschnitt wo auf dem Bogen steht, entscheidet koerper.js.
 - `erscheinung` (aus ./abschnitte/person.js)
 - `hintergrund` (aus ./abschnitte/person.js)
 - `merkmale` (aus ./abschnitte/person.js)
-
-### frontend/src/lib/blatt/drucken.js
-
-*14 Zeilen*
-
-Der Druckknopf im mitgenommenen Blatt.
-
-Diese Datei läuft nicht im Almanach, sondern *in der Datei*, die
-blattAusfuhr.js erzeugt: Sie wird beim Bauen als Text geholt (`?raw`) und
-dort am Ende eingebettet. Ein eigenes Skript statt `onclick="…"` am Knopf,
-damit auch der Code des Blattes in einer echten .js-Datei steht, die
-geprüft und gelesen werden kann wie jede andere.
-
-Kein Modul, kein Import: Die Datei muss auf jedem Rechner laufen, der sie
-doppelklickt – ohne Netz und ohne Almanach dahinter.
 
 ### frontend/src/lib/blatt/koerper.js
 
@@ -2910,7 +3056,7 @@ das Ergebnis auf dem Papier aussieht.
 
 ### frontend/src/lib/blatt/abschnitte/zauber.js
 
-*114 Zeilen*
+*112 Zeilen*
 
 Abschnitte des ausgeführten Blattes für Zauberwirkende: Zauberwerte,
 Plätze und die Zauberliste – auf Wunsch mit dem vollen Text jedes
@@ -2947,7 +3093,7 @@ ein Ausdruck, nicht wie ein Fenster des Almanachs.
 
 *50 Zeilen*
 
-Ausgeführtes Blatt, Teil 5: die Leiste oben (Stand und Drucken-Knopf) und
+Ausgeführtes Blatt, Teil 5: die Leiste oben (Stand und wie man druckt) und
 die Fassung für Papier.
 
 Beim Drucken verschwindet die Leiste, der Hintergrund wird weiß und die
@@ -3190,7 +3336,7 @@ Traglast ist eine Regel, die man ausrechnet.
 
 ### frontend/src/lib/regeln/rechnen.js
 
-*89 Zeilen*
+*123 Zeilen*
 
 Was das Regelwerk ausrechnen lässt.
 
@@ -3222,6 +3368,7 @@ Traglast        = Stärke × 15 Pfund
 - `saveModifier` (function) – Der Rettungswurfbonus eines Attributs.
 - `spellSaveDC` (function) – Zaubererschwerungsgrad und Zauberangriffsbonus.
 - `spellAttackBonus` (function) – Der Zauberangriffsbonus: Übungsbonus plus Modifikator des Zauberattributs.
+- `zauberwerte` (function) – Zauber-SG und Angriffsbonus eines Blattes, wie sie gelten.
 
 ## frontend/src/pages/blatt/
 
@@ -3377,7 +3524,7 @@ Gesucht wird örtlich in der schon geladenen Liste, ohne neue Anfrage.
 
 ### frontend/src/pages/Dashboard.jsx
 
-*202 Zeilen*
+*210 Zeilen*
 
 Die Startseite: alle Charaktere der Kampagne auf einen Blick.
 
@@ -3392,6 +3539,9 @@ Was hier mit einem Blatt geschehen kann:
 - In Kampagne … – eine Kopie in einer *anderen* Kampagne, nur für die
                   Spielleitung (siehe components/Kopierziel.jsx)
 - Löschen    – das eigene Blatt, oder jedes, wenn man die Runde führt
+
+Und oben: ein neues Blatt anlegen oder ein mitgenommenes einlesen
+(components/BlattEinlesen.jsx).
 
 **Ausfuhren**
 
@@ -3462,7 +3612,7 @@ einen Satz zu lesen, der genau das sagt.
 
 ### frontend/src/pages/Login.jsx
 
-*157 Zeilen*
+*160 Zeilen*
 
 Die Pforte: anmelden, einrichten oder der Runde beitreten.
 
@@ -3656,7 +3806,7 @@ und ein „läuft“ an der offenen.
 
 ### frontend/src/pages/hilfe/Blatt.jsx
 
-*77 Zeilen*
+*84 Zeilen*
 
 Hilfe: rund ums eigene Blatt – das Charakterblatt, Zauber und Rasten,
 die Beutekiste und das Mitnehmen als eigenständige Datei.
@@ -3725,7 +3875,7 @@ Hilfe: woher die Regeltexte stammen, mit Verweisen auf die Quellen.
 
 ### frontend/src/pages/hilfe/Spielleitung.jsx
 
-*106 Zeilen*
+*114 Zeilen*
 
 Hilfe: der Abschnitt „Für die Spielleitung“ – was hinter dem Schirm
 liegt und wie man es benutzt.
@@ -3817,7 +3967,7 @@ alle PINSEL_MS geht gebündelt hinaus, was sich angesammelt hat.
 
 ### frontend/src/stile/bauteile.css
 
-*167 Zeilen*
+*182 Zeilen*
 
 Die wiederkehrenden Bauteile: Velinblatt, Eingabefelder, Knöpfe.
 
@@ -3924,7 +4074,7 @@ nächsten Nebelstrichs und die Beschriftungen auf der Karte.
 
 ### frontend/src/stile/spieltisch/schichten.css
 
-*50 Zeilen*
+*62 Zeilen*
 
 Spieltisch, Teil 4: die Schichten über den Figuren – Nebel und Lineal –
 und der leere Tisch, solange keine Karte aufliegt.

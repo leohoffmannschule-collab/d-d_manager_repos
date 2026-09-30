@@ -274,6 +274,7 @@ Spielleitung: Kampf, Bestiarium, Notizen
 | `name` | TEXT | ja |  |  |
 | `type` | TEXT | ja | `'monster'` |  |
 | `initiative` | INTEGER | ja | `0` |  |
+| `initiative_bonus` | INTEGER | ja | `0` |  |
 | `hp` | INTEGER | ja | `0` |  |
 | `max_hp` | INTEGER | ja | `0` |  |
 | `ac` | INTEGER | ja | `10` |  |

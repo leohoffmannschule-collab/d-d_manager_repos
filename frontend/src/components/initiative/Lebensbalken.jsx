@@ -1,6 +1,7 @@
 /** Ein Balken für die Trefferpunkte, wo Zahlen zu viel verraten würden. */
 import { ZUSTAND, benenne } from '../../lib/beschriftung.js';
 import { prozent } from '../../lib/stilwerte.js';
+import Laufwert from '../Laufwert.jsx';
 
 export default function Lebensbalken({ hp, maxHp, status }) {
   if (hp == null) {
@@ -13,9 +14,9 @@ export default function Lebensbalken({ hp, maxHp, status }) {
         {/* Derselbe Balken wie unter einer Figur auf dem Tisch (siehe
             stile/spieltisch/figuren.css) – über der Hälfte grün, darunter rot. Eine
             Farbe, ein Name, zwei Stellen, die ihn benutzen. */}
-        <span
+        <Laufwert
           className={`figur-balken ${anteil > 0.5 ? 'figur-balken-gut' : 'figur-balken-schlecht'}`}
-          style={{ '--anteil': prozent(anteil) }}
+          werte={{ '--anteil': prozent(anteil) }}
         />
       </span>
       <span className="font-display text-[14px] text-sepia">

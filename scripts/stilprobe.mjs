@@ -5,21 +5,28 @@
  *   npm run stilprobe
  *
  * Die Regel des Almanachs heißt: **Wie etwas aussieht, steht im Stilblatt;
- * was es tut, steht in einer Skriptdatei.** Das JSX beschreibt nur, *was*
+ * was es tut, steht in einer Skriptdatei.** Das Markup beschreibt nur, *was*
  * da ist. Wo ein Wert erst im Browser feststeht (die Lage einer Figur, die
- * selbst gewählte Farbe eines Kontos), übergibt es ihn als CSS-Variable –
- * die Regel, die ihn benutzt, steht trotzdem im Stilblatt (siehe
- * frontend/src/lib/stilwerte.js).
+ * selbst gewählte Farbe eines Kontos), geht er als CSS-Variable in eine
+ * Laufzeit-Regel (frontend/src/lib/laufstil.js) – im Markup steht dann nur
+ * ein Klassenname.
  *
- * Geprüft wird viererlei:
+ * Geprüft wird:
  *
- *   1. `style={…}` im JSX enthält nur CSS-Variablen (`'--x': …`), keine
- *      echten Eigenschaften wie `left` oder `backgroundColor`.
- *   2. In HTML, das der Almanach selbst erzeugt (das mitgenommene Blatt,
- *      der Drucksatz), steht kein `style="…"` und kein `onclick="…"`.
- *   3. In der Oberfläche steht kein roher Farbwert (`#9a2b22`) außerhalb der
+ *   1. Im JSX steht kein `style=` – auch nicht für eine einzelne Variable.
+ *   2. Im JSX stehen keine Farben oder Strichstärken als SVG-Attribute mit
+ *      CSS-Werten (`fill="var(--…)"`, `stroke="var(--…)"`) – auch das ist
+ *      Aussehen und gehört ins Stilblatt.
+ *   3. SVG steht nur in den Symbol-Dateien (components/icons/) – und im
+ *      Lineal, das Geometrie zeichnet, die erst beim Ziehen entsteht.
+ *   4. In HTML, das der Almanach selbst erzeugt (das mitgenommene Blatt,
+ *      der Drucksatz, das Handbuch), steht kein `style="…"`, kein
+ *      `on…="…"`, kein `<script>` und kein `<style>` – außer an der einen
+ *      begründeten Stelle unten (AUSNAHMEN).
+ *   5. In der Oberfläche steht kein roher Farbwert (`#9a2b22`) außerhalb der
  *      Stilblätter. Farben haben Namen – siehe stile/farben.css.
- *   4. Die index.html lädt ihre Skripte, statt sie zu enthalten.
+ *   6. Die index.html lädt ihre Skripte und Stilblätter, statt sie zu
+ *      enthalten.
  *
  * Wie die Einfuhrprobe kommt sie ohne ein zusätzliches Paket aus.
  */
@@ -57,37 +64,78 @@ function stilAusdruecke(text) {
   return funde;
 }
 
-/* --- 1. JSX: nur CSS-Variablen -------------------------------------------- */
+/* --- 1. JSX: kein style ------------------------------------------------- */
 
-for (const datei of dateien('frontend/src', /\.jsx$/)) {
+const JSX = dateien('frontend/src', /\.jsx$/);
+
+for (const datei of JSX) {
   const text = fs.readFileSync(datei, 'utf8');
-  for (const { stelle, ausdruck } of stilAusdruecke(text)) {
-    // Ein Schlüssel in einem Objekt steht direkt nach `{` oder `,`. Ein
-    // Doppelpunkt nach `? undefined` ist ein Dreifachausdruck, kein Schlüssel.
-    for (const schluessel of ausdruck.matchAll(/[{,]\s*(['"]?)([-\w$]+)\1\s*:/g)) {
-      if (schluessel[2].startsWith('--')) continue;
-      maengel.push(
-        `${kurz(datei)}:${zeileVon(text, stelle)} – style mit „${schluessel[2]}“; die Regel gehört ins Stilblatt, hierher nur eine CSS-Variable`
-      );
-    }
+  for (const { stelle } of stilAusdruecke(text)) {
+    maengel.push(
+      `${kurz(datei)}:${zeileVon(text, stelle)} – style im Markup; Werte gehen über <Laufwert> oder useLaufstil (lib/laufstil.js), Regeln ins Stilblatt`
+    );
   }
 }
 
-/* --- 2. Erzeugtes HTML: kein style="…", kein on…="…" ---------------------- */
+/* --- 2. JSX: keine CSS-Werte in SVG-Attributen --------------------------- */
+
+for (const datei of JSX) {
+  const text = fs.readFileSync(datei, 'utf8');
+  for (const treffer of text.matchAll(/\b(fill|stroke|strokeWidth|strokeDasharray|color)=["{][^"}]*var\(/g)) {
+    maengel.push(`${kurz(datei)}:${zeileVon(text, treffer.index)} – ${treffer[1]} mit CSS-Wert im Markup; das gehört ins Stilblatt`);
+  }
+}
+
+/* --- 3. SVG nur in den Symbol-Dateien ------------------------------------ */
+
+/** Wo SVG außerhalb von components/icons/ stehen darf – mit Grund. */
+const SVG_ERLAUBT = new Map([
+  ['frontend/src/components/tabletop/brett/Lineal.jsx', 'zeichnet eine Linie, die erst beim Ziehen entsteht – Geometrie, kein Symbol'],
+]);
+for (const datei of JSX) {
+  if (kurz(datei).startsWith('frontend/src/components/icons/') || SVG_ERLAUBT.has(kurz(datei))) continue;
+  const text = fs.readFileSync(datei, 'utf8');
+  for (const treffer of text.matchAll(/<svg\b/g)) {
+    maengel.push(`${kurz(datei)}:${zeileVon(text, treffer.index)} – SVG mitten im Bauteil; Symbole stehen in components/icons/`);
+  }
+}
+
+/* --- 4. Erzeugtes HTML: nichts eingebettet -------------------------------- */
+
+/**
+ * Die eine Stelle, an der eine erzeugte Seite ihr Stilblatt in sich trägt –
+ * mit Grund. Geschrieben wird es trotzdem als .css-Dateien; eingesetzt erst
+ * beim Bauen.
+ */
+const AUSNAHMEN = new Map([
+  [
+    'frontend/src/lib/blattAusfuhr.js|<style>',
+    'das mitgenommene Blatt muss als eine einzige Datei ohne Netz und Server funktionieren (Stilblätter in lib/blatt/stil/)',
+  ],
+]);
 
 const ERZEUGER = [
-  ...dateien('frontend/src/lib', /\.js$/).filter((d) => /blatt/i.test(d)),
+  path.join(wurzel, 'frontend', 'src', 'lib', 'blattAusfuhr.js'),
+  ...dateien('frontend/src/lib/blatt'),
   path.join(wurzel, 'scripts', 'drucksatz.mjs'),
-  ...dateien('scripts/buch', /\.mjs$/),
+  ...dateien('scripts/drucksatz'),
+  path.join(wurzel, 'scripts', 'handbuch.mjs'),
+  ...dateien('scripts/handbuch'),
 ];
 for (const datei of ERZEUGER) {
   const text = fs.readFileSync(datei, 'utf8');
-  for (const treffer of text.matchAll(/<[a-z][^>]*\s(style|on[a-z]+)="/g)) {
-    maengel.push(`${kurz(datei)}:${zeileVon(text, treffer.index)} – ${treffer[1]}="…" in erzeugtem HTML`);
+  const zeilen = text.split('\n');
+  for (const treffer of text.matchAll(/<[a-z][^>]*\s(style|on[a-z]+)="|<style\b[^>]*>|<script\b(?![^>]*\bsrc=)[^>]*>/g)) {
+    // Kommentare und reguläre Ausdrücke, die solche Stellen *suchen*, zählen nicht.
+    const zeile = zeilen[zeileVon(text, treffer.index) - 1];
+    if (/^\s*(\*|\/\/|\/\*)/.test(zeile) || /\.(match|test|matchAll|replace)\(/.test(zeile)) continue;
+    const art = treffer[1] ? `${treffer[1]}="…"` : treffer[0].startsWith('<style') ? '<style>' : '<script>';
+    if (AUSNAHMEN.has(`${kurz(datei)}|${art}`)) continue;
+    maengel.push(`${kurz(datei)}:${zeileVon(text, treffer.index)} – ${art} in erzeugtem HTML; es gehört in eine eigene Datei`);
   }
 }
 
-/* --- 3. Keine rohen Farbwerte in der Oberfläche --------------------------- */
+/* --- 5. Keine rohen Farbwerte in der Oberfläche --------------------------- */
 
 for (const datei of dateien('frontend/src', /\.(jsx?|mjs)$/)) {
   if (FARBEN_ALS_DATEN.has(kurz(datei))) continue;
@@ -100,7 +148,7 @@ for (const datei of dateien('frontend/src', /\.(jsx?|mjs)$/)) {
   }
 }
 
-/* --- 4. index.html: nur verwiesene Skripte -------------------------------- */
+/* --- 6. index.html: nur Verweise ------------------------------------------ */
 
 {
   const datei = path.join(wurzel, 'frontend', 'index.html');

@@ -9,6 +9,7 @@
  * kein Raster mehr, sondern ein Grauschleier.
  */
 import { px } from '../../../lib/stilwerte.js';
+import Laufwert from '../../Laufwert.jsx';
 
 const RASTER_AB = 5;
 
@@ -16,9 +17,10 @@ export default function Rasternetz({ scene, feld, massstab }) {
   if (!scene.gridVisible || feld * massstab < RASTER_AB) return null;
 
   return (
-    <div
+    <Laufwert
+      als="div"
       className="tisch-raster pointer-events-none absolute inset-0"
-      style={{
+      werte={{
         '--feld': px(feld),
         '--versatz-x': px(scene.gridOffsetX),
         '--versatz-y': px(scene.gridOffsetY),

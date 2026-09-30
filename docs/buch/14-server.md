@@ -8,9 +8,10 @@ Der Server ist ein Node.js-Programm mit Express, knapp elftausend Zeilen in `bac
 
 1. **Die Umgebung lesen** (`umgebung.js`). Das ist der erste Import überhaupt, und das mit Absicht: Liegt eine `.env` im Wurzelverzeichnis, lädt Node sie mit `process.loadEnvFile` in die Umgebung, *bevor* ein anderes Modul sie befragt – die Datenbank sucht ihren Ordner schon beim Laden. Was schon in der Umgebung steht, schlägt die Datei. Kann Node die Datei nicht lesen (älter als 20.12) oder ist sie kaputt, merkt sich das Modul den Grund; der Startbericht nennt ihn.
 2. **Die Datenbank öffnen** (Import von `db.js`). Das öffnet die Datei, legt fehlende Tabellen an, rüstet Spalten nach und zieht beim allerersten Mal eine alte Datenbank ohne Kampagnen in eine erste Kampagne um (siehe unten).
-3. **Express aufbauen**: Vertrauen in den Proxy, Sicherheitskopfzeilen, `attachUser`, der Bilderzweig, der JSON-Leser, die Zweige der Schnittstelle, die Auslieferung der Oberfläche, der Fehlerbehandler.
+3. **Express aufbauen**: Vertrauen in den Proxy, Sicherheitskopfzeilen samt Content-Security-Policy (`kopfzeilen.js`), `attachUser`, der Bilderzweig, der JSON-Leser, die Zweige der Schnittstelle, das Stammzertifikat zum Laden, die Auslieferung der Oberfläche, der Fehlerbehandler.
 4. **Den Papierkorb räumen**: Kampagnen, die länger als 30 Tage darin liegen, werden endgültig entfernt.
-5. **Lauschen** auf `PORT` (Vorgabe 3001) und den Startbericht schreiben (`start/bericht.js`). Ist der Port belegt, sagt der Server das in Klartext und beendet sich.
+5. **Lauschen** auf `PORT` (Vorgabe 3001). Liegen im Datenordner unter `tls/` Serverzertifikat und -schlüssel, lauscht *dieselbe* Express-Anwendung zusätzlich über HTTPS auf `HTTPS_PORT` (Vorgabe 3443; `https/ablage.js`) – ein zweiter Eingang, kein zweiter Server: dieselben Wege, dieselben offenen Live-Kanäle. Ist der HTTPS-Port belegt oder das Zertifikat unlesbar, läuft der Almanach über http weiter und sagt es.
+6. **Den Startbericht schreiben** (`start/bericht.js`), samt der https-Adressen und des Fingerabdrucks des Stammzertifikats. Ist der http-Port belegt, sagt der Server das in Klartext und beendet sich.
 
 Es gibt keinen Bau des Servers: Node führt die Dateien so aus, wie sie sind (ES-Module, `"type": "module"`). Beim Entwickeln startet `npm run dev --prefix backend` den Server mit `node --watch`, der bei jeder Änderung neu startet.
 
@@ -21,13 +22,14 @@ Express arbeitet seine `app.use`-Aufrufe von oben nach unten ab; der erste, der 
 | Reihenfolge | Was | Warum dort |
 |---|---|---|
 | 1 | `trust proxy` | bevor irgendetwas `req.secure` oder `req.ip` liest |
-| 2 | Sicherheitskopfzeilen | für jede Antwort, auch Fehler und Bilder |
+| 2 | Sicherheitskopfzeilen (`kopfzeilen.js`) | für jede Antwort, auch Fehler und Bilder – samt Content-Security-Policy |
 | 3 | `attachUser` | hängt `req.user` und `req.campaignId` an jede Anfrage |
 | 4 | `/api/media` | bringt einen eigenen JSON-Leser mit 20 MB Rahmen mit – muss *vor* dem allgemeinen stehen |
 | 5 | `express.json({ limit: '2mb' })` | der allgemeine Rahmen für alles andere |
 | 6 | `/api/health`, `/api/stream`, `/api/anwesenheit` | drei Wege direkt in `server.js` |
 | 7 | die Zweige | je `app.use('/api/…', Wächter, router)` |
 | 8 | `/api` → 404 `route_unbekannt` | alles unter `/api`, das niemand kannte |
+| 8a | `/almanach-stamm.crt` | das Stammzertifikat für HTTPS im Heimnetz – vor der Oberfläche, sonst bekäme es die `index.html` |
 | 9 | die gebaute Oberfläche | statische Dateien aus `backend/public`, und für jede andere Adresse die `index.html` |
 | 10 | der Fehlerbehandler | ganz zuletzt, damit er alles fängt |
 
@@ -113,6 +115,8 @@ export function ruesteNach() {
   …
   addColumnIfMissing('scenes', 'unit', "TEXT NOT NULL DEFAULT 'fuss'");
   addColumnIfMissing('scenes', 'scale', 'REAL NOT NULL DEFAULT 5');
+  …
+  addColumnIfMissing('combatants', 'initiative_bonus', 'INTEGER NOT NULL DEFAULT 0');
 }
 ```
 
@@ -207,6 +211,8 @@ Jeder Weg mit `await` trägt diese Hülle. Mit Express 5 kann die Datei weg.
 | `kampf/umwandlung.js` | Zeilen in Kämpfer, Reihenfolge, Wundenstufe aus Trefferpunkten |
 | `kampf/sicht.js` | die zwei Fassungen des Kampfes (Spielleitung, Runde) und ihr Versand |
 | `kampf/blatt.js` | Trefferpunkte vom Kämpfer zurück aufs Blatt |
+| `kampf/initiative.js` | der Initiativebonus aus der Geschicklichkeit; W20 plus Bonus |
+| `kampf/verbergen.js` | Kämpfer und seine Figuren gemeinsam verbergen oder zeigen |
 | `spieltisch/umwandlung.js` | Zeilen in Szenen und Figuren, aufliegende Szene, Vorhang |
 | `spieltisch/sichtbarkeit.js` | **wer was sieht** – die Szene je Person |
 | `spieltisch/melden.js` | die Szene je Person verschicken; wer darf eine Figur ziehen; Szene auflegen |
@@ -221,6 +227,9 @@ Jeder Weg mit `await` trägt diese Hülle. Mit Express 5 kann die Datei weg.
 | `dice.js` | Würfelausdrücke auswerten |
 | `domaene.js` | die feste Adresse aus `DOMAENE` |
 | `events.js` | der Live-Kanal |
+| `kopfzeilen.js` | die Sicherheitskopfzeilen samt Content-Security-Policy |
+| `https/der.js`, `https/zertifikat.js` | Zertifikate in DER schreiben, ein beschränktes Stammzertifikat und Serverzertifikate ausstellen |
+| `https/ablage.js` | wo die Zertifikate liegen; der HTTPS-Eingang beim Start |
 
 Einige verdienen einen genaueren Blick.
 

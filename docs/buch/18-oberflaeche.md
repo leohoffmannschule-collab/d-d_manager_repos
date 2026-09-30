@@ -38,7 +38,7 @@ index.html
 
 `App.jsx` lässt niemanden an eine Seite, bevor drei Dinge feststehen:
 
-1. **Angemeldet?** Solange der Server noch nicht geantwortet hat, steht „Der Almanach wird aufgeschlagen …“; ohne Anmeldung die Anmeldeseite (`pages/Login.jsx`), die bei einem frischen Almanach zur Einrichtung wird.
+1. **Angemeldet?** Solange der Server noch nicht geantwortet hat, steht „Der Almanach wird aufgeschlagen …“; ohne Anmeldung die Anmeldeseite (`pages/Login.jsx`), die bei einem frischen Almanach zur Einrichtung wird. Kam sie über `http://` im Heimnetz, obwohl der Almanach einen verschlüsselten Eingang hat, weist `components/HttpsHinweis.jsx` darauf hin (den Port nennt das Lebenszeichen `/api/health`).
 2. **Kampagne gewählt?** Sonst die Kampagnenauswahl (`pages/Kampagnenwahl.jsx`). Wer nur in einer Kampagne steht, kommt hier nie vorbei – die Sitzung wählt sie bei der Anmeldung selbst.
 3. **Live-Draht.** Erst jetzt öffnet der `LiveProvider` den Kanal – er hängt an genau einer Kampagne.
 
@@ -48,7 +48,7 @@ Das Kampagnentor trägt einen Trick: `<div key={activeId}>`. Ändert sich der `k
 
 | Adresse | Seite | für |
 |---|---|---|
-| `/` | `Dashboard.jsx` – die Übersicht der Blätter | alle |
+| `/` | `Dashboard.jsx` – die Übersicht der Blätter; dort auch „Blatt einlesen“ (`components/BlattEinlesen.jsx`) | alle |
 | `/neu` | `NewCharacter.jsx` – ein Blatt anlegen | alle |
 | `/charaktere/:id` | `CharacterSheet.jsx` – das Blatt | alle |
 | `/tisch` | `Tabletop.jsx` – der Spieltisch | alle |
@@ -189,23 +189,41 @@ Beim Laden läuft jedes 5e-Blatt durch `withDefaults()`, das fehlende Felder aus
 
 **Eine Figur ziehen:** `useZeiger` erkennt beim Aufsetzen eine Figur, die dieses Fenster bewegen darf (`canMoveToken` – die Spielleitung jede, die Runde nur Figuren an eigenen Blättern); die Figur folgt dem Finger, liegt dabei oben und leicht durchscheinend; beim Loslassen rastet sie aufs Raster ein, wird örtlich gesetzt und geschickt. Das Ergebnis des Servers wird erst nach dem Loslassen gerechnet – deshalb kostet das Ziehen quer über die Karte nichts.
 
-**Die Werkzeugleiste** (`leiste/Werkzeuge.jsx`) steht nur für die Spielleitung da: Vorhang, Bewegen, Aufdecken, Verhüllen, Pinselgröße, Messen, Zeigen, alles auf- oder zudecken, Figuren aus dem Kampf, die NSC-Sicht, und die Felder für Raster (`leiste/Rasterfeld.jsx`) und Szenen (`leiste/Szenenlade.jsx`). Die Seitenleiste (`pages/tisch/Seitenleiste.jsx`) trägt Kampf, Beute und – für die Spielleitung – das Figurenfeld (`TokenPanel.jsx`).
+**Die Werkzeugleiste** (`leiste/Werkzeuge.jsx`) steht nur für die Spielleitung da: Vorhang, Bewegen, Aufdecken, Verhüllen, Pinselgröße, Messen, Zeigen, alles auf- oder zudecken, Figuren aus dem Kampf, die NSC-Sicht, und die Felder für Raster (`leiste/Rasterfeld.jsx`) und Szenen (`leiste/Szenenlade.jsx`). Die Seitenleiste (`pages/tisch/Seitenleiste.jsx`) trägt Kampf, Beute und – für die Spielleitung – das Figurenfeld (`TokenPanel.jsx`): Name, Blatt, Größe, Farbe, Bildnis, Lichtquelle, verborgen. Die Auswahl „Blatt“ bindet eine Figur an ein Charakterblatt – danach zieht die Besitzerin sie, und ihre Sinne bestimmen die Sicht. „Verborgen“ gilt bei einer Figur, die an einem Kämpfer hängt, auch für dessen Zeile in der Kampfliste; der Server legt beides gemeinsam um.
 
 ## Das Aussehen
 
 ### Die Regel
 
-**Wie etwas aussieht, steht im Stilblatt; was es tut, steht in einer Skriptdatei.** Das JSX beschreibt, *was* da ist – mit Tailwind-Klassen für Abstand, Anordnung und Größe und mit eigenen Klassen für die wiederkehrenden Bauteile (`panel`, `field-box`, `btn btn-seal`). Wo ein Wert erst im Browser feststeht – wo eine Figur steht, welche Farbe sich jemand gewählt hat, wie voll ein Balken ist –, übergibt das JSX ihn als **CSS-Variable**, und die Regel dazu steht im Stilblatt:
+**Wie etwas aussieht, steht im Stilblatt; was es tut, steht in einer Skriptdatei; ein Symbol steht in einer Symbol-Datei.** Das JSX beschreibt, *was* da ist – mit Tailwind-Klassen für Abstand, Anordnung und Größe und mit eigenen Klassen für die wiederkehrenden Bauteile (`panel`, `field-box`, `btn btn-seal`). Eingebettet ist nichts: kein `style`-Attribut, kein `<style>`, kein Skript im Markup.
+
+### Werte, die erst im Browser feststehen
+
+Wo eine Figur steht, wie weit die Karte verschoben ist, welche Farbe sich jemand gewählt hat, wie voll ein Balken ist – das kennt kein Stilblatt im Voraus. Solche Werte gehen als **CSS-Variable** in eine **Laufzeit-Regel**: Jedes Bauteil, das welche hat, bekommt eine eigene Klasse (`lauf-1f`) und dazu eine Regel in einem Stilblatt, das es nur im Browser gibt. Im Markup steht nur der Klassenname:
 
 ```jsx
-<span className="farbpunkt" style={{ '--farbe': farbe }} />
+<Laufwert className="farbpunkt h-2 w-2 rounded-full" werte={{ '--farbe': konto.color }} />
 ```
 
 ```css
-.farbpunkt { background-color: var(--farbe); }
+/* stile/bauteile.css */
+.farbpunkt { background-color: var(--farbe, var(--color-faint)); }
 ```
 
-Ein `style={{ left: 5 }}` mit einer echten Eigenschaft gibt es nicht. Die Helfer `px()` und `prozent()` aus `lib/stilwerte.js` hängen die Einheit an, weil React eine Zahl in einer CSS-Variable nicht von selbst mit `px` versieht. Die Stilprobe (`npm run stilprobe`) prüft das, dazu: kein `style="…"` und kein `onclick="…"` in erzeugtem HTML, keine rohen Farbwerte außerhalb der Stilblätter, keine eingebetteten Skripte in der `index.html`.
+Im Browser entsteht daraus `<span class="farbpunkt h-2 w-2 rounded-full lauf-1f">` und, im Laufzeit-Stilblatt, `.lauf-1f { --farbe: #2d4f7c; }`.
+
+Zwei Wege, dasselbe zu benutzen:
+
+| Weg | Wofür |
+|---|---|
+| `<Laufwert als="div" werte={…} className="…">` (`components/Laufwert.jsx`) | jedes Element – auch in Listen, wo kein Haken stehen darf; alle anderen Eigenschaften (Rückrufe, `ref`, `data-…`) gehen unverändert durch |
+| `useLaufstil(werte)` (`lib/laufstil.js`) | gibt den Klassennamen zurück – für ein Bauteil, das ihn selbst an ein Element hängt |
+
+Wie es gebaut ist (`lib/laufstil.js`): Das Laufzeit-Stilblatt ist ein eigenes, über das CSSOM gebautes Stilblatt (`new CSSStyleSheet()`, eingehängt in `document.adoptedStyleSheets`); ältere iPads ohne diese Möglichkeit nehmen die leere Datei `public/laufstil.css`, auf die die `index.html` verweist. Beim ersten Zeichnen legt das Bauteil seine Regel an (vor dem Malen, in `useLayoutEffect` – die Figur steht nie einen Augenblick bei 0,0), bei jeder Änderung schreibt es die Werte über `setProperty` hinein, und beim Verschwinden nimmt es die Regel wieder heraus. Beim Ziehen einer Figur – sechzigmal in der Sekunde – wird also *eine* Regel geändert, keine neue angelegt; nach einem ganzen Zug über den Tisch stehen im Stilblatt so viele Regeln wie Bauteile mit Werten, im Probeaufbau achtzehn. Werte gehen nie als zusammengesetzter Text hinein: Eine gespeicherte Farbe, die jemand manipuliert hätte, kann die Regel nicht verlassen.
+
+Das ist auch, was die **Content-Security-Policy** ohne `'unsafe-inline'` möglich macht (Kapitel „Anmeldung, Rollen und Sicherheit“): Sie verbietet eingebettetes CSS im Markup, nicht Regeln, die ein erlaubtes Skript über das CSSOM setzt.
+
+Die Helfer `px()` und `prozent()` aus `lib/stilwerte.js` hängen die Einheit an – eine nackte Zahl in einer CSS-Variable hätte keine. Die Stilprobe (`npm run stilprobe`) passt auf alles auf: kein `style=` im JSX, keine CSS-Werte in SVG-Attributen, kein SVG außerhalb von `components/icons/` (außer im Lineal, das Geometrie zeichnet), nichts Eingebettetes in erzeugtem HTML und in der `index.html`, keine rohen Farbwerte außerhalb der Stilblätter.
 
 ### Die Stilblätter
 
@@ -261,7 +279,7 @@ Ohne Verbindung zum Server öffnet die App also, zeigt Blätter im letzten bekan
 
 - **Neue Daten vom Server** gehören in einen Haken unter `lib/daten/` und einen Weg unter `lib/api/` – nie `fetch` in einem Bauteil.
 - **Neue Felder am Blatt** gehören in `defaultCharacterData()` *und* `withDefaults()` (Kapitel „Das Charakterblatt Feld für Feld“).
-- **Neues Aussehen** gehört ins Stilblatt; Werte aus dem Browser gehen als CSS-Variable.
+- **Neues Aussehen** gehört ins Stilblatt; Werte aus dem Browser gehen als CSS-Variable über `<Laufwert>` oder `useLaufstil`, nie über ein `style`-Attribut. Symbole gehören nach `components/icons/`.
 - **Neue Worte für Schlüssel des Servers** gehören nach `lib/beschriftung.js`.
 - **Die Hilfe** (`pages/Help.jsx`, `pages/hilfe/`) ändert mit, wer ein Werkzeug ändert. Eine Hilfe, die etwas anderes behauptet als die Oberfläche, ist schlimmer als gar keine.
 - **Prüfen**: `npm run lint` (oxlint, auch unbekannte Namen), `npm run einfuhrprobe` (benutzt jemand einen Namen, den er nicht eingeführt hat?), `npm run stilprobe`, `npm run kommentarprobe` und `npm run build` – der Bau ist die letzte Prüfung, ob alles zusammenpasst.

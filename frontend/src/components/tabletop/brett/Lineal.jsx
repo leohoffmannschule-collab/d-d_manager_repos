@@ -11,6 +11,7 @@
  */
 import { weiteText } from '../../../lib/rasterkarte.js';
 import { px } from '../../../lib/stilwerte.js';
+import Laufwert from '../../Laufwert.jsx';
 
 export default function Lineal({ lineal, scene, feld, massstab }) {
   if (!lineal) return null;
@@ -22,30 +23,35 @@ export default function Lineal({ lineal, scene, feld, massstab }) {
 
   return (
     <svg className="pointer-events-none absolute inset-0 overflow-visible">
-      <line
+      {/* Farben, Strichstärken und das Strichmuster stehen im Stilblatt
+          (stile/spieltisch/schichten.css); hier nur, wo die Linie liegt und
+          wie groß die Karte gerade gezeigt wird. */}
+      <Laufwert
+        als="line"
         x1={lineal.von.x}
         y1={lineal.von.y}
         x2={lineal.bis.x}
         y2={lineal.bis.y}
-        stroke="var(--tisch-akzent-auf)"
-        strokeWidth={Math.max(2, 3 / massstab)}
-        strokeDasharray={`${feld / 4} ${feld / 6}`}
+        className="lineal-linie"
+        werte={{
+          '--strich': px(Math.max(2, 3 / massstab)),
+          '--strich-lang': px(feld / 4),
+          '--strich-luecke': px(feld / 6),
+        }}
       />
       {/* Heller Text mit dunklem Rand ringsum: So bleibt er über jeder Karte
           lesbar. In SVG macht das `stroke` samt `paint-order`, nicht ein
           Schatten wie im übrigen HTML – dieselben zwei Tischfarben wie
           überall sonst am Spieltisch, nur auf dem anderen Weg aufgetragen. */}
-      <text
+      <Laufwert
+        als="text"
         x={lineal.bis.x + 8}
         y={lineal.bis.y - 8}
-        fill="var(--tisch-schrift)"
         className="lineal-text"
-        style={{ '--schrift': px(Math.max(12, 16 / massstab)) }}
-        stroke="var(--tisch-grund)"
-        strokeWidth={Math.max(2, 4 / massstab)}
+        werte={{ '--schrift': px(Math.max(12, 16 / massstab)), '--rand': px(Math.max(2, 4 / massstab)) }}
       >
         {felder} Felder · {weiteText(scene, felder)}
-      </text>
+      </Laufwert>
     </svg>
   );
 }

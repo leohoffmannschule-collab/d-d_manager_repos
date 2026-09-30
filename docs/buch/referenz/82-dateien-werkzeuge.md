@@ -3,7 +3,7 @@
 > Dieses Kapitel schreibt `npm run handbuch` aus dem Code (scripts/handbuch/referenz/).
 > Änderungen gehören in den Code und seine Kommentare, nicht hierher.
 
-Alles unter scripts/ (63 Dateien, 7.086 Zeilen): Start und Tunnel, die Proben und der Vertrag, Drucksatz und dieses Handbuch.
+Alles unter scripts/ (64 Dateien, 7.556 Zeilen): Start und Tunnel, die Proben und der Vertrag, Drucksatz und dieses Handbuch.
 
 ## scripts/
 
@@ -38,7 +38,7 @@ noch eine geliehene Adresse von früher – und die führte die Runde ins Leere.
 
 ### scripts/blattprobe.mjs
 
-*253 Zeilen*
+*324 Zeilen*
 
 Die Rechenprobe des Charakterblattes.
 
@@ -157,7 +157,7 @@ gemeinsam/dateien.mjs   – Dateien finden (teilt sie mit den anderen Proben)
 
 ### scripts/handbuch.mjs
 
-*113 Zeilen*
+*116 Zeilen*
 
 Das Handbuch bauen – als Markdown zum Lesen auf GitHub und als PDF.
 
@@ -273,7 +273,7 @@ Schalter:
 
 ### scripts/stilprobe.mjs
 
-*125 Zeilen*
+*173 Zeilen*
 
 Die Stilprobe: Steht Aussehen oder Verhalten irgendwo, wo es nicht hingehört?
 
@@ -282,21 +282,28 @@ npm run stilprobe
 ```
 
 Die Regel des Almanachs heißt: **Wie etwas aussieht, steht im Stilblatt;
-was es tut, steht in einer Skriptdatei.** Das JSX beschreibt nur, *was*
+was es tut, steht in einer Skriptdatei.** Das Markup beschreibt nur, *was*
 da ist. Wo ein Wert erst im Browser feststeht (die Lage einer Figur, die
-selbst gewählte Farbe eines Kontos), übergibt es ihn als CSS-Variable –
-die Regel, die ihn benutzt, steht trotzdem im Stilblatt (siehe
-frontend/src/lib/stilwerte.js).
+selbst gewählte Farbe eines Kontos), geht er als CSS-Variable in eine
+Laufzeit-Regel (frontend/src/lib/laufstil.js) – im Markup steht dann nur
+ein Klassenname.
 
-Geprüft wird viererlei:
+Geprüft wird:
 
-1. `style={…}` im JSX enthält nur CSS-Variablen (`'--x': …`), keine
-   echten Eigenschaften wie `left` oder `backgroundColor`.
-2. In HTML, das der Almanach selbst erzeugt (das mitgenommene Blatt,
-   der Drucksatz), steht kein `style="…"` und kein `onclick="…"`.
-3. In der Oberfläche steht kein roher Farbwert (`#9a2b22`) außerhalb der
+1. Im JSX steht kein `style=` – auch nicht für eine einzelne Variable.
+2. Im JSX stehen keine Farben oder Strichstärken als SVG-Attribute mit
+   CSS-Werten (`fill="var(--…)"`, `stroke="var(--…)"`) – auch das ist
+   Aussehen und gehört ins Stilblatt.
+3. SVG steht nur in den Symbol-Dateien (components/icons/) – und im
+   Lineal, das Geometrie zeichnet, die erst beim Ziehen entsteht.
+4. In HTML, das der Almanach selbst erzeugt (das mitgenommene Blatt,
+   der Drucksatz, das Handbuch), steht kein `style="…"`, kein
+   `on…="…"`, kein `<script>` und kein `<style>` – außer an der einen
+   begründeten Stelle unten (AUSNAHMEN).
+5. In der Oberfläche steht kein roher Farbwert (`#9a2b22`) außerhalb der
    Stilblätter. Farben haben Namen – siehe stile/farben.css.
-4. Die index.html lädt ihre Skripte, statt sie zu enthalten.
+6. Die index.html lädt ihre Skripte und Stilblätter, statt sie zu
+   enthalten.
 
 Wie die Einfuhrprobe kommt sie ohne ein zusätzliches Paket aus.
 
@@ -353,7 +360,7 @@ der Weg von außen ist dann wieder zu.
 
 ### scripts/vertrag.mjs
 
-*79 Zeilen*
+*81 Zeilen*
 
 Der Vertrag zwischen Server und Oberfläche.
 
@@ -415,7 +422,7 @@ bild(pfad)     – wo ein Bild aus Sicht der gesetzten Datei liegt.
 
 ### scripts/drucksatz/seite.mjs
 
-*53 Zeilen*
+*71 Zeilen*
 
 Das Gerüst der gesetzten Handbücher: HTML-Kopf, Titelblatt, Inhalt.
 
@@ -425,8 +432,9 @@ einzelnen Handbücher (scripts/drucksatz.mjs) und das Buch
 
 **Ausfuhren**
 
-- `ZIERAT` (const) – Der Zierrat unter dem Titel: zwei Linien, ein Ring, zwei Punkte – als SVG.
-- `seite` (function) – Das Gerüst einer gesetzten Seite: Kopf mit eingebettetem Stilblatt, Titelblatt mit Zierrat, dann der Inhalt.
+- `ZIERAT` (const) – Der Zierrat unter dem Titel – als Verweis auf das Bild, das neben die gesetzte Seite gelegt wird (siehe `beigaben`). Früher stand das SVG als Text in jeder Seite; jetzt ist es eine eigene Datei (zierat.svg).
+- `beigaben` (function) – Was eine gesetzte Seite neben sich braucht: ihr Stilblatt und das Bild des Zierrats. Beides wird in den Ordner der Seite geschrieben, damit sie darauf verweisen kann, statt es in sich zu tragen – auch der Browser, der sie zum PDF druckt, lädt es von dort.
+- `seite` (function) – Das Gerüst einer gesetzten Seite: Kopf mit Verweis aufs Stilblatt, Titelblatt mit Zierrat, dann der Inhalt.
 
 ## scripts/einfuhrprobe/
 
@@ -1344,6 +1352,34 @@ Kapitel angelegt haben – und trägt ein, was spätere brauchen.
 **Ausfuhren**
 
 - `werkzeuge` (default async function)
+
+### scripts/vertrag/21-luecken.mjs
+
+*328 Zeilen*
+
+Vertrag, Kapitel: Die geschlossenen Lücken.
+
+Das Handbuch führte unter „Bekannte Grenzen“ auf, was der Almanach noch
+nicht konnte, und unter „Was nicht geschützt ist“, wovor er sich nicht
+schützte. Jede dieser Lücken ist geschlossen, und hier steht, woran man
+das sieht:
+
+- eine Figur lässt sich von Hand an ein Blatt binden;
+- Kämpfer und Figur verbergen und zeigen sich gemeinsam;
+- Gegner würfeln ihre Initiative mit Geschicklichkeitsbonus;
+- ein mitgenommenes Blatt lässt sich wieder anlegen, und ein kaputtes
+  wird abgewiesen;
+- jede Antwort trägt eine Content-Security-Policy;
+- im Heimnetz gibt es HTTPS mit einem selbst ausgestellten, beschränkten
+  Zertifikat.
+
+Ein Kapitel des Prüfdurchgangs (siehe ../vertrag.mjs). Es bekommt den
+gemeinsamen Stand `lage` – die angemeldeten Klienten und was frühere
+Kapitel angelegt haben – und trägt ein, was spätere brauchen.
+
+**Ausfuhren**
+
+- `luecken` (default async function)
 
 ### scripts/vertrag/werkzeug.mjs
 

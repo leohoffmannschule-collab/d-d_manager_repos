@@ -27,9 +27,21 @@
   z-index: 5;
 }
 
+/* Die gestrichelte Linie des Lineals. Strichstärke und Muster kommen je
+   Maßstab als Variablen (components/tabletop/brett/Lineal.jsx), damit sie bei jedem Zoom gleich
+   dick aussehen. */
+.lineal-linie {
+  stroke: var(--tisch-akzent-auf);
+  stroke-width: var(--strich);
+  stroke-dasharray: var(--strich-lang) var(--strich-luecke);
+}
+
 /* Die Beschriftung am Lineal: heller Text mit dunklem Rand, in SVG über
    `stroke` samt `paint-order` statt über einen Schatten. */
 .lineal-text {
+  fill: var(--tisch-schrift);
+  stroke: var(--tisch-grund);
+  stroke-width: var(--rand);
   font-size: var(--schrift);
   paint-order: stroke;
 }

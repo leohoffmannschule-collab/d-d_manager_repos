@@ -65,12 +65,15 @@ Konto anlegen“* und tragen Name, Passwort und Code ein.
 > **Welche Adresse?** Im selben WLAN die aus `npm run adresse`; von auswärts
 > die des Tunnels. Beides erklärt das
 > [Einrichtungs-Handbuch](EINRICHTUNG.md#6-von-außen-erreichbar-der-tunnel).
+> Soll auch im WLAN niemand mitlesen können, richtest du einmal HTTPS ein
+> ([Schritt 9.1](EINRICHTUNG.md#91-verschlüsselt-im-heimnetz-https)); dann
+> gilt im Haus `https://…:3443`.
 >
 > Die geliehene Tunnel-Adresse wechselt gelegentlich, und dann musst du sie
 > neu herumschicken. Wer das leid ist, hängt seine **eigene Domain** davor –
 > einmal eingerichtet, danach nie wieder. Der Server, der sie trägt, ist
 > kostenlos, und auf deinem Rechner ist dafür nichts zu installieren:
-> [Schritt 6.5](EINRICHTUNG.md#65-die-feste-adresse-eigene-domain-über-einen-vorposten).
+> [Schritt 6.5](EINRICHTUNG.md#65-die-feste-adresse-eigene-domain-ganz-ohne-kreditkarte).
 
 ### 2.3 Später
 
@@ -100,6 +103,10 @@ kommt dann schon passend auf den Tisch – du musst nie wieder justieren.
 - **Begegnungen:** Stell Gruppen zusammen, die du öfter brauchst – „Hinterhalt
   am Wegkreuz“, „Wachen der Stadtmauer“. Am Abend stehen sie mit einem Klick,
   samt gewürfelter Initiative.
+- **Geschicklichkeit eintragen:** Aus der GE im Statblock wird der
+  Initiativebonus (GE 18 → +4). Gewürfelt wird immer W20 plus Bonus – auch
+  bei Begegnungen und bei *Initiative würfeln*. Ohne eingetragene GE ist der
+  Bonus 0.
 
 ### 3.3 NSC-Blätter
 
@@ -204,8 +211,15 @@ Vor einer neuen Runde lässt sich der Chat leeren (Mülleimer im Chatfenster).
 ### 5.1 Gegner in den Kampf holen
 
 Im Bestiarium genügt ein Klick für „3 Goblins“ **samt gewürfelter
-Initiative**. Der Knopf daneben holt sie **verborgen** – sie stehen in deiner
-Liste, aber die Runde weiß nichts von ihnen, bis du sie aufdeckst.
+Initiative** (W20 plus Geschicklichkeitsbonus; in deiner Liste steht er als
+„Init +2“ daneben, die Runde sieht ihn nicht). Der Knopf daneben holt sie
+**verborgen** – sie stehen in deiner Liste, aber die Runde weiß nichts von
+ihnen, bis du sie aufdeckst.
+
+**Aufdecken gilt für beide Seiten.** Liegt ein verborgener Gegner auch als
+Figur auf der Karte, deckst du ihn *einmal* auf – in der Kampfliste (das
+Auge) oder im Figurenfeld –, und er erscheint an beiden Stellen zugleich.
+Dasselbe beim Verbergen.
 
 Aus *Begegnungen* stellst du eine ganze vorbereitete Gruppe auf einmal.
 
@@ -214,6 +228,12 @@ Aus *Begegnungen* stellst du eine ganze vorbereitete Gruppe auf einmal.
 **Figuren aus dem Kampf** legt für jeden Kämpfer eine Figur auf die Karte.
 Die Spieler würfeln ihre **Initiative selbst** am Spieltisch; sie steht
 sofort in deiner Liste. NSC-Blätter werden dabei übergangen.
+
+**Eine Figur von Hand an ein Blatt binden:** Figur antippen, im Figurenfeld
+unter *Blatt* das Blatt wählen. Danach zieht die Besitzerin des Blattes die
+Figur selbst, und ihre Sinne (Dunkelsicht) bestimmen, was sie sieht. Das
+geht auch ohne Kampf – etwa für die Heldinnen beim Erkunden – und mit einem
+NSC-Blatt, durch dessen Augen du dann schauen kannst.
 
 ### 5.3 Trefferpunkte
 

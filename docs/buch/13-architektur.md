@@ -49,6 +49,7 @@ Drei Dinge fallen daran auf, und alle drei sind gewollt:
   db.js ─ datenbank/             Datenbank: öffnen, Schema, Nachrüsten, Transaktion
   events.js                      Live-Kanal: wer hängt dran, wer bekommt was
   anmeldung/ (auth.js)           Wächter, Sitzungen, Kennwörter
+  kopfzeilen.js  https/          Sicherheitskopfzeilen samt CSP; HTTPS im Heimnetz
   werte.js asynchron.js          Handwerkszeug
 ```
 
@@ -68,6 +69,7 @@ Die Regel zwischen den Schichten: **Ein Weg rechnet nicht, ein Modul antwortet n
   lib/api/    (lib/api.js)       die Wege des Servers, eins zu eins
      │
   lib/regeln/ lib/rasten.js …    Regeln und Rechnungen ohne Aussehen
+  lib/laufstil.js                Werte aus dem Browser als Laufzeit-Regeln (statt style=)
   stile/                         das Aussehen, als Stilblätter
 ```
 
@@ -215,9 +217,9 @@ Siehe oben. **Nicht gewählt:** ein normalisiertes Schema mit Tabellen für Fert
 
 ### Wie etwas aussieht, steht im Stilblatt
 
-**Entscheidung:** Kein `style={{ left: 5 }}` im JSX, kein `style="…"` im erzeugten HTML, keine rohen Farbwerte außerhalb der Stilblätter. Was sich erst im Browser ergibt (die Lage einer Figur, die Farbe eines Kontos), geht als CSS-Variable hinaus; die Regel dazu steht im Stilblatt.
+**Entscheidung:** Nichts ist eingebettet. Kein `style`-Attribut im JSX – auch nicht für eine einzelne CSS-Variable –, kein `<style>` und kein `<script>` ohne Quelle im Markup, kein `onclick="…"`, kein SVG mitten in einem Bauteil, keine rohen Farbwerte außerhalb der Stilblätter. Was sich erst im Browser ergibt (die Lage einer Figur, die Farbe eines Kontos), geht als CSS-Variable in eine Laufzeit-Regel (`lib/laufstil.js`, `<Laufwert>`); die Regel, die sie benutzt, steht im Stilblatt. Die einzige Ausnahme ist das mitgenommene Blatt, das als eine einzige Datei ohne Server funktionieren muss und sein Stilblatt deshalb in sich trägt.
 
-**Warum:** Aussehen an einem Ort heißt: Wer das Erscheinungsbild ändert, ändert Stilblätter, nicht zweihundert Bauteile. Und es macht Erscheinungsbilder möglich – Pergament und Kerzenlicht sind zwei Sätze derselben Farbnamen, umgeschaltet mit einem Attribut. Die Stilprobe wacht darüber.
+**Warum:** Aussehen an einem Ort heißt: Wer das Erscheinungsbild ändert, ändert Stilblätter, nicht zweihundert Bauteile. Es macht Erscheinungsbilder möglich – Pergament und Kerzenlicht sind zwei Sätze derselben Farbnamen, umgeschaltet mit einem Attribut. Und erst ohne jedes Eingebettete kann die Content-Security-Policy streng sein: Ein einziges `style`-Attribut verlangte `'unsafe-inline'`, und das ließe auch eingeschleustes CSS durch. Die Stilprobe wacht darüber.
 
 ### Deutsch, auch im Code
 
@@ -250,10 +252,12 @@ d-d_manager_repos/
 │   │   ├── auth.js, anmeldung/  Anmeldung und Wächter
 │   │   ├── events.js        Live-Kanal
 │   │   ├── blattmeldung.js  wer von einer Blattänderung erfährt
+│   │   ├── kopfzeilen.js    Sicherheitskopfzeilen und Content-Security-Policy
+│   │   ├── https/           Zertifikate ausstellen, HTTPS-Eingang im Heimnetz
 │   │   ├── routes/          Wege, nach Zweigen
 │   │   ├── kampf/ spieltisch/ sicht/ uebernehmen/ vorlagen/ start/
 │   │   └── beute.js klang.js chronicle.js kampagnen.js dice.js werte.js …
-│   ├── scripts/             Werkzeuge: Sicherung, Kennwort, Umbenennen, Vorlagen
+│   ├── scripts/             Werkzeuge: Sicherung, Kennwort, Zertifikat, Umbenennen, Vorlagen
 │   ├── public/              die gebaute Oberfläche (entsteht beim Bauen)
 │   └── data/                der Datenordner (nicht im Git)
 ├── frontend/
@@ -263,7 +267,7 @@ d-d_manager_repos/
 │   │   ├── components/      Bauteile (sheet/, tabletop/, dm/, klang/, rahmen/ …)
 │   │   ├── lib/             Datenschicht, Regeln, Ausfuhr, Helfer
 │   │   └── stile/           Stilblätter
-│   ├── public/              Symbole, das Aussehen-Skript
+│   ├── public/              Symbole, das Aussehen-Skript, das leere Laufzeit-Stilblatt
 │   └── vite.config.js       Bau, PWA, Weiterleitung beim Entwickeln
 ├── scripts/                 Start, Tunnel, Proben, Vertrag, Drucksatz, Handbuch
 ├── docs/                    die Handbücher und dieses Buch

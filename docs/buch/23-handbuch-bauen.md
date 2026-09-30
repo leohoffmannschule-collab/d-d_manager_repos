@@ -15,6 +15,7 @@ Heraus kommen:
 |---|---|---|
 | `docs/buch/referenz/*.md` | die Verzeichnisse, aus dem Code geschrieben | ja |
 | `docs/druck/handbuch.html` | das gesetzte Buch als eine HTML-Seite | nein |
+| `docs/druck/buch.css`, `docs/druck/zierat.svg` | sein Stilblatt und der Zierrat des Titelblatts, neben die Seite gelegt | nein |
 | `docs/druck/handbuch-entwurf.pdf` | der erste Druckdurchgang (ohne Seitenzahlen im Verzeichnis) | nein |
 | `docs/Abenteuer-Almanach-Handbuch.pdf` | das Buch | ja |
 
@@ -115,7 +116,7 @@ Drei Dinge machen die eigentliche Arbeit aus:
 2. **Verweise umbiegen.** Ein Verweis auf `docs/SPIELER.md#wuerfeln` zeigt im Buch auf das Kapitel, in dem SPIELER.md steht, und dort auf den Abschnitt – übersetzt von der Anker-Regel von GitHub in die des Buches. Ein Verweis auf eine Quelldatei (`../../backend/…`) bleibt als Text stehen; im Druck gibt es sie nicht. Ein Verweis auf das Inhaltsverzeichnis (`README.md`) zeigt auf das Verzeichnis des Buches.
 3. **Das Verzeichnis.** Es sammelt Teile, Kapitel und deren Abschnitte zweiter Ebene und trägt, sobald bekannt, die Seitenzahlen ein.
 
-Das Stilblatt des Buches ist `scripts/handbuch/buch.css`: A4, Satzspiegel, Schriften, Tabellen, Codeblöcke, Seitenumbrüche vor Teilen und Kapiteln, Kopfzeilen mit dem Kapitelnamen und Seitenzahlen in der Fußzeile über `@page`-Randfelder. Wie beim Almanach selbst steht das Aussehen im Stilblatt und nirgends sonst.
+Das Stilblatt des Buches ist `scripts/handbuch/buch.css`: A4, Satzspiegel, Schriften, Tabellen, Codeblöcke, Seitenumbrüche vor Teilen und Kapiteln, Kopfzeilen mit dem Kapitelnamen und Seitenzahlen in der Fußzeile über `@page`-Randfelder. Wie beim Almanach selbst steht das Aussehen im Stilblatt und nirgends sonst – und die gesetzte Seite trägt es nicht in sich: `beigaben()` aus `scripts/drucksatz/seite.mjs` legt das Stilblatt (ohne seinen Erklärkopf) als `buch.css` neben `handbuch.html`, dazu den Zierrat des Titelblatts als Bild (`scripts/drucksatz/zierat.svg`), und die Seite verweist mit `<link rel="stylesheet">` und `<img>` darauf. Kein `<style>`, kein SVG im Markup. Der Browser, der das PDF druckt, öffnet die Seite als Datei und lädt beides von nebenan. Der Drucksatz der einzelnen Handbücher (`npm run drucksatz`) macht es ebenso mit `drucksatz.css`.
 
 ## Vom HTML zum PDF
 

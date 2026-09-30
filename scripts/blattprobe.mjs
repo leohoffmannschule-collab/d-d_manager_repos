@@ -30,6 +30,7 @@ import {
   zauberwerte,
 } from '../frontend/src/lib/dnd5e.js';
 import { leseBlattdatei } from '../frontend/src/lib/blattEinfuhr.js';
+import { esc } from '../frontend/src/lib/blatt/werkzeug.js';
 import { HELDEN } from '../backend/src/vorlagen/helden.js';
 import { blattAus, ATTRIBUTE, FERTIGKEITEN } from '../backend/src/vorlagen/bauen.js';
 
@@ -272,21 +273,24 @@ gleich(withDefaults({ playerName: 'Leo' }).units, 'metrisch', 'Ein bloßer Name 
 
 /* --- Mitgenommene Blätter wieder einlesen ------------------------------- */
 {
-  // So, wie blattAusfuhr.js den Datensatz ans Ende der Datei schreibt –
-  // samt maskiertem „<“, damit ein Text im Blatt das Skript nicht beendet.
+  // So, wie blattAusfuhr.js den Datensatz ans Ende der Datei schreibt: als
+  // entschärfter Text in einem <template> (esc aus lib/blatt/werkzeug.js).
   const datensatz = {
     name: 'Elara Nachtwind',
     system: 'dnd5e',
-    data: { level: 3, backstory: 'Kam über die </script>-Brücke.' },
+    data: { level: 3, backstory: 'Kam über die </template>-Brücke & sagte „<nein>“.' },
     stand: '2026-09-30T12:00:00.000Z',
   };
   const html = `<!doctype html><html><body><div class="blatt">…</div>
-<script type="application/json" id="almanach-daten">${JSON.stringify(datensatz, null, 2).replace(/</g, '\\u003c')}</script>
-<script>/* drucken */</script></body></html>`;
+<template id="almanach-daten">${esc(JSON.stringify(datensatz, null, 2))}</template></body></html>`;
   const gelesen = leseBlattdatei(html);
   gleich(gelesen.name, 'Elara Nachtwind', 'Einlesen: der Name kommt an');
   gleich(gelesen.system, 'dnd5e', 'Einlesen: das Regelwerk kommt an');
-  gleich(gelesen.data, datensatz.data, 'Einlesen: der Datensatz kommt unverändert an, auch mit „</script>“ im Text');
+  gleich(gelesen.data, datensatz.data, 'Einlesen: der Datensatz kommt unverändert an, auch mit „</template>“ und „&“ im Text');
+
+  // Ältere Dateien trugen den Datensatz roh in einem <script>, mit \u003c.
+  const alt = `<script type="application/json" id="almanach-daten">${JSON.stringify(datensatz).replace(/</g, '\\u003c')}</script>`;
+  gleich(leseBlattdatei(alt).data, datensatz.data, 'Einlesen: auch eine Datei aus einer älteren Fassung');
 
   // Der nackte Datensatz geht auch – für alle, die ihn schon herauskopiert haben.
   gleich(leseBlattdatei(JSON.stringify(datensatz)).name, 'Elara Nachtwind', 'Einlesen: nackter JSON-Text geht auch');

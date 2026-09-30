@@ -944,6 +944,73 @@ Das Skript würfelt ein neues Kennwort aus, zeigt es einmal an und beendet
 alle Anmeldungen des Kontos. Damit anmelden und im Konto-Menü gleich ein
 eigenes wählen.
 
+### 9.1 Verschlüsselt im Heimnetz: HTTPS
+
+Über den Tunnel ist alles verschlüsselt. Im WLAN dagegen spricht der Browser
+den Almanach über `http://…:3001` an – wer im selben Netz mitliest, sieht beim
+Anmelden das Kennwort. Zu Hause mit der eigenen Familie ist das meist egal;
+im Gemeinschafts-WLAN des Studentenwohnheims oder im Vereinsheim nicht.
+
+Dafür stellt der Almanach sich selbst ein Zertifikat aus – **ohne Download,
+ohne Kosten, ohne Konto irgendwo**, allein mit Node:
+
+```bash
+npm run zertifikat                                                        # Laptop
+docker compose exec dnd-manager node scripts/zertifikat.mjs 192.168.1.40  # Pi
+```
+
+Auf dem Pi gehört die Adresse des Pi dazu (die aus `npm run adresse` bzw.
+`hostname -I`): Im Container sieht das Skript nur die Adresse des Containers.
+Auf dem Laptop findet es die Adressen selbst. Weitere Adressen oder Namen im
+Heimnetz (`almanach.fritz.box`) lassen sich ebenso anhängen; sie werden
+gemerkt.
+
+Danach **neu starten** (`docker compose --profile tunnel restart` bzw. das
+Fenster mit `npm start` schließen und neu öffnen). Der Startbericht nennt nun:
+
+```
+  Verschlüsselt  : https://192.168.1.40:3443
+  Stammzertifikat: http://<Adresse>:3001/almanach-stamm.crt
+  Fingerabdruck  : 75:7E:55:E3:…:57:6A:9D
+```
+
+Die Runde öffnet ab jetzt `https://192.168.1.40:3443`. Wer über `http://`
+kommt, bekommt auf der Anmeldeseite einen Hinweis mit dem verschlüsselten
+Link.
+
+**Die Warnung beim ersten Besuch.** Das Zertifikat hat der Almanach selbst
+ausgestellt, nicht eine öffentliche Stelle – der Browser kennt es deshalb
+nicht und warnt („Diese Verbindung ist nicht privat“). Zwei Wege:
+
+- **Einmal durchklicken** (*Details → Website trotzdem besuchen*). Geht
+  sofort, die Warnung kommt aber auf jedem Gerät wieder.
+- **Das Stammzertifikat installieren** – einmal je Gerät, danach ist Ruhe,
+  auch wenn später das Serverzertifikat erneuert wird:
+
+| Gerät | So geht's |
+| --- | --- |
+| iPhone, iPad | In Safari `http://<Adresse>:3001/almanach-stamm.crt` öffnen → *Zulassen*. *Einstellungen → Profil geladen → Installieren*. Dann *Einstellungen → Allgemein → Info → Zertifikatsvertrauenseinstellungen* → „Abenteuer-Almanach Stammzertifikat“ einschalten. |
+| Android | Die Datei im Browser laden, dann *Einstellungen → Sicherheit → Weitere Einstellungen → Zertifikat installieren → CA-Zertifikat* und die Datei wählen. (Die Namen der Menüs unterscheiden sich je Hersteller.) |
+| Windows | Die Datei laden, doppelklicken → *Zertifikat installieren → Aktueller Benutzer → Alle Zertifikate in folgendem Speicher speichern → Vertrauenswürdige Stammzertifizierungsstellen*. Chrome und Edge nehmen es sofort, Firefox unter *Einstellungen → Datenschutz → Zertifikate anzeigen → Importieren*. |
+| macOS | Die Datei doppelklicken → Schlüsselbundverwaltung → *Anmeldung* → das Zertifikat doppelklicken → *Vertrauen → Immer vertrauen*. |
+
+**Vorher den Fingerabdruck vergleichen.** Weil die Datei über `http://`
+kommt, zeigt jedes Gerät beim Installieren den Fingerabdruck (SHA-256). Er
+muss mit dem im Startbericht übereinstimmen – dann ist es das richtige.
+
+**Ist das sicher?** Wer ein Stammzertifikat installiert, vertraut allem, was
+es unterschreibt. Dieses hier darf deshalb **nur** für Adressen und Namen im
+Heimnetz bürgen (`192.168.…`, `10.…`, `*.local`, `*.fritz.box` …) – nie für
+eine Bank oder ein Postfach, selbst wenn jemand seinen Schlüssel stähle. Der
+Schlüssel liegt nur auf dem Almanach-Gerät (`tls/stamm.key` im Datenordner)
+und ist nur für dessen Besitzer lesbar.
+
+**Später:** Bekommt das Gerät eine neue Adresse oder läuft das
+Serverzertifikat nach gut zwei Jahren ab, mahnt der Startbericht. Dann
+`npm run zertifikat` noch einmal und neu starten – an den Geräten der Runde
+ist nichts zu tun. Nur wer den Ordner `tls/` verliert oder mit `--neu` ein
+neues Stammzertifikat anlegt, muss es überall neu installieren.
+
 ---
 
 ## 10. Aktualisieren
@@ -1070,6 +1137,7 @@ start` gilt also auch dann, wenn in der `.env` etwas anderes steht.
 | Variable | Vorgabe | Bedeutung |
 | --- | --- | --- |
 | `PORT` | `3001` | Port des Servers. |
+| `HTTPS_PORT` | `3443` | Port des verschlüsselten Eingangs im Heimnetz – nur, wenn ein Zertifikat angelegt ist ([9.1](#91-verschlüsselt-im-heimnetz-https)). |
 | `DATA_DIR` | `/app/data` im Container, sonst `backend/data` | Wo Datenbank und Bilder liegen. |
 | `DOMAENE` | leer | Die feste Adresse der Runde, etwa `www.deinemudda.fun` – nur der nackte Name. Ohne sie gilt die geliehene Adresse des Schnelltunnels. |
 | `TUNNEL_TOKEN` | leer | Kennwort des benannten Tunnels, der diese Domain trägt. Liegt es vor, baut `npm run tunnel` den benannten statt des Schnelltunnels auf. **Ein Kennwort – gehört nicht ins Git.** |
@@ -1092,7 +1160,8 @@ start` gilt also auch dann, wenn in der `.env` etwas anderes steht.
 Docker-Volume dnd-manager-data
   ├── manager.sqlite3         alles: Konten, Charaktere, Karten, Chronik
   ├── medien/                 hochgeladene Karten und Bildnisse
-  └── sicherungen/            was das Skript aus Schritt 8 anlegt
+  ├── sicherungen/            was das Skript aus Schritt 8 anlegt
+  └── tls/                    Zertifikate für HTTPS im Heimnetz (nach Schritt 9.1)
 ```
 
 **Weg B – auf dem Laptop:** alles unter einem Dach, nichts liegt woanders.
@@ -1109,6 +1178,7 @@ d-d_manager_repos/            der Ordner, den du geholt hast
        ├── manager.sqlite3    alles: Konten, Charaktere, Karten, Chronik
        ├── medien/            hochgeladene Karten und Bildnisse
        ├── sicherungen/       was `npm run sicherung` anlegt
+       ├── tls/               Zertifikate für HTTPS im Heimnetz (nach Schritt 9.1)
        └── tunnel.log         Protokoll des Tunnels, für `npm run adresse`
 ```
 
@@ -1140,6 +1210,8 @@ npm run adresse           # unter welchen Adressen er erreichbar ist
 npm run tunnel            # den Weg von außen aufmachen (Strg+C schließt ihn);
                           # mit TUNNEL_TOKEN in der .env den benannten Tunnel
 npm run sicherung         # Datenbank sichern (--medien nimmt Bilder mit)
+npm run kennwort -- "Name"  # ein vergessenes Kennwort neu setzen
+npm run zertifikat        # HTTPS im Heimnetz: Zertifikat anlegen oder erneuern
 npm run vertrag           # prüfen, ob Server und Oberfläche zusammenpassen
 ```
 

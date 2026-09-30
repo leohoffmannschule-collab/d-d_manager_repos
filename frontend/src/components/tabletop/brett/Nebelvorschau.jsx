@@ -10,6 +10,7 @@
  * Feldern in Bildpunkte.
  */
 import { px } from '../../../lib/stilwerte.js';
+import Laufwert from '../../Laufwert.jsx';
 
 export default function Nebelvorschau({ grenzen, scene, feld, massstab, aufdecken, mitMass }) {
   if (!grenzen) return null;
@@ -18,12 +19,13 @@ export default function Nebelvorschau({ grenzen, scene, feld, massstab, aufdecke
   const zeilen = grenzen.y2 - grenzen.y1 + 1;
 
   return (
-    <div
+    <Laufwert
+      als="div"
       className={`tisch-vorschau ${aufdecken ? 'tisch-vorschau-auf' : 'tisch-vorschau-zu'}`}
       // Die Farben stehen im Stilblatt. Hier steht, wo das Rechteck liegt –
       // und wie dick sein Rand sein muss, damit er bei jedem Zoom gleich
       // dick *aussieht*.
-      style={{
+      werte={{
         '--x': px(scene.gridOffsetX + grenzen.x1 * feld),
         '--y': px(scene.gridOffsetY + grenzen.y1 * feld),
         '--breite': px(spalten * feld),
@@ -32,13 +34,14 @@ export default function Nebelvorschau({ grenzen, scene, feld, massstab, aufdecke
       }}
     >
       {mitMass && (
-        <span
+        <Laufwert
+          als="span"
           className="tisch-marke tisch-schriftgroesse absolute bottom-full left-0 mb-1 whitespace-nowrap font-display"
-          style={{ '--schrift': px(Math.max(11, 14 / massstab)) }}
+          werte={{ '--schrift': px(Math.max(11, 14 / massstab)) }}
         >
           {spalten} × {zeilen} Felder
-        </span>
+        </Laufwert>
       )}
-    </div>
+    </Laufwert>
   );
 }

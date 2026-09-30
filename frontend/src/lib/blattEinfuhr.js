@@ -2,19 +2,24 @@
  * Das mitgenommene Blatt wieder hereinholen.
  *
  * Die Datei, die „Mitnehmen“ erzeugt (blattAusfuhr.js), trägt am Ende den
- * vollständigen Datensatz des Blattes:
+ * vollständigen Datensatz des Blattes, als entschärften Text:
  *
- *   <script type="application/json" id="almanach-daten">{ "name": …, "system": …, "data": … }</script>
+ *   <template id="almanach-daten">{ &quot;name&quot;: …, &quot;system&quot;: …, &quot;data&quot;: … }</template>
  *
- * Hier wird er wieder herausgelesen. Angenommen wird die HTML-Datei selbst
- * oder – für alle, die den Datensatz schon herauskopiert haben – der
- * nackte JSON-Text.
+ * Ältere Dateien trugen ihn in einem `<script type="application/json">`
+ * (roh, mit `\u003c` statt `<`); auch die werden gelesen. Angenommen wird
+ * die HTML-Datei selbst oder – für alle, die den Datensatz schon
+ * herauskopiert haben – der nackte JSON-Text.
  *
  * Gelesen wird mit einem regulären Ausdruck statt mit DOMParser: Ein
  * DOMParser baute die ganze fremde Seite als Dokument auf, samt Bildern.
  * Gebraucht wird nur der eine Block, und der steht in einer Form da, die
  * blattAusfuhr.js selbst schreibt.
  */
+
+/** Die fünf Zeichen, die blatt/werkzeug.js (`esc`) entschärft, zurückverwandelt. */
+const ZEICHEN = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'" };
+const entschaerftZurueck = (text) => text.replace(/&(amp|lt|gt|quot|#39);/g, (z) => ZEICHEN[z]);
 
 /** Die beiden Systeme, die der Almanach kennt. */
 const SYSTEME = new Set(['dnd5e', 'freeform']);
@@ -32,8 +37,10 @@ const istObjekt = (wert) => wert != null && typeof wert === 'object' && !Array.i
  */
 export function leseBlattdatei(text) {
   const inhalt = String(text ?? '');
-  const block = inhalt.match(/<script[^>]*\bid=["']almanach-daten["'][^>]*>([\s\S]*?)<\/script>/i);
-  const roh = block ? block[1] : inhalt.trim();
+  const vorlage = inhalt.match(/<template[^>]*\bid=["']almanach-daten["'][^>]*>([\s\S]*?)<\/template>/i);
+  const skript = inhalt.match(/<script[^>]*\bid=["']almanach-daten["'][^>]*>([\s\S]*?)<\/script>/i);
+  const block = vorlage ?? skript;
+  const roh = vorlage ? entschaerftZurueck(vorlage[1]) : skript ? skript[1] : inhalt.trim();
 
   let datensatz;
   try {

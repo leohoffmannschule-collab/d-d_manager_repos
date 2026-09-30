@@ -47,6 +47,7 @@ import Nebelvorschau from './brett/Nebelvorschau.jsx';
 import Lineal from './brett/Lineal.jsx';
 import Zeigefinger from './brett/Zeigefinger.jsx';
 import { px } from '../../lib/stilwerte.js';
+import Laufwert from '../Laufwert.jsx';
 
 export default function Board({
   scene,
@@ -132,9 +133,10 @@ export default function Board({
     >
       {/* Eine Transformation für alles: Karte, Raster, Figuren und Nebel
           liegen darin und wandern beim Zoomen gemeinsam. */}
-      <div
+      <Laufwert
+        als="div"
         className="tisch-buehne"
-        style={{
+        werte={{
           '--tx': px(ansicht.tx),
           '--ty': px(ansicht.ty),
           '--massstab': ansicht.scale,
@@ -189,7 +191,7 @@ export default function Board({
         <Lineal lineal={lineal} scene={scene} feld={g} massstab={ansicht.scale} />
 
         <Zeigefinger pings={pings} feld={g} />
-      </div>
+      </Laufwert>
 
       <div className="tisch-marke pointer-events-none absolute right-3 bottom-3 flex items-center gap-2 bg-black/45 px-2.5 py-1 font-display text-[11px] tracking-[0.10em] uppercase">
         {Math.round(ansicht.scale * 100)} %

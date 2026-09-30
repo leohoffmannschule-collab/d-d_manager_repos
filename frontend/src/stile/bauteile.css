@@ -144,6 +144,21 @@
   overflow-wrap: anywhere;
 }
 
+/**
+ * Der Wappenschild hinter jedem Attribut (icons/zierrat.jsx). Ab +3 golden
+ * und mit kräftigerem Rand.
+ */
+.wappenschild {
+  fill: var(--color-panel-soft);
+  stroke: var(--color-rule-strong);
+  stroke-width: 1.5;
+}
+
+.wappenschild-stark {
+  stroke: var(--color-gold);
+  stroke-width: 2.5;
+}
+
 /* --- Werte, die erst im Browser feststehen ------------------------------- */
 
 /**

@@ -57,21 +57,28 @@ npm run stilprobe
 ```
 
 Die Regel des Almanachs heißt: **Wie etwas aussieht, steht im Stilblatt;
-was es tut, steht in einer Skriptdatei.** Das JSX beschreibt nur, *was*
+was es tut, steht in einer Skriptdatei.** Das Markup beschreibt nur, *was*
 da ist. Wo ein Wert erst im Browser feststeht (die Lage einer Figur, die
-selbst gewählte Farbe eines Kontos), übergibt es ihn als CSS-Variable –
-die Regel, die ihn benutzt, steht trotzdem im Stilblatt (siehe
-frontend/src/lib/stilwerte.js).
+selbst gewählte Farbe eines Kontos), geht er als CSS-Variable in eine
+Laufzeit-Regel (frontend/src/lib/laufstil.js) – im Markup steht dann nur
+ein Klassenname.
 
-Geprüft wird viererlei:
+Geprüft wird:
 
-1. `style={…}` im JSX enthält nur CSS-Variablen (`'--x': …`), keine
-   echten Eigenschaften wie `left` oder `backgroundColor`.
-2. In HTML, das der Almanach selbst erzeugt (das mitgenommene Blatt,
-   der Drucksatz), steht kein `style="…"` und kein `onclick="…"`.
-3. In der Oberfläche steht kein roher Farbwert (`#9a2b22`) außerhalb der
+1. Im JSX steht kein `style=` – auch nicht für eine einzelne Variable.
+2. Im JSX stehen keine Farben oder Strichstärken als SVG-Attribute mit
+   CSS-Werten (`fill="var(--…)"`, `stroke="var(--…)"`) – auch das ist
+   Aussehen und gehört ins Stilblatt.
+3. SVG steht nur in den Symbol-Dateien (components/icons/) – und im
+   Lineal, das Geometrie zeichnet, die erst beim Ziehen entsteht.
+4. In HTML, das der Almanach selbst erzeugt (das mitgenommene Blatt,
+   der Drucksatz, das Handbuch), steht kein `style="…"`, kein
+   `on…="…"`, kein `<script>` und kein `<style>` – außer an der einen
+   begründeten Stelle unten (AUSNAHMEN).
+5. In der Oberfläche steht kein roher Farbwert (`#9a2b22`) außerhalb der
    Stilblätter. Farben haben Namen – siehe stile/farben.css.
-4. Die index.html lädt ihre Skripte, statt sie zu enthalten.
+6. Die index.html lädt ihre Skripte und Stilblätter, statt sie zu
+   enthalten.
 
 Wie die Einfuhrprobe kommt sie ohne ein zusätzliches Paket aus.
 
@@ -176,7 +183,7 @@ die Kampagne, den Helden) – das reichen sie über `lage` weiter.
 
 ## Die Kapitel des Vertrags
 
-Der Vertrag spielt einen Abend in 20 Kapiteln, jedes baut auf dem vorigen auf (scripts/vertrag/).
+Der Vertrag spielt einen Abend in 21 Kapiteln, jedes baut auf dem vorigen auf (scripts/vertrag/).
 
 | Kapitel | Prüfstellen | worum es geht |
 |---|---|---|
@@ -200,6 +207,7 @@ Der Vertrag spielt einen Abend in 20 Kapiteln, jedes baut auf dem vorigen auf (s
 | 18-review | 20 | Vertrag, Kapitel: Aus dem Code-Review: Grenzen, die leicht wieder verrutschen. |
 | 19-fehlerschluessel | 2 | Vertrag, Kapitel: Jeder Fehler trägt einen Schlüssel. |
 | 20-werkzeuge | 13 | Vertrag, Kapitel: Die Werkzeuge auf dem Rechner des Almanachs. |
+| 21-luecken | 56 | Vertrag, Kapitel: Die geschlossenen Lücken. |
 
 ### 01-konten
 
@@ -461,6 +469,28 @@ Spielabend auch.
 Anlass war `npm run vorlagen`: Es brach seit den Kampagnen stumm ab,
 und niemand merkte es, weil kein Durchgang es je aufrief (siehe
 05-vorlagen.mjs, wo es inzwischen mitläuft).
+
+Ein Kapitel des Prüfdurchgangs (siehe ../vertrag.mjs). Es bekommt den
+gemeinsamen Stand `lage` – die angemeldeten Klienten und was frühere
+Kapitel angelegt haben – und trägt ein, was spätere brauchen.
+
+### 21-luecken
+
+Vertrag, Kapitel: Die geschlossenen Lücken.
+
+Das Handbuch führte unter „Bekannte Grenzen“ auf, was der Almanach noch
+nicht konnte, und unter „Was nicht geschützt ist“, wovor er sich nicht
+schützte. Jede dieser Lücken ist geschlossen, und hier steht, woran man
+das sieht:
+
+- eine Figur lässt sich von Hand an ein Blatt binden;
+- Kämpfer und Figur verbergen und zeigen sich gemeinsam;
+- Gegner würfeln ihre Initiative mit Geschicklichkeitsbonus;
+- ein mitgenommenes Blatt lässt sich wieder anlegen, und ein kaputtes
+  wird abgewiesen;
+- jede Antwort trägt eine Content-Security-Policy;
+- im Heimnetz gibt es HTTPS mit einem selbst ausgestellten, beschränkten
+  Zertifikat.
 
 Ein Kapitel des Prüfdurchgangs (siehe ../vertrag.mjs). Es bekommt den
 gemeinsamen Stand `lage` – die angemeldeten Klienten und was frühere

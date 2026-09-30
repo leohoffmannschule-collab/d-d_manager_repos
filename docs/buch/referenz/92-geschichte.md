@@ -7,7 +7,7 @@ Der Almanach ist in kleinen Schritten gewachsen, und jeder Schritt hat eine Nach
 
 Die Nachrichten sind so abgedruckt, wie sie geschrieben wurden. Die ersten, vom 1. September, sind englisch; ab dem 3. September wurde der Almanach deutsch, im Code wie in seiner Geschichte.
 
-Insgesamt 89 Schritte an 13 Tagen.
+Insgesamt 92 Schritte an 13 Tagen.
 
 ## 1. September 2026
 
@@ -1311,3 +1311,38 @@ Aus dem Code geschrieben: ein neues Verzeichnis aller 74 Fehlerschlüssel mit St
 Fünf Kapitel über den Bau des Almanachs, jedes gegen den Code geprüft: das Bild im Ganzen mit den Grundsätzen und ihren Gründen; der Server von Start bis Anatomie eines Weges; Anmeldung, Rollen und was der Server wem schickt – samt dem, was nicht geschützt ist; beide Enden des Live-Kanals; die Sichtrechnung mit Beispielen, die Bitkarte und der Nebelpinsel.
 
 Vertrag: zwei Prüfungen für die feineren Regeln des Lichts – fremdes Licht verlängert den eigenen Blick nicht, die eigene Fackel schon (300).
+
+### Handbuch vollständig: Oberfläche, Datenmodell, Arbeiten, Grundsätze, Bau
+
+`ce894d5`
+
+Die letzten fünf Kapitel und das endgültige Inhaltsverzeichnis. Das Buch hat jetzt sechs Teile mit 36 Kapiteln: Einführung, Am Tisch, Betrieb, Wie er gebaut ist, Entwicklung und die Verzeichnisse, die bei jedem Bau aus dem Code geschrieben werden.
+
+- 18 Die Oberfläche, 19 Das Blatt: Datenmodell und Ausfuhr, 21 Arbeiten am Almanach, 22 Grundsätze und Review-Leitfaden, 23 Das Handbuch bauen.
+- Neues Verzeichnis „Wie der Almanach entstand“ aus dem Verlauf von git (scripts/handbuch/referenz/geschichte.mjs); Zeilen über Mitautoren und Sitzungen bleiben draußen.
+- satz.mjs schnitt das kleine „## Inhalt“ der Handbücher mit einem regulären Ausdruck heraus, der Codeblöcke nicht kannte – im Kapitel über den Bau fehlte dadurch die halbe Beispielgliederung. Jetzt zeilenweise und zaunbewusst.
+- docs/CODE.md auf den Stand der geteilten Dateien gebracht (anmeldung/, lib/api/, lib/daten/, useZeiger.js, npm test, 300 Vertragsprüfungen).
+- README: Verweis auf das Handbuch und npm run handbuch.
+- VS Code: oxc statt ESLint empfohlen, eine Aufgabe für npm test.
+
+### Das Handbuch als PDF: 523 Seiten
+
+`0fae4bc`
+
+Gebaut mit npm run handbuch aus docs/buch/README.md – Titelblatt, Inhaltsverzeichnis mit Seitenzahlen, sechs Teilblätter, 36 Kapitel, anklickbare Verweise.
+
+### Die bekannten Grenzen geschlossen, HTTPS im Heimnetz, eine Content-Security-Policy
+
+`1fa0fe2`
+
+Was das Handbuch unter „Bekannte Grenzen“ und „Was nicht geschützt ist“ führte, ist behoben:
+
+- Figur an ein Blatt binden: PATCH /api/scenes/figuren/:id nimmt characterId (nur Spielleitung, nur ein Blatt dieser Kampagne, geprüft vor dem Schreiben); im Figurenfeld eine Auswahl der Blätter.
+- Kämpfer und Figur zeigen sich gemeinsam (kampf/verbergen.js): Wer eine Seite verbirgt oder aufdeckt, tut es im selben Block für beide. „Figuren aus dem Kampf“ schreibt außerdem in einer Transaktion.
+- Initiative mit Geschicklichkeitsbonus (kampf/initiative.js, neue Spalte combatants.initiative_bonus): Bestiarium, Begegnungen und „Initiative würfeln“ würfeln W20 + Bonus; ältere Begegnungen holen ihn aus dem Bestiarium; die Runde bekommt den Bonus der Gegner nicht geschickt.
+- Mitgenommene Blätter lassen sich per Knopf einlesen (Übersicht → „Blatt einlesen“); der Server weist unbekannte Regelwerke und Datensätze, die kein Objekt sind, mit blatt_ungueltig ab.
+- Zauber-SG und -Angriffsbonus lassen sich von Hand überschreiben; gerechnet wird an einer Stelle (zauberwerte) für Reiter und Ausfuhr.
+- Content-Security-Policy auf jeder Antwort (kopfzeilen.js), ohne unsafe-inline und unsafe-eval.
+- HTTPS im Heimnetz ohne Download: `npm run zertifikat` stellt mit Node allein ein beschränktes Stammzertifikat (nur private Netze und Heimnetznamen) und ein Serverzertifikat aus; der Server lauscht dann zusätzlich auf 3443, bietet das Stammzertifikat unter /almanach-stamm.crt an, und die Anmeldeseite weist über http auf den verschlüsselten Eingang hin. Die Schlüssel liegen in data/tls/ und sind von git ausgeschlossen.
+
+Neues Vertragskapitel 21-luecken.mjs (56 Prüfungen, darunter ein zweiter Server mit echtem TLS); Gegenprobe: ohne die Korrekturen schlagen sie an. Blattprobe um Zauberwerte und das Einlesen erweitert (355).

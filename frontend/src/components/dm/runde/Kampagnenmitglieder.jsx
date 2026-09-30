@@ -4,6 +4,7 @@ import { campaignsApi } from '../../../lib/api.js';
 import { useCampaign } from '../../../lib/campaign.jsx';
 import { Rubric } from '../../ui.jsx';
 import { IconCrown, IconPlus, IconScroll, IconTrash } from '../../icons.jsx';
+import Laufwert from '../../Laufwert.jsx';
 
 export default function Kampagnenmitglieder({ users }) {
   const { active } = useCampaign();
@@ -38,12 +39,12 @@ export default function Kampagnenmitglieder({ users }) {
       <ul className="mb-3 space-y-1.5">
         {mitglieder.map((m) => (
           <li key={m.id} className="flex items-center gap-3 border border-rule bg-panel-soft px-3 py-2">
-            <span
+            <Laufwert
               className="farbpunkt flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-display text-[12px] font-semibold text-[var(--marke-schrift)]"
-              style={{ '--farbe': m.color }}
+              werte={{ '--farbe': m.color }}
             >
               {m.name.charAt(0).toUpperCase()}
-            </span>
+            </Laufwert>
             <span className="min-w-0 flex-1 truncate text-ink">
               {m.name}
               {m.role === 'sl' && <IconCrown size={13} className="ml-1.5 inline text-gold" />}

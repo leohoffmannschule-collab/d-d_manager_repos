@@ -13,7 +13,7 @@ Dazu kommt, wenn die Runde von außen spielt, **ein** Hilfsprogramm: `cloudflare
 | Pi mit Docker | Container `dnd-manager`, dazu `dnd-manager-tunnel` (Schnelltunnel) oder `dnd-manager-domaene` (eigene Adresse) | `docker compose ps` |
 | Laptop ohne Docker | ein Fenster mit `npm start`, dazu eines mit `npm run tunnel` | die beiden Fenster |
 
-Der Server lauscht auf Port **3001** (einstellbar über `PORT`). Mehr Ports braucht es nicht: Die Oberfläche kommt über denselben Port, der Live-Kanal auch.
+Der Server lauscht auf Port **3001** (einstellbar über `PORT`). Die Oberfläche kommt über denselben Port, der Live-Kanal auch. Liegt im Datenordner ein Zertifikat (`npm run zertifikat`), lauscht derselbe Almanach zusätzlich verschlüsselt auf Port **3443** (`HTTPS_PORT`) – ein zweiter Eingang, kein zweites Programm.
 
 ## Starten, anhalten, neu starten
 
@@ -75,7 +75,13 @@ Der Almanach läuft meist auf einem Gerät, vor dem niemand sitzt. Was er beim S
   Für die Runde  : https://almanach.example.org   (solange der Weg nach außen offen ist)
   Auf diesem PC  : http://localhost:3001
   Im Netzwerk    : http://192.168.1.40:3001   (für iPad/iPhone)
+  Verschlüsselt  : https://localhost:3443
+  Verschlüsselt  : https://192.168.1.40:3443
+  Stammzertifikat: http://<Adresse>:3001/almanach-stamm.crt
+  Fingerabdruck  : 75:7E:55:E3:…:57:6A:9D
 ```
+
+Die vier Zeilen ab „Verschlüsselt“ stehen nur da, wenn ein Zertifikat angelegt ist; sonst steht an ihrer Stelle ein Satz, wie man HTTPS einrichtet.
 
 Darunter stehen, falls nötig, Warnungen – und jede davon ist ernst gemeint:
 
@@ -87,6 +93,9 @@ Darunter stehen, falls nötig, Warnungen – und jede davon ist ernst gemeint:
 | „Die .env ließ sich nicht lesen“ | Die Datei ist kaputt (etwa ein Zeilenumbruch mitten in einem Wert). | Die Zeile in der Meldung ansehen und berichtigen. |
 | „*n* Kampagne(n) im Papierkorb waren über die Frist – endgültig entfernt“ | Beim Start räumt der Almanach Kampagnen, die länger als 30 Tage im Papierkorb lagen. | Nichts – es ist ein Hinweis. |
 | „Noch kein Konto vorhanden“ | Frischer Almanach. | Die Adresse öffnen; das erste Konto führt die Spielleitung. |
+| „Im Heimnetz geht alles unverschlüsselt über http“ | Kein Zertifikat angelegt. | Wer HTTPS im Heimnetz will: `npm run zertifikat`, neu starten. |
+| „Das Zertifikat kennt … noch nicht“ / „läuft noch *n* Tage“ | Neue Adresse vom Router, oder das Serverzertifikat läuft bald ab. | `npm run zertifikat`, neu starten; an den Geräten ist nichts zu tun. |
+| „HTTPS bleibt aus: …“ | Zertifikat unlesbar oder Port 3443 belegt. | Die Meldung sagt, was; `HTTPS_PORT` in der `.env` ändern oder `npm run zertifikat` erneut. |
 
 Läuft auf dem Port schon etwas, sagt der Almanach auch das in Klartext statt mit einem Stapelauszug: Es kann immer nur einer den Port haben. Meist läuft der Almanach schon in einem anderen Fenster.
 
@@ -103,6 +112,10 @@ backend/data/                 (auf dem Pi: das Docker-Volume dnd-manager-data, i
 │   ├── 3f2a…c1.jpg
 │   └── …
 ├── sicherungen/              was `npm run sicherung` anlegt (ohne eigenes Ziel)
+├── tls/                      die Zertifikate für HTTPS im Heimnetz (nur nach `npm run zertifikat`)
+│   ├── stamm.crt, stamm.key      die eigene Ausstellungsstelle
+│   ├── almanach.crt, almanach.key das Serverzertifikat
+│   └── namen.json                eigens genannte Adressen und Namen
 └── tunnel.log                das Protokoll des Tunnels (nur auf dem Laptop)
 ```
 
@@ -181,28 +194,21 @@ DATA_DIR=/tmp/alter-stand PORT=3002 npm start
 
 ### Ein Blatt aus der mitgenommenen Datei zurückholen
 
-Die Datei, die „Mitnehmen“ auf dem Charakterblatt erzeugt, trägt am Ende den vollständigen Datensatz des Blattes:
+Die Datei, die „Mitnehmen“ auf dem Charakterblatt erzeugt, trägt am Ende den vollständigen Datensatz des Blattes. Zurückgeholt wird sie mit einem Knopf:
 
-```html
-<script type="application/json" id="almanach-daten">{ "name": …, "system": …, "data": { … }, "stand": … }</script>
-```
+1. Im Almanach anmelden und die Kampagne wählen, in die das Blatt gehört.
+2. In der Übersicht **„Blatt einlesen“** und die Datei wählen (auch vom Telefon aus der Dateien-App).
+3. Das Blatt öffnet sich. Es gehört der Person, die angemeldet ist; die Spielleitung teilt es unter *Spielleitung → Runde* der richtigen Person zu.
 
-Einen Knopf zum Einlesen gibt es nicht. Wer ein verlorenes Blatt daraus zurückholen will, geht so vor:
+Ein vorhandenes Blatt wird dabei nie überschrieben – wer zwei Stände hat, sieht danach beide und entscheidet selbst. In der Datei geänderte Werte kommen mit; die Datei ist ja nur Text. Auch Dateien aus älteren Fassungen des Almanachs lassen sich einlesen. Eine Datei, die kein mitgenommenes Blatt ist, lehnt der Knopf mit einem Satz ab, der sagt, warum.
 
-1. Die Datei in einem Texteditor öffnen und den Inhalt zwischen `<script type="application/json" id="almanach-daten">` und `</script>` kopieren.
-2. Im Almanach anmelden, die Kampagne wählen und die Entwicklerwerkzeuge des Browsers öffnen (meist `F12`), Reiter „Konsole“.
-3. Eingeben – für `DATEN` den kopierten Text einsetzen:
+### Die Zertifikate für HTTPS
 
-```js
-const d = DATEN;
-await fetch('/api/characters', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ name: d.name, system: d.system, data: d.data }),
-}).then((r) => r.json());
-```
+Wer HTTPS im Heimnetz eingerichtet hat (Einrichtungs-Handbuch, `npm run zertifikat`), hat im Datenordner einen Ordner `tls/`. Drei Dinge gehören zum Alltag:
 
-Das Blatt steht danach in der Übersicht und gehört der Person, die angemeldet ist. Die Spielleitung teilt es unter *Spielleitung → Runde* der richtigen Person zu. In der Datei geänderte Werte kommen dabei mit – die Datei ist ja nur Text.
+- **Neue Adresse.** Vergibt der Router dem Gerät eine neue Adresse, mahnt der Startbericht: „Das Zertifikat kennt … noch nicht.“ Dann `npm run zertifikat` (im Container: `docker compose exec dnd-manager node scripts/zertifikat.mjs <Adresse des Pi>`) und neu starten. Das stellt nur das Serverzertifikat neu aus; an den Geräten der Runde ist nichts zu tun.
+- **Ablauf.** Das Serverzertifikat gilt 820 Tage; 30 Tage vorher mahnt der Startbericht. Dieselben zwei Schritte.
+- **Sichern.** `npm run sicherung` sichert die Datenbank (und mit `--medien` die Bilder), nicht den Ordner `tls/`. Geht er verloren, legt `npm run zertifikat` einen neuen an – dann muss das neue Stammzertifikat aber auf allen Geräten neu installiert werden. Wer das vermeiden will, kopiert `tls/` einmal mit auf den USB-Stick; `stamm.key` darin ist die Vollmacht der Ausstellungsstelle und gehört so sicher verwahrt wie die `.env`.
 
 ## Aktualisieren
 
@@ -289,10 +295,11 @@ Der Almanach ist so gebaut, dass im Normalfall nichts einzustellen ist. Ein paar
 - **Die `.env` gehört niemandem sonst.** Sie trägt das Kennwort des benannten Tunnels (`TUNNEL_TOKEN`) und gegebenenfalls den Schlüssel eines Sprachmodells. Sie steht in `.gitignore` und darf nie ins Git, nie in einen Chat, nie in ein Foto vom Bildschirm. Wer sie verloren glaubt, erzeugt in Cloudflare ein neues Tunnel-Kennwort.
 - **`TRUST_PROXY` nur, wenn wirklich ein Proxy davorsteht.** Im Docker-Betrieb steht es auf `1`, weil der Tunnel-Container der erste Zwischenschritt ist. Nur wem der Almanach hier glaubt, darf ihm sagen, die Anfrage sei über HTTPS gekommen – und erst dann setzt er das Anmelde-Cookie als `Secure`. Ein falscher Wert öffnet dem Fälschen dieser Angabe die Tür.
 - **Der Container läuft nicht als root.** Das Abbild legt den Datenordner für den Benutzer `node` an und startet den Server als dieser. Wer Dateien von Hand ins Volume legt, muss sie ihm übereignen (Kennung 1000).
+- **`tls/stamm.key` gehört niemandem sonst.** Er ist die Vollmacht der eigenen Ausstellungsstelle für HTTPS im Heimnetz – beschränkt auf Heimnetzadressen, aber für die ganze Runde. Nur für den Besitzer lesbar angelegt und in `.gitignore`.
 - **Einladungscodes zurückziehen**, die niemand mehr braucht, und **Konten löschen**, deren Menschen die Runde verlassen haben.
 - **Das Gerät aktuell halten.** Der Almanach selbst hat wenige Abhängigkeiten, aber das Betriebssystem darunter will seine Updates: `sudo apt update && sudo apt upgrade` auf dem Pi, gelegentlich.
 
-Was der Almanach von sich aus tut – Kennwörter mit scrypt, Sitzungen nur als Hash, Drossel gegen Durchprobieren, keine Freigabe für fremde Seiten, Schutzkopfzeilen gegen Einbetten und Typraten –, beschreibt das Kapitel „Anmeldung, Rollen und Sicherheit“.
+Was der Almanach von sich aus tut – Kennwörter mit scrypt, Sitzungen nur als Hash, Drossel gegen Durchprobieren, keine Freigabe für fremde Seiten, Schutzkopfzeilen samt Content-Security-Policy, HTTPS im Heimnetz –, beschreibt das Kapitel „Anmeldung, Rollen und Sicherheit“.
 
 ## Ein Wartungskalender
 
@@ -302,6 +309,7 @@ Was der Almanach von sich aus tut – Kennwörter mit scrypt, Sitzungen nur als 
 | jede Woche | `sicherung --medien`, Sicherungen weg vom Gerät kopieren | fünf Minuten |
 | jeden Monat | Einladungscodes und Konten durchsehen; `docker compose ps` auf „healthy“; freien Platz prüfen (`df -h`) | fünf Minuten |
 | alle paar Monate | Betriebssystem aktualisieren; Almanach aktualisieren (vorher sichern) | eine Viertelstunde |
+| alle zwei Jahre (der Startbericht mahnt) | Serverzertifikat erneuern: `npm run zertifikat`, neu starten | eine Minute |
 | einmal im Jahr | Zurückspielen üben – mit einem Probe-Almanach auf Port 3002 | eine Viertelstunde |
 
 Der letzte Punkt klingt übertrieben und ist der wichtigste: Eine Sicherung, die nie zurückgespielt wurde, ist eine Hoffnung. Mit einem Probe-Almanach daneben kostet die Probe nichts und stört niemanden.

@@ -14,6 +14,7 @@ import { IconClose, IconD20, IconD20Detailed, IconEyeOff, IconTrash } from './ic
 import { diceApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
 import { useWuerfe } from '../lib/daten.js';
+import Laufwert from './Laufwert.jsx';
 
 const DICE = [4, 6, 8, 10, 12, 20, 100];
 
@@ -36,7 +37,7 @@ function Wurfzeile({ wurf, hervorgehoben }) {
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <span className="flex items-center gap-1.5">
-            <span className="farbpunkt h-2 w-2 shrink-0 rounded-full" style={{ '--farbe': wurf.color }} />
+            <Laufwert className="farbpunkt h-2 w-2 shrink-0 rounded-full" werte={{ '--farbe': wurf.color }} />
             <span className="truncate font-display text-[12px] tracking-[0.08em] text-sepia uppercase">
               {wurf.userName}
             </span>

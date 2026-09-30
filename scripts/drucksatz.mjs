@@ -23,12 +23,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { nachHtml } from './drucksatz/markdown.mjs';
-import { seite } from './drucksatz/seite.mjs';
+import { beigaben, seite } from './drucksatz/seite.mjs';
 
 const wurzel = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-// Der Satzspiegel liegt als echte .css-Datei daneben und wird hier als Text
-// hereingeholt. Node kennt kein `?raw` wie Vite – ein Dateilesen tut es
-// genauso, und im Editor ist es trotzdem richtiges CSS.
+// Der Satzspiegel liegt als echte .css-Datei hier und wird neben die
+// gesetzten Seiten kopiert (`beigaben`), auf die sie dann verweisen.
 //
 // Der Erklärkopf der Datei wird dabei abgeschnitten: Er richtet sich an
 // Mitarbeitende am Code und hat in einer Druckfassung nichts verloren.
@@ -60,7 +59,8 @@ function verweis(ziel) {
 
 /* --- Los ----------------------------------------------------------------- */
 
-fs.mkdirSync(ziel, { recursive: true });
+// Stilblatt und Zierrat liegen neben den Seiten, statt in jeder zu stecken.
+beigaben(ziel, 'drucksatz.css', STIL);
 const gesetzt = [];
 
 for (const band of BAENDE) {
@@ -70,7 +70,7 @@ for (const band of BAENDE) {
   const markdown = fs.readFileSync(pfad, 'utf8').replace(/^# .+\n/, '');
   const name = band.datei.replace(/\.md$/, '.html');
   const koerper = nachHtml(markdown, { verweis });
-  fs.writeFileSync(path.join(ziel, name), seite({ titel: band.titel, unter: band.unter, koerper, stil: STIL }));
+  fs.writeFileSync(path.join(ziel, name), seite({ titel: band.titel, unter: band.unter, koerper, stilDatei: 'drucksatz.css' }));
   gesetzt.push(name);
 }
 

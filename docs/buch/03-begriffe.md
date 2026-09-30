@@ -119,6 +119,10 @@ Dasselbe Blatt noch einmal in einer anderen Kampagne; nur für die Spielleitung.
 
 Das Blatt als eigenständige HTML-Datei sichern: alles, was darauf steht, samt Bildnis und Zaubertexten, zum Doppelklicken und Drucken, ohne Netz und ohne Server. Am Ende der Datei steckt der vollständige Datensatz, sodass sie zugleich eine Sicherung ist. Code: `frontend/src/lib/blattAusfuhr.js` und `lib/blatt/`.
 
+### Einlesen
+
+Der Rückweg der Ausfuhr: „Blatt einlesen“ in der Übersicht nimmt eine mitgenommene Datei und legt daraus ein **neues** Blatt an – ein vorhandenes wird nie überschrieben. Code: `frontend/src/lib/blattEinfuhr.js`, `components/BlattEinlesen.jsx`.
+
 ### Pfad (im Blatt)
 
 Die Adresse eines Feldes im Blatt, mit Punkten geschrieben: `combat.hp.current`, `abilities.dex`, `spellcasting.slots.3.used`. Jede Änderung am Blatt ist ein Pfad und ein Wert (`update('combat.hp.current', 7)`), und `setPath` in `frontend/src/lib/setPath.js` macht daraus ein neues Blatt, ohne das alte anzufassen.
@@ -161,7 +165,7 @@ Eine Marke auf der Karte (Tabelle `tokens`): Name, Stelle, Größe in Feldern, F
 
 ### Verborgene Figur
 
-Eine Figur mit `hidden = 1`. Die Spielleitung sieht sie blass, die Runde bekommt sie gar nicht geschickt. Gedacht für den Hinterhalt, der erst zuschlägt, wenn die Spielleitung ihn aufdeckt.
+Eine Figur mit `hidden = 1`. Die Spielleitung sieht sie blass, die Runde bekommt sie gar nicht geschickt. Gedacht für den Hinterhalt, der erst zuschlägt, wenn die Spielleitung ihn aufdeckt. Hängt die Figur an einem Kämpfer, sind beide gemeinsam verborgen oder sichtbar – wer eine Seite umlegt, legt beide um (`backend/src/kampf/verbergen.js`).
 
 ### Nebel (Nebel des Krieges)
 
@@ -209,7 +213,11 @@ Die Liste aller **Kämpfer** einer Kampagne, nach Initiative absteigend geordnet
 
 ### Kämpfer
 
-Eine Zeile der Kampfliste (Tabelle `combatants`): Name, Art, Initiative, Trefferpunkte, Rüstungsklasse, Zustände, Notizen der Spielleitung, verborgen oder nicht. Ein Kämpfer kann an einem Charakterblatt hängen (`character_id`) – dann sind seine Trefferpunkte die des Blattes, in beide Richtungen.
+Eine Zeile der Kampfliste (Tabelle `combatants`): Name, Art, Initiative, Initiativebonus, Trefferpunkte, Rüstungsklasse, Zustände, Notizen der Spielleitung, verborgen oder nicht. Ein Kämpfer kann an einem Charakterblatt hängen (`character_id`) – dann sind seine Trefferpunkte die des Blattes, in beide Richtungen.
+
+### Initiativebonus
+
+Was zum W20 der Initiative hinzukommt: bei Gegnern der Modifikator der Geschicklichkeit aus ihrem Statblock (GE 18 → +4), gespeichert am Kämpfer (`initiative_bonus`) und in den Posten einer Begegnung. Heldinnen würfeln selbst und bringen ihren Bonus vom Blatt mit. Die Runde bekommt den Bonus der Gegner nicht zu sehen. Code: `backend/src/kampf/initiative.js`.
 
 ### Art (eines Kämpfers)
 
@@ -353,13 +361,25 @@ Wo der Almanach seine Daten hält: die Datenbankdatei `manager.sqlite3` und der 
 
 Der Weg von außen: `cloudflared` baut von innen eine Verbindung zu Cloudflare auf, und die Runde erreicht den Almanach über eine öffentliche Adresse, ohne dass im Router etwas freigegeben werden muss. Der **Schnelltunnel** leiht sich bei jedem Start eine neue Adresse unter `trycloudflare.com`; der **benannte Tunnel** trägt eine eigene Domain und braucht dafür ein Kennwort (`TUNNEL_TOKEN`) in der `.env`. Code: `scripts/tunnel.mjs`, `scripts/tunnel/`.
 
+### Content-Security-Policy
+
+Eine Kopfzeile an jeder Antwort, die dem Browser sagt, was er dieser Seite erlauben soll: Skripte nur vom Almanach (und Spotifys Spieler), Stil nur aus seinen Stilblättern, kein Einrahmen durch fremde Seiten. Die zweite Mauer hinter der Entschärfung. Code: `backend/src/kopfzeilen.js`.
+
+### Laufzeit-Stilblatt, Laufwert
+
+Wie Werte, die erst im Browser feststehen (die Lage einer Figur, eine gewählte Farbe), ins Aussehen kommen, ohne dass ein `style`-Attribut im Markup steht: Das Bauteil bekommt eine eigene Klasse und dazu eine Regel mit CSS-Variablen in einem Stilblatt, das es nur zur Laufzeit gibt. Code: `frontend/src/lib/laufstil.js`, `components/Laufwert.jsx`.
+
+### HTTPS im Heimnetz, Stammzertifikat
+
+Der verschlüsselte Eingang auf Port 3443. `npm run zertifikat` stellt dafür mit Node ein **Stammzertifikat** aus – eine eigene kleine Ausstellungsstelle, beschränkt auf Heimnetzadressen, die man einmal auf den Geräten installiert – und ein **Serverzertifikat** für die Adressen des Geräts. Code: `backend/src/https/`, `backend/scripts/zertifikat.mjs`.
+
 ### Kompendium
 
 Die Regeltexte aus der offenen D&D-5e-Schnittstelle: Zauber, Monster, Gegenstände, Völker, Klassen und mehr. Der Server holt sie bei Bedarf und hält sie in `api_cache` vor. Weg `GET /api/compendium/…`.
 
 ### Prüfnetz, Proben, Vertrag
 
-Die Werkzeuge, die vor jedem Commit laufen (`npm test`): die **Einfuhrprobe** (benutzt jemand einen Namen, den er nicht eingeführt hat?), die **Stilprobe** (steht irgendwo Stil im Code statt in einer Stildatei?), die **Kommentarprobe** (ist jede Datei und jede Ausfuhr erklärt, stimmt jeder genannte Pfad?), die **Blattprobe** (rechnet das Blatt richtig?), die **Klangprobe** (bleibt der Klangteppich im Takt?) und der **Vertrag** (spielt eine ganze Runde gegen einen frischen Server durch und prüft, wer was sehen darf). Kapitel „Arbeiten am Almanach“ und das Verzeichnis „Prüfnetz“.
+Die Werkzeuge, die vor jedem Commit laufen (`npm test`): die **Einfuhrprobe** (benutzt jemand einen Namen, den er nicht eingeführt hat?), die **Stilprobe** (steht irgendwo Stil oder Skript eingebettet im Markup statt in einer eigenen Datei?), die **Kommentarprobe** (ist jede Datei und jede Ausfuhr erklärt, stimmt jeder genannte Pfad?), die **Blattprobe** (rechnet das Blatt richtig?), die **Klangprobe** (bleibt der Klangteppich im Takt?) und der **Vertrag** (spielt eine ganze Runde gegen einen frischen Server durch und prüft, wer was sehen darf). Kapitel „Arbeiten am Almanach“ und das Verzeichnis „Prüfnetz“.
 
 ## Register
 
@@ -377,9 +397,11 @@ Die Werkzeuge, die vor jedem Commit laufen (`npm test`): die **Einfuhrprobe** (b
 | Beutekiste | Würfel, Gespräch, Beute |
 | Chat | Würfel, Gespräch, Beute |
 | Chronik | Chronik |
+| Content-Security-Policy | Technik |
 | Datenordner | Technik |
 | DM | Menschen und Rechte → Spielleitung |
 | Drossel | Menschen und Rechte |
+| Einlesen | Blätter |
 | Dunkle Szene | Der Spieltisch |
 | Einladung | Menschen und Rechte |
 | Ereignis | Technik |
@@ -393,7 +415,9 @@ Die Werkzeuge, die vor jedem Commit laufen (`npm test`): die **Einfuhrprobe** (b
 | Generation | Technik |
 | Geteilt | Blätter |
 | Handzettel | Würfel, Gespräch, Beute |
+| HTTPS | Technik → HTTPS im Heimnetz |
 | Initiative | Kampf |
+| Initiativebonus | Kampf |
 | Kämpfer | Kampf |
 | Kampagne | Kampagnen |
 | Kampfrunde | Kampf |
@@ -401,6 +425,7 @@ Die Werkzeuge, die vor jedem Commit laufen (`npm test`): die **Einfuhrprobe** (b
 | Klangteppich | Würfel, Gespräch, Beute |
 | Kompendium | Technik |
 | Konto | Menschen und Rechte |
+| Laufwert, Laufzeit-Stilblatt | Technik |
 | Licht | Der Spieltisch |
 | Lineal | Der Spieltisch |
 | Live-Kanal | Technik |
@@ -428,6 +453,7 @@ Die Werkzeuge, die vor jedem Commit laufen (`npm test`): die **Einfuhrprobe** (b
 | Sitzung | Menschen und Rechte (Anmeldung), Chronik (Spielabend) |
 | sl | Menschen und Rechte → Rolle |
 | Spielleitung | Menschen und Rechte |
+| Stammzertifikat | Technik → HTTPS im Heimnetz |
 | Statblock | Kampf → Bestiarium |
 | Szene | Der Spieltisch |
 | Szenenlade | Der Spieltisch |

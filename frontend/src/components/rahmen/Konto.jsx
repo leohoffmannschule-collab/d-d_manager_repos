@@ -12,6 +12,7 @@ import { useLiveStatus } from '../../lib/live.jsx';
 import { IconCrown, IconHelp, IconKey, IconLogout, IconQuill, IconUsers } from '../icons.jsx';
 import PasswortWechsel from './PasswortWechsel.jsx';
 import Verbindung from './Verbindung.jsx';
+import Laufwert from '../Laufwert.jsx';
 
 export default function Konto() {
   const { user, logout, isDm } = useAuth();
@@ -37,12 +38,12 @@ export default function Konto() {
         aria-label="Konto"
       >
         <Verbindung connected={connected} />
-        <span
+        <Laufwert
           className="farbpunkt flex h-7 w-7 items-center justify-center rounded-full font-display text-[13px] font-semibold text-[var(--marke-schrift)]"
-          style={{ '--farbe': user.color }}
+          werte={{ '--farbe': user.color }}
         >
           {user.name.charAt(0).toUpperCase()}
-        </span>
+        </Laufwert>
         <span className="hidden font-display text-[13px] tracking-[0.08em] sm:inline">{user.name}</span>
       </button>
 
@@ -61,7 +62,7 @@ export default function Konto() {
               <ul className="space-y-1">
                 {presence.map((p) => (
                   <li key={p.id} className="flex items-center gap-2 text-[15px] text-sepia">
-                    <span className="farbpunkt h-2 w-2 rounded-full" style={{ '--farbe': p.color }} />
+                    <Laufwert className="farbpunkt h-2 w-2 rounded-full" werte={{ '--farbe': p.color }} />
                     {p.name}
                     {p.role === 'sl' && <IconCrown size={12} className="text-gold" />}
                   </li>

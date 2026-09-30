@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { mediaApi } from '../../../lib/api.js';
 import { IconMap } from '../../icons.jsx';
 import { px } from '../../../lib/stilwerte.js';
+import Laufwert from '../../Laufwert.jsx';
 
 export default function Rastervorschau({ karte, entwurf }) {
   const rahmen = useRef(null);
@@ -37,12 +38,13 @@ export default function Rastervorschau({ karte, entwurf }) {
         </div>
       )}
       {feld >= 4 && (
-        <div
+        <Laufwert
+          als="div"
           aria-hidden="true"
           className="karten-raster pointer-events-none absolute inset-0"
           // Das Netz selbst steht in stile/spieltisch/flaeche.css (.karten-raster) –
           // hier nur Linienfarbe, Feldgröße und Versatz der Vorschau.
-          style={{
+          werte={{
             '--linie': linie,
             '--feld': px(feld),
             '--versatz-x': px(entwurf.gridOffsetX * faktor),

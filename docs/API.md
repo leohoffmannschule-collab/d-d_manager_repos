@@ -22,6 +22,15 @@ sofort, wenn er etwas bricht, worauf sich eine Oberfläche verlässt.
   eine Oberfläche selbst verwalten müsste – Anmelden genügt.
 - Geschrieben wird über gewöhnliche REST-Aufrufe, zurück kommen Änderungen
   über einen Live-Kanal (siehe unten).
+- Jede Antwort trägt eine Content-Security-Policy (ohne `unsafe-inline`); eine
+  andere Oberfläche, die vom Almanach ausgeliefert wird, darf deshalb weder
+  Skripte noch Stil im Markup einbetten. `GET /api/health` (offen) antwortet
+  mit `{ status, driver, angemeldet, https, time }` – `https` ist der Port des
+  verschlüsselten Eingangs im Heimnetz oder `null`.
+- Ist ein Zertifikat angelegt (`npm run zertifikat`), antwortet derselbe
+  Almanach zusätzlich über HTTPS auf `HTTPS_PORT` (Vorgabe 3443); das
+  Stammzertifikat liegt unter `GET /almanach-stamm.crt` (außerhalb von `/api`,
+  404 `kein_zertifikat` ohne Zertifikat).
 
 ### Zwei Rollen
 
@@ -75,7 +84,8 @@ Der Server rechnet für Spielleitung und Runde **getrennte Fassungen** aus. Er
 verlässt sich nicht darauf, dass die Oberfläche etwas versteckt:
 
 - Verborgene Kämpfer und Figuren fehlen in der Fassung für die Runde ganz.
-- Von Monstern gibt es statt Trefferpunkten (`hp: null`) nur einen `status`.
+- Von Monstern gibt es statt Trefferpunkten (`hp: null`) nur einen `status`,
+  und statt des Initiativebonus `initiativeBonus: null`.
 - Verdeckte Würfe und verdeckte Chronikeinträge werden gar nicht erst
   geschickt.
 - Das Bestiarium, die Begegnungen und die geheimen Notizen sind für die Runde
@@ -237,7 +247,7 @@ Dabei gilt:
 
     GET    /api/characters               eigene und geteilte, als Kurzfassung
     GET    /api/characters/:id           samt `editable`
-    POST   /api/characters               { name, system?, data, npc? }   npc nur [SL]
+    POST   /api/characters               { name, system?, data, npc? }   npc nur [SL]; auch zum Einlesen einer mitgenommenen Datei
     PUT    /api/characters/:id           { name?, data? }
     PATCH  /api/characters/:id           { ownerId?, shared?, npc? }   ownerId und npc nur [SL]
     DELETE /api/characters/:id
@@ -247,6 +257,11 @@ Dabei gilt:
 
 Die Kurzfassung enthält vorgerechnet `hp`, `ac` und `initiative`, damit eine
 Übersicht nicht jedes Blatt einzeln laden muss.
+
+`system` ist `dnd5e` (Vorgabe) oder `freeform`, `data` ein Objekt. Ein
+unbekanntes Regelwerk oder ein Datensatz, der kein Objekt ist, gibt 400
+`blatt_ungueltig` – seit sich mitgenommene Blätter wieder einlesen lassen,
+kommt der Rumpf auch aus Dateien, die jemand in der Hand hatte.
 
 **NSC-Blätter** (`npc: true`) sind der Zettel der Spielleitung hinter dem
 Schirm. Sie liefern einer Spielerin `403`, tauchen in ihrer Übersicht nicht auf
@@ -258,18 +273,30 @@ auf dem Spieltisch verknüpfen; dann gelten dessen Sinne für ihre Sicht.
 ### /api/encounter   (Standard: angemeldet)
 
     GET    /api/encounter                        rollengefiltert
-    POST   /api/encounter/combatants             [SL]
-    PUT    /api/encounter/combatants/:id         [SL]
+    POST   /api/encounter/combatants             [SL]  { name, type?, initiative?, initiativeBonus?, hp?, maxHp?, ac?, hidden?, characterId? }
+    PUT    /api/encounter/combatants/:id         [SL]  dieselben Felder, nur was mitkommt
     POST   /api/encounter/combatants/:id/damage  [SL]  { amount }  negativ heilt
     POST   /api/encounter/combatants/:id/initiative   { value }  eigene Zeile auch für die Runde
     DELETE /api/encounter/combatants/:id         [SL]
     POST   /api/encounter/next-turn              [SL]
     POST   /api/encounter/prev-turn              [SL]
     POST   /api/encounter/reset                  [SL]
-    POST   /api/encounter/roll-initiative        [SL]  { onlyEmpty? }
+    POST   /api/encounter/roll-initiative        [SL]  { onlyEmpty? }  W20 + initiativeBonus
     POST   /api/encounter/party                  [SL]  holt die Runde in den Kampf
 
 Trefferpunkte wandern in beide Richtungen zwischen Kampf und Charakterblatt.
+
+**Initiativebonus.** Jeder Kämpfer trägt `initiativeBonus` (−5 bis +20). Aus
+dem Bestiarium (`/library/:id/add-to-encounter`) kommt er aus der
+Geschicklichkeit des Statblocks (GE 18 → +4), aus einer Begegnung aus ihrem
+Posten (`entries[].initiativeBonus`, sonst aus dem Bestiarium nachgeschlagen);
+gewürfelt wird immer W20 plus Bonus. Die Runde bekommt ihn für NSC und Monster
+als `null`.
+
+**Verbergen gilt für Kämpfer und Figur gemeinsam.** Setzt `PUT` `hidden` um,
+gehen alle Figuren mit, die an diesem Kämpfer hängen (`combatantId`) – und
+umgekehrt (`PATCH /api/scenes/figuren/:id`). Beides in einem Schreibvorgang;
+danach gehen `kampf` und `szene` an alle.
 
 ### /api/scenes   (Standard: angemeldet)
 
@@ -283,7 +310,7 @@ Trefferpunkte wandern in beide Richtungen zwischen Kampf und Charakterblatt.
     POST   /api/scenes/:id/nebel             [SL]  { cells, revealed }
     POST   /api/scenes/:id/nebel/alles       [SL]  { revealed }
     POST   /api/scenes/:id/figuren           [SL]
-    PATCH  /api/scenes/figuren/:id           bewegen darf, wem die Figur gehört
+    PATCH  /api/scenes/figuren/:id           { x?, y?, … }  bewegen darf, wem die Figur gehört; alles andere [SL]
     DELETE /api/scenes/figuren/:id           [SL]
     POST   /api/scenes/:id/figuren/aus-kampf [SL]
     POST   /api/scenes/ping                  { x, y }
@@ -294,7 +321,12 @@ Eine Szene, die aus einer Karte der Bibliothek entstanden ist, trägt deren
 
 Eine neue Figur darf nur an einem Blatt und einem Kämpfer *dieser* Kampagne
 hängen (`characterId`, `combatantId`); eine unbekannte Kennung gibt
-400 `verweis_unbekannt`. Ein Zeigefinger hinter geschlossenem Vorhang geht
+400 `verweis_unbekannt`. Dasselbe gilt für `PATCH /api/scenes/figuren/:id`
+mit `characterId` (nur Spielleitung; `null` löst die Bindung): So bindet die
+Spielleitung eine Figur von Hand an ein Blatt, danach zieht dessen Besitzerin
+sie. Felder, die eine Spielerin nicht setzen darf (Name, Größe, Licht,
+verborgen, Blatt), übergeht der Weg bei ihr still – die Antwort ist 200, die
+Felder bleiben, wie sie waren. Ein Zeigefinger hinter geschlossenem Vorhang geht
 nur an die Spielleitung – schon die Stelle verriete, wo gerade aufgebaut
 wird.
 
@@ -519,8 +551,8 @@ wievielte. Beides steht ausführlich in
 
     /api/dice        Würfeln und geteilte Wurfchronik (verdeckt nur [SL])
     /api/stash       Beutekiste: Münzen, Gefundenes, /teilung, /auszahlen [SL]
-    /api/library     Bestiarium                                    (ganz [SL])
-    /api/encounters  gespeicherte Begegnungen                      (ganz [SL])
+    /api/library     Bestiarium; /:id/add-to-encounter { count?, rollInitiative?, hidden? }  (ganz [SL])
+    /api/encounters  gespeicherte Begegnungen; /:id/stellen, /aus-kampf                     (ganz [SL])
     /api/notes       Notizen; die Runde sieht nur `visibility: "runde"`
     /api/chronicle   Sitzungen, Einträge, /protokoll (Markdown), /rueckblick [SL]
     /api/media       Bilder: POST als data:-URL, GET liefert sie aus

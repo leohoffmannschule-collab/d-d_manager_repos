@@ -72,11 +72,19 @@ export default function Spielleitung() {
         </li>
         <li>
           Im <span className="font-display">Bestiarium</span> genügt ein Klick, um „3 Goblins“ samt gewürfelter
-          Initiative in den Kampf zu stellen – wahlweise verborgen, bis der Hinterhalt zuschnappt.
+          Initiative in den Kampf zu stellen – W20 plus Geschicklichkeitsbonus aus dem Statblock, wahlweise
+          verborgen, bis der Hinterhalt zuschnappt.
         </li>
         <li>
           <span className="font-display">Figuren aus dem Kampf</span> legt für jeden Kämpfer eine Figur auf die
           Karte. Schaden, den du in der Kampfliste einträgst, steht sofort auf dem Charakterblatt – und umgekehrt.
+          Einen Gegner deckst du einmal auf – mit dem Auge in der Kampfliste oder im Figurenfeld –, und er erscheint
+          in der Liste und auf der Karte zugleich.
+        </li>
+        <li>
+          Eine Figur bindest du im <span className="font-display">Figurenfeld</span> unter{' '}
+          <span className="font-display">Blatt</span> an ein Charakterblatt. Danach zieht die Besitzerin sie selbst,
+          und ihre Sinne bestimmen, was sie sieht – auch ganz ohne Kampf.
         </li>
         <li>
           Unter <span className="font-display">Begegnungen</span> stellst du Gruppen einmal zusammen und stellst

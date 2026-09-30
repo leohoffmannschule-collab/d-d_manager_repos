@@ -46,12 +46,15 @@ backend/src/
   datenbank/         öffnen, Schema, Nachrüsten, Transaktionen
   auth.js            der Eingang zu Anmeldung und Zutritt; anmeldung/ baut
   anmeldung/         Kennwörter, Sitzungen, Cookie, die vier Wächter, Konten
+  kopfzeilen.js      Sicherheitskopfzeilen samt Content-Security-Policy
+  https/             Zertifikate selbst ausstellen; HTTPS-Eingang im Heimnetz
   events.js          der Live-Kanal (SSE): wer hängt dran, wer bekommt was
   werte.js           Eingaben säubern: Zahlen, Farben, Textlisten
   asynchron.js       async-Wege für Express 4
   sicht.js, sicht/   was eine Figur sieht – Felder, Sinne, Licht, Bitkarte
   spieltisch/        Szenen umwandeln, Sichtbarkeit je Person, verschicken
-  kampf/             Kämpfer umwandeln, die zwei Sichten, TP aufs Blatt
+  kampf/             Kämpfer umwandeln, die zwei Sichten, TP aufs Blatt,
+                     Initiativebonus, gemeinsam verbergen
   blattmeldung.js    Blattänderungen nur denen melden, die das Blatt sehen
   beute.js           die Beutekiste: Inhalt und Teilen
   klang.js           der Klangteppich: was aufliegt, wo es steht
@@ -65,12 +68,13 @@ backend/src/
                      gerechnet wird in den Modulen darüber
   vorlagen/          die zwölf fertigen Charaktere für eine frische Kampagne
 
-backend/scripts/     Befehle für den Betrieb: Sicherung, Vorlagen, Kennwort
+backend/scripts/     Befehle für den Betrieb: Sicherung, Vorlagen, Kennwort, Zertifikat
 
 frontend/src/
   main.jsx           Startpunkt
   App.jsx            welche Adresse zeigt was – und die drei Tore davor
   index.css, stile/  das ganze Aussehen; kein Stil steht im JSX
+                     (Werte aus dem Browser: lib/laufstil.js, components/Laufwert.jsx)
   lib/               alles ohne Aussehen: Server, Zustand, Regeln, Rechnungen
     api.js, api/     die Wege des Servers, nach Sachgebieten
     live.jsx         der Live-Draht und useLive
@@ -212,6 +216,13 @@ Abmelden, Rollenwechsel oder dem Entfernen aus einer Kampagne muss
 `trenne()` aus `events.js` laufen – sonst hört das Fenster mit dem alten
 Stand weiter mit. `auth.js` tut das für alles rund um Sitzungen von selbst.
 
+**Nichts eingebettet.** Kein `style` im JSX, kein `<style>` oder `<script>`
+im Markup, kein `onclick="…"`, kein SVG mitten im Bauteil. Wie etwas aussieht,
+steht in `stile/`; Werte, die erst im Browser feststehen, gehen über
+`<Laufwert werte={{ '--x': px(x) }}>` in eine Laufzeit-Regel
+(`lib/laufstil.js`); Symbole stehen in `components/icons/`. Das hält die
+Content-Security-Policy streng, und `npm run stilprobe` passt darauf auf.
+
 **Eingaben gehen durch `werte.js`.** `toNumber`, `clamp`, `istFarbe`,
 `texte` – nicht in jeder Datei eine eigene, leicht andere Fassung davon.
 Verweise auf andere Zeilen (ein Blatt, ein Kämpfer) werden gegen die
@@ -226,13 +237,13 @@ ein 400 sein, kein Fremdschlüssel-500.
 npm run build          # die Oberfläche neu bauen – sonst ändert sich nichts
 npm run lint           # oxlint über Oberfläche, Server und Werkzeuge
 npm run einfuhrprobe   # benutzt jemand etwas, das er nicht eingeführt hat?
-npm run stilprobe      # steht irgendwo Stil oder Skript mitten im Markup?
+npm run stilprobe      # steht irgendwo Stil, Skript oder SVG eingebettet im Markup?
 npm run kommentarprobe # hat jede Datei ihren Kopf, jede Ausfuhr ihr Warum?
-npm run blattprobe     # die Rechnungen des Charakterblattes (340 Prüfungen)
+npm run blattprobe     # die Rechnungen des Charakterblattes (356 Prüfungen)
 npm run klangprobe     # die Gleichschaltung des Klangteppichs
 npm run vertrag        # der Prüfdurchgang: startet einen eigenen Almanach
                        # auf einem freien Port mit leerer Datenbank und spielt
-                       # eine ganze Runde durch (300 Prüfungen, 20 Kapitel)
+                       # eine ganze Runde durch (356 Prüfungen, 21 Kapitel)
 npm test               # alles oben der Reihe nach – vor jedem Commit
 ```
 

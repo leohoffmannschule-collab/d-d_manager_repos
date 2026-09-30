@@ -169,7 +169,7 @@ blattAlsHtml(charakter)
   2  alsDatenUrl(portrait)              das Bildnis einbetten (ist es schon eine data:-Adresse, bleibt es)
   3  zaubertexte(spells)                für jeden übernommenen Zauber den Text aus dem Kompendium
   4  dnd5eKoerper(…) / freiKoerper(…)   die Abschnitte als HTML, in der Reihenfolge des Bogens
-  5  STIL + SKRIPT + DATEN              Stilblatt, Druckknopf und Datensatz einbetten
+  5  STIL + DATEN                       Stilblatt und Datensatz einbetten
   → eine Zeichenkette mit dem ganzen Dokument
 
 ladeBlattHerunter(charakter)
@@ -191,7 +191,7 @@ Schritt 8 hat eine Geschichte: Der Browser liest den Inhalt erst *nach* dem Klic
 | `lib/blatt/koerper.js` | welche Tafel in welcher Reihenfolge – für das 5e-Blatt und das freie |
 | `lib/blatt/abschnitte.js` und `abschnitte/` | je eine Funktion je Tafel: Attribute, Kampf, Zustand, Rettungswürfe, Sinne, Fertigkeiten, Aktionen, Ressourcen, Zauber, Zauberblock, Inventar, Merkmale, Erscheinung, Hintergrund |
 | `lib/blatt/stil/*.css` | das Aussehen: Grund, Bogen, Listen, Zauberblock, Leiste (samt der Fassung für Papier) |
-| `lib/blatt/drucken.js` | der Druckknopf |
+| `lib/blattEinfuhr.js` | der Rückweg: den Datensatz aus einer mitgenommenen Datei lesen |
 
 ### Entschärfen
 
@@ -199,36 +199,39 @@ Schritt 8 hat eine Geschichte: Der Browser liest den Inhalt erst *nach* dem Klic
 
 Eine leere Tafel verschwindet: `tafel(titel, '')` gibt nichts zurück, und so steht auf dem Bogen einer Kämpferin ohne Zauber keine leere Tafel „Zauber“.
 
-### Stil und Skript – als echte Dateien, eingebettet
+### Das Stilblatt – als echte Dateien, beim Bauen eingesetzt
 
-Die fertige Datei muss ihr Stilblatt und ihr Skript **in sich** tragen: Beim Doppelklick gibt es keinen Server, von dem eine zweite Datei käme. Geschrieben werden beide trotzdem als echte Dateien (`lib/blatt/stil/*.css`, `lib/blatt/drucken.js`) – mit Hervorhebung im Editor, Prüfung durch die Werkzeuge, Formatierung. Beim Bauen holt Vite sie als Text herein:
+Die fertige Datei muss ihr Stilblatt **in sich** tragen: Beim Doppelklick gibt es keinen Server, von dem eine zweite Datei käme, und beim Verschicken per Mail oder beim Öffnen aus der Dateien-App ginge ein Verweis auf eine zweite Datei verloren. Geschrieben wird das Stilblatt trotzdem als echte Dateien (`lib/blatt/stil/*.css`) – mit Hervorhebung im Editor, Prüfung durch die Werkzeuge, Formatierung. Beim Bauen holt Vite sie als Text herein:
 
 ```js
 import GRUND from './blatt/stil/grund.css?raw';
 import BOGEN from './blatt/stil/bogen.css?raw';
 …
-import ROHSKRIPT from './blatt/drucken.js?raw';
 ```
 
 `?raw` ist Vites Weg, eine Datei als Zeichenkette einzuführen. Die Erklärköpfe der Dateien werden dabei abgeschnitten – sie richten sich an Mitarbeitende am Code und haben im Blatt einer Spielerin nichts verloren. Die Reihenfolge der Stilblätter ist die der Kaskade; `leiste.css` enthält die Regeln für Papier und kommt deshalb zuletzt.
 
-Das Skript ist eine Zeile: Es hängt an den Knopf „Drucken“ ein `window.print()`. Ein eigenes Skript statt `onclick="…"` am Knopf, damit auch dieser Code in einer echten Datei steht – die Stilprobe verbietet `onclick` und `style` in erzeugtem HTML.
+**Das ist die eine Stelle im ganzen Almanach, an der eine Seite CSS in sich trägt** – und zwar nur in dieser erzeugten Datei, nicht im Quelltext. Die Stilprobe lässt genau diese Stelle zu, mit ihrem Grund, und keine andere.
+
+**Ein Skript trägt die Datei nicht.** Früher hatte sie einen Knopf „Drucken“ mit einer Zeile JavaScript (`window.print()`). Er ist ersetzt durch den Hinweis, wie man druckt – Strg+P, am iPad Teilen → Drucken; das kann jeder Browser ohnehin, und eine Datei, die jemand anderes doppelklickt, führt so nichts aus.
 
 ### Für Papier
 
-Gedruckt sieht die Datei aus wie ein Charakterbogen und nicht wie ein Bildschirmfoto: Die Leiste mit dem Druckknopf verschwindet, der Hintergrund wird weiß, die Rahmen grau, die Schrift wird auf Punkt gestellt (11 pt). Die Regeln dafür stehen unter `@media print` in `lib/blatt/stil/leiste.css`. Tafeln, Tabellenzeilen und Zauberblöcke tragen `break-inside: avoid` und werden deshalb nicht mitten auf einer Seite zerschnitten.
+Gedruckt sieht die Datei aus wie ein Charakterbogen und nicht wie ein Bildschirmfoto: Die Leiste mit dem Druckhinweis verschwindet, der Hintergrund wird weiß, die Rahmen grau, die Schrift wird auf Punkt gestellt (11 pt). Die Regeln dafür stehen unter `@media print` in `lib/blatt/stil/leiste.css`. Tafeln, Tabellenzeilen und Zauberblöcke tragen `break-inside: avoid` und werden deshalb nicht mitten auf einer Seite zerschnitten.
 
 ### Der Datensatz
 
-Am Ende der Datei steht der vollständige Datensatz:
+Am Ende der Datei steht der vollständige Datensatz – entschärft, in einem `<template>`:
 
 ```html
-<script type="application/json" id="almanach-daten">
-{ "name": "Seraphine Morgenlicht", "system": "dnd5e", "data": { … }, "stand": "2026-09-30T19:12:04.113Z" }
-</script>
+<template id="almanach-daten">{
+  &quot;name&quot;: &quot;Seraphine Morgenlicht&quot;, &quot;system&quot;: &quot;dnd5e&quot;, &quot;data&quot;: { … }, …
+}</template>
 ```
 
-Ein `<script>` mit dem Typ `application/json` führt der Browser nicht aus; er ist nur ein Behälter für Text. `<` wird darin als `<` maskiert, sonst könnte ein Text im Blatt – `</script>` in den Notizen – den Behälter vorzeitig schließen. Mit diesem Datensatz ist die Datei zugleich eine Sicherung; wie man ein Blatt daraus zurückholt, steht im Kapitel „Betrieb im Alltag“.
+Ein `<template>` zeigt der Browser nicht an und führt nichts davon aus; er ist nur ein Behälter für Text. Weil der Text mit `esc()` entschärft ist, kann kein Text im Blatt – `</template>` in den Notizen – den Behälter vorzeitig schließen. (Ältere Dateien trugen den Datensatz in einem `<script type="application/json">`, mit `\u003c` statt `<`; auch die liest der Almanach.)
+
+Mit diesem Datensatz ist die Datei zugleich eine Sicherung. **„Blatt einlesen“** in der Übersicht (`components/BlattEinlesen.jsx`) legt daraus wieder ein Blatt an: `lib/blattEinfuhr.js` liest den Datensatz mit einem regulären Ausdruck (ein DOMParser baute die ganze Seite samt Bildern auf, gebraucht wird nur der eine Block), prüft Name, Regelwerk und Form und schickt ihn als neues Blatt an den Server. Das Blatt gehört danach der Person, die angemeldet ist; ein vorhandenes wird nie überschrieben – wer zwei Stände hat, soll beide vor sich sehen. Der Server prüft dasselbe noch einmal (`POST /api/characters`: unbekanntes Regelwerk oder ein Datensatz, der kein Objekt ist, ergibt `blatt_ungueltig`). Die Blattprobe spielt Hin- und Rückweg durch, auch mit `</template>` und `&` in einem Text.
 
 ### Der Dateiname
 

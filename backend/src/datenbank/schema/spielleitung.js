@@ -16,6 +16,7 @@ export const SPIELLEITUNG = `
     name TEXT NOT NULL,
     type TEXT NOT NULL DEFAULT 'monster',
     initiative INTEGER NOT NULL DEFAULT 0,
+    initiative_bonus INTEGER NOT NULL DEFAULT 0,
     hp INTEGER NOT NULL DEFAULT 0,
     max_hp INTEGER NOT NULL DEFAULT 0,
     ac INTEGER NOT NULL DEFAULT 10,

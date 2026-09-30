@@ -21,6 +21,7 @@ import { charactersApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
 import { useCharaktere } from '../lib/daten.js';
 import BlattEinlesen from '../components/BlattEinlesen.jsx';
+import Laufwert from '../components/Laufwert.jsx';
 import Kopierziel from '../components/Kopierziel.jsx';
 import { IconCrown, IconEye, IconEyeOff, IconPlus, IconScroll } from '../components/icons.jsx';
 import { prozent } from '../lib/stilwerte.js';
@@ -84,7 +85,7 @@ function Blatt({ c, user, isDm, onOeffnen, onAbschrift, onLoeschen }) {
         <div className="flex items-center gap-2.5">
           <span className="font-display text-[10px] tracking-[0.16em] text-faint uppercase">Trefferpunkte</span>
           <span className="flex h-2.5 flex-1 overflow-hidden border border-rule-strong bg-panel-soft">
-            <span className="fuellstand bg-rubric" style={{ '--anteil': prozent(ratio) }} />
+            <Laufwert className="fuellstand bg-rubric" werte={{ '--anteil': prozent(ratio) }} />
           </span>
           <span className="font-display text-[15px] font-semibold text-rubric">
             {hp.current ?? 0}/{hp.max}

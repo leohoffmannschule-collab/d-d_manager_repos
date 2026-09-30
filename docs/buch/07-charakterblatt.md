@@ -310,7 +310,7 @@ Daraus gerechnet, und nur zum Ablesen:
 - **Zauber-SG** = 8 + Übungsbonus + Modifikator des Zauberattributs;
 - **Angriffsbonus** = Übungsbonus + Modifikator des Zauberattributs.
 
-Das Blatt kennt außerdem zwei Felder, die diese Rechnung übersteuern: `spellcasting.manualSaveDC` und `spellcasting.manualAttackBonus`. Stehen sie auf einer Zahl statt auf `null`, gilt die Zahl – für Figuren mit einem magischen Fokus oder einer Hausregel. Auf dem Reiter gibt es für sie bisher kein Eingabefeld; sie stehen im Datenmodell, damit die Ausfuhr und das Blatt dieselbe Zahl zeigen, sobald eines dazukommt.
+**Von Hand überschreiben.** Beide Zahlen lassen sich auf der Karte „Zauberwirken“ überschreiben – für einen Stab des Zauberers (+2 auf Angriff und SG), einen Pakt, eine Hausregel. Ein leeres Feld zeigt den gerechneten Wert blass als Vorschlag und darunter „gerechnet“; wer eine Zahl einträgt, sieht darunter „gerechnet wäre …“ und einen Knopf „zurück“, der den eigenen Wert wieder löscht. Gespeichert wird in `spellcasting.manualSaveDC` und `spellcasting.manualAttackBonus`: `null` heißt „rechnen“, eine Zahl gilt – auch eine 0, denn die hat dann jemand absichtlich eingetragen. Blatt und mitgenommene Datei rechnen über dieselbe Funktion (`zauberwerte` in `lib/regeln/rechnen.js`), zeigen also immer dieselbe Zahl.
 
 ### Zauberplätze
 
@@ -398,9 +398,9 @@ Warum nicht einfach in Metern speichern? Aus zwei Gründen. Erstens sammelten si
 
 Der Knopf **„Mitnehmen“** im Kopf des Blattes erzeugt eine einzige HTML-Datei mit dem ganzen Blatt (`frontend/src/lib/blattAusfuhr.js`):
 
-- Sie braucht **weder Netz noch Server**: Stilblatt und Druckskript stecken darin, das Bildnis ist als `data:`-Adresse eingebettet. Doppelklicken genügt, auf jedem Gerät.
+- Sie braucht **weder Netz noch Server**: Das Stilblatt steckt darin, das Bildnis ist als `data:`-Adresse eingebettet. Doppelklicken genügt, auf jedem Gerät. Ein Skript enthält sie nicht; gedruckt wird mit Strg+P (am iPad Teilen → Drucken), wie oben in der Datei steht.
 - Gedruckt sieht sie aus wie ein **Charakterbogen**: Kopf mit Bildnis, Übungsbonus und passiver Wahrnehmung, dann Attribute, Kampfwerte, Verteidigung und Zustand, Rettungswürfe, Sinne, Fertigkeiten, Angriffe, Aktionen, Ressourcen, Zauber samt ihren vollen Beschreibungen aus dem Kompendium, Ausrüstung, Merkmale, Aussehen und Hintergrund. Leere Abschnitte fallen weg.
-- Am Ende der Datei steckt der **vollständige Datensatz** als JSON (`<script type="application/json" id="almanach-daten">`). Die Datei ist damit zugleich eine Sicherung, aus der sich ein verlorenes Blatt wiederherstellen lässt.
+- Am Ende der Datei steckt der **vollständige Datensatz** (`<template id="almanach-daten">`). Die Datei ist damit zugleich eine Sicherung: **„Blatt einlesen“** in der Übersicht legt daraus wieder ein Blatt an – als neues Blatt der Person, die angemeldet ist; ein vorhandenes wird nie überschrieben.
 - Der Dateiname ist der Name der Figur mit dem Datum, Umlaute umschrieben („Kapitaen Sturmhand-2026-09-30.html“) – ein Dateiname mit „ä“ überlebt nicht jeden Browser und nicht jeden USB-Stick.
 
 Änderungen in der mitgenommenen Datei wandern nicht zurück; am Spieltisch gilt das Blatt im Almanach. Wie die Datei im Einzelnen gebaut ist, steht im Kapitel „Das Blatt: Datenmodell und Ausfuhr“.
@@ -444,7 +444,7 @@ Wer mehrere Felder in einem Zug ändert, baut ein neues Blatt und ruft `replace`
 
 **4. Die Vorlagen** (falls das Feld bei ihnen einen besonderen Wert haben soll). `backend/src/vorlagen/bauen.js` baut die zwölf Vorlagen aus knappen Steckbriefen; was dort nicht gesetzt wird, ergänzt `withDefaults` beim Öffnen ohnehin.
 
-**5. Die Probe.** `scripts/blattprobe.mjs` prüft die Rechnungen des Blattes (340 Prüfungen). Kommt eine Rechnung dazu, kommt dort eine Prüfung dazu; `npm run blattprobe` läuft in unter einer Sekunde.
+**5. Die Probe.** `scripts/blattprobe.mjs` prüft die Rechnungen des Blattes (356 Prüfungen). Kommt eine Rechnung dazu, kommt dort eine Prüfung dazu; `npm run blattprobe` läuft in unter einer Sekunde.
 
 Soll der **Server** auf das neue Feld reagieren – so wie auf Trefferpunkte und Sinne –, ist das eine größere Änderung: Sie gehört in `PUT /api/characters/:id` und in den Vertrag (`scripts/vertrag/`), und sie macht aus dem JSON-Klumpen an dieser einen Stelle ein Feld, das der Server kennt. Das sollte die Ausnahme bleiben.
 

@@ -217,7 +217,9 @@ Abtippen, kein Vorlesen.
   Zauber hält.
 - **Stufe.** Die Erfahrung verrät, welche Stufe zusteht – ein Knopf setzt sie.
 - **Zauber.** Ein Tipp auf den Namen holt den ganzen Zaubertext ans Blatt.
-  Kein Blättern ins Kompendium mitten im Zug.
+  Kein Blättern ins Kompendium mitten im Zug. Zauber-SG und Angriffsbonus
+  rechnet das Blatt aus Stufe und Zauberattribut; wer einen Stab des
+  Zauberers trägt, überschreibt beide auf der Karte „Zauberwirken“ von Hand.
 
 ### 3.8 Bildnis und Figur
 
@@ -236,12 +238,15 @@ Plättchen in der Farbe ihrer Besitzerin, mit dem Namen daneben.
 Der Knopf **Mitnehmen** sichert das Blatt als **eine einzelne Datei** aufs
 Gerät – mit Bildnis und allem, was darauf steht. Diese Datei braucht
 weder Netz noch Server; ein Doppelklick genügt, auf jedem Gerät. Gedruckt
-sieht sie aus wie ein Charakterbogen.
+(Strg+P, am iPad *Teilen → Drucken*) sieht sie aus wie ein Charakterbogen.
+Ein Skript enthält sie nicht – sie zeigt nur an.
 
 Gedacht ist sie für die Vorbereitung, wenn der Almanach nicht läuft, und für
-den Zug zur Runde. **Änderungen darin wandern nicht zurück** – am Spieltisch
-gilt das Blatt im Almanach. Ganz hinten in der Datei steckt der vollständige
-Datensatz; sie ist damit zugleich eine Sicherung.
+den Zug zur Runde. **Änderungen darin wandern nicht von selbst zurück** – am
+Spieltisch gilt das Blatt im Almanach. Ganz hinten in der Datei steckt der
+vollständige Datensatz; sie ist damit zugleich eine Sicherung: **Blatt
+einlesen** in der Übersicht legt daraus wieder ein Blatt an (als neues –
+ein vorhandenes wird nie überschrieben).
 
 ---
 
@@ -270,8 +275,19 @@ zweihundertfünfzig Meter im Quadrat.
 ### 4.3 Initiative
 
 Beginnt ein Kampf, würfelt jede Spielerin ihre Initiative **selbst** am
-Spieltisch; sie steht sofort in der Liste der Spielleitung. Trefferpunkte
-wandern zwischen Kampfliste und Charakterblatt **in beide Richtungen**.
+Spieltisch; sie steht sofort in der Liste der Spielleitung. Gegner würfeln
+W20 plus ihren Geschicklichkeitsbonus aus dem Statblock – den Bonus sieht nur
+die Spielleitung. Trefferpunkte wandern zwischen Kampfliste und
+Charakterblatt **in beide Richtungen**.
+
+### 4.4 Figuren und Blätter
+
+Eine Figur, die an einem Charakterblatt hängt, zieht dessen Besitzerin
+selbst, und ihre Sinne bestimmen, was sie sieht. Verknüpft wird über „Runde
+holen“ und „Figuren aus dem Kampf“ – oder von Hand im Figurenfeld unter
+*Blatt*. Eine Figur, die an einem Kämpfer hängt, verbirgt und zeigt sich
+mit ihm: Wer den Hinterhalt aufdeckt, tut es einmal, und der Gegner steht in
+der Kampfliste und auf der Karte zugleich da.
 
 ---
 
@@ -397,8 +413,8 @@ Sicht.
 ### 6.5 Bestiarium und Begegnungen
 
 - Im **Bestiarium** genügt ein Klick, um „3 Goblins“ samt gewürfelter
-  Initiative in den Kampf zu stellen – wahlweise **verborgen**, bis der
-  Hinterhalt zuschnappt. Monster lassen sich aus dem Kompendium übernehmen
+  Initiative (W20 plus Geschicklichkeitsbonus) in den Kampf zu stellen –
+  wahlweise **verborgen**, bis der Hinterhalt zuschnappt. Monster lassen sich aus dem Kompendium übernehmen
   oder von Hand anlegen, mit Schlagworten und eigener Figur.
 - Unter **Begegnungen** werden Gruppen einmal zusammengestellt und an jedem
   Abend mit einem Klick gestellt – samt gewürfelter Initiative. Was
@@ -579,14 +595,26 @@ Wer den Almanach neu gestaltet, übersetzt oder in eine ganz andere Anwendung
 ### 13.4 Der Vertrag
 
 `npm run vertrag` startet einen eigenen Almanach auf einem freien Port mit
-frischer Datenbank, spielt eine Runde durch und prüft in **über 270
-Prüfungen**, dass die Schnittstelle sich verhält, wie die Oberfläche es
-erwartet – samt der Frage, ob wirklich verborgen bleibt, was verborgen
-bleiben soll.
+frischer Datenbank, spielt eine Runde durch und prüft in **356 Prüfungen**,
+dass die Schnittstelle sich verhält, wie die Oberfläche es erwartet – samt
+der Frage, ob wirklich verborgen bleibt, was verborgen bleiben soll.
 
 Vor jedem Commit genügt ein Befehl: `npm test` lässt Linter, Einfuhr-,
-Blatt- und Klangprobe und den Vertrag nacheinander laufen und bricht beim
-ersten Fehler ab.
+Stil-, Kommentar-, Blatt- und Klangprobe und den Vertrag nacheinander laufen
+und bricht beim ersten Fehler ab.
+
+### 13.5 Verschlüsselung und die zweite Mauer
+
+Über den Tunnel ist alles verschlüsselt. Im Heimnetz richtet `npm run
+zertifikat` HTTPS ein: Der Almanach stellt sich selbst ein Zertifikat aus,
+das nur für Heimnetzadressen gilt, und lauscht dann zusätzlich auf Port 3443
+(Einrichtungs-Handbuch, Schritt 9.1).
+
+Jede Antwort trägt außerdem eine **Content-Security-Policy**: Der Browser
+führt nur Skripte des Almanachs (und Spotifys Spieler) aus, lädt Stil nur aus
+den eigenen Stilblättern und lässt sich von keiner fremden Seite einrahmen.
+Das geht, weil im Almanach nichts eingebettet ist – kein Skript und kein Stil
+mitten im Markup.
 
 Wer die Oberfläche umbaut, weist damit nach, dass der Unterbau unangetastet
 blieb. Wer am Server schraubt, merkt sofort, wenn er etwas bricht.

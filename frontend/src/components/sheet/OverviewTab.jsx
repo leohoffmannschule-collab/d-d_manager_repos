@@ -27,7 +27,7 @@ import {
 } from '../../lib/dnd5e.js';
 import { blattWurf } from '../../lib/wuerfeln.js';
 import { Card, TextField, TextAreaField, NumberField, SelectField, Toggle } from '../ui.jsx';
-import { IconD20 } from '../icons.jsx';
+import { IconD20, Wappenschild } from '../icons.jsx';
 
 /**
  * Jeder Wert auf dem Blatt ist zugleich ein Würfelknopf: antippen, und der
@@ -61,14 +61,7 @@ function AbilityShield({ label, score, modifier, onChange, name }) {
     <div className="flex flex-col items-center gap-1.5">
       <span className="font-display text-[10px] tracking-[0.12em] text-faint uppercase">{label}</span>
       <div className="relative w-full max-w-[86px]">
-        <svg
-          viewBox="0 0 74 88"
-          className={strong ? 'fill-panel-soft text-gold' : 'fill-panel-soft text-rule-strong'}
-          stroke="currentColor"
-          strokeWidth={strong ? 2.5 : 1.5}
-        >
-          <path d="M4 5h66v42c0 20-14 30-33 36C18 77 4 67 4 47z" />
-        </svg>
+        <Wappenschild stark={strong} />
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5">
           <input
             type="number"

@@ -19,6 +19,7 @@ Die .env gehört nicht ins Git – sie ist in .gitignore eingetragen, denn darin
 | `DATA_DIR` | – |  | backend/src/datenbank/verbindung.js, scripts/adresse.mjs, scripts/start.mjs, scripts/tunnel/grundlagen.mjs |
 | `DND5E_API_BASE` | `'https://www.dnd5eapi.co/api/2014'` |  | backend/src/routes/compendium.js |
 | `DOMAENE` | – | ja | backend/src/domaene.js |
+| `HTTPS_PORT` | `3443` |  | backend/src/https/ablage.js |
 | `PLAYWRIGHT_BROWSERS_PATH` | – |  | scripts/handbuch/drucker.mjs |
 | `PORT` | `3001` |  | backend/src/server.js, scripts/adresse.mjs, scripts/start.mjs, scripts/tunnel/grundlagen.mjs |
 | `TRUST_PROXY` | `'loopback'` |  | backend/src/server.js |
@@ -126,6 +127,12 @@ Ein Tippfehler hält den Almanach nicht auf: Dann ist `adresse` leer, und der
 Aufrufer sagt es beim Start. Eine falsche Adresse in die Runde zu schicken
 wäre schlimmer als gar keine.
 
+### HTTPS_PORT
+
+*backend/src/https/ablage.js, Zeile 39* – ohne Angabe: `3443`
+
+ Der Port für HTTPS: `HTTPS_PORT`, sonst 3443. 
+
 ### PLAYWRIGHT_BROWSERS_PATH
 
 *scripts/handbuch/drucker.mjs, Zeile 47*
@@ -135,7 +142,7 @@ Entwicklungsrechner. Genommen wird nur, was schon da ist.
 
 ### PORT
 
-*backend/src/server.js, Zeile 58* – ohne Angabe: `3001`
+*backend/src/server.js, Zeile 60* – ohne Angabe: `3001`
 
 *scripts/adresse.mjs, Zeile 31* – ohne Angabe: `3001`
 
@@ -147,7 +154,7 @@ Entwicklungsrechner. Genommen wird nur, was schon da ist.
 
 ### TRUST_PROXY
 
-*backend/src/server.js, Zeile 66* – ohne Angabe: `'loopback'`
+*backend/src/server.js, Zeile 68* – ohne Angabe: `'loopback'`
 
 Vor dem Almanach steht entweder gar nichts oder der Cloudflare-Tunnel.
 Läuft der als Dienst auf demselben Gerät, meldet er sich von localhost;

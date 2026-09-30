@@ -1,20 +1,20 @@
 /**
- * Werte für CSS-Variablen – die einzige Brücke zwischen JSX und Stilblatt.
+ * Werte für CSS-Variablen – Einheiten, die das Stilblatt erwartet.
  *
  * Die Regel des Almanachs: Wie etwas aussieht, steht im Stilblatt
  * (`stile/`). Was sich erst im Browser ergibt – wo eine Figur steht, welche
- * Farbe sich jemand gewählt hat, wie voll ein Balken ist –, übergibt das JSX
- * als CSS-Variable, und das Stilblatt setzt sie ein:
+ * Farbe sich jemand gewählt hat, wie voll ein Balken ist –, geht als
+ * CSS-Variable in eine Laufzeit-Regel (lib/laufstil.js), und das Stilblatt
+ * setzt sie ein:
  *
- *     <span className="farbpunkt" style={{ '--farbe': farbe }} />
+ *     <Laufwert className="farbpunkt" werte={{ '--farbe': farbe }} />
  *     .farbpunkt { background-color: var(--farbe); }
  *
- * Ein `style={{ left: 5 }}` mit einer echten CSS-Eigenschaft gibt es damit
- * nicht mehr; die Stilprobe (scripts/stilprobe.mjs) passt darauf auf.
+ * Ein `style`-Attribut gibt es im Almanach nicht mehr, auch nicht für eine
+ * einzelne Variable; die Stilprobe (scripts/stilprobe.mjs) passt darauf auf.
  *
- * Diese beiden Helfer gibt es, weil React eine Zahl in einer CSS-*Variable*
- * nicht mit einer Einheit versieht (anders als bei `left: 5`, das zu `5px`
- * wird). `'--x': 5` käme als nacktes `5` an – und `left: var(--x)` wäre
+ * Diese beiden Helfer gibt es, weil eine nackte Zahl in einer CSS-Variable
+ * keine Einheit hat: `'--x': 5` käme als `5` an, und `left: var(--x)` wäre
  * dann ungültig.
  */
 

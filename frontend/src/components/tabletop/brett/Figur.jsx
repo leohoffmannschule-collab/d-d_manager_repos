@@ -17,6 +17,7 @@
  */
 import { mediaApi } from '../../../lib/api.js';
 import { prozent, px } from '../../../lib/stilwerte.js';
+import Laufwert from '../../Laufwert.jsx';
 
 /**
  * @param {object} props
@@ -33,50 +34,59 @@ export default function Figur({ token, scene, hp, aktiv, beweglich, ziehend }) {
   const anteil = hp?.max ? Math.max(0, Math.min(1, (hp.current ?? 0) / hp.max)) : null;
 
   return (
-    <div
+    <Laufwert
+      als="div"
       data-token={token.id}
       className={`figur select-none ${beweglich ? 'cursor-grab' : 'cursor-default'} ${
         ziehend ? 'z-20 opacity-90' : 'z-10'
       }`}
-      style={{ '--x': px(token.x), '--y': px(token.y), '--groesse': px(groesse) }}
+      werte={{ '--x': px(token.x), '--y': px(token.y), '--groesse': px(groesse) }}
     >
-      <div
+      <Laufwert
+        als="div"
         className={`figur-scheibe relative flex h-full w-full items-center justify-center overflow-hidden rounded-full ${
           aktiv ? 'ring-[3px] ring-gold' : 'ring-2 ring-black/40'
         } ${token.hidden ? 'opacity-55 saturate-50' : ''}`}
         // Mit Bild keine Farbe: Die Scheibe bleibt dann durchsichtig.
-        style={token.mediaId ? undefined : { '--figur-farbe': token.color }}
+        werte={{ '--figur-farbe': token.mediaId ? null : token.color }}
       >
         {token.mediaId ? (
           <img src={mediaApi.url(token.mediaId)} alt="" draggable={false} className="h-full w-full object-cover" />
         ) : (
-          <span className="figur-buchstabe font-display font-bold" style={{ '--schrift': px(Math.max(11, groesse * 0.42)) }}>
+          <Laufwert
+            als="span"
+            className="figur-buchstabe font-display font-bold"
+            werte={{ '--schrift': px(Math.max(11, groesse * 0.42)) }}
+          >
             {(token.name || '?').charAt(0).toUpperCase()}
-          </span>
+          </Laufwert>
         )}
-      </div>
+      </Laufwert>
 
       {anteil !== null && (
-        <span
+        <Laufwert
+          als="span"
           className="figur-balkenrahmen absolute -bottom-1 left-1/2 flex h-1.5 -translate-x-1/2 overflow-hidden border border-black/50 bg-black/60"
-          style={{ '--breite': px(groesse * 0.86) }}
+          werte={{ '--breite': px(groesse * 0.86) }}
         >
-          <span
+          <Laufwert
+            als="span"
             className={`figur-balken ${anteil > 0.5 ? 'figur-balken-gut' : 'figur-balken-schlecht'}`}
-            style={{ '--anteil': prozent(anteil) }}
+            werte={{ '--anteil': prozent(anteil) }}
           />
-        </span>
+        </Laufwert>
       )}
 
       {token.name && (
-        <span
+        <Laufwert
+          als="span"
           className="figur-name pointer-events-none absolute top-full left-1/2 mt-1.5 -translate-x-1/2 whitespace-nowrap bg-black/65 px-1.5 py-0.5 font-display"
-          style={{ '--schrift': px(Math.max(9, Math.min(14, g * 0.17))) }}
+          werte={{ '--schrift': px(Math.max(9, Math.min(14, g * 0.17))) }}
         >
           {token.name}
-        </span>
+        </Laufwert>
       )}
-    </div>
+    </Laufwert>
   );
 }
 
@@ -90,9 +100,10 @@ export function Auswahlring({ token, scene }) {
   if (!token) return null;
   const groesse = token.size * scene.gridSize;
   return (
-    <span
+    <Laufwert
+      als="span"
       className="auswahlring pointer-events-none z-[15] border-2 border-dashed border-gold-soft"
-      style={{ '--x': px(token.x), '--y': px(token.y), '--groesse': px(groesse) }}
+      werte={{ '--x': px(token.x), '--y': px(token.y), '--groesse': px(groesse) }}
     />
   );
 }

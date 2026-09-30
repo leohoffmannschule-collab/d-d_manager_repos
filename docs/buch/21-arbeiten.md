@@ -34,7 +34,7 @@ Dann `http://localhost:5173` öffnen. Vite lädt jede Änderung an der Oberfläc
 |---|---|---|
 | `npm run lint` | Programmierfehler, unbekannte Namen (`no-undef`), Regeln für Haken | Sekunden |
 | `npm run einfuhrprobe` | einen Namen, der im Almanach ausgeführt, in einer Datei benutzt, aber dort nicht eingeführt wird | ~1 s |
-| `npm run stilprobe` | Aussehen im Code: `style={{ left: … }}`, `style="…"`/`onclick="…"` in erzeugtem HTML, rohe Farbwerte, eingebettete Skripte | ~1 s |
+| `npm run stilprobe` | Eingebettetes im Code: jedes `style=` im JSX, CSS-Werte in SVG-Attributen, SVG außerhalb der Symbol-Dateien, `style="…"`/`onclick="…"`/`<script>`/`<style>` in erzeugtem HTML, rohe Farbwerte, Eingebettetes in der index.html |
 | `npm run kommentarprobe` | Dateien ohne Kopf, Ausfuhren ohne Kommentar, Pfade in Kommentaren, die es nicht gibt, verwaiste Kommentare am Dateiende | ~1 s |
 | `npm run blattprobe` | falsche Rechnungen am Blatt, verlorene Felder alter Blätter, unvollständige Vorlagen | < 1 s |
 | `npm run klangprobe` | die Rechnung, mit der alle Fenster dieselbe Stelle im Stück finden | < 1 s |
@@ -85,14 +85,15 @@ Der Almanach hält Dateien klein – eine Aufgabe je Datei, selten über zweihun
 
 - **Eine Farbe:** in `stile/farben.css`, in **beiden** Sätzen (Pergament und Kerzenlicht). Überall sonst steht ihr Name.
 - **Ein wiederkehrendes Bauteil:** in `stile/bauteile.css` unter `@layer components`.
-- **Etwas, das vom Zustand abhängt** (eine Lage, eine Farbe, ein Anteil): eine CSS-Variable im JSX (`style={{ '--x': px(wert) }}`), die Regel im Stilblatt.
-- **Nicht:** `style={{ left: … }}`, eine Farbe als `#…` im JSX, `style="…"` in erzeugtem HTML. Die Stilprobe meldet es.
+- **Etwas, das vom Zustand abhängt** (eine Lage, eine Farbe, ein Anteil): eine CSS-Variable über `<Laufwert werte={{ '--x': px(wert) }}>` oder, in einem Bauteil mit Verweisen und Rückrufen, `useLaufstil({ '--x': … })` (`components/Laufwert.jsx`, `lib/laufstil.js`); die Regel, die `var(--x)` benutzt, im Stilblatt.
+- **Ein Symbol:** in `components/icons/`, nicht als `<svg>` mitten im Bauteil. Farben und Strichstärken im Stilblatt, nicht als `fill="…"`.
+- **Nicht:** irgendein `style=` im JSX (auch nicht für eine Variable), eine Farbe als `#…` im JSX, `style="…"`, `<style>` oder `<script>` in erzeugtem HTML. Die Stilprobe meldet es.
 
-## Beispiel: Eine offene Lücke schließen
+## Beispiel: Eine Lücke schließen
 
-Ein ausführliches Beispiel an einer Stelle, an der der Almanach wirklich noch eine Lücke hat (Kapitel „Fehlersuche“, „Bekannte Grenzen“): **Eine Figur lässt sich im Figurenfeld nicht von Hand an ein Charakterblatt binden.** Heldenfiguren entstehen verknüpft nur über „Runde holen“ und „Figuren aus dem Kampf“ – was nebenbei die Kampfliste füllt und „Ein Kampf beginnt“ in die Chronik schreibt.
+Ein ausführliches Beispiel an einer Stelle, an der der Almanach wirklich eine Lücke hatte – sie stand in früheren Fassungen dieses Buches unter „Bekannte Grenzen“: **Eine Figur ließ sich im Figurenfeld nicht von Hand an ein Charakterblatt binden.** Heldenfiguren entstanden verknüpft nur über „Runde holen“ und „Figuren aus dem Kampf“ – was nebenbei die Kampfliste füllte und „Ein Kampf beginnt“ in die Chronik schrieb.
 
-*Dieses Beispiel ist noch nicht umgesetzt.* Es zeigt, wie man es täte, von der ersten Frage bis zum Commit.
+So wurde sie geschlossen, von der ersten Frage bis zum Commit.
 
 ### 1. Die Fragen vorher
 
@@ -103,14 +104,14 @@ Ein ausführliches Beispiel an einer Stelle, an der der Almanach wirklich noch e
 
 ### 2. Der Server
 
-In `backend/src/routes/spieltisch/figuren.js` nimmt `PATCH /figuren/:id` bisher Stelle, Name, Größe, Farbe, Bild, verborgen und Licht an. Dazu käme `characterId`:
+In `backend/src/routes/spieltisch/figuren.js` nahm `PATCH /figuren/:id` bis dahin Stelle, Name, Größe, Farbe, Bild, verborgen und Licht an. Dazu kam `characterId`:
 
 ```js
-const body = req.body ?? {};
 const nurBewegen = !isDm(req.user);
 
-// Neu: Die Verknüpfung mit einem Blatt – nur die Spielleitung, und nur mit
-// einem Blatt dieser Kampagne. Geprüft wird vor dem Schreiben.
+// Das Blatt hinter der Figur entscheidet, wer sie ziehen darf und wessen
+// Sinne die Sicht bestimmen. Deshalb nur ein Blatt dieser Kampagne (oder
+// keines) – geprüft, bevor irgendetwas geschrieben wird.
 const mitBlatt = !nurBewegen && 'characterId' in body;
 if (mitBlatt && !blattDieserKampagne(body.characterId, req.campaignId)) {
   return res.status(400).json({ code: 'verweis_unbekannt', error: 'Blatt oder Kämpfer gibt es in dieser Kampagne nicht.' });
@@ -123,60 +124,66 @@ db.prepare(`UPDATE tokens SET …, character_id = ? WHERE id = ?`).run(
 );
 ```
 
-`blattDieserKampagne` gibt es schon (der POST benutzt es) und lässt `null` durch. `meldeFigur(next, req)` am Ende des Weges verschickt die Szene ohnehin je Person neu – die neue Sicht kommt also von selbst an. Wichtig ist die Reihenfolge: erst prüfen, dann schreiben, damit ein 400 nichts geändert hat.
+`blattDieserKampagne` gab es schon (der POST benutzt es) und lässt `null` durch. `meldeFigur(next, req)` am Ende des Weges verschickt die Szene ohnehin je Person neu – die neue Sicht kommt also von selbst an. Wichtig ist die Reihenfolge: erst prüfen, dann schreiben, damit ein 400 nichts geändert hat. (Im selben Zug steht das Schreiben jetzt in `transaktion()`, weil derselbe Weg beim Verbergen auch den Kämpfer mitnimmt – siehe `kampf/verbergen.js`.)
 
 ### 3. Die Schnittstelle der Oberfläche
 
-In `frontend/src/lib/api/tisch.js` gibt es `scenesApi.moveToken(id, payload)` – das ist der `PATCH`, und er nimmt beliebige Felder. Neu ist dort nichts nötig.
+In `frontend/src/lib/api/tisch.js` gibt es `scenesApi.moveToken(id, payload)` – das ist der `PATCH`, und er nimmt beliebige Felder. Neu war dort nichts nötig.
 
 ### 4. Das Figurenfeld
 
-In `frontend/src/components/tabletop/TokenPanel.jsx` eine Auswahl mit den Blättern der Kampagne. Die Spielleitung bekommt alle Blätter über `useCharaktere()` (aus `lib/daten.js`):
+In `frontend/src/components/tabletop/TokenPanel.jsx` eine Auswahl mit den Blättern der Kampagne. Die Spielleitung bekommt alle Blätter über `useCharaktere()` (aus `lib/daten.js`), auch die NSC-Blätter:
 
 ```jsx
 const { charaktere } = useCharaktere();
 …
 <label className="block">
   <FieldLabel>Blatt</FieldLabel>
-  <select value={token.characterId ?? ''} onChange={(e) => aendern({ characterId: e.target.value || null })}>
-    <option value="">– keines –</option>
+  <select value={token.characterId ?? ''} onChange={(e) => aendern({ characterId: e.target.value || null })} className="field-box w-full">
+    <option value="">– an keinem Blatt –</option>
     {(charaktere ?? []).map((c) => (
-      <option key={c.id} value={c.id}>{c.name}{c.npc ? ' (NSC)' : ''}</option>
+      <option key={c.id} value={c.id}>
+        {c.name || 'Namenlos'}
+        {c.npc ? ' (NSC)' : c.ownerName ? ` · ${c.ownerName}` : ''}
+      </option>
     ))}
   </select>
 </label>
 ```
 
-`aendern()` gibt es im Figurenfeld schon: Es ruft `scenesApi.moveToken` und lädt danach die Szene. Kein neuer Zustand, keine neue Datenschicht.
+`aendern()` gab es im Figurenfeld schon: Es ruft `scenesApi.moveToken` und lädt danach die Szene. Kein neuer Zustand, keine neue Datenschicht.
 
 ### 5. Der Vertrag
 
-In `scripts/vertrag/08-spieltisch.mjs` (oder einem eigenen Abschnitt in `14-nsc.mjs`):
+Ein eigenes Kapitel für alle geschlossenen Lücken, `scripts/vertrag/21-luecken.mjs`:
 
 ```js
-// Eine Figur von Hand an ein Blatt binden – danach darf die Besitzerin sie ziehen.
 const figur = (await sl.ruf(`/scenes/${szene.id}/figuren`, { methode: 'POST', koerper: { name: 'Lose Figur', x: 0, y: 0 } })).daten;
-gleich((await spieler.ruf(`/scenes/figuren/${figur.id}`, { methode: 'PATCH', koerper: { x: 70 } })).status, 403,
-  'Eine unverknüpfte Figur zieht die Runde nicht');
+const schieben = (x) => spieler.ruf(`/scenes/figuren/${figur.id}`, { methode: 'PATCH', koerper: { x } });
 
-await sl.ruf(`/scenes/figuren/${figur.id}`, { methode: 'PATCH', koerper: { characterId: eigenes.id } });
-gleich((await spieler.ruf(`/scenes/figuren/${figur.id}`, { methode: 'PATCH', koerper: { x: 140 } })).status, 200,
-  'Nach dem Verknüpfen zieht die Besitzerin ihre Figur');
+gleich((await schieben(70)).status, 403, 'Eine Figur ohne Blatt zieht die Runde nicht');
 
-const umgebogen = await spieler.ruf(`/scenes/figuren/${figur.id}`, { methode: 'PATCH', koerper: { characterId: null } });
-gleich(umgebogen.daten?.characterId, eigenes.id, 'Die Verknüpfung ändert nur die Spielleitung');
+const gebunden = await sl.ruf(`/scenes/figuren/${figur.id}`, { methode: 'PATCH', koerper: { characterId: held.id } });
+gleich(gebunden.daten?.characterId, held.id, 'Die Spielleitung bindet die Figur an ein Blatt');
+gleich((await schieben(140)).status, 200, 'Danach zieht die Besitzerin des Blattes sie');
 
-gleich((await sl.ruf(`/scenes/figuren/${figur.id}`, { methode: 'PATCH', koerper: { characterId: 'gibt-es-nicht' } })).status, 400,
-  'Ein erfundenes Blatt wird abgewiesen');
+const umgebogen = await spieler.ruf(`/scenes/figuren/${figur.id}`, { methode: 'PATCH', koerper: { x: 210, characterId: null } });
+gleich(umgebogen.daten?.characterId, held.id, 'Die Bindung ändert nur die Spielleitung – die Runde wird still übergangen');
+
+const erfunden = await sl.ruf(`/scenes/figuren/${figur.id}`, { methode: 'PATCH', koerper: { characterId: 'gibt-es-nicht', name: 'Umbenannt' } });
+gleich(erfunden.status, 400, 'Ein erfundenes Blatt wird abgewiesen');
+// … und nichts anderes aus demselben Rumpf wurde geschrieben (der Name bleibt).
 ```
 
-Die dritte Prüfung verdient einen Blick: Der Weg übergeht Felder, die eine Spielerin nicht setzen darf, *still* (so steht es im Kommentar des Weges – die Oberfläche schickt beim Ziehen ohnehin nur `x` und `y`). Die Besitzerin darf ihre Figur also ziehen, und der Versuch, sie dabei loszubinden, antwortet 200 – ohne etwas zu ändern. Deshalb prüft der Vertrag nicht auf 403, sondern darauf, dass die Verknüpfung noch dieselbe ist.
+Die Prüfung mit `umgebogen` verdient einen Blick: Der Weg übergeht Felder, die eine Spielerin nicht setzen darf, *still* (so steht es im Kommentar des Weges – die Oberfläche schickt beim Ziehen ohnehin nur `x` und `y`). Die Besitzerin darf ihre Figur also ziehen, und der Versuch, sie dabei loszubinden, antwortet 200 – ohne die Bindung zu ändern. Deshalb prüft der Vertrag nicht auf 403, sondern darauf, dass die Verknüpfung noch dieselbe ist.
+
+Und die **Gegenprobe**: Mit abgeschalteter Korrektur schlagen die Prüfungen an. Eine Prüfung, die nie scheitern kann, prüft nichts.
 
 ### 6. Dokumentation
 
 - `docs/API.md`: `characterId` bei `PATCH /api/scenes/figuren/:id`, nur Spielleitung.
-- Die Hilfe im Almanach (`frontend/src/pages/hilfe/Spielleitung.jsx`) und `docs/SPIELLEITUNG.md`: ein Satz im Abschnitt über Figuren.
-- Dieses Buch: die „Bekannten Grenzen“ im Kapitel „Fehlersuche“, der Abend im Kapitel „Ein Spielabend“ (der Aufbau wird einfacher), und dieses Beispiel wird zur Geschichte.
+- `docs/SPIELLEITUNG.md` und die Hilfe im Almanach (`frontend/src/pages/hilfe/`): ein Satz im Abschnitt über Figuren.
+- Dieses Buch: „Bekannte Grenzen“ im Kapitel „Fehlersuche“, und dieses Beispiel wurde zur Geschichte.
 - `npm run handbuch` – das Verzeichnis der Wege liest seine Beschreibungen aus den Kommentaren.
 
 ### 7. Prüfen und abgeben

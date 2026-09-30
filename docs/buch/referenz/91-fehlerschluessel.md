@@ -13,16 +13,16 @@ Sagt der Server nein, antwortet er mit einem HTTP-Status und einem kleinen JSON-
 
 Eine Absage hat nichts geändert: Jeder Weg prüft erst alles und schreibt dann. Wer mit 400, 403 oder 409 abgewiesen wird, findet den Almanach so vor wie vorher.
 
-Insgesamt 74 Schlüssel an 143 Stellen.
+Insgesamt 76 Schlüssel an 146 Stellen.
 
 ## Nach Status
 
 | Status | allgemein | Schlüssel |
 |---|---|---|
-| 400 | Die Anfrage ist unvollständig oder ungültig. Nichts wurde geändert. | `anmeldedaten_fehlen`, `beute_zu_klein`, `bild_fehlt`, `bild_leer`, `charakter_nicht_gefunden`, `eigenes_konto`, `empfaenger_fehlen`, `empfaenger_selbst`, `gleiche_kampagne`, `kampf_ohne_gegner`, `keine_offene_sitzung`, `keine_spotify_adresse`, `konto_nicht_gefunden`, `letzte_spielleitung`, `monster_fehlt`, `nachricht_leer`, `name_fehlt`, `name_stimmt_nicht`, `name_ungueltig`, `nichts_gewaehlt`, `passwort_zu_kurz`, `sitzung_leer`, `text_fehlt`, `titel_fehlt`, `unbekannte_rolle`, `ungueltiger_pfad`, `verweis_unbekannt`, `wurfausdruck_fehlt`, `wurfausdruck_ungueltig` |
+| 400 | Die Anfrage ist unvollständig oder ungültig. Nichts wurde geändert. | `anmeldedaten_fehlen`, `beute_zu_klein`, `bild_fehlt`, `bild_leer`, `blatt_ungueltig`, `charakter_nicht_gefunden`, `eigenes_konto`, `empfaenger_fehlen`, `empfaenger_selbst`, `gleiche_kampagne`, `kampf_ohne_gegner`, `keine_offene_sitzung`, `keine_spotify_adresse`, `konto_nicht_gefunden`, `letzte_spielleitung`, `monster_fehlt`, `nachricht_leer`, `name_fehlt`, `name_stimmt_nicht`, `name_ungueltig`, `nichts_gewaehlt`, `passwort_zu_kurz`, `sitzung_leer`, `text_fehlt`, `titel_fehlt`, `unbekannte_rolle`, `ungueltiger_pfad`, `verweis_unbekannt`, `wurfausdruck_fehlt`, `wurfausdruck_ungueltig` |
 | 401 | Nicht angemeldet, oder die Anmeldung ist abgelaufen. | `anmeldung_falsch`, `nicht_angemeldet` |
 | 403 | Angemeldet, aber nicht berechtigt – oder ein Kennwort, ein Code stimmt nicht. | `blatt_fremd`, `blatt_nicht_sichtbar`, `einladung_ungueltig`, `einladung_verbraucht`, `figur_fremd`, `kaempfer_fremd`, `nicht_angelegt`, `nicht_dabei`, `nur_spielleitung`, `passwort_falsch`, `ziel_unbekannt` |
-| 404 | Das Gesuchte gibt es nicht – oder nicht in dieser Kampagne. | `begegnung_nicht_gefunden`, `bild_nicht_gefunden`, `bilddatei_fehlt`, `charakter_nicht_gefunden`, `einladung_nicht_gefunden`, `eintrag_nicht_gefunden`, `empfaenger_unbekannt`, `figur_nicht_gefunden`, `gegenstand_nicht_gefunden`, `kaempfer_nicht_gefunden`, `kampagne_nicht_gefunden`, `karte_nicht_gefunden`, `klang_nicht_gefunden`, `konto_nicht_gefunden`, `nicht_im_papierkorb`, `notiz_nicht_gefunden`, `route_unbekannt`, `sitzung_nicht_gefunden`, `szene_nicht_gefunden` |
+| 404 | Das Gesuchte gibt es nicht – oder nicht in dieser Kampagne. | `begegnung_nicht_gefunden`, `bild_nicht_gefunden`, `bilddatei_fehlt`, `charakter_nicht_gefunden`, `einladung_nicht_gefunden`, `eintrag_nicht_gefunden`, `empfaenger_unbekannt`, `figur_nicht_gefunden`, `gegenstand_nicht_gefunden`, `kaempfer_nicht_gefunden`, `kampagne_nicht_gefunden`, `karte_nicht_gefunden`, `kein_zertifikat`, `klang_nicht_gefunden`, `konto_nicht_gefunden`, `nicht_im_papierkorb`, `notiz_nicht_gefunden`, `route_unbekannt`, `sitzung_nicht_gefunden`, `szene_nicht_gefunden` |
 | 409 | Der Zustand passt nicht: keine Kampagne gewählt, Name vergeben, nicht im Papierkorb. | `figur_andere_szene`, `keine_kampagne`, `klang_still`, `name_vergeben` |
 | 413 | Zu groß. | `bild_zu_gross`, `daten_zu_gross` |
 | 415 | Falsches Format. | `bildformat_nicht_erlaubt` |
@@ -48,6 +48,7 @@ Insgesamt 74 Schlüssel an 143 Stellen.
 | `bildformat_nicht_erlaubt` | 415 | Nur PNG, JPEG, WebP, GIF oder AVIF können abgelegt werden. | routes/media.js |
 | `blatt_fremd` | 403 | Dieses Blatt gehört jemand anderem. | routes/charaktere/schreiben.js |
 | `blatt_nicht_sichtbar` | 403 | Dieses Blatt ist nicht für dich bestimmt. | routes/charaktere/abschriften.js, routes/charaktere/lesen.js |
+| `blatt_ungueltig` | 400 | Dieses Blatt kann der Almanach nicht lesen. | routes/charaktere/schreiben.js |
 | `charakter_nicht_gefunden` | 400, 404 | Charakter nicht gefunden / Dieses Blatt gibt es in dieser Kampagne nicht. / Diesen Charakter gibt es in dieser Kampagne nicht. / Keiner dieser Charaktere ist verzeichnet. | routes/charaktere/abschriften.js, routes/charaktere/lesen.js, routes/charaktere/schreiben.js, routes/kampf/kaempfer.js, routes/stash.js |
 | `daten_zu_gross` | 413 | Die gesendeten Daten sind zu groß. | server.js |
 | `datenbank_unerreichbar` | 503 | *(wechselnd: `err.message`)* | server.js |
@@ -69,6 +70,7 @@ Insgesamt 74 Schlüssel an 143 Stellen.
 | `kampagne_nicht_gefunden` | 404 | Kampagne nicht gefunden. / Im Papierkorb liegt sie nicht. | routes/kampagnen/liste.js, routes/kampagnen/mitglieder.js, routes/kampagnen/papierkorb.js |
 | `kampf_ohne_gegner` | 400 | Im Kampf steht gerade kein Gegner, den man sichern könnte. | routes/encounters.js |
 | `karte_nicht_gefunden` | 404 | Karte nicht gefunden. | routes/maps.js |
+| `kein_zertifikat` | 404 | Für diesen Almanach ist kein Zertifikat angelegt (npm run zertifikat). | server.js |
 | `keine_kampagne` | 409 | Bitte zuerst eine Kampagne wählen. | anmeldung/waechter.js, routes/media.js |
 | `keine_offene_sitzung` | 400 | Diese Sitzung ist schon beendet. | routes/chronik/sitzungen.js |
 | `keine_spotify_adresse` | 400 | Das ist kein Spotify-Link auf eine Wiedergabeliste, ein Album, ein Stück oder einen Künstler. / Das ist kein Spotify-Link. | routes/ambience.js |

@@ -24,6 +24,7 @@ Die Befehle für den Alltag. Sie laufen alle aus dem Wurzelverzeichnis des Alman
 | `npm run sicherung` | `node backend/scripts/sicherung.mjs` |
 | `npm run vorlagen` | `node backend/scripts/vorlagen.mjs` |
 | `npm run kennwort` | `node backend/scripts/kennwort.mjs` |
+| `npm run zertifikat` | `node backend/scripts/zertifikat.mjs` |
 | `npm run drucksatz` | `node scripts/drucksatz.mjs` |
 | `npm run handbuch` | `node scripts/handbuch.mjs` |
 | `npm run vertrag` | `node scripts/vertrag.mjs` |
@@ -86,6 +87,10 @@ Die Vorlagen-Charaktere nachlegen.
 ### npm run kennwort
 
 Ein Kennwort neu setzen – für den Fall, dass niemand mehr hineinkommt.
+
+### npm run zertifikat
+
+HTTPS im Heimnetz einrichten – ohne Download, nur mit Node.
 
 ### npm run drucksatz
 

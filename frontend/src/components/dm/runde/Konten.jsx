@@ -9,6 +9,7 @@ import { authApi } from '../../../lib/api.js';
 import { useAuth } from '../../../lib/auth.jsx';
 import { Rubric } from '../../ui.jsx';
 import { IconCrown, IconKey, IconTrash } from '../../icons.jsx';
+import Laufwert from '../../Laufwert.jsx';
 
 export default function Konten({ users, onChanged }) {
   const { user } = useAuth();
@@ -21,12 +22,12 @@ export default function Konten({ users, onChanged }) {
         {users.map((u) => (
           <li key={u.id} className="border border-rule bg-panel-soft p-3">
             <div className="flex flex-wrap items-center gap-3">
-              <span
+              <Laufwert
                 className="farbpunkt flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-display font-semibold text-[var(--marke-schrift)]"
-                style={{ '--farbe': u.color }}
+                werte={{ '--farbe': u.color }}
               >
                 {u.name.charAt(0).toUpperCase()}
-              </span>
+              </Laufwert>
               <div className="min-w-0 flex-1">
                 <p className="flex items-center gap-1.5 text-ink">
                   {u.name}

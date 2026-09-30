@@ -26,6 +26,7 @@ import { bildLesen } from '../../lib/bilder.js';
 import { useCharaktere } from '../../lib/daten.js';
 import { FieldLabel } from '../ui.jsx';
 import { IconEye, IconEyeOff, IconTrash, IconUpload } from '../icons.jsx';
+import Laufwert from '../Laufwert.jsx';
 
 const FARBEN = ['#9a2b22', '#2d4f7c', '#2f6b4f', '#6b3f8c', '#a86a1f', '#1f6f74', '#8c3f5f', '#4a5d23', '#3a3a3a'];
 
@@ -113,14 +114,15 @@ export default function TokenPanel({ token, onChanged, onRemoved }) {
         <span className="mb-1 block font-display text-[10px] tracking-[0.16em] text-faint uppercase">Farbe</span>
         <div className="flex flex-wrap gap-1.5">
           {FARBEN.map((farbe) => (
-            <button
+            <Laufwert
+              als="button"
               key={farbe}
               onClick={() => aendern({ color: farbe })}
               aria-label={`Farbe ${farbe}`}
               className={`farbpunkt h-9 w-9 rounded-full ring-2 ${
                 token.color === farbe ? 'ring-gold' : 'ring-black/30'
               }`}
-              style={{ '--farbe': farbe }}
+              werte={{ '--farbe': farbe }}
             />
           ))}
         </div>

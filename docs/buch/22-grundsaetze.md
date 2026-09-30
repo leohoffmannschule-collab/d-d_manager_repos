@@ -117,9 +117,11 @@ Dieses Kapitel ist für alle, die eine Änderung am Almanach begutachten – die
 
 ### Steht das Aussehen im Stilblatt?
 
-**Der Grundsatz:** Wie etwas aussieht, steht im Stilblatt; was es tut, in einer Skriptdatei. Werte aus dem Browser gehen als CSS-Variable.
+**Der Grundsatz:** Wie etwas aussieht, steht im Stilblatt; was es tut, in einer Skriptdatei; ein Symbol in einer Symbol-Datei. Nichts davon steht eingebettet im Markup – kein `style`-Attribut, kein `<style>`, kein `<script>` ohne Quelle, kein `onclick="…"`. Werte, die erst im Browser feststehen, gehen als CSS-Variable in eine Laufzeit-Regel (`<Laufwert>`, `useLaufstil`).
 
-**Beim Begutachten:** Die Stilprobe fängt `style={{ … }}` mit echten Eigenschaften, `style="…"` und `onclick="…"` in erzeugtem HTML, rohe Farbwerte. Was sie nicht fängt: eine Farbe, die nur in einem der beiden Erscheinungsbilder definiert ist. Neue Farbnamen gehören in beide Sätze von `stile/farben.css`.
+**Beim Begutachten:** Die Stilprobe fängt jedes `style=` im JSX, CSS-Werte in SVG-Attributen (`fill="var(--…)"`), SVG außerhalb von `components/icons/`, `style="…"`, `onclick="…"`, `<script>` und `<style>` in erzeugtem HTML, rohe Farbwerte und Eingebettetes in der index.html. Die eine Ausnahme – das Stilblatt im mitgenommenen Blatt – steht mit Grund in ihrer Liste; eine zweite braucht einen ebenso guten. Was sie nicht fängt: eine Farbe, die nur in einem der beiden Erscheinungsbilder definiert ist. Neue Farbnamen gehören in beide Sätze von `stile/farben.css`.
+
+**Warum so streng:** Eingebettetes ist nicht nur unordentlich. Solange auch nur ein `style`-Attribut im Markup steht, braucht eine Content-Security-Policy `'unsafe-inline'` – und damit ließe sie auch eingeschleustes CSS durch. Erst ohne jedes Eingebettete kann sie streng sein.
 
 ### Passt es auf einen Pi?
 

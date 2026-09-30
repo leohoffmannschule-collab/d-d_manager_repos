@@ -6,9 +6,10 @@
  * kein Netz und keine App: doppelklicken genügt, auf jedem Rechner, Tablet
  * oder Telefon. Gedruckt sieht sie aus wie ein Charakterbogen.
  *
- * Am Ende der Datei steckt außerdem der vollständige Datensatz. Die Datei
- * ist damit zugleich eine Sicherung, aus der sich ein verlorenes Blatt
- * wiederherstellen lässt.
+ * Am Ende der Datei steckt außerdem der vollständige Datensatz, in einem
+ * `<template>` – Daten, kein Skript. Die Datei ist damit zugleich eine
+ * Sicherung: „Blatt einlesen“ in der Übersicht legt daraus wieder ein Blatt
+ * an (blattEinfuhr.js).
  *
  * Diese Datei setzt nur noch zusammen; gebaut wird nebenan:
  *
@@ -16,12 +17,21 @@
  *   blatt/abschnitte.js  je eine Funktion für je eine Karte des Bogens
  *   blatt/koerper.js     welche Karte in welcher Reihenfolge
  *   blatt/stil/*.css     das Aussehen, als richtige Stilblätter
- *   blatt/drucken.js     der Druckknopf, als richtiges Skript
  *
- * Die fertige Datei trägt ihr Stilblatt und ihr Skript in sich – sie muss
- * ohne Netz funktionieren, einen Verweis auf eine zweite Datei gäbe es beim
- * Doppelklick nicht. Geschrieben aber werden beide als echte Dateien; hier
- * werden sie beim Bauen nur eingesetzt.
+ * **Skript enthält die Datei keines.** Früher trug sie einen Druckknopf mit
+ * einer Zeile JavaScript; jetzt steht dort, wie man druckt (Strg+P, am iPad
+ * Teilen → Drucken) – das kann jeder Browser ohnehin, und die Datei führt
+ * nichts aus.
+ *
+ * **Das Stilblatt ist die eine Stelle im ganzen Almanach, an der CSS in
+ * einer Seite eingebettet steht** – und zwar nur in dieser erzeugten
+ * Datei, nicht im Quelltext: Geschrieben wird es als richtige .css-Dateien
+ * (blatt/stil/), eingesetzt erst beim Bauen. Anders geht es nicht, ohne
+ * die Datei unbrauchbar zu machen: Sie muss mit einem Doppelklick auf
+ * jedem Gerät funktionieren, ohne Netz und ohne Almanach dahinter – ein
+ * Verweis auf eine zweite Datei ginge beim Verschicken per Mail oder beim
+ * Öffnen aus der Dateien-App verloren. Die Stilprobe lässt diese eine
+ * Stelle zu und keine andere.
  */
 import { withDefaults } from './dnd5e.js';
 import { alsDatenUrl, esc, zaubertexte } from './blatt/werkzeug.js';
@@ -41,13 +51,11 @@ import BOGEN from './blatt/stil/bogen.css?raw';
 import LISTEN from './blatt/stil/listen.css?raw';
 import ZAUBERBLOCK from './blatt/stil/zauberblock.css?raw';
 import LEISTE from './blatt/stil/leiste.css?raw';
-import ROHSKRIPT from './blatt/drucken.js?raw';
 
-// Die Erklärköpfe von Stilblatt und Skript richten sich an Mitarbeitende am
-// Code und haben im Blatt der Spielerin nichts verloren – also weg damit.
+// Die Erklärköpfe der Stilblätter richten sich an Mitarbeitende am Code und
+// haben im Blatt der Spielerin nichts verloren – also weg damit.
 const ohneKopf = (text) => text.replace(/^\s*\/\*\*[\s\S]*?\*\/\s*/, '');
 const STIL = [GRUND, BOGEN, LISTEN, ZAUBERBLOCK, LEISTE].map(ohneKopf).join('\n');
-const SKRIPT = ohneKopf(ROHSKRIPT);
 
 /**
  * Das fertige HTML-Dokument als Zeichenkette.
@@ -67,13 +75,13 @@ export async function blattAlsHtml(character) {
     ? dnd5eKoerper(character, data, { portrait }, texte)
     : freiKoerper(character, data, { portrait });
 
-  // Der Datensatz reist mit, damit die Datei zugleich eine Sicherung ist.
-  // `<` wird maskiert, sonst könnte ein Text im Blatt das Skript beenden.
-  const daten = JSON.stringify(
-    { name: character.name, system: character.system, data, stand: new Date().toISOString() },
-    null,
-    2
-  ).replace(/</g, '\\u003c');
+  // Der Datensatz reist mit, damit die Datei zugleich eine Sicherung ist –
+  // als entschärfter Text in einem <template>: Der Browser zeigt ihn nicht
+  // an und führt nichts davon aus, und ein „</template>“ in einem Text des
+  // Blattes kann ihn nicht beenden.
+  const daten = esc(
+    JSON.stringify({ name: character.name, system: character.system, data, stand: new Date().toISOString() }, null, 2)
+  );
 
   return `<!doctype html>
 <html lang="de">
@@ -85,7 +93,7 @@ export async function blattAlsHtml(character) {
 </head>
 <body>
 <div class="leiste">
-  <button id="drucken" type="button">Drucken</button>
+  <span class="druckhinweis">Drucken: Strg+P · am iPad Teilen → Drucken</span>
   <span>Stand: ${esc(stand)} · Diese Datei braucht weder Netz noch Server.</span>
 </div>
 <div class="blatt">
@@ -95,8 +103,7 @@ ${koerper}
   am Spieltisch gilt das Blatt im Almanach.
 </p>
 </div>
-<script type="application/json" id="almanach-daten">${daten}</script>
-<script>${SKRIPT}</script>
+<template id="almanach-daten">${daten}</template>
 </body>
 </html>`;
 }

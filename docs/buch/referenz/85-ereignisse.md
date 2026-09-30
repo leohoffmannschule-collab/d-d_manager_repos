@@ -61,7 +61,7 @@ Jedes Ereignis wird geschickt *und* gehört – keines läuft ins Leere.
 ### charakter:entfernt
 
 - geschickt: backend/src/blattmeldung.js, Zeile 77 – nur Rolle „spieler“, einzelne Konten (je eigene Sicht), in dieser Kampagne
-- geschickt: backend/src/routes/charaktere/schreiben.js, Zeile 143 – in dieser Kampagne
+- geschickt: backend/src/routes/charaktere/schreiben.js, Zeile 154 – in dieser Kampagne
 - gehört: frontend/src/lib/daten/kampagne.js
 
 ### chat
@@ -99,7 +99,7 @@ Jedes Ereignis wird geschickt *und* gehört – keines läuft ins Leere.
 
 ### figur:entfernt
 
-- geschickt: backend/src/routes/spieltisch/figuren.js, Zeile 116 – nur die Spielleitung, in dieser Kampagne
+- geschickt: backend/src/routes/spieltisch/figuren.js, Zeile 142 – nur die Spielleitung, in dieser Kampagne
 - gehört: frontend/src/lib/daten/spieltisch.js
 - gehört: frontend/src/pages/Tabletop.jsx
 
@@ -110,8 +110,8 @@ Jedes Ereignis wird geschickt *und* gehört – keines läuft ins Leere.
 
 ### kampf
 
-- geschickt: backend/src/kampf/sicht.js, Zeile 49 – nur die Spielleitung, in dieser Kampagne
-- geschickt: backend/src/kampf/sicht.js, Zeile 50 – nur Rolle „spieler“, in dieser Kampagne
+- geschickt: backend/src/kampf/sicht.js, Zeile 52 – nur die Spielleitung, in dieser Kampagne
+- geschickt: backend/src/kampf/sicht.js, Zeile 53 – nur Rolle „spieler“, in dieser Kampagne
 - gehört: frontend/src/lib/daten/kampf.js
 
 ### klang

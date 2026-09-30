@@ -16,6 +16,7 @@
 import { useLayoutEffect, useMemo, useRef } from 'react';
 import { hatStelle, rasterBereich } from '../../../lib/rasterkarte.js';
 import { px } from '../../../lib/stilwerte.js';
+import Laufwert from '../../Laufwert.jsx';
 
 export default function Nebelschicht({ scene, fog, sicht, dm }) {
   const canvasRef = useRef(null);
@@ -49,12 +50,13 @@ export default function Nebelschicht({ scene, fog, sicht, dm }) {
   if (cols <= 0 || rows <= 0) return null;
 
   return (
-    <canvas
+    <Laufwert
+      als="canvas"
       ref={canvasRef}
       // Für die Runde deckt der Nebel auch die Figuren zu, für die
       // Spielleitung liegt er darunter (siehe .nebelschicht-sl).
       className={`nebelschicht pointer-events-none ${dm ? 'nebelschicht-sl' : ''}`}
-      style={{
+      werte={{
         '--x': px(scene.gridOffsetX + minX * g),
         '--y': px(scene.gridOffsetY + minY * g),
         '--breite': px(cols * g),

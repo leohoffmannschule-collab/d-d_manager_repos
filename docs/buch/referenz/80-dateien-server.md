@@ -3,7 +3,7 @@
 > Dieses Kapitel schreibt `npm run handbuch` aus dem Code (scripts/handbuch/referenz/).
 > Änderungen gehören in den Code und seine Kommentare, nicht hierher.
 
-Alle Dateien unter backend/src und backend/scripts (109 Dateien, 11.194 Zeilen), nach Ordnern. Zu jeder Datei ihr Kopfkommentar – dort steht, wozu es sie gibt und warum sie so gebaut ist – und ihre Ausfuhren mit dem Kommentar darüber.
+Alle Dateien unter backend/src und backend/scripts (117 Dateien, 12.127 Zeilen), nach Ordnern. Zu jeder Datei ihr Kopfkommentar – dort steht, wozu es sie gibt und warum sie so gebaut ist – und ihre Ausfuhren mit dem Kommentar darüber.
 
 Einen Überblick, wie die Teile zusammenspielen, gibt das Kapitel über den Server im Teil „Wie es gebaut ist“.
 
@@ -419,9 +419,60 @@ tickenden Server auskommt, steht dort im Kopf.
 - `setzeKlang` (function) – Den Klang dieser Kampagne setzen und allen Fenstern der Kampagne mitteilen.
 - `klangAuflegen` (function) – Etwas auflegen – aus der Klangbibliothek, oder weil eine Karte aufgelegt wird, die ihre Ambiente mitbringt. Gibt den neuen Stand zurück, oder `null`, wenn es die Ambiente nicht gibt.
 
+### backend/src/kopfzeilen.js
+
+*78 Zeilen*
+
+Die Kopfzeilen, die jede Antwort des Almanachs trägt – die zweite Mauer.
+
+Die erste Mauer ist, dass der Almanach nichts Fremdes als Code ausführt:
+React setzt Texte als Texte, erzeugtes HTML ist entschärft, und was die
+Runde nicht sehen soll, wird ihr gar nicht erst geschickt. Die Kopfzeilen
+hier sagen dem Browser zusätzlich, was er dieser Seite überhaupt erlauben
+soll. Rutscht eines Tages doch ein Stück fremdes HTML durch – ein Name mit
+`<img onerror=…>` an einer Stelle, die jemand übersehen hat –, führt der
+Browser es trotzdem nicht aus.
+
+Die Content-Security-Policy im Einzelnen:
+
+```
+default-src 'self'      was nicht eigens genannt ist, nur vom Almanach
+script-src              eigene Skripte; dazu Spotifys Einbettungs-
+                        schnittstelle (components/klang/spotifyRahmen.js),
+                        die ihren Hauptteil vom CDN nachlädt. Kein
+                        'unsafe-inline', kein 'unsafe-eval': Seit der
+                        Almanach atomar ist, steht kein Skript im Markup
+                        (auch aussehen.js ist eine eigene Datei).
+style-src               eigene Stilblätter. Kein 'unsafe-inline' – die
+                        wenigen Werte aus dem Zustand setzt React über
+                        das CSSOM (`style={{ '--x': … }}`), und das
+                        erlaubt die Richtlinie ohnehin.
+img-src                 eigene Bilder, dazu `data:` (Bildnisse stehen als
+                        data:-Adresse im Blatt) und `blob:` (Vorschau
+                        beim Hochladen)
+font-src                die drei Schriften liegen im Bau selbst
+connect-src 'self'      fetch und der Live-Kanal – nur zum eigenen Server
+frame-src               nur Spotifys Spieler darf als Rahmen hinein
+frame-ancestors 'self'  niemand darf den Almanach einrahmen (dieselbe
+                        Absicht wie X-Frame-Options, das für ältere
+                        Browser stehen bleibt)
+object-src 'none'       keine Plugins
+base-uri, form-action   kein umgebogenes <base>, kein Formular, das
+                        woandershin schickt
+```
+
+Beim Entwickeln (`npm run dev`) liefert Vite die Oberfläche aus, nicht
+dieser Server – dort gilt die Richtlinie nicht, und Vites schnelles
+Nachladen (das Skripte ins Markup schreibt) funktioniert weiter.
+
+**Ausfuhren**
+
+- `RICHTLINIE` (const) – Die Richtlinie als eine Zeile, wie sie in der Kopfzeile steht.
+- `sicherheitsKopfzeilen` (function) – Express-Zwischenschritt: setzt die Kopfzeilen auf jede Antwort.
+
 ### backend/src/server.js
 
-*179 Zeilen*
+*194 Zeilen*
 
 Der Server: hier läuft alles zusammen.
 
@@ -622,7 +673,7 @@ wieder.
 
 ### backend/src/datenbank/nachruesten.js
 
-*85 Zeilen*
+*89 Zeilen*
 
 Die Wanderung: was eine bestehende Datenbank nachträglich bekommt.
 
@@ -848,7 +899,7 @@ steht in ../nachruesten.js und ../kampagnenwanderung.js.
 
 ### backend/src/datenbank/schema/spielleitung.js
 
-*67 Zeilen*
+*68 Zeilen*
 
 Was die Spielleitung führt: laufender Kampf, Bestiarium, Notizen, Würfe.
 
@@ -882,6 +933,130 @@ steht in ../nachruesten.js und ../kampagnenwanderung.js.
 
 - `SPIELTISCH` (const) – Der Spieltisch: Szenen, Karten, Figuren, Bilder, der kleine Schlüssel-Wert-Speicher.
 
+## backend/src/https/
+
+### backend/src/https/ablage.js
+
+*146 Zeilen*
+
+Wo die Zertifikate liegen, und was der Server beim Start damit macht.
+
+Alles liegt im Datenordner im Unterordner `tls` – neben der Datenbank,
+damit es im Docker-Volume den Neubau des Abbilds übersteht:
+
+```
+stamm.crt      das Stammzertifikat (öffentlich; die Geräte laden es
+               unter /almanach-stamm.crt)
+stamm.key      sein Schlüssel – verlässt dieses Gerät nie
+almanach.crt   das Serverzertifikat
+almanach.key   sein Schlüssel
+namen.json     was beim Anlegen eigens genannt wurde (Adressen, Namen)
+               und wofür das Stammzertifikat bürgen darf, damit ein
+               erneuter Lauf es nicht vergisst
+```
+
+Angelegt wird das von `npm run zertifikat` (backend/scripts/zertifikat.mjs).
+Liegen Serverzertifikat und -schlüssel da, lauscht der Almanach beim
+Start zusätzlich per HTTPS (Vorgabe: Port 3443). Fehlen sie, bleibt alles,
+wie es war.
+
+**Ausfuhren**
+
+- `TLS_ORDNER` (const) – Der Ordner der Zertifikate im Datenordner.
+- `TLS_DATEIEN` (const) – Die Dateien darin (siehe oben).
+- `httpsPort` (const) – Der Port für HTTPS: `HTTPS_PORT`, sonst 3443.
+- `httpsAktiv` (const) – Der Port des HTTPS-Eingangs, sobald er lauscht – sonst null.
+- `ladeZertifikate` (function) – Was an Zertifikaten da ist – oder null, wenn es keine gibt.
+- `gemerkteNamen` (function) – Was vom letzten Lauf gemerkt ist: die eigens genannten Adressen und Namen (`zusatz`) und die Namensräume, für die das Stammzertifikat bürgen darf (`stamm`, null wenn unbekannt).
+- `schreibe` (function) – Eine Datei schreiben – Schlüssel nur für den Besitzer lesbar.
+- `starteHttps` (async function) – Den HTTPS-Zugang aufmachen, wenn Zertifikate da sind.
+
+### backend/src/https/der.js
+
+*85 Zeilen*
+
+DER – die Schreibweise, in der Zertifikate gespeichert werden.
+
+Ein X.509-Zertifikat ist eine verschachtelte Folge von Feldern, jedes als
+Kennbyte, Länge und Inhalt (Tag-Length-Value). Node kann Zertifikate
+lesen (`crypto.X509Certificate`) und Schlüssel erzeugen und signieren,
+aber keine Zertifikate *ausstellen*. Dafür bräuchte es sonst OpenSSL oder
+ein Paket – und der Almanach soll nichts nachladen, was er nicht braucht.
+
+Diese Datei kann genau die Bausteine schreiben, die zertifikat.js
+braucht, und nicht mehr. Sie liest nichts: Gelesen und geprüft wird mit
+Node selbst (siehe zertifikat.js und den Vertrag).
+
+**Ausfuhren**
+
+- `feld` (const) – Ein Feld: Kennbyte, Länge, Inhalt.
+- `folge` (const) – SEQUENCE – eine Folge in fester Reihenfolge.
+- `menge` (const) – SET – hier nur mit einem Element gebraucht, daher ohne Sortieren.
+- `ganzzahl` (function) – INTEGER aus einem Puffer (groß-endian, positiv gemeint). Führende Nullen fallen weg, und ist das oberste Bit gesetzt, kommt eine Null davor – sonst läse man die Zahl als negativ.
+- `kleineZahl` (const) – Eine kleine, nichtnegative Zahl als INTEGER.
+- `kennung` (function) – OBJECT IDENTIFIER aus der Punktschreibweise („2.5.4.3“).
+- `text` (const) – UTF8String – für Namen im Zertifikat.
+- `wahr` (const) – BOOLEAN wahr (falsch wird in DER einfach weggelassen).
+- `oktette` (const) – OCTET STRING.
+- `bits` (const) – BIT STRING; `unbenutzt` sagt, wie viele Bits am Ende des letzten Bytes nicht zählen.
+- `zeit` (function) – Ein Zeitpunkt: bis 2049 als UTCTime, danach als GeneralizedTime (so will es RFC 5280).
+- `kontext` (const) – Kontextfeld [n], zusammengesetzt (EXPLICIT, oder IMPLICIT über einer Folge).
+- `kontextEinfach` (const) – Kontextfeld [n], einfach (IMPLICIT über einem einfachen Typ).
+
+### backend/src/https/zertifikat.js
+
+*250 Zeilen*
+
+Zertifikate für HTTPS im Heimnetz – ausgestellt vom Almanach selbst.
+
+Über den Tunnel ist der Almanach verschlüsselt (Cloudflare bringt das
+Zertifikat mit). Im WLAN dagegen sprach der Browser ihn über `http://`
+an, und wer im selben Netz mitlas, sah beim Anmelden das Kennwort und
+danach das Sitzungs-Cookie. Für HTTPS braucht es ein Zertifikat – und für
+eine Adresse wie `192.168.1.20` stellt keine öffentliche Stelle eines aus.
+
+Also stellt der Almanach es selbst aus, in zwei Stufen, wie es auch
+Werkzeuge wie mkcert tun:
+
+```
+Stammzertifikat   eine eigene kleine Ausstellungsstelle. Wer keine
+                  Warnung sehen will, installiert *dieses* einmal auf
+                  seinen Geräten (Download unter /almanach-stamm.crt).
+Serverzertifikat  von ihm unterschrieben, für die Adressen und Namen
+                  dieses Geräts. Das tauscht der Server bei Bedarf aus,
+                  ohne dass an den Geräten etwas zu tun ist.
+```
+
+Das Stammzertifikat ist **beschränkt** (Name Constraints): Es darf nur
+für private Adressen (10.x, 172.16–31.x, 192.168.x, 127.x, 169.254.x) und
+Heimnetznamen (`localhost`, `*.local`, `*.lan`, `*.home.arpa`,
+`*.internal`, `*.fritz.box`, der Name dieses Rechners, und was beim
+Anlegen eigens genannt wurde) bürgen. Gelangte sein Schlüssel je in
+falsche Hände, ließe sich damit trotzdem keine Bank und kein Postfach
+vortäuschen – der Browser lehnt jedes Zertifikat für einen fremden Namen
+ab, auch wenn es richtig unterschrieben ist.
+
+Schlüssel: ECDSA auf P-256, signiert mit SHA-256 – klein, schnell auf
+einem Pi, und von allen heutigen Browsern angenommen. Laufzeiten: das
+Serverzertifikat 820 Tage (Apple nimmt höchstens 825 an), das
+Stammzertifikat zehn Jahre.
+
+**Ausfuhren**
+
+- `LAUFZEIT_STAMM_TAGE` (const) – Wie lange das Stammzertifikat gilt: zehn Jahre – es wird einmal installiert.
+- `LAUFZEIT_SERVER_TAGE` (const) – Wie lange ein Serverzertifikat gilt: 820 Tage (Apple nimmt höchstens 825 an).
+- `PRIVATE_NETZE` (const) – Die privaten IPv4-Netze, für die das Stammzertifikat bürgen darf: [Netz, Maske].
+- `HEIMNAMEN` (const) – Namen, die es nur im eigenen Netz gibt – kein öffentlicher Name endet so.
+- `ipBytes` (function) – Eine IPv4-Adresse als vier Bytes – oder null, wenn es keine ist.
+- `istPrivat` (function) – Liegt die Adresse in einem der privaten Netze?
+- `istName` (const) – Ein brauchbarer DNS-Name: Buchstaben, Ziffern, Bindestriche, durch Punkte getrennt.
+- `namensraumDeckt` (const) – Deckt eine Liste erlaubter Namen (wie im Stammzertifikat) diesen Namen?
+- `rechnername` (function) – Der Name dieses Rechners, wenn er als DNS-Name taugt („raspberrypi“).
+- `alsPem` (function) – DER als PEM – die Textform, die Node und die Geräte lesen.
+- `erzeugeStamm` (function) – Ein neues Stammzertifikat.
+- `erzeugeServer` (function) – Ein Serverzertifikat, unterschrieben vom Stammzertifikat.
+- `fingerabdruck` (const) – Der SHA-256-Fingerabdruck eines Zertifikats, wie ihn Geräte beim Installieren zeigen.
+
 ## backend/src/kampf/
 
 ### backend/src/kampf/blatt.js
@@ -901,9 +1076,36 @@ hat keines, und dann tut diese Funktion nichts.
 
 - `syncCharakter` (function) – Trefferpunkte auf das verknüpfte Charakterblatt zurückschreiben.
 
+### backend/src/kampf/initiative.js
+
+*54 Zeilen*
+
+Die Initiative der Gegner: ein W20 plus ihr Bonus.
+
+Nach den Regeln würfelt jedes Wesen seine Initiative als W20 plus seinen
+Geschicklichkeitsmodifikator. Lange würfelte der Almanach für Gegner aus
+Bestiarium und Begegnungen einen nackten W20 – ein flinker Assassine
+(GE 18, +4) ging so im Schnitt vier Plätze später in den Kampf als nach
+dem Regelwerk, ein träger Oger (GE 8, −1) einen früher.
+
+Deshalb trägt jeder Kämpfer jetzt seinen Bonus (`combatants.initiative_bonus`).
+Er kommt aus der Geschicklichkeit des Statblocks, wandert mit in
+vorbereitete Begegnungen und wird bei jedem Wurf hinzugezählt – auch
+später, wenn die Spielleitung „Initiative würfeln“ drückt.
+
+Helden würfeln selbst (am Blatt steht ihr eigener Bonus); ihr Wert hier
+bleibt 0.
+
+**Ausfuhren**
+
+- `bonusAusGeschick` (function) – Der Modifikator zu einem Attributswert: 10–11 → 0, 18 → +4, 8 → −1. Ohne Wert 0.
+- `saubererBonus` (const) – Ein Bonus, wie er aus einer Anfrage kommt – als ganze Zahl in vernünftigen Grenzen. Selbst ein Drache kommt selten über +10; −5 bis +20 lässt Raum für Hausregeln, ohne dass ein Tippfehler den Kampf auf den Kopf stellt.
+- `bonusAusBestiarium` (function) – Der Bonus aus dem Statblock eines Bestiariumseintrags – für Begegnungen, deren Posten vor dieser Änderung gespeichert wurden und ihn noch nicht selbst tragen. Gibt es den Eintrag nicht mehr, ist er 0.
+- `initiativeWurf` (const) – Ein Initiativewurf: W20 plus Bonus.
+
 ### backend/src/kampf/sicht.js
 
-*58 Zeilen*
+*61 Zeilen*
 
 Die **zwei Sichten** auf den laufenden Kampf – der Kern des Ganzen.
 
@@ -914,7 +1116,9 @@ Die Spielleitung bekommt alle Kämpfer mit allen Werten. Die Runde bekommt
   nur einen Zustand („verwundet“, „schwer_verwundet“),
 - bei Helden (`pc`) die Trefferpunkte genau – die eigenen wie die der
   Gefährten; wie es um die Gruppe steht, weiß man am Tisch ohnehin,
-- Notizen der Spielleitung zu keinem Kämpfer.
+- Notizen der Spielleitung zu keinem Kämpfer,
+- den Initiativebonus der Gegner nicht (er verrät die Geschicklichkeit
+  aus dem Statblock).
 
 Gefiltert wird hier, auf dem Server, nicht in der Oberfläche. Was ein
 Spielerfenster nicht wissen soll, bekommt es nicht geschickt – sonst
@@ -929,7 +1133,7 @@ wie viel das Ungetüm noch aushält.
 
 ### backend/src/kampf/umwandlung.js
 
-*64 Zeilen*
+*65 Zeilen*
 
 Zeilen in Objekte – und die kleinen Fragen, die jeder Weg des Kampfes
 stellt.
@@ -947,6 +1151,28 @@ Kämpfers, wenn die Runde seine Trefferpunkte nicht sehen darf.
 - `alleKaempfer` (function) – Nach Initiative absteigend, bei Gleichstand alphabetisch.
 - `zustand` (function) – Wie es um einen Kämpfer steht, ohne seine Trefferpunkte zu verraten.
 - `holen` (const) – Einen einzelnen Kämpfer holen – aber nur aus der eigenen Kampagne.
+
+### backend/src/kampf/verbergen.js
+
+*42 Zeilen*
+
+Kämpfer und Figur zeigen sich gemeinsam – oder gar nicht.
+
+Ein Gegner steht an zwei Stellen: als Zeile in der Kampfliste und als
+Figur auf der Karte (verbunden über `tokens.combatant_id`). Früher hatte
+jede Stelle ihren eigenen Schalter „verborgen“. Wer den Hinterhalt
+auslöste, musste beide umlegen – und vergaß er einen, stand der Gegner
+entweder unsichtbar auf der Karte, aber schon in der Initiative, oder
+sichtbar auf der Karte, obwohl die Kampfliste ihn noch verschwieg. Beides
+verrät am Tisch mehr, als es soll.
+
+Jetzt gilt: Wer eine der beiden Seiten verbirgt oder aufdeckt, tut es für
+beide. Die Wege rufen dafür `verbergeGemeinsam` und verschicken danach,
+was sich geändert hat.
+
+**Ausfuhren**
+
+- `verbergeGemeinsam` (function) – Setzt „verborgen“ für einen Kämpfer und alle Figuren, die an ihm hängen.
 
 ## backend/src/routes/
 
@@ -1208,7 +1434,7 @@ aushält.
 
 ### backend/src/routes/encounters.js
 
-*212 Zeilen*
+*222 Zeilen*
 
 Vorbereitete Begegnungen: „Wache am Stadttor“, „3 Goblins im Hohlweg“ –
 einmal zusammengestellt, beliebig oft mit einem Klick in den Kampf gesetzt.
@@ -1223,7 +1449,7 @@ einer Kampagne – die Kämpfer, die dabei entstehen, bleiben dort.
 
 ### backend/src/routes/library.js
 
-*225 Zeilen*
+*232 Zeilen*
 
 Das Bestiarium: Statblöcke für Monster und NSC, aus denen mit einem Klick
 Kämpfer werden.
@@ -1409,7 +1635,7 @@ es im Netzwerkfenster des Browsers gar nicht erst auftaucht.
 
 ### backend/src/routes/charaktere/schreiben.js
 
-*148 Zeilen*
+*159 Zeilen*
 
 Blätter anlegen, speichern, zuteilen, löschen.
 
@@ -1534,7 +1760,7 @@ bereit. Was dabei wie kopiert wird, steht in ../../uebernehmen.js.
 
 ### backend/src/routes/kampf/ablauf.js
 
-*139 Zeilen*
+*140 Zeilen*
 
 Der Ablauf des Kampfes: eine Runde weiter, eine zurück, von vorn – und
 die beiden Handgriffe, die eine Runde vorbereiten.
@@ -1546,7 +1772,7 @@ wird für beide Richtungen benutzt.
 
 ### backend/src/routes/kampf/kaempfer.js
 
-*211 Zeilen*
+*224 Zeilen*
 
 Die Kämpfer selbst: eintragen, ändern, Schaden geben, Initiative setzen,
 wieder herausnehmen.
@@ -1627,7 +1853,7 @@ hält die Rolle vom Moment des Verbindens fest (siehe events.js).
 
 ### backend/src/routes/spieltisch/figuren.js
 
-*169 Zeilen*
+*201 Zeilen*
 
 Die Figuren auf dem Tisch: auslegen, schieben, wegnehmen, aus dem Kampf
 holen.
@@ -1853,9 +2079,26 @@ an der beides aufeinandertrifft.
 
 ## backend/src/start/
 
+### backend/src/start/adressen.js
+
+*20 Zeilen*
+
+Unter welchen Adressen dieses Gerät im Heimnetz steht.
+
+Gebraucht an zwei Stellen: im Startbericht (welche Adresse tippt die
+Runde ins iPad?) und beim Ausstellen des Zertifikats für HTTPS (für welche
+Adressen muss es gelten?). Beide sollen dieselbe Antwort geben.
+
+Nur IPv4: Im Heimnetz tippt niemand eine IPv6-Adresse ab, und das
+Stammzertifikat bürgt nur für private IPv4-Netze (https/zertifikat.js).
+
+**Ausfuhren**
+
+- `adressenImHeimnetz` (function) – Die IPv4-Adressen dieses Geräts, ohne die interne (127.0.0.1).
+
 ### backend/src/start/bericht.js
 
-*113 Zeilen*
+*147 Zeilen*
 
 Was der Server beim Start sagt – und wenn er nicht starten kann.
 
@@ -2247,3 +2490,32 @@ Fenstern.
 gehören Vorlagen je einer Kampagne, und ohne Kampagne fehlte ihm die
 Angabe, wohin – es brach mit einem Fehler von SQLite ab. Der Vertrag
 prüft es deshalb jetzt mit, siehe scripts/vertrag/05-vorlagen.mjs.)
+
+### backend/scripts/zertifikat.mjs
+
+*126 Zeilen*
+
+HTTPS im Heimnetz einrichten – ohne Download, nur mit Node.
+
+```
+npm run zertifikat                          für die Adressen dieses Geräts
+npm run zertifikat -- 192.168.1.20          eine Adresse dazu (etwa im
+                                            Docker-Container die des Pi)
+npm run zertifikat -- almanach.fritz.box    einen Namen im Heimnetz dazu
+npm run zertifikat -- --neu                 auch ein neues Stammzertifikat
+```
+
+Beim ersten Lauf entsteht ein Stammzertifikat (die eigene kleine
+Ausstellungsstelle) und ein Serverzertifikat für localhost, den Namen
+dieses Rechners und seine Adressen im Heimnetz. Jeder weitere Lauf stellt
+nur das Serverzertifikat neu aus – etwa wenn der Router dem Gerät eine
+neue Adresse gegeben hat. Die Geräte der Runde merken davon nichts, wenn
+sie das Stammzertifikat installiert haben.
+
+Eigens genannte Adressen und Namen werden gemerkt (namen.json im Ordner
+`tls` des Datenordners), damit ein späterer Lauf ohne Angaben sie nicht
+wieder verliert.
+
+Danach den Almanach neu starten; der Startbericht nennt die https-Adressen
+und den Fingerabdruck des Stammzertifikats. Wie man es auf iPad, Telefon
+und Rechner installiert, steht in docs/EINRICHTUNG.md.

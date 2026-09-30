@@ -17,6 +17,7 @@ import { IconChat, IconClose, IconEyeOff, IconTrash } from './icons.jsx';
 import { chatApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
 import { useChat } from '../lib/daten.js';
+import Laufwert from './Laufwert.jsx';
 
 /** Nur die Uhrzeit; das Datum steht in der Chronik, hier stört es. */
 function uhrzeit(iso) {
@@ -31,7 +32,7 @@ function Zeile({ zeile, ichBin }) {
   return (
     <li className={`px-3.5 py-2 ${geflüstert ? 'border-l-[3px] border-rubric bg-rubric/8' : ''}`}>
       <div className="flex items-baseline gap-1.5">
-        <span className="farbpunkt h-2 w-2 shrink-0 rounded-full" style={{ '--farbe': zeile.color }} />
+        <Laufwert className="farbpunkt h-2 w-2 shrink-0 rounded-full" werte={{ '--farbe': zeile.color }} />
         <span className="truncate font-display text-[12px] tracking-[0.08em] text-sepia uppercase">
           {zeile.userName}
         </span>

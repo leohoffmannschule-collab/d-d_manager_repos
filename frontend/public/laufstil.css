@@ -1,0 +1,8 @@
+/*
+ * Absichtlich leer.
+ *
+ * Das Laufzeit-Stilblatt für Browser, die keine eigenen Stilblätter bauen
+ * lassen (ältere iPads). Die Regeln – die Lage einer Figur, eine gewählte
+ * Farbe, der Stand eines Balkens – setzt src/lib/laufstil.js zur Laufzeit
+ * über das CSSOM hinein. Neuere Browser brauchen die Datei nicht.
+ */

@@ -43,6 +43,13 @@ hantieren. Passwort vergessen? Deine Spielleitung setzt es neu.
 > fertig. Sonst gibt es zwei: im selben WLAN wie der Rechner der Spielleitung
 > eine `192.168.…`-Adresse, von zu Hause aus eine geliehene `https://…`. Die
 > geliehene wechselt gelegentlich; dann fragst du einmal nach der neuen.
+>
+> Zeigt die Anmeldeseite im WLAN den Hinweis **„Diese Verbindung ist
+> unverschlüsselt“**, nimm den Link darin („Verschlüsselt anmelden“). Warnt
+> der Browser danach, die Verbindung sei „nicht privat“, hat deine
+> Spielleitung das Zertifikat selbst ausgestellt – wie du es einmal
+> installierst, damit die Warnung verschwindet, sagt sie dir (oder steht im
+> Einrichtungs-Handbuch, Schritt 9.1).
 
 ---
 
@@ -282,11 +289,18 @@ als **einzelne Datei** auf dein Gerät – mit Bildnis und allem, was
 darauf steht.
 
 Diese Datei braucht weder Netz noch Server: Ein Doppelklick genügt, auf jedem
-Rechner, Tablet oder Telefon. Gedruckt sieht sie aus wie ein Charakterbogen.
+Rechner, Tablet oder Telefon. Gedruckt (Strg+P, am iPad *Teilen → Drucken*)
+sieht sie aus wie ein Charakterbogen.
 
 Gedacht ist sie für die Vorbereitung, wenn der Almanach gerade nicht läuft,
 oder für den Zug zur Runde. **Was du in der Datei änderst, wandert nicht
-zurück** – am Spieltisch gilt das Blatt im Almanach.
+von selbst zurück** – am Spieltisch gilt das Blatt im Almanach.
+
+**Zurückholen:** Die Datei ist zugleich eine Sicherung. In der Übersicht
+liegt neben *Neuer Charakter* der Knopf **Blatt einlesen**; damit wählst du
+die Datei, und der Almanach legt daraus ein neues Blatt an. Dein altes bleibt
+dabei unangetastet – du siehst danach beide und löschst, was du nicht mehr
+brauchst.
 
 ---
 

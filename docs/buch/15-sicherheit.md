@@ -14,6 +14,8 @@ Eine Runde ist kein Bankhaus, aber sie hat etwas zu verlieren: die Arbeit von Mo
 | **Andere Webseiten** im selben Browser | im Namen der angemeldeten Spielleitung lesen oder schreiben | keine CORS-Freigabe, `SameSite`-Cookie, kein Einrahmen |
 | **Wer die Datenbankdatei erbeutet** | sich damit anmelden | Kennwörter nur als scrypt-Hash, Sitzungen nur als SHA-256-Hash |
 | **Wer den Namen erraten will** | wissen, welche Konten es gibt | gleich lange Antwortzeit mit und ohne Konto, eine Meldung für beides |
+| **Wer im selben WLAN mitliest** | Kennwort und Cookie abfangen | HTTPS im Heimnetz mit eigenem, beschränktem Zertifikat; `Secure`-Cookie |
+| **Eingeschleustes HTML** an einer übersehenen Stelle | Skript im Browser der Runde ausführen | Entschärfung überall, dazu eine Content-Security-Policy ohne `unsafe-inline` |
 
 Nicht geschützt wird gegen jemanden, der am Gerät selbst sitzt oder Zugriff darauf hat (siehe „Was nicht geschützt ist“ am Ende).
 
@@ -94,6 +96,29 @@ Das Cookie wird ohne Paket gelesen (`anmeldung/keks.js`). Ein kaputt kodierter W
 
 Den Kopf selbst zu lesen, hieße jedem zu glauben, der ihn mitschickt. `keks.js` fragt deshalb nur `req.secure`.
 
+Über den eigenen HTTPS-Eingang im Heimnetz (unten) ist `req.secure` ohne Umweg wahr: Dort kommt die Verbindung verschlüsselt beim Almanach selbst an. Wer sich so anmeldet, bekommt ein `Secure`-Cookie – der Browser schickt es danach nie über das unverschlüsselte `http://` zurück.
+
+## HTTPS im Heimnetz
+
+Über den Tunnel ist der Almanach verschlüsselt, denn Cloudflare bringt das Zertifikat mit. Im WLAN dagegen sprach der Browser ihn über `http://192.168.…:3001` an, und wer im selben Netz mitlas, sah beim Anmelden das Kennwort und danach das Sitzungs-Cookie. Für eine Adresse im Heimnetz stellt keine öffentliche Stelle ein Zertifikat aus – also stellt der Almanach es selbst aus, ohne Download, allein mit Node (`npm run zertifikat`, Einrichtung Schritt für Schritt im Einrichtungs-Handbuch).
+
+**Zwei Stufen**, wie bei Werkzeugen der Art von mkcert:
+
+| Zertifikat | Wofür | Wie lange |
+|---|---|---|
+| Stammzertifikat | eine eigene kleine Ausstellungsstelle; wird einmal auf den Geräten der Runde installiert | zehn Jahre |
+| Serverzertifikat | von ihm unterschrieben, für `localhost`, den Namen des Rechners und seine Adressen im Heimnetz | 820 Tage (Apple nimmt höchstens 825 an) |
+
+Ändert sich die Adresse des Geräts, stellt `npm run zertifikat` nur das Serverzertifikat neu aus. An den Geräten ist dann nichts zu tun – sie vertrauen der Ausstellungsstelle, nicht dem einzelnen Zertifikat. Der Startbericht mahnt, wenn eine Adresse fehlt oder das Zertifikat in weniger als 30 Tagen abläuft.
+
+**Beschränkt.** Wer ein Stammzertifikat installiert, vertraut allem, was es unterschreibt. Deshalb darf dieses nur für private Adressen (`10.x`, `172.16–31.x`, `192.168.x`, `127.x`, `169.254.x`) und Heimnetznamen (`localhost`, `*.local`, `*.lan`, `*.home.arpa`, `*.internal`, `*.fritz.box`, den Namen des Rechners und was beim Anlegen eigens genannt wurde) bürgen – eingetragen als *Name Constraints*, als kritisch markiert. Gelangte sein Schlüssel je in falsche Hände, ließe sich damit trotzdem keine Bank und kein Postfach vortäuschen: Der Browser lehnt jedes Zertifikat für einen fremden Namen ab, auch wenn es richtig unterschrieben ist. Der Vertrag prüft das mit einer echten TLS-Verbindung.
+
+**Wo es liegt.** Im Datenordner unter `tls/`: `stamm.crt` und `almanach.crt` (öffentlich), `stamm.key` und `almanach.key` (nur für den Besitzer lesbar, in `.gitignore`). Das Stammzertifikat bietet der Server unter `/almanach-stamm.crt` zum Installieren an. Weil es auch über `http://` kommen kann, nennen Startbericht und `npm run zertifikat` seinen **Fingerabdruck** (SHA-256); iPad und Telefon zeigen ihn beim Installieren an. Stimmen beide überein, ist es das richtige.
+
+**Der alte Eingang bleibt.** Der Almanach lauscht zusätzlich auf Port 3443; der über `http://` auf 3001 bleibt offen, denn der Tunnel spricht ihn an, und wer noch nichts eingerichtet hat, soll nicht vor verschlossener Tür stehen. Die Anmeldeseite weist über `http://` im Heimnetz auf den verschlüsselten Eingang hin, sobald es einen gibt – umgeleitet wird bewusst nicht von selbst: Wer das Stammzertifikat noch nicht installiert hat, stünde sonst vor einer Warnseite, ohne zu wissen, warum.
+
+**Warum eigener Code statt OpenSSL.** Node kann Schlüssel erzeugen und signieren, aber keine Zertifikate ausstellen. OpenSSL liegt nicht auf jedem Rechner (unter Windows fast nie), und ein Paket dafür wäre ein Download mehr. Die Zertifikate sind eine verschachtelte Folge von Feldern in DER-Schreibweise; `backend/src/https/der.js` kann genau die Bausteine schreiben, die gebraucht werden, und nicht mehr. Gelesen und geprüft wird mit Node selbst (`crypto.X509Certificate`).
+
 ## Rollen und Wächter
 
 Es gibt zwei Rollen: `sl` und `spieler`. Die Rolle gilt rundenweit. Es muss immer mindestens eine Spielleitung geben; die letzte kann ihre Rolle weder abgeben noch ihr Konto löschen lassen.
@@ -173,8 +198,24 @@ Der Browser verbindet sich danach von selbst neu und bekommt den neuen Stand –
 | `X-Content-Type-Options: nosniff` | Der Browser nimmt den angegebenen Typ ernst und rät nicht – ein hochgeladenes „Bild“ wird nicht als Skript ausgeführt. |
 | `Referrer-Policy: same-origin` | Die Adresse des Almanachs geht nicht an fremde Seiten, auf die ein Link führt. |
 | `X-Frame-Options: SAMEORIGIN` | Keine fremde Seite darf den Almanach in einen Rahmen setzen und darüber einen unsichtbaren Knopf legen („Kampagne endgültig entfernen“). |
+| `Content-Security-Policy` | Was der Browser dieser Seite überhaupt erlaubt (siehe unten). |
 
-**Eingeschleuster Text.** React setzt jeden Text als Text, nie als HTML. Wo der Almanach selbst HTML erzeugt – das mitgenommene Blatt, der Drucksatz –, geht jeder Wert durch eine Entschärfung (`esc`), und der eingebettete Datensatz maskiert `<`, damit ein Text im Blatt das Skript nicht beenden kann. Die Stilprobe verbietet `style="…"` und `onclick="…"` in erzeugtem HTML.
+Alle vier setzt `backend/src/kopfzeilen.js`, auf jede Antwort.
+
+**Die Content-Security-Policy** ist die zweite Mauer hinter der ersten. Rutscht eines Tages doch ein Stück fremdes HTML durch – ein Name mit `<img onerror=…>` an einer Stelle, die jemand übersehen hat –, führt der Browser es trotzdem nicht aus:
+
+```
+default-src 'self'; script-src 'self' https://open.spotify.com https://*.spotifycdn.com;
+style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self';
+frame-src https://open.spotify.com; frame-ancestors 'self'; object-src 'none';
+base-uri 'self'; form-action 'self'; manifest-src 'self'; worker-src 'self'
+```
+
+Kein `'unsafe-inline'` und kein `'unsafe-eval'`. Das geht, weil im Almanach nichts eingebettet ist: kein Skript im Markup (auch `aussehen.js` ist eine eigene Datei), kein `style`-Attribut, kein `<style>`. Werte, die erst im Browser feststehen – die Lage einer Figur, eine gewählte Farbe –, setzt `lib/laufstil.js` über das CSSOM in ein Laufzeit-Stilblatt; das erlaubt die Richtlinie, denn sie verbietet eingebettetes CSS im Markup, nicht Regeln, die ein erlaubtes Skript setzt. Fremd sind nur Spotifys Einbettungsschnittstelle und ihr Rahmen. Bilder dürfen `data:` sein (Bildnisse stehen so im Blatt) und `blob:` (die Vorschau beim Hochladen). Beim Entwickeln liefert Vite die Oberfläche aus, nicht der Server – dort gilt die Richtlinie nicht.
+
+Geprüft wird die Richtlinie zweifach: Der Vertrag liest die Kopfzeile, und ein Durchgang im Browser (alle Seiten, beide Rollen, Figuren ziehen, Blatt mitnehmen und einlesen) meldete keine einzige Verletzung.
+
+**Eingeschleuster Text.** React setzt jeden Text als Text, nie als HTML. Wo der Almanach selbst HTML erzeugt – das mitgenommene Blatt, der Drucksatz, das Handbuch –, geht jeder Wert durch eine Entschärfung (`esc`); auch der Datensatz am Ende des mitgenommenen Blattes steht entschärft in einem `<template>`, sodass kein Text im Blatt ihn beenden kann. Ein Skript enthält die mitgenommene Datei nicht mehr. Die Stilprobe verbietet `style="…"`, `onclick="…"`, `<script>` und `<style>` in erzeugtem HTML – mit einer begründeten Ausnahme (das Stilblatt des mitgenommenen Blattes, Kapitel „Das Blatt: Datenmodell und Ausfuhr“).
 
 **Hochgeladene Bilder** nur als PNG, JPEG, WebP, GIF oder AVIF – kein SVG, das Skript enthalten kann –, und ausgeliefert mit dem gespeicherten Typ und `nosniff`.
 
@@ -199,9 +240,9 @@ Der Browser verbindet sich danach von selbst neu und bekommt den neuen Stand –
 Ehrlichkeit gehört zur Sicherheit. Diese Dinge schützt der Almanach nicht, und wer ihn betreibt, sollte es wissen:
 
 - **Das Gerät selbst.** Wer an den Pi oder den Laptop kommt, kommt an die Datenbank – und darin steht alles im Klartext außer Kennwörtern und Sitzungen: Blätter, Notizen, Chronik, geflüsterte Chatzeilen. Die Datenbank ist nicht verschlüsselt. Sicherungen ebenso wenig; wer sie in eine Cloud legt, legt dort die Geheimnisse der Spielleitung ab.
-- **Das Heimnetz.** Im WLAN spricht der Browser den Almanach über `http://` an – unverschlüsselt. Wer im selben Netz mitliest, sieht Kennwörter beim Anmelden. In einem fremden oder offenen WLAN meldet man sich deshalb über die Tunnel-Adresse an (HTTPS), nicht über die örtliche.
+- **Das Heimnetz, solange kein Zertifikat angelegt ist.** Ohne `npm run zertifikat` spricht der Browser den Almanach im WLAN über `http://` an – unverschlüsselt; wer im selben Netz mitliest, sieht Kennwörter beim Anmelden. Mit Zertifikat gibt es den verschlüsselten Eingang (oben), aber der alte bleibt offen: Wer ihn trotzdem benutzt, ist so ungeschützt wie vorher. Der Startbericht sagt, welcher Stand gilt.
 - **Die Spielleitung.** Sie sieht alles, was die Runde tut, außer Geflüstertem zwischen zwei anderen – und wer das Gerät betreibt, kann auch das in der Datenbank lesen.
-- **Eine Content-Security-Policy** setzt der Almanach bisher nicht. Sie wäre eine zweite Mauer hinter der ersten (React setzt Texte als Texte, erzeugtes HTML ist entschärft); der eingebettete Spotify-Spieler und die Schriften müssten dabei bedacht werden.
+- **Das Stammzertifikat auf den Geräten.** Wer es installiert, vertraut dem Almanach als Ausstellungsstelle – beschränkt auf Heimnetzadressen und -namen. Wer den Datenordner in die Hand bekommt, hat mit `tls/stamm.key` diese Vollmacht; auch deshalb gehört das Gerät geschützt.
 - **Zwei-Faktor-Anmeldung, Kennwortregeln** über die Mindestlänge hinaus, eine Sperre des Kontos nach Fehlversuchen (statt nur der Drossel je Absender) – bewusst nicht, weil sie einer Runde von Freunden mehr im Weg stünden als nützten.
 
 ## Was geprüft wird
@@ -217,6 +258,8 @@ Die Sicherheit des Almanachs ist nur so gut wie ihre Prüfung. Der Vertrag (`npm
 - dass Spielende nicht tun dürfen, was nur die Spielleitung darf, und keine fremden Figuren ziehen;
 - dass Verweise auf Zeilen anderer Kampagnen abgewiesen werden;
 - dass das Kompendium sich nicht verlassen lässt;
-- dass jede Absage einen Schlüssel trägt.
+- dass jede Absage einen Schlüssel trägt;
+- dass jede Antwort die Content-Security-Policy trägt, ohne `unsafe-inline`;
+- dass `npm run zertifikat` nur private Adressen annimmt, das Serverzertifikat vom Stammzertifikat unterschrieben ist, für einen fremden Namen nicht hält und ein Anmelden über HTTPS ein `Secure`-Cookie ergibt.
 
 Kommt ein Weg dazu, kommt eine Prüfung dazu. Die Liste aller Prüfungen steht im Verzeichnis „Prüfnetz“.
