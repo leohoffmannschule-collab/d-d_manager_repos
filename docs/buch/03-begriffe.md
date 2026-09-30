@@ -73,7 +73,7 @@ Ein Konto, das in einer Kampagne mitspielt. Nur Mitglieder können eine Kampagne
 
 ### Papierkorb
 
-Wohin eine gelöschte Kampagne zuerst wandert. Sie verschwindet aus allen Listen, ihre Daten bleiben aber liegen (`campaigns.deleted_at`), bis die Frist abläuft oder die Spielleitung sie ausdrücklich endgültig entfernt. Wiederherstellen stellt alles zurück, wie es war. Code: `backend/src/kampagnen.js`, Wege unter `/api/campaigns`.
+Wohin eine gelöschte Kampagne zuerst wandert. Sie verschwindet aus allen Listen, ihre Daten bleiben aber liegen (`campaigns.deleted_at`), bis die Frist von 30 Tagen abläuft oder sie ausdrücklich endgültig entfernt wird. Wiederherstellen stellt alles zurück, wie es war. Löschen, Wiederherstellen und Umbenennen darf nur, wer die Kampagne angelegt hat – auch keine andere Spielleitung; zum Löschen muss ihr Name abgetippt werden. Code: `backend/src/kampagnen.js`, Wege unter `/api/campaigns`.
 
 ### Umzug
 

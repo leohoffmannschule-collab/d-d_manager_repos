@@ -255,7 +255,7 @@ Nicht eingelöste Einladungscodes lassen sich zurückziehen. Ein liegengeblieben
 ### Kampagnen
 
 - **Umbenennen** geht in der Oberfläche unter *Spielleitung → Runde*. Wer gerade keinen Browser hat oder nicht mehr hineinkommt: `node backend/scripts/umbenennen.mjs "Alter Name" "Neuer Name"`. Ohne Namen zeigt das Skript alle Kampagnen, auch die im Papierkorb. Der Name hängt an nichts – alles verweist auf die Kennung der Kampagne –, Umbenennen ist also gefahrlos.
-- **Löschen** schickt eine Kampagne in den Papierkorb. Nach 30 Tagen entfernt der Almanach sie beim nächsten Start endgültig; bis dahin stellt „Wiederherstellen“ alles zurück, wie es war.
+- **Löschen** schickt eine Kampagne in den Papierkorb; zur Bestätigung muss ihr Name abgetippt werden. Nach 30 Tagen entfernt der Almanach sie endgültig – beim nächsten Start oder beim nächsten Blick in den Papierkorb, was zuerst kommt; bis dahin stellt „Wiederherstellen“ alles zurück, wie es war. Umbenennen, Löschen und Wiederherstellen darf nur, wer die Kampagne angelegt hat.
 - **Vorlagen nachlegen:** `npm run vorlagen` legt in jeder Kampagne außerhalb des Papierkorbs nach, was von den zwölf Vorlagen fehlt; `npm run vorlagen -- "Name"` nur in einer. Vorhandene – auch umgeschriebene – bleiben unangetastet.
 
 Alle drei Skripte dürfen laufen, während der Almanach läuft. Die offenen Fenster sehen die Änderung nach einem Neuladen der Seite; die Skripte haben keinen Draht zu ihnen.

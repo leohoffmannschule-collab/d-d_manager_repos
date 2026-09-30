@@ -77,6 +77,30 @@ export default async function sicht(lage) {
       'Wer eine Fackel trägt, verrät sich selbst'
     );
 
+    // Fremdes Licht verlängert den eigenen Blick aber nicht: Mit einer
+    // Sichtweite von 30 Fuß (sechs Felder) bleibt die Fackel acht Felder
+    // weiter für sie dunkel – sonst wanderte ihr Nebelfenster, ohne dass
+    // sie einen Schritt getan hätte.
+    blatt.data.combat.senses.sight = 30;
+    await sl.ruf(`/characters/${held.id}`, { methode: 'PUT', koerper: { data: blatt.data } });
+    gleich(
+      (await spieler.ruf('/scenes/aktiv')).daten.tokens.length,
+      1,
+      'Fremdes Licht jenseits der eigenen Sichtweite bleibt dunkel'
+    );
+
+    // Die eigene Fackel dagegen trägt den Blick weiter: 20 + 20 Fuß sind acht
+    // Felder, genau bis zum Ungetüm. Dafür zündet man sie schließlich an.
+    await sl.ruf(`/scenes/figuren/${ihre.id}`, { methode: 'PATCH', koerper: { lightBright: 20, lightDim: 20 } });
+    gleich(
+      (await spieler.ruf('/scenes/aktiv')).daten.tokens.length,
+      2,
+      'Die eigene Fackel trägt den Blick über die Sichtweite hinaus'
+    );
+    await sl.ruf(`/scenes/figuren/${ihre.id}`, { methode: 'PATCH', koerper: { lightBright: 0, lightDim: 0 } });
+    blatt.data.combat.senses.sight = 0;
+    await sl.ruf(`/characters/${held.id}`, { methode: 'PUT', koerper: { data: blatt.data } });
+
     // Der Nebel bleibt die stärkere Schranke: Was nie aufgedeckt wurde,
     // steht auch nicht im Datenstrom.
     await sl.ruf(`/scenes/${dunkel.id}/nebel/alles`, { methode: 'POST', koerper: { revealed: false } });
