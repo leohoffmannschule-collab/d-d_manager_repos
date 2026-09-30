@@ -189,7 +189,7 @@ Der Vertrag spielt einen Abend in 20 Kapiteln, jedes baut auf dem vorigen auf (s
 | 07-gespraech | 24 | Vertrag, Kapitel: Chronik, verdeckte Würfe und Chat. |
 | 08-spieltisch | 18 | Vertrag, Kapitel: Spieltisch und Kartenbibliothek. |
 | 09-klang | 27 | Vertrag, Kapitel: Der Klangteppich. |
-| 10-sicht | 17 | Vertrag, Kapitel: Sicht: Nebel, Licht und Sinne. |
+| 10-sicht | 19 | Vertrag, Kapitel: Sicht: Nebel, Licht und Sinne. |
 | 11-vorhang | 18 | Vertrag, Kapitel: Der Vorhang. |
 | 12-sichtweite | 12 | Vertrag, Kapitel: Sichtweite: das Nebelfenster hängt an der Figur. |
 | 13-massstab | 9 | Vertrag, Kapitel: Maßstab und große Karten. |

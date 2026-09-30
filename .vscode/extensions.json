@@ -1,6 +1,9 @@
 {
+  // Tailwind für die Klassen im JSX; oxc für die Prüfregeln aus
+  // .oxlintrc.json und frontend/.oxlintrc.json (ESLint benutzt der Almanach
+  // nicht – `npm run lint` ruft oxlint).
   "recommendations": [
     "bradlc.vscode-tailwindcss",
-    "dbaeumer.vscode-eslint"
+    "oxc.oxc-vscode"
   ]
 }

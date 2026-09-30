@@ -6,7 +6,10 @@
       "type": "shell",
       "command": "npm run setup",
       "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "dedicated" }
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
     },
     {
       "label": "2 · Entwicklung starten (Server + Oberfläche)",
@@ -14,22 +17,34 @@
       "command": "npm run dev",
       "problemMatcher": [],
       "isBackground": true,
-      "presentation": { "reveal": "always", "panel": "dedicated" },
-      "group": { "kind": "build", "isDefault": true }
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
     },
     {
       "label": "3 · Fertige Fassung bauen und starten",
       "type": "shell",
       "command": "npm start",
       "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "dedicated" }
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
     },
     {
       "label": "4 · Adresse anzeigen (wer kommt woher heran?)",
       "type": "shell",
       "command": "npm run adresse",
       "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "dedicated" }
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
     },
     {
       "label": "5 · Tunnel nach außen aufmachen",
@@ -37,7 +52,24 @@
       "command": "npm run tunnel",
       "problemMatcher": [],
       "isBackground": true,
-      "presentation": { "reveal": "always", "panel": "dedicated" }
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "6 · Alles prüfen (Lint, Proben, Vertrag)",
+      "type": "shell",
+      "command": "npm test",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
     }
   ]
 }

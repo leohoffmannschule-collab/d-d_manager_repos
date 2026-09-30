@@ -40,34 +40,50 @@ Port 5173 daneben und lädt Änderungen sofort nach.
 ```
 backend/src/
   server.js          alles wird eingehängt – die kürzeste Übersicht des Servers
+  umgebung.js        die Datei .env einlesen, bevor irgendetwas anderes startet
+  start/             was der Server beim Start sagt – und wenn er nicht kann
   db.js              der Eingang zur Datenbank; datenbank/ macht die Arbeit
   datenbank/         öffnen, Schema, Nachrüsten, Transaktionen
-  auth.js            Kennwörter, Sitzungen, die Wächter requireAuth/requireDm/…
+  auth.js            der Eingang zu Anmeldung und Zutritt; anmeldung/ baut
+  anmeldung/         Kennwörter, Sitzungen, Cookie, die vier Wächter, Konten
   events.js          der Live-Kanal (SSE): wer hängt dran, wer bekommt was
   werte.js           Eingaben säubern: Zahlen, Farben, Textlisten
   asynchron.js       async-Wege für Express 4
-  sicht.js           was eine Figur sieht – Licht, Dunkelsicht, Nebel
+  sicht.js, sicht/   was eine Figur sieht – Felder, Sinne, Licht, Bitkarte
   spieltisch/        Szenen umwandeln, Sichtbarkeit je Person, verschicken
   kampf/             Kämpfer umwandeln, die zwei Sichten, TP aufs Blatt
+  blattmeldung.js    Blattänderungen nur denen melden, die das Blatt sehen
   beute.js           die Beutekiste: Inhalt und Teilen
   klang.js           der Klangteppich: was aufliegt, wo es steht
   chronicle.js       die Chronik mitschreiben
-  uebernehmen.js     Daten in eine andere Kampagne kopieren
+  uebernehmen.js, uebernehmen/
+                     Daten in eine andere Kampagne kopieren
   kampagnen.js       Papierkorb und endgültiges Entfernen
+  domaene.js         die feste Adresse der Runde, falls es eine gibt
   dice.js            Würfelausdrücke auswerten („2W6+3“)
   routes/            je eine Datei für einen Zweig der API – nur Wege,
                      gerechnet wird in den Modulen darüber
   vorlagen/          die zwölf fertigen Charaktere für eine frische Kampagne
 
+backend/scripts/     Befehle für den Betrieb: Sicherung, Vorlagen, Kennwort
+
 frontend/src/
   main.jsx           Startpunkt
   App.jsx            welche Adresse zeigt was – und die drei Tore davor
+  index.css, stile/  das ganze Aussehen; kein Stil steht im JSX
   lib/               alles ohne Aussehen: Server, Zustand, Regeln, Rechnungen
-  pages/             je eine Datei für eine Seite
+    api.js, api/     die Wege des Servers, nach Sachgebieten
+    live.jsx         der Live-Draht und useLive
+    daten.js, daten/ die Haken, die laden und mithorchen
+    blatt/, regeln/  was das Charakterblatt rechnet
+  pages/             je eine Datei für eine Seite; große Seiten haben
+                     einen gleichnamigen Ordner (blatt/, tisch/, chronik/, hilfe/)
   components/        Bauteile; dm/ nur für die Spielleitung, sheet/, tabletop/
 
-scripts/             Werkzeuge: starten, Tunnel, Prüfdurchgang, Drucksatz
-docs/                die Handbücher – und dieses Dokument
+scripts/             Werkzeuge: starten, Tunnel, Proben, Vertrag, Drucksatz,
+                     Handbuch
+docs/                die Handbücher, dieses Dokument und in buch/ das
+                     ganze Handbuch zum Almanach
 ```
 
 ---
@@ -110,13 +126,15 @@ Sechs Dateien, und du verstehst das Gerüst. Rechne mit einer knappen Stunde.
    ist ein Zweig der API samt seiner Zugangsregel.
 2. **`backend/src/db.js`** – das Schema. Wer die Tabellen kennt, kennt das
    Datenmodell.
-3. **`backend/src/auth.js`** – die vier Wächter. Alles, was geschützt ist,
-   ist *hier* geschützt.
+3. **`backend/src/auth.js`** und **`backend/src/anmeldung/waechter.js`** –
+   die vier Wächter. Alles, was geschützt ist, ist *hier* geschützt.
 4. **`frontend/src/App.jsx`** – die drei Tore: angemeldet, Kampagne gewählt,
    Live-Draht offen.
 5. **`frontend/src/lib/daten/grundlage.js`** – wie die Oberfläche an Daten
    kommt. Darauf baut jeder Haken in `lib/daten/` auf.
-6. **`frontend/src/lib/api.js`** – der einzige Ort, an dem `fetch` steht.
+6. **`frontend/src/lib/api.js`** – der einzige Ort, an dem die Oberfläche
+   den Server anspricht; `lib/api/anfrage.js` ist die eine Stelle, an der
+   jede Anfrage Cookie, Fensterkennung und Fehlerschlüssel bekommt.
 
 Danach such dir eine Sache aus, die du im Almanach benutzt, und verfolge sie
 durch alle Schichten. Der nächste Abschnitt macht das einmal vor.
@@ -127,13 +145,14 @@ durch alle Schichten. Der nächste Abschnitt macht das einmal vor.
 
 *Eine Spielerin zieht ihre Figur über die Karte.* Was passiert?
 
-1. **`components/tabletop/Board.jsx`** – der Finger setzt auf. `beiZeigerAb`
-   erkennt: eine Figur, und sie darf bewegt werden. Beim Loslassen schnappt
-   sie aufs Raster ein.
+1. **`components/tabletop/Board.jsx`** – der Finger setzt auf. Die Gesten
+   selbst stehen in `useZeiger.js`: `beiZeigerAb` erkennt eine Figur, die
+   bewegt werden darf; beim Loslassen schnappt sie aufs Raster ein.
 2. **`pages/Tabletop.jsx`** – `figurBewegen` wird gerufen. Es setzt die Figur
    **sofort örtlich** (damit nichts ruckelt) und schickt sie dann los.
-3. **`lib/api.js`** – `scenesApi.moveToken` schickt ein `PATCH` samt
-   Anmelde-Cookie und der eigenen Fensterkennung.
+3. **`lib/api/tisch.js`** – `scenesApi.moveToken` schickt ein `PATCH` samt
+   Anmelde-Cookie und der eigenen Fensterkennung (beides aus
+   `lib/api/anfrage.js`).
 4. **`backend/src/routes/spieltisch/figuren.js`** – der Server prüft:
    angemeldet? Kampagne gewählt? Gehört diese Figur zu einem
    Charakterblatt dieser Person (`darfBewegen` in `spieltisch/melden.js`)?
@@ -144,8 +163,9 @@ durch alle Schichten. Der nächste Abschnitt macht das einmal vor.
    es weiß es ja schon, und ein Echo ließe die Figur kurz zurückspringen.
    Die Runde bekommt die ganze Szene neu, je Person gerechnet: Ein Schritt
    zur Seite kann ändern, wer was sieht.
-6. **`lib/daten.js`** – in den anderen Fenstern fängt `useLive('figur', …)`
-   die Nachricht und aktualisiert die Liste.
+6. **`lib/daten/spieltisch.js`** – in den anderen Fenstern fängt
+   `useLive('figur', …)` aus `lib/live.jsx` die Nachricht und aktualisiert
+   die Liste.
 7. Und auf den Schirmen der anderen bewegt sich die Figur.
 
 Dasselbe Muster gilt überall: **örtlich vorgreifen, schicken, Server
@@ -203,15 +223,17 @@ ein 400 sein, kein Fremdschlüssel-500.
 ## 7. Bevor du etwas abgibst
 
 ```
-npm run build        # die Oberfläche neu bauen – sonst ändert sich nichts
-npm run vertrag      # der Prüfdurchgang: startet einen eigenen Almanach
-                     # auf einem freien Port mit leerer Datenbank und spielt
-                     # eine ganze Runde durch (über 270 Prüfungen)
-npm run blattprobe   # die Rechnungen des Charakterblattes (340 Prüfungen)
-npm run einfuhrprobe # benutzt jemand etwas, das er nicht eingeführt hat?
-npm run klangprobe   # die Gleichschaltung des Klangteppichs
-npm run lint         # oxlint über Oberfläche, Server und Werkzeuge
-npm run pruefe       # alles oben der Reihe nach – vor jedem Commit
+npm run build          # die Oberfläche neu bauen – sonst ändert sich nichts
+npm run lint           # oxlint über Oberfläche, Server und Werkzeuge
+npm run einfuhrprobe   # benutzt jemand etwas, das er nicht eingeführt hat?
+npm run stilprobe      # steht irgendwo Stil oder Skript mitten im Markup?
+npm run kommentarprobe # hat jede Datei ihren Kopf, jede Ausfuhr ihr Warum?
+npm run blattprobe     # die Rechnungen des Charakterblattes (340 Prüfungen)
+npm run klangprobe     # die Gleichschaltung des Klangteppichs
+npm run vertrag        # der Prüfdurchgang: startet einen eigenen Almanach
+                       # auf einem freien Port mit leerer Datenbank und spielt
+                       # eine ganze Runde durch (300 Prüfungen, 20 Kapitel)
+npm test               # alles oben der Reihe nach – vor jedem Commit
 ```
 
 Die **Einfuhrprobe** ist schnell (eine Sekunde) und deckt genau eine Lücke
@@ -227,11 +249,17 @@ Was darf die Runde sehen, was nicht, welche Schlüssel trägt welcher Fehler,
 rechnet die Beute richtig. Wer am Server schraubt, merkt daran sofort, wenn
 er etwas bricht, worauf sich die Oberfläche verlässt.
 
-Kommt eine Funktion dazu, kommt eine Prüfung dazu. Die Datei ist
-`scripts/vertrag.mjs`, und sie liest sich wie ein Spielabend.
+Kommt eine Funktion dazu, kommt eine Prüfung dazu. Der Vertrag beginnt in
+`scripts/vertrag.mjs`; seine Kapitel liegen in `scripts/vertrag/` und lesen
+sich wie ein Spielabend – vom ersten Konto über Kampf, Sicht und Vorhang
+bis zu den Befehlen für den Betrieb.
 
 Weiter:
 
+- **`docs/buch/README.md`** – das ganze Handbuch zum Almanach, auch als PDF
+  (`docs/Abenteuer-Almanach-Handbuch.pdf`). Teil IV erklärt ausführlich,
+  was hier nur angerissen ist; Teil V beschreibt den Arbeitsablauf und die
+  Grundsätze für Reviews.
 - **`docs/API.md`** – jeder Weg des Servers, samt Rechten und Eigenheiten.
   Die Pflichtlektüre, bevor man einen neuen Weg baut.
 - **`docs/HANDBUCH.md`** – was der Almanach kann, aus Sicht der Runde.

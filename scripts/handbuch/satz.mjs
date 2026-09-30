@@ -76,9 +76,28 @@ function kennungenFuer(nummer, markdown) {
  * Die Handbücher in docs/ bringen ihr eigenes kleines Inhaltsverzeichnis
  * mit („## Inhalt“ mit Verweisen auf die Abschnitte). Auf GitHub ist das
  * nützlich, im Buch stünde es doppelt – dort gibt es das große Verzeichnis.
+ *
+ * Zeile für Zeile statt mit einem regulären Ausdruck, weil Codeblöcke
+ * zählen: Das Kapitel über den Bau des Buches zeigt die Gliederung als
+ * Beispiel, samt einer Zeile „## Inhalt“. Ein Ausdruck, der Zäune nicht
+ * kennt, schnitt dort das halbe Beispiel heraus.
  */
 function ohneEigenesInhaltsverzeichnis(markdown) {
-  return markdown.replace(/^## Inhalt(sverzeichnis)?\s*\n[\s\S]*?(?=^## |^---\s*$)/m, '');
+  const zeilen = markdown.split('\n');
+  const behalten = [];
+  let imCode = false;
+  let imVerzeichnis = false;
+  let schonWeg = false;
+  for (const zeile of zeilen) {
+    if (/^\s*(```|~~~)/.test(zeile)) imCode = !imCode;
+    if (!imCode && imVerzeichnis && (zeile.startsWith('## ') || /^---\s*$/.test(zeile))) imVerzeichnis = false;
+    if (!imCode && !schonWeg && /^## Inhalt(sverzeichnis)?\s*$/.test(zeile)) {
+      imVerzeichnis = true;
+      schonWeg = true;
+    }
+    if (!imVerzeichnis) behalten.push(zeile);
+  }
+  return behalten.join('\n');
 }
 
 /** Römische Zahlen für die Teile. */

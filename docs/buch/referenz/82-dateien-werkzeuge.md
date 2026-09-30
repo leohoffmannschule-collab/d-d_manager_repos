@@ -3,7 +3,7 @@
 > Dieses Kapitel schreibt `npm run handbuch` aus dem Code (scripts/handbuch/referenz/).
 > Änderungen gehören in den Code und seine Kommentare, nicht hierher.
 
-Alles unter scripts/ (62 Dateien, 6.927 Zeilen): Start und Tunnel, die Proben und der Vertrag, Drucksatz und dieses Handbuch.
+Alles unter scripts/ (63 Dateien, 7.086 Zeilen): Start und Tunnel, die Proben und der Vertrag, Drucksatz und dieses Handbuch.
 
 ## scripts/
 
@@ -560,7 +560,7 @@ Gliederung (dort steht, wie man das PDF baut).
 
 ### scripts/handbuch/referenz.mjs
 
-*56 Zeilen*
+*58 Zeilen*
 
 Die Verzeichnisse des Handbuchs – aus dem Code geschrieben.
 
@@ -577,7 +577,7 @@ schreibt sie neu.
 
 ### scripts/handbuch/satz.mjs
 
-*230 Zeilen*
+*249 Zeilen*
 
 Das Buch setzen: aus der Gliederung und den Kapiteln eine einzige
 HTML-Seite – Titelblatt, Inhaltsverzeichnis, Vorwort, Teile, Kapitel.
@@ -760,6 +760,29 @@ Absagen alle in derselben Form, und der Vertrag
 **Ausfuhren**
 
 - `FEHLERSCHLUESSEL` (const) – Das Kapitel.
+
+### scripts/handbuch/referenz/geschichte.mjs
+
+*114 Zeilen*
+
+Verzeichnis: wie der Almanach entstand – aus dem Verlauf von git.
+
+Jeder Commit ist ein kleiner Bericht: eine Überschrift und, bei den
+meisten, ein paar Absätze, warum etwas so gebaut wurde. Zusammen erzählen
+sie die Geschichte des Almanachs genauer, als ein nachträglich
+geschriebenes Kapitel es könnte. Dieses Verzeichnis setzt sie in
+zeitlicher Reihenfolge, nach Tagen geordnet.
+
+Weggelassen werden die Zusammenführungen (`Merge pull request …`) – sie
+sagen nur, *dass* etwas zusammenkam, nicht was – und in den Nachrichten
+die Zeilen über Mitautoren und Sitzungen, die nur für git selbst da sind.
+
+Gibt es kein git (der Almanach kam als ZIP), steht an Stelle der
+Geschichte ein Satz, der das sagt. Das Buch entsteht trotzdem.
+
+**Ausfuhren**
+
+- `GESCHICHTE` (const) – Das Kapitel.
 
 ### scripts/handbuch/referenz/pruefnetz.mjs
 
@@ -1111,7 +1134,7 @@ Kapitel angelegt haben – und trägt ein, was spätere brauchen.
 
 ### scripts/vertrag/10-sicht.mjs
 
-*112 Zeilen*
+*136 Zeilen*
 
 Vertrag, Kapitel: Sicht: Nebel, Licht und Sinne.
 

@@ -30,6 +30,7 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
 
 | Dokument | Für wen |
 | --- | --- |
+| **[Das Handbuch zum Abenteuer-Almanach](docs/buch/README.md)** ([PDF](docs/Abenteuer-Almanach-Handbuch.pdf)) | alle: das ganze Buch in sechs Teilen – am Tisch, Betrieb, Aufbau, Entwicklung, Verzeichnisse; enthält auch alle Dokumente unten |
 | [Einrichtungs-Handbuch](docs/EINRICHTUNG.md) | wer den Almanach aufsetzt – Pi oder Laptop, Tunnel, Sicherung |
 | [Handbuch](docs/HANDBUCH.md) | die vollständige Beschreibung: alle Funktionen, Sicht und Nebel, Technik, Grenzen |
 | [Betriebsanleitung Spielleitung](docs/SPIELLEITUNG.md) | den Abend führen: vorbereiten, Vorhang, Kampf, Licht, Chronik |
@@ -443,6 +444,7 @@ Nützliche Befehle im Projektstamm:
 | `npm run tunnel`    | Den Weg von außen aufmachen, ohne Docker (`Strg+C` schließt ihn); mit `TUNNEL_TOKEN` den benannten Tunnel auf die eigene Domain |
 | `npm run sicherung` | Datenbank sichern; `-- --medien` nimmt Karten und Bildnisse mit       |
 | `npm run drucksatz` | Die Handbücher druckfertig setzen (`docs/druck/`, dann Strg+P → PDF)  |
+| `npm run handbuch`  | Das ganze Handbuch bauen: Verzeichnisse aus dem Code, dann `docs/Abenteuer-Almanach-Handbuch.pdf` |
 | `npm run setup`     | Abhängigkeiten für Backend und Frontend installieren                  |
 | `npm run dev`       | Entwicklung: Server (3001) und Oberfläche (5173) gleichzeitig         |
 | `npm run build`     | Oberfläche bauen und ins Backend kopieren                             |

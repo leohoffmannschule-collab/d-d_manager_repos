@@ -195,7 +195,7 @@ Eine Auswahl für die Spielleitung: Sie schaut durch die Augen einer einzelnen F
 
 ### Lineal
 
-Messen auf der Karte: ziehen, und der Almanach zeigt die Entfernung in Feldern und in der Einheit des Maßstabs. Nur im eigenen Fenster; niemand sonst sieht es.
+Messen auf der Karte: ziehen, und der Almanach zeigt die Entfernung in Feldern und in der Einheit des Maßstabs. Ein Werkzeug der Spielleitung, und nur in ihrem Fenster; niemand sonst sieht es. Diagonalen zählen dabei einfach, wie bei der Bewegung.
 
 ### Zeigefinger (Ping)
 
