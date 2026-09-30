@@ -4,7 +4,7 @@
  * Der am meisten benutzte Reiter des Almanachs – und der einzige, der auch
  * *schreibend* mit dem Rest des Tisches zu tun hat: Trefferpunkte, die hier
  * fallen, stehen sofort in der Kampfliste der Spielleitung, und Schaden von
- * dort steht sofort hier (siehe pages/CharacterSheet.jsx, useLive).
+ * dort steht sofort hier (siehe pages/blatt/useBlatt.js, useLive).
  *
  * Diese Datei stellt nur noch die Karten untereinander. Jede steht für sich
  * in `kampf/` und bringt mit, was sie selbst braucht:

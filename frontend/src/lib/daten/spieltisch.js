@@ -79,8 +79,8 @@ export function useSzene() {
    * Nebel malen: erst örtlich, damit es sich flüssig anfühlt.
    *
    * Diese Funktion schickt *nichts* zum Server – das macht der Aufrufer
-   * (pages/Tabletop.jsx), und zwar gebündelt, damit aus einem Strich über
-   * dreißig Felder nicht dreißig Anfragen werden.
+   * (pages/tisch/useNebelpinsel.js), und zwar gebündelt, damit aus einem
+   * Strich über dreißig Felder nicht dreißig Anfragen werden.
    */
   const nebelSetzen = useCallback((felder, offen) => {
     setNebel((alt) => mitFeldern(alt, felder, offen));

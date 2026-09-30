@@ -12,7 +12,8 @@
  */
 import { db } from '../../db.js';
 import { isDm } from '../../auth.js';
-import { broadcast, originClient } from '../../events.js';
+import { originClient } from '../../events.js';
+import { meldeBlatt } from '../../blattmeldung.js';
 
 /** Eine Zeile aus `characters` so, wie die Oberfläche sie bekommt – das Blatt als Objekt. */
 export function rowToCharacter(row) {
@@ -71,6 +72,10 @@ export const darfBearbeiten = (user, row) => isDm(user) || row.owner_id === user
  * des Wirts, des Räuberhauptmanns, des Drachen. Sie bleiben dort, auch wenn
  * das Blatt versehentlich als „geteilt“ markiert ist – deshalb wird das hier
  * *vor* allen anderen Regeln geprüft, nicht danach.
+ *
+ * Dieselbe Regel gilt für den Live-Kanal und steht dafür noch einmal in
+ * ../../blattmeldung.js (`spielerSiehtBlatt`). Wer sie hier ändert, ändert
+ * sie dort mit.
  */
 export const darfSehen = (user, row) => {
   if (isDm(user)) return true;
@@ -87,7 +92,10 @@ export function sinneAus(rohesJson) {
   }
 }
 
-/** Den anderen Fenstern der Kampagne die Kurzfassung schicken – dem eigenen nicht. */
+/**
+ * Den anderen Fenstern der Kampagne die Kurzfassung schicken – dem eigenen
+ * nicht, und nur denen, die das Blatt sehen dürfen (siehe blattmeldung.js).
+ */
 export function meldeAenderung(row, req) {
-  broadcast('charakter:aktualisiert', summary(row), { exceptClient: originClient(req), campaignId: req.campaignId });
+  meldeBlatt(row, summary(row), { exceptClient: originClient(req), campaignId: req.campaignId });
 }

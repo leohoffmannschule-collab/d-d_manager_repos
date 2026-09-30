@@ -112,8 +112,8 @@ springt eine gezogene Figur kurz an ihren alten Platz.
 | `wuerfe:geleert`        | `{}`                                       |
 | `chat`                  | eine Nachricht (geflüsterte nur an die beiden) |
 | `chat:geleert`          | `{}`                                       |
-| `charakter:aktualisiert`| Kurzfassung eines Charakters               |
-| `charakter:entfernt`    | `{ id }`                                   |
+| `charakter:aktualisiert`| Kurzfassung eines Charakters – nur an die, die das Blatt sehen dürfen |
+| `charakter:entfernt`    | `{ id }` – gelöscht, oder für diese Person nicht mehr sichtbar |
 | `beute`                 | `{ items, coins }`                         |
 | `notizen:aktualisiert`  | `{}` – neu laden                           |
 | `chronik`               | ein neuer Chronikeintrag                   |

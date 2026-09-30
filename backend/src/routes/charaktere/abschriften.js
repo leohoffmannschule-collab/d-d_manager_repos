@@ -9,7 +9,7 @@ import { Router } from 'express';
 import { randomUUID } from 'node:crypto';
 import { db } from '../../db.js';
 import { requireDm } from '../../auth.js';
-import { broadcast } from '../../events.js';
+import { meldeBlatt } from '../../blattmeldung.js';
 import { kopiereCharakter, zielPruefen } from '../../uebernehmen.js';
 import { darfSehen, holen, meldeAenderung, rowToCharacter, summary } from './blatt.js';
 
@@ -54,9 +54,11 @@ router.post('/:id/kopieren', requireDm, zielPruefen, (req, res) => {
 
   const kopiert = kopiereCharakter(quelle, req.ziel);
 
-  // Die Zielkampagne sieht das neue Blatt sofort – wer dort gerade offen hat,
-  // soll nicht erst neu laden müssen.
-  broadcast('charakter:aktualisiert', summary(holen(kopiert.id, req.ziel)), { campaignId: req.ziel });
+  // Die Zielkampagne erfährt vom neuen Blatt sofort – wer dort gerade offen
+  // hat, soll nicht erst neu laden müssen. Aber nur, wer es sehen darf: Die
+  // Kopie eines NSC-Blattes bleibt auch drüben hinter dem Schirm.
+  const neu = holen(kopiert.id, req.ziel);
+  meldeBlatt(neu, summary(neu), { campaignId: req.ziel });
   res.status(201).json({ ...kopiert, campaignId: req.ziel });
 });
 

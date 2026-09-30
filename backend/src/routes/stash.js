@@ -16,6 +16,7 @@ import { db, setState, transaktion } from '../db.js';
 import { requireAuth, requireDm } from '../auth.js';
 import { broadcast, originClient } from '../events.js';
 import * as chronik from '../chronicle.js';
+import { meldeBlatt } from '../blattmeldung.js';
 import { kopiereGegenstand, meldeNachZiel, zielPruefen } from '../uebernehmen.js';
 import { KEINE_MUENZEN, MUENZEN, MUENZNAME, inKupfer, kiste, muenzen, rowToItem, teile } from '../beute.js';
 import { hatText, jetzt, toNumber } from '../werte.js';
@@ -173,8 +174,8 @@ router.post('/auszahlen', requireDm, (req, res) => {
 
   // Verkündet wird erst, was wirklich geschrieben ist.
   for (const { row, data } of bezahlt) {
-    broadcast(
-      'charakter:aktualisiert',
+    meldeBlatt(
+      row,
       { id: row.id, name: row.name, hp: data?.combat?.hp ?? null, ownerId: row.owner_id, shared: !!row.shared },
       { campaignId: req.campaignId }
     );

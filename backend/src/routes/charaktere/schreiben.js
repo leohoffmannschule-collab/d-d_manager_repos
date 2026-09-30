@@ -14,6 +14,7 @@ import { isDm } from '../../auth.js';
 import { broadcast } from '../../events.js';
 import { sendeSzene } from '../../spieltisch/melden.js';
 import { sendeKampf } from '../../kampf/sicht.js';
+import { meldeEntzug } from '../../blattmeldung.js';
 import { darfBearbeiten, holen, meldeAenderung, rowToCharacter, sinneAus } from './blatt.js';
 
 const router = Router();
@@ -122,6 +123,10 @@ router.patch('/:id', (req, res) => {
 
   const row = holen(existing.id, req.campaignId);
   meldeAenderung(row, req);
+  // Wer das Blatt eben noch in seiner Übersicht hatte und es jetzt nicht mehr
+  // sehen darf – weil es hinter den Schirm wanderte oder nicht mehr geteilt
+  // ist –, soll es dort auch nicht weiter stehen haben.
+  meldeEntzug(existing, row, req.campaignId);
   res.json(rowToCharacter(row));
 });
 

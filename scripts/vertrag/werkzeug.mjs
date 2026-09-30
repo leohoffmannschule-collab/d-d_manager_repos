@@ -72,6 +72,52 @@ export function klient() {
   };
 }
 
+/* --- Am Live-Kanal mithören --------------------------------------------- */
+
+/**
+ * Den Live-Kanal eines Klienten mitschreiben – so, wie ihn sein Browser
+ * bekäme.
+ *
+ * Gebraucht für Zusagen der Art „davon erfährt die Runde nichts“: Was hier
+ * nicht ankommt, stünde auch im Netzwerkfenster des Browsers nicht.
+ *
+ *   warteAuf(teil, frist)  wartet, bis der mitgeschriebene Text `teil`
+ *                          enthält (höchstens `frist` ms); gibt zurück, ob
+ *                          er kam
+ *   text()                 alles bisher Gelesene
+ *   zu()                   den Kanal schließen
+ */
+export async function mitschreiben(wer) {
+  const kekse = [...wer.kekse].map(([k, v]) => `${k}=${v}`).join('; ');
+  const antwort = await fetch(`${BASIS}/stream`, { headers: { cookie: kekse } });
+  const leser = antwort.body.getReader();
+  const dekoder = new TextDecoder();
+  let text = '';
+  const lauf = (async () => {
+    try {
+      for (;;) {
+        const { value, done } = await leser.read();
+        if (done) break;
+        text += dekoder.decode(value, { stream: true });
+      }
+    } catch {
+      /* geschlossen */
+    }
+  })();
+  return {
+    text: () => text,
+    async warteAuf(teil, frist = 3000) {
+      const ende = Date.now() + frist;
+      while (!text.includes(teil) && Date.now() < ende) await new Promise((weiter) => setTimeout(weiter, 25));
+      return text.includes(teil);
+    },
+    async zu() {
+      await leser.cancel().catch(() => {});
+      await lauf;
+    },
+  };
+}
+
 /* --- Server hochfahren --------------------------------------------------- */
 
 const server = spawn('node', [path.join(wurzel, 'backend', 'src', 'server.js')], {

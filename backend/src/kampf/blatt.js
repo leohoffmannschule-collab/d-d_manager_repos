@@ -9,7 +9,7 @@
  * hat keines, und dann tut diese Funktion nichts.
  */
 import { db } from '../db.js';
-import { broadcast } from '../events.js';
+import { meldeBlatt } from '../blattmeldung.js';
 
 /** Trefferpunkte auf das verknüpfte Charakterblatt zurückschreiben. */
 export function syncCharakter(combatant, campaignId) {
@@ -24,8 +24,8 @@ export function syncCharakter(combatant, campaignId) {
     new Date().toISOString(),
     row.id
   );
-  broadcast(
-    'charakter:aktualisiert',
+  meldeBlatt(
+    row,
     { id: row.id, name: row.name, hp: data.combat.hp, ownerId: row.owner_id, shared: !!row.shared },
     { campaignId }
   );

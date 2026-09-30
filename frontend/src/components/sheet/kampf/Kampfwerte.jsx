@@ -3,9 +3,11 @@
  * die Initiative gleich würfelt.
  *
  * Die *Initiative gesamt* unten ist gerechnet, nicht eingetragen:
- * Geschicklichkeitsmodifikator plus der Bonus darüber. Wer sie am Tisch
- * würfelt, trägt sie damit auch gleich in die Kampfliste der Spielleitung
- * ein – siehe lib/wuerfeln.js.
+ * Geschicklichkeitsmodifikator plus der Bonus darüber. Der Knopf daneben
+ * würfelt sie für alle sichtbar (lib/wuerfeln.js) – in die Kampfliste
+ * trägt sie sich aber erst über „Eigene Initiative würfeln“ in der
+ * Kampfliste selbst ein (components/Initiative.jsx). Hier weiß das Blatt
+ * nicht, ob gerade gekämpft wird.
  */
 import { abilityModifier, formatModifier } from '../../../lib/dnd5e.js';
 import { Card, NumberField, TextField, Toggle, WeiteField } from '../../ui.jsx';

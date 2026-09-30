@@ -8,7 +8,7 @@
  * Kommentare veralten leiser als Code. Eine Funktion, die umzieht, meldet
  * sich beim Bau sofort; ein Kommentar, der auf ihren alten Ort zeigt,
  * schweigt – bis jemand ihm folgt und ins Leere läuft. Diese Probe fängt
- * dreierlei ab:
+ * viererlei ab:
  *
  *   1. **Jede Datei hat einen Kopf.** Ganz oben (nach einer #!-Zeile) steht
  *      ein Blockkommentar, der sagt, wozu es die Datei gibt. Wer eine Datei
@@ -23,6 +23,10 @@
  *      Ordner („siehe lib/rasten.js“), dann gibt es sie auch – vom Ort der
  *      Datei aus oder von einer der üblichen Wurzeln (frontend/src,
  *      backend/src, …).
+ *   4. **Kein Kommentar ohne Code dahinter.** Endet eine Datei mit einem
+ *      Blockkommentar, hat ihn fast immer ein Umzug zurückgelassen: Die
+ *      Funktion ist in eine andere Datei gewandert, ihre Erklärung nicht.
+ *      Sie beschreibt dann etwas, das es hier nicht gibt.
  *
  * Wie die anderen Proben ohne zusätzliches Paket.
  */
@@ -111,11 +115,26 @@ function falschePfade(datei, text) {
   return funde;
 }
 
+/* --- 4. Verwaiste Kommentare --------------------------------------------- */
+
+/**
+ * Endet die Datei mit einem Blockkommentar, hinter dem kein Code mehr kommt?
+ * Eine Datei, die *nur* aus ihrem Kopf besteht, zählt nicht – die gibt es
+ * nicht, und wenn doch, meldet sie Punkt 1 nicht.
+ */
+function endetVerwaist(text) {
+  const rest = text.trimEnd();
+  if (!rest.endsWith('*/')) return false;
+  const beginn = rest.lastIndexOf('/*');
+  return rest.slice(0, beginn).trim().replace(/^#![^\n]*/, '').trim() !== '';
+}
+
 /* --- Der Durchgang -------------------------------------------------------- */
 
 for (const datei of alle) {
   const text = fs.readFileSync(datei, 'utf8');
   if (!hatKopf(text)) maengel.push(`${kurz(datei)} – kein Kopfkommentar`);
+  if (endetVerwaist(text)) maengel.push(`${kurz(datei)} – endet mit einem Kommentar, hinter dem kein Code mehr steht`);
   if (!datei.endsWith('.css')) {
     for (const { name, zeile } of unerklaerteAusfuhren(text)) {
       maengel.push(`${kurz(datei)}:${zeile} – Ausfuhr „${name}“ ohne Kommentar darüber`);

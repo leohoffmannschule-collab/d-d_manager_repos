@@ -5,8 +5,8 @@
  *
  * Das Muster, das alle fünf Reiter teilen: Sie bekommen `data` (das Blatt)
  * und `update(pfad, wert)` und halten *keinen* eigenen Zustand. Geändert
- * wird immer oben in pages/CharacterSheet.jsx, das auch das Speichern
- * besorgt. So kann kein Reiter einen Stand halten, der vom Blatt abweicht.
+ * wird immer oben im Blatt, gespeichert in pages/blatt/useBlatt.js. So
+ * kann kein Reiter einen Stand halten, der vom Blatt abweicht.
  *
  * Gerechnet wird nichts von Hand: Modifikatoren, Übungsbonus und passive
  * Werte kommen aus lib/dnd5e.js. Steht eine Regel dort falsch, ist sie

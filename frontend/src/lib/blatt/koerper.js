@@ -117,11 +117,3 @@ export function freiKoerper(character, data, bilder) {
       .join('')}
   `;
 }
-
-/** Baut die vollständige, alleinstehende Datei. */
-/**
- * Das fertige HTML-Dokument als Zeichenkette.
- *
- * `async`, weil Bildnisse als `data:`-URL geladen und eingebettet werden –
- * ein Verweis auf den Server würde außerhalb des Almanachs ins Leere zeigen.
- */

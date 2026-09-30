@@ -8,6 +8,10 @@
  * (`token.size` = 1 für mittelgroß, 2 für groß …). Gezoomt wird nicht hier,
  * sondern über die Bühne, in der die Figur steht (Board.jsx).
  *
+ * Der Lebensbalken erscheint nur, wenn Trefferpunkte bekannt sind: Bei
+ * Monstern bekommt die Runde sie nicht, und dann soll dort auch nichts
+ * stehen.
+ *
  * Die Werte gehen als CSS-Variablen hinaus, die Regeln stehen in
  * stile/spieltisch/figuren.css.
  */

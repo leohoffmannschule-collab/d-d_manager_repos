@@ -63,12 +63,3 @@ export default function Nebelschicht({ scene, fog, sicht, dm }) {
     />
   );
 }
-
-/**
- * Eine Figur auf der Karte.
- *
- * Steht in Kartenpunkten (`left`/`top`), nicht in Bildschirmpunkten – die
- * Transformation des Behälters erledigt den Rest. Der Balken darunter
- * erscheint nur, wenn Trefferpunkte bekannt sind: Bei Monstern bekommt die
- * Runde sie nicht, und dann soll dort auch nichts stehen.
- */
