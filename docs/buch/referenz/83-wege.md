@@ -445,25 +445,25 @@ Verwaltung, NSC eingeschlossen. Zwei Pfadteile, damit es sich nie mit
 
 ### POST /api/characters
 
-*backend/src/routes/charaktere/schreiben.js, Zeile 22 · angemeldet, Kampagne gewählt*
+*backend/src/routes/charaktere/schreiben.js, Zeile 23 · angemeldet, Kampagne gewählt*
 
 POST /api/characters – create
 
 ### PUT /api/characters/:id
 
-*backend/src/routes/charaktere/schreiben.js, Zeile 41 · angemeldet, Kampagne gewählt*
+*backend/src/routes/charaktere/schreiben.js, Zeile 42 · angemeldet, Kampagne gewählt*
 
 PUT /api/characters/:id – full update (autosave from the sheet editor)
 
 ### PATCH /api/characters/:id
 
-*backend/src/routes/charaktere/schreiben.js, Zeile 93 · angemeldet, Kampagne gewählt*
+*backend/src/routes/charaktere/schreiben.js, Zeile 94 · angemeldet, Kampagne gewählt*
 
 PATCH /api/characters/:id – Besitz und Sichtbarkeit
 
 ### DELETE /api/characters/:id
 
-*backend/src/routes/charaktere/schreiben.js, Zeile 131 · angemeldet, Kampagne gewählt*
+*backend/src/routes/charaktere/schreiben.js, Zeile 136 · angemeldet, Kampagne gewählt*
 
 DELETE /api/characters/:id – ein Blatt löschen. Das darf, wem es gehört,
 und die Spielleitung; Figuren auf dem Tisch verlieren dabei nur ihren
@@ -1082,7 +1082,7 @@ schickt (pages/tisch/useNebelpinsel.js); höchstens 4000 je Anfrage.
 
 ### POST /api/scenes/:id/nebel/alles
 
-*backend/src/routes/spieltisch/nebel.js, Zeile 57 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/spieltisch/nebel.js, Zeile 66 · Spielleitung, Kampagne gewählt*
 
 POST /api/scenes/:id/nebel/alles  { revealed: true|false } – die ganze Karte
 auf einmal aufdecken oder zudecken.
@@ -1134,19 +1134,19 @@ POST /api/scenes/ping – ein kurzes Aufleuchten für alle, nichts wird gespeich
 
 ### GET /api/stash
 
-*backend/src/routes/stash.js, Zeile 47 · angemeldet, Kampagne gewählt*
+*backend/src/routes/stash.js, Zeile 48 · angemeldet, Kampagne gewählt*
 
 GET /api/stash – die Beutekiste dieser Kampagne: Gegenstände und Münzen.
 
 ### POST /api/stash/items
 
-*backend/src/routes/stash.js, Zeile 52 · angemeldet, Kampagne gewählt*
+*backend/src/routes/stash.js, Zeile 53 · angemeldet, Kampagne gewählt*
 
 POST /api/stash/items – jede und jeder darf eintragen, was gefunden wurde
 
 ### PUT /api/stash/items/:id
 
-*backend/src/routes/stash.js, Zeile 80 · angemeldet, Kampagne gewählt*
+*backend/src/routes/stash.js, Zeile 81 · angemeldet, Kampagne gewählt*
 
 PUT /api/stash/items/:id  { name?, qty?, weight?, notes?, holderId? } –
 ändern, auch wer den Gegenstand trägt. Der Träger muss ein Blatt dieser
@@ -1154,20 +1154,20 @@ Kampagne sein.
 
 ### DELETE /api/stash/items/:id
 
-*backend/src/routes/stash.js, Zeile 100 · angemeldet, Kampagne gewählt*
+*backend/src/routes/stash.js, Zeile 101 · angemeldet, Kampagne gewählt*
 
 DELETE /api/stash/items/:id – aus der Kiste nehmen.
 
 ### PUT /api/stash/coins
 
-*backend/src/routes/stash.js, Zeile 109 · angemeldet, Kampagne gewählt*
+*backend/src/routes/stash.js, Zeile 110 · angemeldet, Kampagne gewählt*
 
 PUT /api/stash/coins  { pp?, gp?, ep?, sp?, cp? } – die Münzen in der Kiste
 setzen. Nur, was mitgeschickt wird, ändert sich; nie unter null.
 
 ### GET /api/stash/teilung
 
-*backend/src/routes/stash.js, Zeile 126 · angemeldet, Kampagne gewählt*
+*backend/src/routes/stash.js, Zeile 127 · angemeldet, Kampagne gewählt*
 
 GET /api/stash/teilung?anteile=4
 
@@ -1177,7 +1177,7 @@ ist eine Frage für den Tisch und nicht für den Almanach.
 
 ### POST /api/stash/auszahlen
 
-*backend/src/routes/stash.js, Zeile 140 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/stash.js, Zeile 141 · Spielleitung, Kampagne gewählt*
 
 POST /api/stash/auszahlen  { characterIds: [...] }
 
@@ -1187,7 +1187,7 @@ darf es nur die Spielleitung.
 
 ### POST /api/stash/items/:id/kopieren
 
-*backend/src/routes/stash.js, Zeile 212 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/stash.js, Zeile 213 · Spielleitung, Kampagne gewählt*
 
 POST /api/stash/items/:id/kopieren  { campaignId }
 

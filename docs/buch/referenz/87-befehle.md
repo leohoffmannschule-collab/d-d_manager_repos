@@ -23,7 +23,9 @@ Die Befehle für den Alltag. Sie laufen alle aus dem Wurzelverzeichnis des Alman
 | `npm run tunnel` | `node scripts/tunnel.mjs` |
 | `npm run sicherung` | `node backend/scripts/sicherung.mjs` |
 | `npm run vorlagen` | `node backend/scripts/vorlagen.mjs` |
+| `npm run kennwort` | `node backend/scripts/kennwort.mjs` |
 | `npm run drucksatz` | `node scripts/drucksatz.mjs` |
+| `npm run handbuch` | `node scripts/handbuch.mjs` |
 | `npm run vertrag` | `node scripts/vertrag.mjs` |
 | `npm run blattprobe` | `node scripts/blattprobe.mjs` |
 | `npm run klangprobe` | `node scripts/klangprobe.mjs` |
@@ -81,9 +83,17 @@ Sicherung des Almanachs.
 
 Die Vorlagen-Charaktere nachlegen.
 
+### npm run kennwort
+
+Ein Kennwort neu setzen – für den Fall, dass niemand mehr hineinkommt.
+
 ### npm run drucksatz
 
 Aus den Handbüchern druckfertige Seiten setzen.
+
+### npm run handbuch
+
+Das Handbuch bauen – als Markdown zum Lesen auf GitHub und als PDF.
 
 ### npm run vertrag
 

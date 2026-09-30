@@ -15,6 +15,7 @@ import { DATEIVERZEICHNISSE } from './referenz/dateien.mjs';
 import { DATENBANK } from './referenz/datenbank.mjs';
 import { EINSTELLUNGEN } from './referenz/einstellungen.mjs';
 import { EREIGNISSE } from './referenz/ereignisse.mjs';
+import { FEHLERSCHLUESSEL } from './referenz/fehler.mjs';
 import { PRUEFNETZ } from './referenz/pruefnetz.mjs';
 import { REGELN } from './referenz/regeln.mjs';
 import { VORLAGEN } from './referenz/vorlagen.mjs';
@@ -31,6 +32,7 @@ const VERZEICHNISSE = [
   VORLAGEN,
   REGELN,
   PRUEFNETZ,
+  FEHLERSCHLUESSEL,
 ];
 
 /**

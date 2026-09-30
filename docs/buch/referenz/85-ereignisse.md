@@ -13,8 +13,8 @@ Wie der Kanal gebaut ist, steht im Kapitel über den Live-Kanal im Teil „Wie e
 |---|---|---|---|
 | `anwesenheit` | events.js | in dieser Kampagne | lib/live.jsx |
 | `beute` | routes/stash.js, uebernehmen/alles.js | ohne das auslösende Fenster, in dieser Kampagne; in dieser Kampagne | lib/daten/kampagne.js |
-| `charakter:aktualisiert` | kampf/blatt.js, routes/charaktere/abschriften.js, routes/charaktere/blatt.js, routes/stash.js | in dieser Kampagne; ohne das auslösende Fenster, in dieser Kampagne | components/dm/runde/Charakterzuweisung.jsx, lib/daten/kampagne.js, pages/blatt/useBlatt.js |
-| `charakter:entfernt` | routes/charaktere/schreiben.js | in dieser Kampagne | lib/daten/kampagne.js |
+| `charakter:aktualisiert` | blattmeldung.js | nur die Spielleitung, ohne das auslösende Fenster, in dieser Kampagne; nur Rolle „spieler“, einzelne Konten (je eigene Sicht), ohne das auslösende Fenster, in dieser Kampagne | components/dm/runde/Charakterzuweisung.jsx, lib/daten/kampagne.js, pages/blatt/useBlatt.js |
+| `charakter:entfernt` | blattmeldung.js, routes/charaktere/schreiben.js | nur Rolle „spieler“, einzelne Konten (je eigene Sicht), in dieser Kampagne; in dieser Kampagne | lib/daten/kampagne.js |
 | `chat` | routes/chat.js | einzelne Konten (je eigene Sicht), ohne das auslösende Fenster, in dieser Kampagne | lib/daten/gespraech.js |
 | `chat:geleert` | routes/chat.js | in dieser Kampagne | lib/daten/gespraech.js |
 | `chronik` | chronicle.js | Verdecktes nur an die Spielleitung, in dieser Kampagne | lib/daten/kampagne.js |
@@ -25,7 +25,7 @@ Wie der Kanal gebaut ist, steht im Kapitel über den Live-Kanal im Teil „Wie e
 | `figuren` | spieltisch/melden.js | einzelne Konten (je eigene Sicht), in dieser Kampagne | lib/daten/spieltisch.js |
 | `kampf` | kampf/sicht.js | nur die Spielleitung, in dieser Kampagne; nur Rolle „spieler“, in dieser Kampagne | lib/daten/kampf.js |
 | `klang` | klang.js | in dieser Kampagne | lib/daten/runde.js |
-| `nebel` | routes/spieltisch/nebel.js | ohne das auslösende Fenster, in dieser Kampagne | lib/daten/spieltisch.js |
+| `nebel` | routes/spieltisch/nebel.js | nur die Spielleitung, ohne das auslösende Fenster, in dieser Kampagne; nur Rolle „spieler“, in dieser Kampagne | lib/daten/spieltisch.js |
 | `notizen:aktualisiert` | routes/notes.js, uebernehmen/alles.js | in dieser Kampagne | lib/daten/kampagne.js |
 | `ping` | routes/spieltisch/zeigen.js | unter Bedingung nur die Spielleitung, in dieser Kampagne | lib/daten/spieltisch.js |
 | `runde:aktualisiert` | routes/konten/anmeldung.js, routes/konten/verwaltung.js | nur die Spielleitung, die ganze Runde, kampagnenübergreifend | lib/daten/runde.js |
@@ -46,23 +46,22 @@ Jedes Ereignis wird geschickt *und* gehört – keines läuft ins Leere.
 
 ### beute
 
-- geschickt: backend/src/routes/stash.js, Zeile 43 – ohne das auslösende Fenster, in dieser Kampagne
+- geschickt: backend/src/routes/stash.js, Zeile 44 – ohne das auslösende Fenster, in dieser Kampagne
 - geschickt: backend/src/uebernehmen/alles.js, Zeile 41 – in dieser Kampagne
 - gehört: frontend/src/lib/daten/kampagne.js
 
 ### charakter:aktualisiert
 
-- geschickt: backend/src/kampf/blatt.js, Zeile 27 – in dieser Kampagne
-- geschickt: backend/src/routes/charaktere/abschriften.js, Zeile 59 – in dieser Kampagne
-- geschickt: backend/src/routes/charaktere/blatt.js, Zeile 92 – ohne das auslösende Fenster, in dieser Kampagne
-- geschickt: backend/src/routes/stash.js, Zeile 176 – in dieser Kampagne
+- geschickt: backend/src/blattmeldung.js, Zeile 41 – nur die Spielleitung, ohne das auslösende Fenster, in dieser Kampagne
+- geschickt: backend/src/blattmeldung.js, Zeile 43 – nur Rolle „spieler“, einzelne Konten (je eigene Sicht), ohne das auslösende Fenster, in dieser Kampagne
 - gehört: frontend/src/components/dm/runde/Charakterzuweisung.jsx
 - gehört: frontend/src/lib/daten/kampagne.js
 - gehört: frontend/src/pages/blatt/useBlatt.js
 
 ### charakter:entfernt
 
-- geschickt: backend/src/routes/charaktere/schreiben.js, Zeile 138 – in dieser Kampagne
+- geschickt: backend/src/blattmeldung.js, Zeile 77 – nur Rolle „spieler“, einzelne Konten (je eigene Sicht), in dieser Kampagne
+- geschickt: backend/src/routes/charaktere/schreiben.js, Zeile 143 – in dieser Kampagne
 - gehört: frontend/src/lib/daten/kampagne.js
 
 ### chat
@@ -122,7 +121,8 @@ Jedes Ereignis wird geschickt *und* gehört – keines läuft ins Leere.
 
 ### nebel
 
-- geschickt: backend/src/routes/spieltisch/nebel.js, Zeile 49 – ohne das auslösende Fenster, in dieser Kampagne
+- geschickt: backend/src/routes/spieltisch/nebel.js, Zeile 55 – nur die Spielleitung, ohne das auslösende Fenster, in dieser Kampagne
+- geschickt: backend/src/routes/spieltisch/nebel.js, Zeile 57 – nur Rolle „spieler“, in dieser Kampagne
 - gehört: frontend/src/lib/daten/spieltisch.js
 
 ### notizen:aktualisiert

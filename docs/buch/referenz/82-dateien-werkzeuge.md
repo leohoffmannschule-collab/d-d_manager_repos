@@ -3,7 +3,7 @@
 > Dieses Kapitel schreibt `npm run handbuch` aus dem Code (scripts/handbuch/referenz/).
 > Änderungen gehören in den Code und seine Kommentare, nicht hierher.
 
-Alles unter scripts/ (60 Dateien, 6.549 Zeilen): Start und Tunnel, die Proben und der Vertrag, Drucksatz und dieses Handbuch.
+Alles unter scripts/ (62 Dateien, 6.927 Zeilen): Start und Tunnel, die Proben und der Vertrag, Drucksatz und dieses Handbuch.
 
 ## scripts/
 
@@ -209,7 +209,7 @@ daran, ob jemand auf „Mithören“ getippt hat.
 
 ### scripts/kommentarprobe.mjs
 
-*139 Zeilen*
+*158 Zeilen*
 
 Die Kommentarprobe: Ist der Code so erklärt, wie es sich der Almanach
 vorgenommen hat?
@@ -221,7 +221,7 @@ npm run kommentarprobe
 Kommentare veralten leiser als Code. Eine Funktion, die umzieht, meldet
 sich beim Bau sofort; ein Kommentar, der auf ihren alten Ort zeigt,
 schweigt – bis jemand ihm folgt und ins Leere läuft. Diese Probe fängt
-dreierlei ab:
+viererlei ab:
 
 1. **Jede Datei hat einen Kopf.** Ganz oben (nach einer #!-Zeile) steht
    ein Blockkommentar, der sagt, wozu es die Datei gibt. Wer eine Datei
@@ -236,6 +236,10 @@ dreierlei ab:
    Ordner („siehe lib/rasten.js“), dann gibt es sie auch – vom Ort der
    Datei aus oder von einer der üblichen Wurzeln (frontend/src,
    backend/src, …).
+4. **Kein Kommentar ohne Code dahinter.** Endet eine Datei mit einem
+   Blockkommentar, hat ihn fast immer ein Umzug zurückgelassen: Die
+   Funktion ist in eine andere Datei gewandert, ihre Erklärung nicht.
+   Sie beschreibt dann etwas, das es hier nicht gibt.
 
 Wie die anderen Proben ohne zusätzliches Paket.
 
@@ -349,7 +353,7 @@ der Weg von außen ist dann wieder zu.
 
 ### scripts/vertrag.mjs
 
-*77 Zeilen*
+*79 Zeilen*
 
 Der Vertrag zwischen Server und Oberfläche.
 
@@ -443,7 +447,7 @@ können, ohne die Namenssuche drumherum.
 
 ### scripts/einfuhrprobe/namen.mjs
 
-*143 Zeilen*
+*147 Zeilen*
 
 Die Namenssuche der Einfuhrprobe: was ausgeführt, was bekannt, was benutzt
 wird.
@@ -556,7 +560,7 @@ Gliederung (dort steht, wie man das PDF baut).
 
 ### scripts/handbuch/referenz.mjs
 
-*54 Zeilen*
+*56 Zeilen*
 
 Die Verzeichnisse des Handbuchs – aus dem Code geschrieben.
 
@@ -728,6 +732,34 @@ Fehler – es steht deshalb am Ende eigens aufgeführt.
 **Ausfuhren**
 
 - `EREIGNISSE` (const) – Das Kapitel.
+
+### scripts/handbuch/referenz/fehler.mjs
+
+*154 Zeilen*
+
+Verzeichnis: die Fehlerschlüssel des Servers – jeder mit Status, Satz und
+Fundstelle.
+
+Jede Absage des Servers trägt zwei Felder: `code`, einen Schlüssel, der
+sich nie ändert, und `error`, einen deutschen Satz für Menschen. Gesucht
+wird deshalb nach `code: '…'` in backend/src. Zu jeder Fundstelle holt das
+Verzeichnis
+
+- den HTTP-Status aus dem nächsten `status(NNN)` oder `status: NNN`
+  davor (innerhalb derselben Anweisung),
+- den Satz aus dem ersten `error: '…'` danach; Einschübe wie `${x}`
+  werden zu „…“, und steht dort ein Wert statt eines Satzes
+  (`error: err.message`), wird dieser genannt,
+- und, falls die Oberfläche einen eigenen Satz dafür hat, diesen aus
+  frontend/src/lib/beschriftung.js (`FEHLER`).
+
+Grob, aber für den Zweck genau: Die Wege des Almanachs schreiben ihre
+Absagen alle in derselben Form, und der Vertrag
+(scripts/vertrag/19-fehlerschluessel.mjs) prüft, dass sie es tun.
+
+**Ausfuhren**
+
+- `FEHLERSCHLUESSEL` (const) – Das Kapitel.
 
 ### scripts/handbuch/referenz/pruefnetz.mjs
 
@@ -986,13 +1018,14 @@ Kapitel angelegt haben – und trägt ein, was spätere brauchen.
 
 ### scripts/vertrag/05-vorlagen.mjs
 
-*58 Zeilen*
+*73 Zeilen*
 
 Vertrag, Kapitel: Die Vorlagen liegen hinter dem Schirm.
 
 Jede Kampagne bringt zwölf fertige Charaktere als NSC-Blätter mit. Die
 Runde sieht keines davon; eine Abschrift holt eines hinter dem Schirm
-hervor.
+hervor. Und wer eine gelöscht hat, bekommt sie mit `npm run vorlagen`
+zurück.
 
 Zwölf fertige Charaktere werden beim ersten Start angelegt. Sie sind
 NSC-Blätter: Die Spielleitung sieht sie, die Runde nicht. Wer eine davon
@@ -1096,13 +1129,14 @@ Kapitel angelegt haben – und trägt ein, was spätere brauchen.
 
 ### scripts/vertrag/11-vorhang.mjs
 
-*106 Zeilen*
+*119 Zeilen*
 
 Vertrag, Kapitel: Der Vorhang.
 
 Hinter geschlossenem Vorhang bekommt die Runde gar nichts vom Tisch –
-nicht ausgeblendet, sondern nicht geschickt. Und die Chronik vermerkt den
-Ort erst, wenn er sich hebt.
+nicht ausgeblendet, sondern nicht geschickt, auch nicht als einzelner
+Pinselstrich im Nebel. Und die Chronik vermerkt den Ort erst, wenn er sich
+hebt.
 
 Ein Kapitel des Prüfdurchgangs (siehe ../vertrag.mjs). Es bekommt den
 gemeinsamen Stand `lage` – die angemeldeten Klienten und was frühere
@@ -1149,13 +1183,14 @@ Kapitel angelegt haben – und trägt ein, was spätere brauchen.
 
 ### scripts/vertrag/14-nsc.mjs
 
-*61 Zeilen*
+*91 Zeilen*
 
 Vertrag, Kapitel: NSC-Blätter.
 
 NSC-Blätter sind der Zettel hinter dem Schirm: Die Runde sieht sie nicht,
 auch nicht als „geteilt“ markiert, und das Holen der Runde in den Kampf
-lässt sie liegen.
+lässt sie liegen. Auch der Live-Kanal verrät nichts von ihnen – und wer
+ein Blatt nicht mehr sehen darf, bekommt es aus seiner Übersicht genommen.
 
 Ein Kapitel des Prüfdurchgangs (siehe ../vertrag.mjs). Es bekommt den
 gemeinsamen Stand `lage` – die angemeldeten Klienten und was frühere
@@ -1263,9 +1298,33 @@ Kapitel angelegt haben – und trägt ein, was spätere brauchen.
 
 - `fehlerschluessel` (default async function)
 
+### scripts/vertrag/20-werkzeuge.mjs
+
+*86 Zeilen*
+
+Vertrag, Kapitel: Die Werkzeuge auf dem Rechner des Almanachs.
+
+Neben der Schnittstelle gibt es drei Skripte, die man nur in der Not
+braucht – und genau dann müssen sie gehen: ein Kennwort neu setzen, eine
+Kampagne umbenennen, die Datenbank sichern. Sie laufen hier gegen den
+Datenordner des Prüfservers, während der Server weiterläuft, so wie am
+Spielabend auch.
+
+Anlass war `npm run vorlagen`: Es brach seit den Kampagnen stumm ab,
+und niemand merkte es, weil kein Durchgang es je aufrief (siehe
+05-vorlagen.mjs, wo es inzwischen mitläuft).
+
+Ein Kapitel des Prüfdurchgangs (siehe ../vertrag.mjs). Es bekommt den
+gemeinsamen Stand `lage` – die angemeldeten Klienten und was frühere
+Kapitel angelegt haben – und trägt ein, was spätere brauchen.
+
+**Ausfuhren**
+
+- `werkzeuge` (default async function)
+
 ### scripts/vertrag/werkzeug.mjs
 
-*122 Zeilen*
+*175 Zeilen*
 
 Das Werkzeug des Vertrags: ein eigener Server, ein Klient mit Keksdose,
 und die Buchführung über bestandene und verfehlte Prüfungen.
@@ -1278,9 +1337,11 @@ lässt die Kapitel der Reihe nach laufen und fällt am Ende das Urteil.
 
 - `PORT` (const) – Ein zufälliger freier Port, damit ein laufender Almanach nicht stört.
 - `BASIS` (const) – Die Adresse der API dieses Prüfservers.
+- `datenordner` (const) – Der Datenordner des Prüfservers – frisch und leer. Ausgeführt, damit ein Kapitel auch die Werkzeuge aus backend/scripts/ gegen denselben Almanach laufen lassen kann (siehe 05-vorlagen.mjs).
 - `pruefe` (function) – Eine Zusage prüfen. Gibt zurück, ob sie hielt – so lassen sich Folgeprüfungen überspringen, die ohne sie keinen Sinn ergäben.
 - `gleich` (const) – Zwei Werte müssen gleich sein; im Mangel stehen beide.
 - `klient` (function) – Ein Klient, der sich Cookies merkt wie ein Browser – eine Person am Tisch. `ruf(pfad, { methode, koerper })` gibt `{ status, daten }` zurück.
+- `mitschreiben` (async function) – Den Live-Kanal eines Klienten mitschreiben – so, wie ihn sein Browser bekäme.
 - `serverFehler` (let) – Was der Server auf stderr sagte – falls er nicht hochkommt.
 - `warteAufServer` (async function) – Warten, bis der Server antwortet – höchstens fünfzehn Sekunden.
 - `beenden` (function) – Server anhalten, Datenordner wegräumen, mit diesem Code enden.

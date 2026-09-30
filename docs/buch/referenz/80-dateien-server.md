@@ -3,7 +3,7 @@
 > Dieses Kapitel schreibt `npm run handbuch` aus dem Code (scripts/handbuch/referenz/).
 > Änderungen gehören in den Code und seine Kommentare, nicht hierher.
 
-Alle Dateien unter backend/src und backend/scripts (107 Dateien, 10.980 Zeilen), nach Ordnern. Zu jeder Datei ihr Kopfkommentar – dort steht, wozu es sie gibt und warum sie so gebaut ist – und ihre Ausfuhren mit dem Kommentar darüber.
+Alle Dateien unter backend/src und backend/scripts (109 Dateien, 11.194 Zeilen), nach Ordnern. Zu jeder Datei ihr Kopfkommentar – dort steht, wozu es sie gibt und warum sie so gebaut ist – und ihre Ausfuhren mit dem Kommentar darüber.
 
 Einen Überblick, wie die Teile zusammenspielen, gibt das Kapitel über den Server im Teil „Wie es gebaut ist“.
 
@@ -219,6 +219,39 @@ nachprüfen will, wenn am Tisch jemand fragt, wo sein Kupferstück blieb.
 - `inKupfer` (const) – Ein Münzhaufen in Kupfer umgerechnet – die gemeinsame Währung fürs Teilen.
 - `ausKupfer` (function) – Kupfer wieder in Münzen fassen – ohne Elektrum, das am Tisch ohnehin niemand haben will.
 - `teile` (function) – Beute teilen, so wie es am Tisch wirklich zugeht.
+
+### backend/src/blattmeldung.js
+
+*79 Zeilen*
+
+Eine Änderung an einem Charakterblatt verkünden – aber nur denen, die das
+Blatt sehen dürfen.
+
+`charakter:aktualisiert` geht von vier Stellen aus: dem Speichern eines
+Blattes, dem Zuteilen und Teilen, dem Kampf (Trefferpunkte laufen zurück
+aufs Blatt) und dem Auszahlen der Beute. Früher ging die Nachricht an jedes
+Fenster der Kampagne. Die Oberfläche zeigte ein fremdes NSC-Blatt zwar
+nicht an – sie ändert nur Einträge, die sie schon kennt –, aber Name,
+Bildnis, Trefferpunkte und Rüstungsklasse des Räuberhauptmanns standen im
+Netzwerkfenster jedes Spielerbrowsers, sobald die Spielleitung sein Blatt
+anfasste. Das widerspricht der ersten Regel des Almanachs: Was die Runde
+nicht sehen darf, wird nicht geschickt.
+
+Deshalb steht die Regel, wer ein Blatt sehen darf, hier ein zweites Mal –
+diesmal in der Sprache des Live-Kanals (Rollen und Konten statt einer
+einzelnen Anfrage). Sie muss mit `darfSehen` in routes/charaktere/blatt.js
+übereinstimmen:
+
+```
+Spielleitung  jedes Blatt
+Runde         kein NSC-Blatt; sonst geteilte Blätter und das eigene
+```
+
+**Ausfuhren**
+
+- `spielerSiehtBlatt` (function) – Darf dieses Konto (Rolle `spieler`) das Blatt sehen? Dieselbe Regel wie `darfSehen`, ohne die Spielleitung.
+- `meldeBlatt` (function) – `charakter:aktualisiert` an die Spielleitung und an die Mitspielenden, die das Blatt sehen dürfen.
+- `meldeEntzug` (function) – Wer das Blatt eben noch sehen durfte und jetzt nicht mehr, bekommt `charakter:entfernt` – sonst stünde es bis zum nächsten Neuladen weiter in seiner Übersicht und führte beim Anklicken ins 403.
 
 ### backend/src/chronicle.js
 
@@ -1311,7 +1344,7 @@ Datei. Bei Express zählt sie: Der erste Weg, dessen Muster passt, gewinnt.
 
 ### backend/src/routes/stash.js
 
-*222 Zeilen*
+*223 Zeilen*
 
 Die Beutekiste: eintragen, verteilen, teilen, auszahlen.
 
@@ -1328,7 +1361,7 @@ Charakterblätter.
 
 ### backend/src/routes/charaktere/abschriften.js
 
-*64 Zeilen*
+*66 Zeilen*
 
 Abschriften: dasselbe Blatt noch einmal – in dieser Kampagne oder in einer
 anderen.
@@ -1338,7 +1371,7 @@ beide gehen fortan getrennte Wege.
 
 ### backend/src/routes/charaktere/blatt.js
 
-*94 Zeilen*
+*102 Zeilen*
 
 Ein Charakterblatt zwischen Datenbank und Antwort – und wer es sehen oder
 ändern darf.
@@ -1362,7 +1395,7 @@ Und die zwei Formen, in denen ein Blatt hinausgeht: vollständig
 - `darfBearbeiten` (const) – Charaktere ohne Besitzer stammen aus der Zeit vor den Konten – sie gehören der Spielleitung, bis sie jemandem zugewiesen werden.
 - `darfSehen` (const) – NSC-Blätter sind der Zettel der Spielleitung hinter dem Schirm: die Werte des Wirts, des Räuberhauptmanns, des Drachen. Sie bleiben dort, auch wenn das Blatt versehentlich als „geteilt“ markiert ist – deshalb wird das hier *vor* allen anderen Regeln geprüft, nicht danach.
 - `sinneAus` (function) – Die Sinne aus einem gespeicherten Blatt, ohne dass ein Fehler alles reißt.
-- `meldeAenderung` (function) – Den anderen Fenstern der Kampagne die Kurzfassung schicken – dem eigenen nicht.
+- `meldeAenderung` (function) – Den anderen Fenstern der Kampagne die Kurzfassung schicken – dem eigenen nicht, und nur denen, die das Blatt sehen dürfen (siehe blattmeldung.js).
 
 ### backend/src/routes/charaktere/lesen.js
 
@@ -1376,7 +1409,7 @@ es im Netzwerkfenster des Browsers gar nicht erst auftaucht.
 
 ### backend/src/routes/charaktere/schreiben.js
 
-*143 Zeilen*
+*148 Zeilen*
 
 Blätter anlegen, speichern, zuteilen, löschen.
 
@@ -1605,7 +1638,7 @@ und auch nur für die eigene Figur. Wem welche gehört, entscheidet
 
 ### backend/src/routes/spieltisch/nebel.js
 
-*78 Zeilen*
+*87 Zeilen*
 
 Der Nebel des Krieges: Striche setzen, alles verhüllen, alles aufdecken.
 
@@ -2120,6 +2153,32 @@ Feldern macht ihn erst ../bauen.js.
 
 ## backend/scripts/
 
+### backend/scripts/kennwort.mjs
+
+*81 Zeilen*
+
+Ein Kennwort neu setzen – für den Fall, dass niemand mehr hineinkommt.
+
+```
+npm run kennwort -- "Name"   ein neues, ausgewürfeltes Kennwort
+npm run kennwort             zeigt alle Konten
+```
+
+Im Almanach setzt die Spielleitung vergessene Kennwörter der Runde unter
+Spielleitung → Runde neu. Vergisst die einzige Spielleitung ihr eigenes,
+gibt es niemanden mehr, der das könnte – dafür ist dieses Skript da. Es
+läuft auf dem Rechner des Almanachs, also nur für den, der ohnehin an die
+Datenbank herankommt; einen Weg über das Netz öffnet es nicht.
+
+Das neue Kennwort wird ausgewürfelt und einmal angezeigt, statt es auf der
+Befehlszeile entgegenzunehmen: Was man dort tippt, steht danach in der
+Befehlsgeschichte der Shell, und dort sucht es niemand, der aufräumt. Man
+meldet sich damit an und wählt im Konto-Menü gleich ein eigenes.
+
+Alle Anmeldungen des Kontos werden dabei beendet – wie beim Kennwortwechsel
+in der Oberfläche. Ein Fenster, das gerade offen ist, merkt es bei seiner
+nächsten Anfrage. Der Server darf dabei weiterlaufen.
+
 ### backend/scripts/sicherung.mjs
 
 *70 Zeilen*
@@ -2163,16 +2222,28 @@ weiterlaufen – im Browser genügt danach ein Neuladen der Seite.
 
 ### backend/scripts/vorlagen.mjs
 
-*24 Zeilen*
+*53 Zeilen*
 
 Die Vorlagen-Charaktere nachlegen.
 
-Beim ersten Start legt der Almanach sie von selbst an. Wer sie danach
-gelöscht hat und zurückhaben will, ruft dieses Skript auf:
+Jede Kampagne bekommt beim Anlegen ihre zwölf Vorlagen von selbst. Wer sie
+danach gelöscht hat und zurückhaben will, ruft dieses Skript auf:
 
 ```
-npm run vorlagen
+npm run vorlagen                          in allen Kampagnen
+npm run vorlagen -- "Name der Kampagne"   nur in dieser einen
 ```
 
 Es fügt nur hinzu, was fehlt. Eine Vorlage, die noch liegt – und sei sie
-längst umgeschrieben –, bleibt unangetastet.
+längst umgeschrieben –, bleibt unangetastet. Kampagnen im Papierkorb
+werden übergangen; wer dort etwas nachlegen will, stellt sie erst wieder
+her.
+
+Der Server darf dabei weiterlaufen. Die neuen Blätter erscheinen nach
+einem Neuladen der Seite – das Skript hat keinen Draht zu den offenen
+Fenstern.
+
+(Bis zur Fassung mit Kampagnen säte das Skript in *den* Almanach. Seitdem
+gehören Vorlagen je einer Kampagne, und ohne Kampagne fehlte ihm die
+Angabe, wohin – es brach mit einem Fehler von SQLite ab. Der Vertrag
+prüft es deshalb jetzt mit, siehe scripts/vertrag/05-vorlagen.mjs.)

@@ -89,7 +89,7 @@ npm run kommentarprobe
 Kommentare veralten leiser als Code. Eine Funktion, die umzieht, meldet
 sich beim Bau sofort; ein Kommentar, der auf ihren alten Ort zeigt,
 schweigt – bis jemand ihm folgt und ins Leere läuft. Diese Probe fängt
-dreierlei ab:
+viererlei ab:
 
 1. **Jede Datei hat einen Kopf.** Ganz oben (nach einer #!-Zeile) steht
    ein Blockkommentar, der sagt, wozu es die Datei gibt. Wer eine Datei
@@ -104,6 +104,10 @@ dreierlei ab:
    Ordner („siehe lib/rasten.js“), dann gibt es sie auch – vom Ort der
    Datei aus oder von einer der üblichen Wurzeln (frontend/src,
    backend/src, …).
+4. **Kein Kommentar ohne Code dahinter.** Endet eine Datei mit einem
+   Blockkommentar, hat ihn fast immer ein Umzug zurückgelassen: Die
+   Funktion ist in eine andere Datei gewandert, ihre Erklärung nicht.
+   Sie beschreibt dann etwas, das es hier nicht gibt.
 
 Wie die anderen Proben ohne zusätzliches Paket.
 
@@ -172,7 +176,7 @@ die Kampagne, den Helden) – das reichen sie über `lage` weiter.
 
 ## Die Kapitel des Vertrags
 
-Der Vertrag spielt einen Abend in 19 Kapiteln, jedes baut auf dem vorigen auf (scripts/vertrag/).
+Der Vertrag spielt einen Abend in 20 Kapiteln, jedes baut auf dem vorigen auf (scripts/vertrag/).
 
 | Kapitel | Prüfstellen | worum es geht |
 |---|---|---|
@@ -180,21 +184,22 @@ Der Vertrag spielt einen Abend in 19 Kapiteln, jedes baut auf dem vorigen auf (s
 | 02-kampagne | 11 | Vertrag, Kapitel: Die Kampagne – die Bühne für alles Weitere. |
 | 03-charaktere | 4 | Vertrag, Kapitel: Charaktere. |
 | 04-volles-blatt | 13 | Vertrag, Kapitel: Ein volles Blatt übersteht den Weg zum Server und zurück. |
-| 05-vorlagen | 17 | Vertrag, Kapitel: Die Vorlagen liegen hinter dem Schirm. |
+| 05-vorlagen | 21 | Vertrag, Kapitel: Die Vorlagen liegen hinter dem Schirm. |
 | 06-kampf | 13 | Vertrag, Kapitel: Der Kampf. |
 | 07-gespraech | 24 | Vertrag, Kapitel: Chronik, verdeckte Würfe und Chat. |
 | 08-spieltisch | 18 | Vertrag, Kapitel: Spieltisch und Kartenbibliothek. |
 | 09-klang | 27 | Vertrag, Kapitel: Der Klangteppich. |
 | 10-sicht | 17 | Vertrag, Kapitel: Sicht: Nebel, Licht und Sinne. |
-| 11-vorhang | 16 | Vertrag, Kapitel: Der Vorhang. |
+| 11-vorhang | 18 | Vertrag, Kapitel: Der Vorhang. |
 | 12-sichtweite | 12 | Vertrag, Kapitel: Sichtweite: das Nebelfenster hängt an der Figur. |
 | 13-massstab | 9 | Vertrag, Kapitel: Maßstab und große Karten. |
-| 14-nsc | 8 | Vertrag, Kapitel: NSC-Blätter. |
+| 14-nsc | 11 | Vertrag, Kapitel: NSC-Blätter. |
 | 15-live-kanal | 4 | Vertrag, Kapitel: Der Live-Kanal. |
 | 16-umbenennen | 11 | Vertrag, Kapitel: Umbenennen. |
 | 17-uebernehmen | 32 | Vertrag, Kapitel: Daten in eine andere Kampagne kopieren. |
 | 18-review | 20 | Vertrag, Kapitel: Aus dem Code-Review: Grenzen, die leicht wieder verrutschen. |
 | 19-fehlerschluessel | 2 | Vertrag, Kapitel: Jeder Fehler trägt einen Schlüssel. |
+| 20-werkzeuge | 13 | Vertrag, Kapitel: Die Werkzeuge auf dem Rechner des Almanachs. |
 
 ### 01-konten
 
@@ -257,7 +262,8 @@ Vertrag, Kapitel: Die Vorlagen liegen hinter dem Schirm.
 
 Jede Kampagne bringt zwölf fertige Charaktere als NSC-Blätter mit. Die
 Runde sieht keines davon; eine Abschrift holt eines hinter dem Schirm
-hervor.
+hervor. Und wer eine gelöscht hat, bekommt sie mit `npm run vorlagen`
+zurück.
 
 Zwölf fertige Charaktere werden beim ersten Start angelegt. Sie sind
 NSC-Blätter: Die Spielleitung sieht sie, die Runde nicht. Wer eine davon
@@ -330,8 +336,9 @@ Kapitel angelegt haben – und trägt ein, was spätere brauchen.
 Vertrag, Kapitel: Der Vorhang.
 
 Hinter geschlossenem Vorhang bekommt die Runde gar nichts vom Tisch –
-nicht ausgeblendet, sondern nicht geschickt. Und die Chronik vermerkt den
-Ort erst, wenn er sich hebt.
+nicht ausgeblendet, sondern nicht geschickt, auch nicht als einzelner
+Pinselstrich im Nebel. Und die Chronik vermerkt den Ort erst, wenn er sich
+hebt.
 
 Ein Kapitel des Prüfdurchgangs (siehe ../vertrag.mjs). Es bekommt den
 gemeinsamen Stand `lage` – die angemeldeten Klienten und was frühere
@@ -366,7 +373,8 @@ Vertrag, Kapitel: NSC-Blätter.
 
 NSC-Blätter sind der Zettel hinter dem Schirm: Die Runde sieht sie nicht,
 auch nicht als „geteilt“ markiert, und das Holen der Runde in den Kampf
-lässt sie liegen.
+lässt sie liegen. Auch der Live-Kanal verrät nichts von ihnen – und wer
+ein Blatt nicht mehr sehen darf, bekommt es aus seiner Übersicht genommen.
 
 Ein Kapitel des Prüfdurchgangs (siehe ../vertrag.mjs). Es bekommt den
 gemeinsamen Stand `lage` – die angemeldeten Klienten und was frühere
@@ -435,6 +443,24 @@ Vertrag, Kapitel: Jeder Fehler trägt einen Schlüssel.
 
 Jede Absage des Servers trägt einen unveränderlichen Schlüssel (`code`) –
 die Oberfläche prüft nur ihn, nie den Satz daneben.
+
+Ein Kapitel des Prüfdurchgangs (siehe ../vertrag.mjs). Es bekommt den
+gemeinsamen Stand `lage` – die angemeldeten Klienten und was frühere
+Kapitel angelegt haben – und trägt ein, was spätere brauchen.
+
+### 20-werkzeuge
+
+Vertrag, Kapitel: Die Werkzeuge auf dem Rechner des Almanachs.
+
+Neben der Schnittstelle gibt es drei Skripte, die man nur in der Not
+braucht – und genau dann müssen sie gehen: ein Kennwort neu setzen, eine
+Kampagne umbenennen, die Datenbank sichern. Sie laufen hier gegen den
+Datenordner des Prüfservers, während der Server weiterläuft, so wie am
+Spielabend auch.
+
+Anlass war `npm run vorlagen`: Es brach seit den Kampagnen stumm ab,
+und niemand merkte es, weil kein Durchgang es je aufrief (siehe
+05-vorlagen.mjs, wo es inzwischen mitläuft).
 
 Ein Kapitel des Prüfdurchgangs (siehe ../vertrag.mjs). Es bekommt den
 gemeinsamen Stand `lage` – die angemeldeten Klienten und was frühere

@@ -3,7 +3,7 @@
 > Dieses Kapitel schreibt `npm run handbuch` aus dem Code (scripts/handbuch/referenz/).
 > Änderungen gehören in den Code und seine Kommentare, nicht hierher.
 
-Alle Dateien der Oberfläche (200 Dateien, 17.224 Zeilen): Seiten, Bauteile, die Datenschicht in lib/, die Stilblätter und der Bau. Zu jeder Datei ihr Kopfkommentar und ihre Ausfuhren.
+Alle Dateien der Oberfläche (200 Dateien, 17.213 Zeilen): Seiten, Bauteile, die Datenschicht in lib/, die Stilblätter und der Bau. Zu jeder Datei ihr Kopfkommentar und ihre Ausfuhren.
 
 Sammelstellen wie icons.jsx oder lib/api.js führen nichts Eigenes aus, sondern reichen weiter – bei ihnen steht, woher.
 
@@ -1416,7 +1416,7 @@ Reiter 2 des Charakterblattes: alles, was im Kampf gebraucht wird.
 Der am meisten benutzte Reiter des Almanachs – und der einzige, der auch
 *schreibend* mit dem Rest des Tisches zu tun hat: Trefferpunkte, die hier
 fallen, stehen sofort in der Kampfliste der Spielleitung, und Schaden von
-dort steht sofort hier (siehe pages/CharacterSheet.jsx, useLive).
+dort steht sofort hier (siehe pages/blatt/useBlatt.js, useLive).
 
 Diese Datei stellt nur noch die Karten untereinander. Jede steht für sich
 in `kampf/` und bringt mit, was sie selbst braucht:
@@ -1501,8 +1501,8 @@ achtzehn Fertigkeiten.
 
 Das Muster, das alle fünf Reiter teilen: Sie bekommen `data` (das Blatt)
 und `update(pfad, wert)` und halten *keinen* eigenen Zustand. Geändert
-wird immer oben in pages/CharacterSheet.jsx, das auch das Speichern
-besorgt. So kann kein Reiter einen Stand halten, der vom Blatt abweicht.
+wird immer oben im Blatt, gespeichert in pages/blatt/useBlatt.js. So
+kann kein Reiter einen Stand halten, der vom Blatt abweicht.
 
 Gerechnet wird nichts von Hand: Modifikatoren, Übungsbonus und passive
 Werte kommen aus lib/dnd5e.js. Steht eine Regel dort falsch, ist sie
@@ -1578,15 +1578,17 @@ die Eingabezeilen (siehe components/RepeatingRows.jsx).
 
 ### frontend/src/components/sheet/kampf/Kampfwerte.jsx
 
-*50 Zeilen*
+*52 Zeilen*
 
 Rüstungsklasse, Initiative, Bewegung, Trefferwürfel – und der Knopf, der
 die Initiative gleich würfelt.
 
 Die *Initiative gesamt* unten ist gerechnet, nicht eingetragen:
-Geschicklichkeitsmodifikator plus der Bonus darüber. Wer sie am Tisch
-würfelt, trägt sie damit auch gleich in die Kampfliste der Spielleitung
-ein – siehe lib/wuerfeln.js.
+Geschicklichkeitsmodifikator plus der Bonus darüber. Der Knopf daneben
+würfelt sie für alle sichtbar (lib/wuerfeln.js) – in die Kampfliste
+trägt sie sich aber erst über „Eigene Initiative würfeln“ in der
+Kampfliste selbst ein (components/Initiative.jsx). Hier weiß das Blatt
+nicht, ob gerade gekämpft wird.
 
 **Ausfuhren**
 
@@ -2008,7 +2010,7 @@ Der Pinselabdruck braucht es, bevor dieser Haken überhaupt läuft.
 
 ### frontend/src/components/tabletop/brett/Figur.jsx
 
-*95 Zeilen*
+*99 Zeilen*
 
 Eine Figur auf dem Tisch: runde Scheibe mit Bild oder Anfangsbuchstabe,
 darunter Lebensbalken und Namensschild – und der Auswahlring, der zeigt,
@@ -2018,6 +2020,10 @@ Alles hier steht in *Kartenpunkten*: `token.x`/`token.y` ist die obere
 linke Ecke auf der Karte, die Größe ein Vielfaches der Feldgröße
 (`token.size` = 1 für mittelgroß, 2 für groß …). Gezoomt wird nicht hier,
 sondern über die Bühne, in der die Figur steht (Board.jsx).
+
+Der Lebensbalken erscheint nur, wenn Trefferpunkte bekannt sind: Bei
+Monstern bekommt die Runde sie nicht, und dann soll dort auch nichts
+stehen.
 
 Die Werte gehen als CSS-Variablen hinaus, die Regeln stehen in
 stile/spieltisch/figuren.css.
@@ -2047,7 +2053,7 @@ aber immer gleich aussehen.
 
 ### frontend/src/components/tabletop/brett/Nebelschicht.jsx
 
-*75 Zeilen*
+*66 Zeilen*
 
 Der Nebel als Bildpunkte: ein Punkt je Rasterfeld, hochskaliert vom
 Browser. Das ist um Größenordnungen billiger, als tausend Rechtecke zu
@@ -2797,7 +2803,7 @@ doppelklickt – ohne Netz und ohne Almanach dahinter.
 
 ### frontend/src/lib/blatt/koerper.js
 
-*128 Zeilen*
+*120 Zeilen*
 
 Der Satzspiegel: Welche Abschnitte stehen in welcher Reihenfolge auf dem
 Bogen?
