@@ -29,6 +29,11 @@
   --tisch-schrift-matt: #a89372; /* Fließtext auf dem leeren Tisch */
   --tisch-akzent-auf: #d9b451; /* Gold deckt auf – dieselbe Sprache wie in der Werkzeugleiste */
   --tisch-akzent-zu: #9a2b22; /* Rot verhüllt */
+  --tisch-figur-schrift: #f4ead2; /* der Anfangsbuchstabe auf einer Figur ohne Bild */
+  --tisch-namensschild: #f2e4c2; /* der Name unter einer Figur */
+  --tisch-hinweis-zeichen: #7a5f2c; /* das große Zeichen auf dem leeren Tisch */
+  --tisch-hinweis-titel: #c9b189; /* die Überschrift darunter */
+  --tisch-hinweis-karte: #5a4526; /* das Kartenzeichen, solange nichts aufliegt */
 }
 
 /* --- Die Fläche ---------------------------------------------------------- */
@@ -66,7 +71,13 @@
 .tisch-vorschau {
   position: absolute;
   z-index: 6;
+  left: var(--x);
+  top: var(--y);
+  width: var(--breite);
+  height: var(--hoehe);
   border-style: dashed;
+  /* Durch den Maßstab geteilt, damit der Rand bei jedem Zoom gleich dick
+     *aussieht* (gerechnet in Nebelvorschau.jsx). */
   border-width: var(--strichstaerke);
   pointer-events: none;
 }
@@ -112,3 +123,134 @@
 .figur-balken-schlecht {
   background-color: var(--tisch-akzent-zu);
 }
+
+/* --- Die Bühne: alles, was mit der Karte wandert ------------------------- */
+
+/**
+ * Eine Transformation für alles: Karte, Raster, Figuren und Nebel liegen in
+ * diesem einen Behälter und wandern beim Schieben und Zoomen gemeinsam. Die
+ * drei Werte der Ansicht setzt Board.jsx bei jeder Bewegung neu.
+ */
+.tisch-buehne {
+  position: absolute;
+  transform-origin: top left;
+  transform: translate(var(--tx), var(--ty)) scale(var(--massstab));
+  width: var(--breite);
+  height: var(--hoehe);
+}
+
+/**
+ * Schrift auf der Karte, die bei jedem Zoom gleich groß *aussehen* soll –
+ * die Größe ist deshalb schon durch den Maßstab geteilt, wenn sie ankommt.
+ */
+.tisch-schriftgroesse {
+  font-size: var(--schrift);
+}
+
+/* --- Figuren ------------------------------------------------------------- */
+
+/* Eine Figur steht in Kartenpunkten, nicht in Bildschirmpunkten – die
+   Bühne oben erledigt die Umrechnung. */
+.figur {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--groesse);
+  height: var(--groesse);
+}
+
+/* Die runde Scheibe: in der Farbe der Figur, oder durchsichtig, wenn ein
+   Bild darauf liegt (dann ist `--figur-farbe` nicht gesetzt). */
+.figur-scheibe {
+  background-color: var(--figur-farbe, transparent);
+}
+
+.figur-buchstabe {
+  color: var(--tisch-figur-schrift);
+  font-size: var(--schrift);
+}
+
+/* Der Rahmen des Lebensbalkens, etwas schmaler als die Figur selbst. */
+.figur-balkenrahmen {
+  width: var(--breite);
+}
+
+.figur-name {
+  color: var(--tisch-namensschild);
+  font-size: var(--schrift);
+}
+
+/* Der gestrichelte Ring um die gewählte Figur, drei Punkte größer als sie. */
+.auswahlring {
+  position: absolute;
+  left: calc(var(--x) - 3px);
+  top: calc(var(--y) - 3px);
+  width: calc(var(--groesse) + 6px);
+  height: calc(var(--groesse) + 6px);
+}
+
+/* --- Der Zeigefinger ----------------------------------------------------- */
+
+/* Mitten auf die gezeigte Stelle, in der Farbe dessen, der zeigt. */
+.zeigefinger {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  transform: translate(-50%, -50%);
+}
+
+.zeigefinger-ring {
+  width: var(--feld);
+  height: var(--feld);
+  border: 3px solid var(--farbe);
+}
+
+.zeigefinger-name {
+  color: var(--farbe);
+}
+
+/* --- Nebel und Lineal ---------------------------------------------------- */
+
+/**
+ * Die Nebelschicht: ein Bildpunkt je Rasterfeld, vom Browser hochgezogen.
+ * `pixelated` hält die Feldkanten scharf, statt sie zu verwischen.
+ *
+ * Für die Runde liegt der Nebel *über* den Figuren – was im Dunkeln steht,
+ * steht im Dunkeln. Die Spielleitung schaut über ihre Figuren hinweg durch
+ * den Schleier, deshalb liegt er bei ihr darunter.
+ */
+.nebelschicht {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--breite);
+  height: var(--hoehe);
+  image-rendering: pixelated;
+  z-index: 25;
+}
+
+.nebelschicht-sl {
+  z-index: 5;
+}
+
+/* Die Beschriftung am Lineal: heller Text mit dunklem Rand, in SVG über
+   `stroke` samt `paint-order` statt über einen Schatten. */
+.lineal-text {
+  font-size: var(--schrift);
+  paint-order: stroke;
+}
+
+/* --- Der leere Tisch ----------------------------------------------------- */
+
+.tisch-hinweis-zeichen {
+  color: var(--tisch-hinweis-zeichen);
+}
+
+.tisch-hinweis-titel {
+  color: var(--tisch-hinweis-titel);
+}
+
+.tisch-hinweis-karte {
+  color: var(--tisch-hinweis-karte);
+}
+

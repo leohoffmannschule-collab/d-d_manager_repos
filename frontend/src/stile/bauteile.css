@@ -143,3 +143,24 @@
 .umbruch-hart {
   overflow-wrap: anywhere;
 }
+
+/* --- Werte, die erst im Browser feststehen ------------------------------- */
+
+/**
+ * Ein farbiger Punkt oder Kreis – die Farbe eines Kontos, einer Figur, einer
+ * Zeile im Chat. Die Farbe wählt sich jede Person selbst; sie kommt deshalb
+ * als `--farbe` aus dem JSX (siehe lib/stilwerte.js). Ohne Angabe bleibt
+ * der Punkt im blassen Ton der Seite.
+ */
+.farbpunkt {
+  background-color: var(--farbe, var(--color-faint));
+}
+
+/**
+ * Der gefüllte Teil eines Balkens (Trefferpunkte auf der Übersicht). Wie
+ * weit er reicht, steht in `--anteil`, als Prozentwert.
+ */
+.fuellstand {
+  width: var(--anteil);
+}
+

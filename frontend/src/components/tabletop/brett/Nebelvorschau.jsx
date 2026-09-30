@@ -1,3 +1,5 @@
+import { px } from '../../../lib/stilwerte.js';
+
 /**
  * Was der nächste Nebelstrich träfe.
  *
@@ -22,17 +24,17 @@ export default function Nebelvorschau({ grenzen, scene, feld, massstab, aufdecke
       // und wie dick sein Rand sein muss, damit er bei jedem Zoom gleich
       // dick *aussieht*.
       style={{
-        left: scene.gridOffsetX + grenzen.x1 * feld,
-        top: scene.gridOffsetY + grenzen.y1 * feld,
-        width: spalten * feld,
-        height: zeilen * feld,
-        '--strichstaerke': `${Math.max(1, 2 / massstab)}px`,
+        '--x': px(scene.gridOffsetX + grenzen.x1 * feld),
+        '--y': px(scene.gridOffsetY + grenzen.y1 * feld),
+        '--breite': px(spalten * feld),
+        '--hoehe': px(zeilen * feld),
+        '--strichstaerke': px(Math.max(1, 2 / massstab)),
       }}
     >
       {mitMass && (
         <span
-          className="tisch-marke absolute bottom-full left-0 mb-1 whitespace-nowrap font-display"
-          style={{ fontSize: Math.max(11, 14 / massstab) }}
+          className="tisch-marke tisch-schriftgroesse absolute bottom-full left-0 mb-1 whitespace-nowrap font-display"
+          style={{ '--schrift': px(Math.max(11, 14 / massstab)) }}
         >
           {spalten} × {zeilen} Felder
         </span>

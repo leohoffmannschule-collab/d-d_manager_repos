@@ -32,7 +32,7 @@ function Zeile({ zeile, ichBin }) {
   return (
     <li className={`px-3.5 py-2 ${geflüstert ? 'border-l-[3px] border-rubric bg-rubric/8' : ''}`}>
       <div className="flex items-baseline gap-1.5">
-        <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: zeile.color ?? 'var(--color-faint)' }} />
+        <span className="farbpunkt h-2 w-2 shrink-0 rounded-full" style={{ '--farbe': zeile.color }} />
         <span className="truncate font-display text-[12px] tracking-[0.08em] text-sepia uppercase">
           {zeile.userName}
         </span>

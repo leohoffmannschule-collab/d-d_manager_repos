@@ -319,7 +319,7 @@ function SaveStatus({ status }) {
 
   if (status === 'saved') {
     return (
-      <span className="flex items-center gap-1.5 text-[#5f7a4e]">
+      <span className="flex items-center gap-1.5 text-ok">
         <IconCheck size={13} />
         In der Chronik verzeichnet
       </span>

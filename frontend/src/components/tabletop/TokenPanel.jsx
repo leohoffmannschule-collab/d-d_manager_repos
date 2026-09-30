@@ -90,10 +90,10 @@ export default function TokenPanel({ token, onChanged, onRemoved }) {
               key={farbe}
               onClick={() => aendern({ color: farbe })}
               aria-label={`Farbe ${farbe}`}
-              className={`h-9 w-9 rounded-full ring-2 ${
+              className={`farbpunkt h-9 w-9 rounded-full ring-2 ${
                 token.color === farbe ? 'ring-gold' : 'ring-black/30'
               }`}
-              style={{ backgroundColor: farbe }}
+              style={{ '--farbe': farbe }}
             />
           ))}
         </div>

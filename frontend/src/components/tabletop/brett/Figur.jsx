@@ -1,4 +1,5 @@
 import { mediaApi } from '../../../lib/api.js';
+import { prozent, px } from '../../../lib/stilwerte.js';
 
 export default function Figur({ token, scene, hp, aktiv, beweglich, ziehend }) {
   const g = scene.gridSize;
@@ -8,24 +9,22 @@ export default function Figur({ token, scene, hp, aktiv, beweglich, ziehend }) {
   return (
     <div
       data-token={token.id}
-      className={`absolute select-none ${beweglich ? 'cursor-grab' : 'cursor-default'} ${
+      className={`figur select-none ${beweglich ? 'cursor-grab' : 'cursor-default'} ${
         ziehend ? 'z-20 opacity-90' : 'z-10'
       }`}
-      style={{ left: token.x, top: token.y, width: groesse, height: groesse }}
+      style={{ '--x': px(token.x), '--y': px(token.y), '--groesse': px(groesse) }}
     >
       <div
-        className={`relative flex h-full w-full items-center justify-center overflow-hidden rounded-full ${
+        className={`figur-scheibe relative flex h-full w-full items-center justify-center overflow-hidden rounded-full ${
           aktiv ? 'ring-[3px] ring-gold' : 'ring-2 ring-black/40'
         } ${token.hidden ? 'opacity-55 saturate-50' : ''}`}
-        style={{ backgroundColor: token.mediaId ? undefined : token.color }}
+        // Mit Bild keine Farbe: Die Scheibe bleibt dann durchsichtig.
+        style={token.mediaId ? undefined : { '--figur-farbe': token.color }}
       >
         {token.mediaId ? (
           <img src={mediaApi.url(token.mediaId)} alt="" draggable={false} className="h-full w-full object-cover" />
         ) : (
-          <span
-            className="font-display font-bold text-[#f4ead2]"
-            style={{ fontSize: Math.max(11, groesse * 0.42) }}
-          >
+          <span className="figur-buchstabe font-display font-bold" style={{ '--schrift': px(Math.max(11, groesse * 0.42)) }}>
             {(token.name || '?').charAt(0).toUpperCase()}
           </span>
         )}
@@ -33,20 +32,20 @@ export default function Figur({ token, scene, hp, aktiv, beweglich, ziehend }) {
 
       {anteil !== null && (
         <span
-          className="absolute -bottom-1 left-1/2 flex h-1.5 -translate-x-1/2 overflow-hidden border border-black/50 bg-black/60"
-          style={{ width: groesse * 0.86 }}
+          className="figur-balkenrahmen absolute -bottom-1 left-1/2 flex h-1.5 -translate-x-1/2 overflow-hidden border border-black/50 bg-black/60"
+          style={{ '--breite': px(groesse * 0.86) }}
         >
           <span
             className={`figur-balken ${anteil > 0.5 ? 'figur-balken-gut' : 'figur-balken-schlecht'}`}
-            style={{ '--anteil': `${anteil * 100}%` }}
+            style={{ '--anteil': prozent(anteil) }}
           />
         </span>
       )}
 
       {token.name && (
         <span
-          className="pointer-events-none absolute top-full left-1/2 mt-1.5 -translate-x-1/2 whitespace-nowrap bg-black/65 px-1.5 py-0.5 font-display text-[#f2e4c2]"
-          style={{ fontSize: Math.max(9, Math.min(14, g * 0.17)) }}
+          className="figur-name pointer-events-none absolute top-full left-1/2 mt-1.5 -translate-x-1/2 whitespace-nowrap bg-black/65 px-1.5 py-0.5 font-display"
+          style={{ '--schrift': px(Math.max(9, Math.min(14, g * 0.17))) }}
         >
           {token.name}
         </span>
@@ -71,8 +70,8 @@ export function Auswahlring({ token, scene }) {
   const groesse = token.size * scene.gridSize;
   return (
     <span
-      className="pointer-events-none absolute z-[15] border-2 border-dashed border-gold-soft"
-      style={{ left: token.x - 3, top: token.y - 3, width: groesse + 6, height: groesse + 6 }}
+      className="auswahlring pointer-events-none z-[15] border-2 border-dashed border-gold-soft"
+      style={{ '--x': px(token.x), '--y': px(token.y), '--groesse': px(groesse) }}
     />
   );
 }

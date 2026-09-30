@@ -38,8 +38,8 @@ export default function Konto() {
       >
         <Verbindung connected={connected} />
         <span
-          className="flex h-7 w-7 items-center justify-center rounded-full font-display text-[13px] font-semibold text-[var(--marke-schrift)]"
-          style={{ backgroundColor: user.color }}
+          className="farbpunkt flex h-7 w-7 items-center justify-center rounded-full font-display text-[13px] font-semibold text-[var(--marke-schrift)]"
+          style={{ '--farbe': user.color }}
         >
           {user.name.charAt(0).toUpperCase()}
         </span>
@@ -61,7 +61,7 @@ export default function Konto() {
               <ul className="space-y-1">
                 {presence.map((p) => (
                   <li key={p.id} className="flex items-center gap-2 text-[15px] text-sepia">
-                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: p.color }} />
+                    <span className="farbpunkt h-2 w-2 rounded-full" style={{ '--farbe': p.color }} />
                     {p.name}
                     {p.role === 'sl' && <IconCrown size={12} className="text-gold" />}
                   </li>

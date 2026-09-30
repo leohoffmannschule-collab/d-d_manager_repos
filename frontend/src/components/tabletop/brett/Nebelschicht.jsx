@@ -1,5 +1,6 @@
 import { useLayoutEffect, useMemo, useRef } from 'react';
 import { hatStelle, rasterBereich } from '../../../lib/rasterkarte.js';
+import { px } from '../../../lib/stilwerte.js';
 
 /**
  * Der Nebel als Bildpunkte: ein Punkt je Rasterfeld, hochskaliert vom
@@ -50,17 +51,14 @@ export default function Nebelschicht({ scene, fog, sicht, dm }) {
   return (
     <canvas
       ref={canvasRef}
-      className="pointer-events-none absolute"
+      // Für die Runde deckt der Nebel auch die Figuren zu, für die
+      // Spielleitung liegt er darunter (siehe .nebelschicht-sl).
+      className={`nebelschicht pointer-events-none ${dm ? 'nebelschicht-sl' : ''}`}
       style={{
-        left: scene.gridOffsetX + minX * g,
-        top: scene.gridOffsetY + minY * g,
-        width: cols * g,
-        height: rows * g,
-        imageRendering: 'pixelated',
-        // Für die Runde deckt der Nebel auch die Figuren zu – was im
-        // Dunkeln steht, steht im Dunkeln. Die Spielleitung schaut über
-        // ihre Figuren hinweg durch den Schleier.
-        zIndex: dm ? 5 : 25,
+        '--x': px(scene.gridOffsetX + minX * g),
+        '--y': px(scene.gridOffsetY + minY * g),
+        '--breite': px(cols * g),
+        '--hoehe': px(rows * g),
       }}
     />
   );

@@ -16,6 +16,12 @@
  *   blatt/abschnitte.js  je eine Funktion für je eine Karte des Bogens
  *   blatt/koerper.js     welche Karte in welcher Reihenfolge
  *   blattAusfuhr.css     das Aussehen, als richtiges Stilblatt
+ *   blatt/drucken.js     der Druckknopf, als richtiges Skript
+ *
+ * Die fertige Datei trägt ihr Stilblatt und ihr Skript in sich – sie muss
+ * ohne Netz funktionieren, einen Verweis auf eine zweite Datei gäbe es beim
+ * Doppelklick nicht. Geschrieben aber werden beide als echte Dateien; hier
+ * werden sie beim Bauen nur eingesetzt.
  */
 import { withDefaults } from './dnd5e.js';
 import { alsDatenUrl, esc, zaubertexte } from './blatt/werkzeug.js';
@@ -27,10 +33,13 @@ import { dnd5eKoerper, freiKoerper } from './blatt/koerper.js';
 // trotzdem eingebettet in der fertigen Datei, die ja ohne Netz und ohne
 // Almanach funktionieren muss.
 import ROHSTIL from './blattAusfuhr.css?raw';
+import ROHSKRIPT from './blatt/drucken.js?raw';
 
-// Der Erklärkopf des Stilblattes richtet sich an Mitarbeitende am Code und
-// hat im Blatt der Spielerin nichts verloren – also weg damit.
-const STIL = ROHSTIL.replace(/^\s*\/\*\*[\s\S]*?\*\/\s*/, '');
+// Die Erklärköpfe von Stilblatt und Skript richten sich an Mitarbeitende am
+// Code und haben im Blatt der Spielerin nichts verloren – also weg damit.
+const ohneKopf = (text) => text.replace(/^\s*\/\*\*[\s\S]*?\*\/\s*/, '');
+const STIL = ohneKopf(ROHSTIL);
+const SKRIPT = ohneKopf(ROHSKRIPT);
 
 /**
  * Das fertige HTML-Dokument als Zeichenkette.
@@ -68,24 +77,24 @@ export async function blattAlsHtml(character) {
 </head>
 <body>
 <div class="leiste">
-  <button onclick="window.print()">Drucken</button>
+  <button id="drucken" type="button">Drucken</button>
   <span>Stand: ${esc(stand)} · Diese Datei braucht weder Netz noch Server.</span>
 </div>
 <div class="blatt">
 ${koerper}
-<p class="hinweis" style="text-align:center;margin-top:24px">
+<p class="hinweis hinweis-fuss">
   Abgeschrieben aus dem Abenteuer-Almanach. Änderungen in dieser Datei wandern nicht zurück –
   am Spieltisch gilt das Blatt im Almanach.
 </p>
 </div>
 <script type="application/json" id="almanach-daten">${daten}</script>
+<script>${SKRIPT}</script>
 </body>
 </html>`;
 }
 
-/** Datei erzeugen und dem Browser zum Sichern geben. */
 /**
- * Dasselbe, aber als Download.
+ * Dasselbe als Datei, die der Browser zum Sichern anbietet.
  *
  * Der Umweg über einen unsichtbaren `<a download>` und eine Blob-URL ist der
  * übliche Weg, im Browser eine Datei zu erzeugen, die es nie auf einem

@@ -219,8 +219,8 @@ export default function Tabletop() {
             <div className="flex h-full flex-col items-center justify-center gap-3 bg-[var(--tisch-grund)] px-6 text-center">
               {vorhang ? (
                 <>
-                  <IconFog size={36} className="text-[#7a5f2c]" />
-                  <p className="font-display text-[15px] tracking-[0.14em] text-[#c9b189] uppercase">
+                  <IconFog size={36} className="tisch-hinweis-zeichen" />
+                  <p className="tisch-hinweis-titel font-display text-[15px] tracking-[0.14em] uppercase">
                     Der Vorhang ist zu
                   </p>
                   <p className="max-w-sm text-[var(--tisch-schrift-matt)] italic">
@@ -231,7 +231,7 @@ export default function Tabletop() {
                 </>
               ) : (
                 <>
-                  <IconMap size={34} className="text-[#5a4526]" />
+                  <IconMap size={34} className="tisch-hinweis-karte" />
                   <p className="max-w-sm text-[var(--tisch-schrift-matt)] italic">
                     {isDm
                       ? 'Noch liegt keine Karte auf dem Tisch. Lade eine hoch – bis dahin lässt sich rechts trotzdem kämpfen, teilen und lesen.'

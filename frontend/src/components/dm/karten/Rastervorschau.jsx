@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { mediaApi } from '../../../lib/api.js';
 import { IconMap } from '../../icons.jsx';
+import { px } from '../../../lib/stilwerte.js';
 
 /**
  * Ein Rasternetz über der Vorschau. Damit lässt sich die Feldgröße
@@ -43,9 +44,9 @@ export default function Rastervorschau({ karte, entwurf }) {
           // hier nur Linienfarbe, Feldgröße und Versatz der Vorschau.
           style={{
             '--linie': linie,
-            '--feld': `${feld}px`,
-            '--versatz-x': `${entwurf.gridOffsetX * faktor}px`,
-            '--versatz-y': `${entwurf.gridOffsetY * faktor}px`,
+            '--feld': px(feld),
+            '--versatz-x': px(entwurf.gridOffsetX * faktor),
+            '--versatz-y': px(entwurf.gridOffsetY * faktor),
           }}
         />
       )}

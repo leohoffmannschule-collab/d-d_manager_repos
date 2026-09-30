@@ -40,7 +40,7 @@ export default function Wurfmeldung() {
           zwanzig ? 'border-gold ring-1 ring-gold' : eins ? 'border-rubric' : ''
         }`}
       >
-        <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: wurf.color ?? 'var(--color-faint)' }} />
+        <span className="farbpunkt h-2.5 w-2.5 shrink-0 rounded-full" style={{ '--farbe': wurf.color }} />
         <span className="min-w-0">
           <span className="block truncate font-display text-[11px] tracking-[0.12em] text-faint uppercase">
             {wurf.userName}

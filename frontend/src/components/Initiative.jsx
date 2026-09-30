@@ -29,6 +29,7 @@ import {
   IconTrash,
   IconUsers,
 } from './icons.jsx';
+import { prozent } from '../lib/stilwerte.js';
 
 // Die Zustände aus dem Regelwerk. Sie stehen auch in lib/dnd5e.js – dort
 // fürs Charakterblatt, hier für die Kampfliste. Doppelt, weil beide Listen
@@ -52,9 +53,11 @@ const ZUSTAENDE = [
   'Unsichtbar',
 ];
 
+// Der farbige Rand links an jeder Zeile – dieselben Farben wie die Figuren,
+// die aus dem Kampf auf den Tisch gelegt werden (siehe stile/farben.css).
 const TYP_FARBE = {
-  pc: 'border-l-[#2d4f7c]',
-  npc: 'border-l-[#2f6b4f]',
+  pc: 'border-l-[var(--art-held)]',
+  npc: 'border-l-[var(--art-nsc)]',
   monster: 'border-l-rubric',
 };
 
@@ -74,7 +77,7 @@ function Lebensbalken({ hp, maxHp, status }) {
             Farbe, ein Name, zwei Stellen, die ihn benutzen. */}
         <span
           className={`figur-balken ${anteil > 0.5 ? 'figur-balken-gut' : 'figur-balken-schlecht'}`}
-          style={{ '--anteil': `${anteil * 100}%` }}
+          style={{ '--anteil': prozent(anteil) }}
         />
       </span>
       <span className="font-display text-[14px] text-sepia">

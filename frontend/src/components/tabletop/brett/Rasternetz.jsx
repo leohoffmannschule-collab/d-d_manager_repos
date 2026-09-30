@@ -1,3 +1,5 @@
+import { px } from '../../../lib/stilwerte.js';
+
 /**
  * Das Rasternetz über der Karte.
  *
@@ -17,9 +19,9 @@ export default function Rasternetz({ scene, feld, massstab }) {
     <div
       className="tisch-raster pointer-events-none absolute inset-0"
       style={{
-        '--feld': `${feld}px`,
-        '--versatz-x': `${scene.gridOffsetX}px`,
-        '--versatz-y': `${scene.gridOffsetY}px`,
+        '--feld': px(feld),
+        '--versatz-x': px(scene.gridOffsetX),
+        '--versatz-y': px(scene.gridOffsetY),
       }}
     />
   );

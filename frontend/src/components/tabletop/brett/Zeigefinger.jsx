@@ -1,3 +1,5 @@
+import { px } from '../../../lib/stilwerte.js';
+
 /**
  * Die Zeigefinger: kurz aufleuchtende Ringe mit dem Namen dessen, der
  * gezeigt hat.
@@ -13,17 +15,11 @@ export default function Zeigefinger({ pings, feld }) {
   return pings.map((ping) => (
     <span
       key={ping.key}
-      className="pointer-events-none absolute z-30"
-      style={{ left: ping.x, top: ping.y, transform: 'translate(-50%, -50%)' }}
+      className="zeigefinger pointer-events-none z-30"
+      style={{ '--x': px(ping.x), '--y': px(ping.y), '--feld': px(feld), '--farbe': ping.color }}
     >
-      <span
-        className="block animate-ping rounded-full"
-        style={{ width: feld, height: feld, border: `3px solid ${ping.color}` }}
-      />
-      <span
-        className="absolute top-full left-1/2 mt-1 -translate-x-1/2 whitespace-nowrap font-display text-[12px]"
-        style={{ color: ping.color }}
-      >
+      <span className="zeigefinger-ring block animate-ping rounded-full" />
+      <span className="zeigefinger-name absolute top-full left-1/2 mt-1 -translate-x-1/2 whitespace-nowrap font-display text-[12px]">
         {ping.name}
       </span>
     </span>

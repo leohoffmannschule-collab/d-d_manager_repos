@@ -36,7 +36,7 @@ function Wurfzeile({ wurf, hervorgehoben }) {
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: wurf.color ?? 'var(--color-faint)' }} />
+            <span className="farbpunkt h-2 w-2 shrink-0 rounded-full" style={{ '--farbe': wurf.color }} />
             <span className="truncate font-display text-[12px] tracking-[0.08em] text-sepia uppercase">
               {wurf.userName}
             </span>

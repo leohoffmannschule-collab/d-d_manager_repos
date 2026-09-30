@@ -1,4 +1,5 @@
 import { weiteText } from '../../../lib/rasterkarte.js';
+import { px } from '../../../lib/stilwerte.js';
 
 /**
  * Das Lineal: eine gestrichelte Linie mit der Entfernung daran.
@@ -38,7 +39,8 @@ export default function Lineal({ lineal, scene, feld, massstab }) {
         x={lineal.bis.x + 8}
         y={lineal.bis.y - 8}
         fill="var(--tisch-schrift)"
-        style={{ fontSize: Math.max(12, 16 / massstab), paintOrder: 'stroke' }}
+        className="lineal-text"
+        style={{ '--schrift': px(Math.max(12, 16 / massstab)) }}
         stroke="var(--tisch-grund)"
         strokeWidth={Math.max(2, 4 / massstab)}
       >

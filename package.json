@@ -25,8 +25,9 @@
     "blattprobe": "node scripts/blattprobe.mjs",
     "klangprobe": "node scripts/klangprobe.mjs",
     "einfuhrprobe": "node scripts/einfuhrprobe.mjs",
+    "stilprobe": "node scripts/stilprobe.mjs",
     "lint": "npm run lint --prefix frontend && node frontend/node_modules/oxlint/bin/oxlint backend/src backend/scripts scripts",
-    "test": "npm run lint && npm run einfuhrprobe && npm run blattprobe && npm run klangprobe && npm run vertrag"
+    "test": "npm run lint && npm run einfuhrprobe && npm run stilprobe && npm run blattprobe && npm run klangprobe && npm run vertrag"
   },
   "devDependencies": {
     "concurrently": "^10.0.5"

@@ -9,6 +9,7 @@ import Rasternetz from './brett/Rasternetz.jsx';
 import Nebelvorschau from './brett/Nebelvorschau.jsx';
 import Lineal from './brett/Lineal.jsx';
 import Zeigefinger from './brett/Zeigefinger.jsx';
+import { px } from '../../lib/stilwerte.js';
 
 /**
  * Der Spieltisch: Karte, Raster, Figuren, Nebel, Lineal, Zeigefinger.
@@ -260,11 +261,13 @@ export default function Board({
       {/* Eine Transformation für alles: Karte, Raster, Figuren und Nebel
           liegen darin und wandern beim Zoomen gemeinsam. */}
       <div
-        className="absolute origin-top-left"
+        className="tisch-buehne"
         style={{
-          transform: `translate(${ansicht.tx}px, ${ansicht.ty}px) scale(${ansicht.scale})`,
-          width: scene.width || 1,
-          height: scene.height || 1,
+          '--tx': px(ansicht.tx),
+          '--ty': px(ansicht.ty),
+          '--massstab': ansicht.scale,
+          '--breite': px(scene.width || 1),
+          '--hoehe': px(scene.height || 1),
         }}
       >
         {scene.mediaId ? (

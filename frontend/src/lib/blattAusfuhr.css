@@ -306,6 +306,12 @@ td {
   font-style: italic;
 }
 
+/* Der Satz ganz unten, dass Änderungen in dieser Datei nicht zurückwandern. */
+.hinweis-fuss {
+  text-align: center;
+  margin-top: 24px;
+}
+
 .zauberblock {
   margin-bottom: 14px;
   padding-bottom: 10px;

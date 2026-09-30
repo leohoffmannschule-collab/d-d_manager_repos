@@ -22,8 +22,8 @@ function Konten({ users, onChanged }) {
           <li key={u.id} className="border border-rule bg-panel-soft p-3">
             <div className="flex flex-wrap items-center gap-3">
               <span
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-display font-semibold text-[var(--marke-schrift)]"
-                style={{ backgroundColor: u.color }}
+                className="farbpunkt flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-display font-semibold text-[var(--marke-schrift)]"
+                style={{ '--farbe': u.color }}
               >
                 {u.name.charAt(0).toUpperCase()}
               </span>

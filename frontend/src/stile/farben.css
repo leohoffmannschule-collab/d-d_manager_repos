@@ -35,6 +35,8 @@
   --color-leather: #382718;
   --color-leather-ink: #e8cf8d;
   --color-leather-dim: #c9b189;
+  /* „Gespeichert“, „in Ordnung“ – in beiden Fassungen derselbe Ton */
+  --color-ok: #5f7a4e;
 }
 
 /* Kerzenlicht – für Runden im abgedunkelten Zimmer */
@@ -55,10 +57,11 @@
   --color-leather: #100c07;
   --color-leather-ink: #e8cf8d;
   --color-leather-dim: #a89372;
+  --color-ok: #5f7a4e;
 }
 
 /**
- * Und eine Farbe, die *nicht* umschaltet.
+ * Und Farben, die *nicht* umschalten.
  *
  * Der Anfangsbuchstabe auf einem Konto-Kreis oder einem roten Abzeichen
  * muss lesbar bleiben, ganz gleich, welche Farbe der Kreis gerade hat (die
@@ -69,4 +72,10 @@
  */
 :root {
   --marke-schrift: #f0dca8;
+
+  /* Die drei Arten von Kämpfern – dieselben Farben, mit denen der Server
+     Figuren aus dem Kampf auf den Tisch legt (routes/spieltisch/figuren.js).
+     Sie schalten nicht um: Ein Held ist blau, ob bei Tag oder bei Kerzenlicht. */
+  --art-held: #2d4f7c;
+  --art-nsc: #2f6b4f;
 }
