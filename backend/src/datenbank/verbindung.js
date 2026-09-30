@@ -29,6 +29,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const dataDir = process.env.DATA_DIR || path.join(__dirname, '..', '..', 'data');
 fs.mkdirSync(dataDir, { recursive: true });
 
+/** Der Ordner für hochgeladene Bilder – Karten, Bildnisse, Figuren – neben der Datenbank. */
 export const mediaDir = path.join(dataDir, 'medien');
 fs.mkdirSync(mediaDir, { recursive: true });
 
@@ -44,7 +45,6 @@ const dbPath = path.join(dataDir, 'manager.sqlite3');
  *
  * Beide bieten dieselbe API: exec / prepare -> run, get, all.
  */
-
 function openDatabase() {
   try {
     // Node kennzeichnet das eingebaute SQLite noch als experimentell und gibt

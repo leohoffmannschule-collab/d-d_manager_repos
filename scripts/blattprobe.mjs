@@ -33,7 +33,9 @@ import { blattAus, ATTRIBUTE, FERTIGKEITEN } from '../backend/src/vorlagen/bauen
 
 let ok = 0;
 const fehler = [];
+/** Eine Prüfung zählen: bestanden oder mit Beschreibung in die Mängelliste. */
 const pruefe = (bedingung, was) => (bedingung ? ok++ : fehler.push(was));
+
 /**
  * Zum Vergleichen zweier Blätter: `withDefaults` setzt die Felder neu
  * zusammen und ordnet die Schlüssel dabei um. Das ist keine Änderung am
@@ -46,6 +48,7 @@ const kanonisch = (wert) =>
       : v
   );
 
+/** Zwei Werte vergleichen – als JSON, in der Reihenfolge, in der sie gebaut wurden. */
 const gleich = (ist, soll, was) =>
   pruefe(JSON.stringify(ist) === JSON.stringify(soll), `${was}: erwartet ${JSON.stringify(soll)}, war ${JSON.stringify(ist)}`);
 

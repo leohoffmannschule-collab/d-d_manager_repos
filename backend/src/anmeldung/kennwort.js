@@ -51,6 +51,9 @@ export async function verifyPassword(password, stored) {
   }
 }
 
+// Der Scheinhash für vergleichsHash() – erst beim ersten Bedarf gerechnet.
+let scheinHash = null;
+
 /**
  * Ein Hash, gegen den geprüft wird, wenn es den Namen gar nicht gibt.
  *
@@ -59,7 +62,6 @@ export async function verifyPassword(password, stored) {
  * Zehntelsekunde scrypt. So kostet beides gleich viel. Einmal gerechnet und
  * dann behalten – er muss nur *irgendein* gültiger Hash sein.
  */
-let scheinHash = null;
 export function vergleichsHash() {
   scheinHash ??= hashPassword(randomBytes(16).toString('hex'));
   return scheinHash;

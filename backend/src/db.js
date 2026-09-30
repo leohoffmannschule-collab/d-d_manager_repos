@@ -66,6 +66,7 @@ export function getState(key, campaignId, fallback = null) {
   }
 }
 
+/** Einen Wert unter `key` für diese Kampagne ablegen (als JSON) und ihn zurückgeben. */
 export function setState(key, campaignId, value) {
   db.prepare(
     `INSERT INTO app_state (key, value) VALUES (?, ?)

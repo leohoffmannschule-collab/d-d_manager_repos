@@ -1,13 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
-import { mediaApi } from '../../../lib/api.js';
-import { IconMap } from '../../icons.jsx';
-import { px } from '../../../lib/stilwerte.js';
-
 /**
  * Ein Rasternetz über der Vorschau. Damit lässt sich die Feldgröße
  * ausrichten, ohne die Karte erst auf den Tisch legen zu müssen – und die
  * Runde sieht dabei nichts von der Karte, die als Nächstes dran ist.
  */
+import { useEffect, useRef, useState } from 'react';
+import { mediaApi } from '../../../lib/api.js';
+import { IconMap } from '../../icons.jsx';
+import { px } from '../../../lib/stilwerte.js';
+
 export default function Rastervorschau({ karte, entwurf }) {
   const rahmen = useRef(null);
   const [breite, setBreite] = useState(0);

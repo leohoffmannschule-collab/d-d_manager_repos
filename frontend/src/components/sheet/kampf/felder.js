@@ -7,6 +7,7 @@
  */
 import { AKTION_ARTEN } from '../../../lib/dnd5e.js';
 
+/** Die Spalten einer Angriffszeile: Name, Bonus, Schaden, Anmerkungen. */
 export const ATTACK_FIELDS = [
   { key: 'name', label: 'Angriff / Zauber', wide: true },
   { key: 'bonus', label: 'Bonus' },
@@ -14,12 +15,14 @@ export const ATTACK_FIELDS = [
   { key: 'notes', label: 'Anmerkungen', wide: true },
 ];
 
+/** Die Felder einer eigenen Aktion: was, was sie kostet (Aktion, Bonusaktion …), was sie bewirkt. */
 export const AKTION_FIELDS = [
   { key: 'name', label: 'Was', wide: true },
   { key: 'art', label: 'Kostet', type: 'select', options: AKTION_ARTEN },
   { key: 'description', label: 'Wirkung', type: 'textarea', wide: true },
 ];
 
+/** Wann eine Ressource zurückkommt – nach kurzer oder langer Rast oder nur von Hand (siehe lib/rasten.js). */
 export const AUFFRISCHUNG = [
   ['kurz', 'kurze Rast'],
   ['lang', 'lange Rast'],

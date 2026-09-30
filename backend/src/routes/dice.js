@@ -25,6 +25,7 @@ router.use(requireAuth);
 
 const AUFBEWAHREN = 200;
 
+/** Eine Zeile aus `rolls` so, wie sie die Oberfläche bekommt (Einzelwürfe aus dem JSON gelesen). */
 function rowToRoll(row) {
   return {
     id: row.id,

@@ -21,6 +21,10 @@
 import { useRef, useState } from 'react';
 import { felderImBereich } from '../../lib/rasterkarte.js';
 
+/**
+ * @param {object} args  alles, was zum Entscheiden nötig ist – siehe oben
+ * @returns {{ ziehen: object|null, lineal: object|null, beiZeigerAb: Function, beiZeigerBewegung: Function, beiZeigerAuf: Function }}
+ */
 export function useZeiger({
   huelle,
   scene,

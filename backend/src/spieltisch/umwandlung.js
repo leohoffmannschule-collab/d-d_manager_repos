@@ -14,6 +14,7 @@ import { db, getState } from '../db.js';
 
 /* --- Umwandlung ---------------------------------------------------------- */
 
+/** Eine Zeile aus `scenes` so, wie sie die Oberfläche bekommt (ohne den Nebel – der geht eigens). */
 export function rowToScene(row) {
   return {
     id: row.id,
@@ -44,6 +45,7 @@ export function offeneFelder(row) {
   }
 }
 
+/** Eine Zeile aus `tokens` so, wie sie die Oberfläche bekommt. */
 export function rowToToken(row) {
   return {
     id: row.id,
@@ -62,6 +64,7 @@ export function rowToToken(row) {
   };
 }
 
+/** Eine Szene dieser Kampagne, roh – oder undefined, auch wenn sie einer anderen Kampagne gehört. */
 export const holeSzene = (id, campaignId) => db.prepare('SELECT * FROM scenes WHERE id = ? AND campaign_id = ?').get(id, campaignId);
 // Figuren tragen ihre Kampagne nicht selbst – sie hängen an einer Szene, die
 // es bereits tut. Der Verbund verhindert, dass eine Figur aus einer fremden
@@ -70,6 +73,7 @@ export const holeFigur = (id, campaignId) =>
   db
     .prepare('SELECT t.* FROM tokens t JOIN scenes s ON s.id = t.scene_id WHERE t.id = ? AND s.campaign_id = ?')
     .get(id, campaignId);
+/** Die Kennung der Szene, die in dieser Kampagne auf dem Tisch liegt – oder null. */
 export const aktiveSzeneId = (campaignId) => getState('szene', campaignId, null);
 
 /**
@@ -85,6 +89,7 @@ export const aktiveSzeneId = (campaignId) => getState('szene', campaignId, null)
  */
 export const vorhangZu = (campaignId) => getState('vorhang', campaignId, false) === true;
 
+/** Alle Figuren einer Szene, in der Reihenfolge, in der sie ausgelegt wurden. */
 export function figuren(sceneId) {
   return db.prepare('SELECT * FROM tokens WHERE scene_id = ? ORDER BY created_at').all(sceneId).map(rowToToken);
 }

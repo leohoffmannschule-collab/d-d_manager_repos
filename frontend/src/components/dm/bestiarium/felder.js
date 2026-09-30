@@ -20,6 +20,7 @@ export const LEER = {
   mediaId: null,
 };
 
+/** Die sechs Attribute eines Statblocks als [Schlüssel, Kürzel] – in der Reihenfolge des Regelwerks. */
 export const ATTRIBUTE = [
   ['str', 'ST'],
   ['dex', 'GE'],

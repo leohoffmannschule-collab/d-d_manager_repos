@@ -1,5 +1,3 @@
-import { px } from '../../../lib/stilwerte.js';
-
 /**
  * Was der nächste Nebelstrich träfe.
  *
@@ -11,6 +9,8 @@ import { px } from '../../../lib/stilwerte.js';
  * beschnitten – hier wird nichts mehr gerechnet außer der Umrechnung von
  * Feldern in Bildpunkte.
  */
+import { px } from '../../../lib/stilwerte.js';
+
 export default function Nebelvorschau({ grenzen, scene, feld, massstab, aufdecken, mitMass }) {
   if (!grenzen) return null;
 

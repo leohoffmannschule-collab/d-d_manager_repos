@@ -1,7 +1,3 @@
-import { useEffect, useRef, useState } from 'react';
-import { useCampaign } from '../lib/campaign.jsx';
-import { IconCheck } from './icons.jsx';
-
 /**
  * „In Kampagne …“ – ein einzelnes Stück in eine andere Kampagne kopieren.
  *
@@ -20,6 +16,10 @@ import { IconCheck } from './icons.jsx';
  *                     der Knopf seiner Umgebung anpasst (Szenenlade etwa
  *                     setzt alles in Kapitälchen)
  */
+import { useEffect, useRef, useState } from 'react';
+import { useCampaign } from '../lib/campaign.jsx';
+import { IconCheck } from './icons.jsx';
+
 export default function Kopierziel({
   kopieren,
   nachOben = false,

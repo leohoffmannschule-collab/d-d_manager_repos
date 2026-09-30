@@ -1,5 +1,3 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-
 /**
  * Die Ansicht auf die Karte: Maßstab und Verschiebung.
  *
@@ -16,6 +14,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
  * wird, sondern über *eine* CSS-Transformation auf dem Behälter. Diese
  * Datei verwaltet nur die drei Zahlen dafür.
  */
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Der Zoom-Boden ist keine feste Zahl: Eine Karte über zweihundert Meter ist
 // zwölftausend Bildpunkte breit und passt bei 0,12 nicht auf den Schirm. Der
@@ -24,6 +23,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 const MIN_SCALE = 0.12;
 const MAX_SCALE = 4;
 
+/**
+ * @param {{ current: HTMLElement|null }} huelle  das Element, in dem der Tisch liegt
+ * @param {object|null} scene  die aufgelegte Szene – eine neue wird eingepasst
+ * @returns {{ ansicht: {scale:number,tx:number,ty:number}, setAnsicht: Function, zuSzene: Function, zoomen: Function }}
+ */
 export function useAnsicht(huelle, scene) {
   const [ansicht, setAnsicht] = useState({ scale: 1, tx: 0, ty: 0 });
   const [boden, setBoden] = useState(MIN_SCALE);

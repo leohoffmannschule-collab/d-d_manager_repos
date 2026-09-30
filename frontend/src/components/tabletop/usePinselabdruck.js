@@ -1,6 +1,3 @@
-import { useCallback, useRef } from 'react';
-import { bereichGrenzen, felderImPinsel, pinselGrenzen, rasterBereich } from '../../lib/rasterkarte.js';
-
 /**
  * Der Nebelpinsel: welche Felder ein Strich trifft.
  *
@@ -16,6 +13,18 @@ import { bereichGrenzen, felderImPinsel, pinselGrenzen, rasterBereich } from '..
  * Die Strecke ist der Kniff: Zwischen zwei Bildern springt der Zeiger bei
  * einem schnellen Strich über mehrere Felder. Ohne die Zwischenschritte
  * bliebe eine Perlenkette stehen statt eines Strichs.
+ */
+import { useCallback, useRef } from 'react';
+import { bereichGrenzen, felderImPinsel, pinselGrenzen, rasterBereich } from '../../lib/rasterkarte.js';
+
+/**
+ * @param {object} args
+ * @param {object} args.scene       die Szene – für Raster und Grenzen
+ * @param {number|'rechteck'} args.pinsel  Kantenlänge in Feldern oder Rechteckmodus
+ * @param {string} args.mode        das Werkzeug ('nebel-auf', 'nebel-zu' …)
+ * @param {Function} args.onPaintFog  (felder, aufdecken) – wohin ein Abdruck geht
+ * @param {{x:number,y:number}|null} args.zeigerFeld  das Feld unter dem Zeiger
+ * @returns {{ alsRechteck: boolean, feldKoord: Function, abdruecken: Function, strichBeginnen: Function, vorschau: Function }}
  */
 export function usePinselabdruck({ scene, pinsel, mode, onPaintFog, zeigerFeld }) {
   const { g } = rasterBereich(scene);

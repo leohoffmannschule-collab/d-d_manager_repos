@@ -25,6 +25,7 @@ function nah(ist, soll, was, spanne = 0.01) {
 }
 
 const T0 = Date.parse('2026-01-01T20:00:00.000Z');
+/** Ein Zeitpunkt `n` Sekunden nach T0 – die Probe rechnet mit einer festen Uhr. */
 const sek = (n) => T0 + n * 1000;
 
 /* --- Es läuft: die Stelle wächst mit der Zeit ---------------------------- */

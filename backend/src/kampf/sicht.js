@@ -19,6 +19,10 @@ import { isDm } from '../auth.js';
 import { broadcast } from '../events.js';
 import { alleKaempfer, meta, zustand } from './umwandlung.js';
 
+/**
+ * Der Kampf so, wie dieses Konto ihn sehen darf: die Spielleitung alles, die
+ * Runde ohne Verborgenes, ohne fremde Notizen und mit Monster-TP als Wort.
+ */
 export function encounterView(user, campaignId) {
   const kaempfer = alleKaempfer(campaignId);
   const sichtbar = isDm(user)

@@ -1,6 +1,3 @@
-import { weiteText } from '../../../lib/rasterkarte.js';
-import { px } from '../../../lib/stilwerte.js';
-
 /**
  * Das Lineal: eine gestrichelte Linie mit der Entfernung daran.
  *
@@ -12,6 +9,9 @@ import { px } from '../../../lib/stilwerte.js';
  * Sonst wäre die Linie bei 400 % vier Mal so dick wie bei 100 % – sie soll
  * aber immer gleich aussehen.
  */
+import { weiteText } from '../../../lib/rasterkarte.js';
+import { px } from '../../../lib/stilwerte.js';
+
 export default function Lineal({ lineal, scene, feld, massstab }) {
   if (!lineal) return null;
 

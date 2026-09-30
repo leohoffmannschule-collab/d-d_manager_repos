@@ -1,6 +1,28 @@
+/**
+ * Eine Figur auf dem Tisch: runde Scheibe mit Bild oder Anfangsbuchstabe,
+ * darunter Lebensbalken und Namensschild – und der Auswahlring, der zeigt,
+ * welche Figur die Spielleitung gerade bearbeitet.
+ *
+ * Alles hier steht in *Kartenpunkten*: `token.x`/`token.y` ist die obere
+ * linke Ecke auf der Karte, die Größe ein Vielfaches der Feldgröße
+ * (`token.size` = 1 für mittelgroß, 2 für groß …). Gezoomt wird nicht hier,
+ * sondern über die Bühne, in der die Figur steht (Board.jsx).
+ *
+ * Die Werte gehen als CSS-Variablen hinaus, die Regeln stehen in
+ * stile/spieltisch/figuren.css.
+ */
 import { mediaApi } from '../../../lib/api.js';
 import { prozent, px } from '../../../lib/stilwerte.js';
 
+/**
+ * @param {object} props
+ * @param {object} props.token      die Figur (x, y, size, name, color, mediaId, hidden)
+ * @param {object} props.scene      die Szene – für die Feldgröße
+ * @param {{current:number,max:number}|null} props.hp  Trefferpunkte, falls die Figur im Kampf steht
+ * @param {boolean} props.aktiv     ist gerade am Zug (goldener Ring)
+ * @param {boolean} props.beweglich darf von diesem Fenster gezogen werden (Zeiger)
+ * @param {boolean} props.ziehend   wird gerade gezogen (liegt oben, leicht durchscheinend)
+ */
 export default function Figur({ token, scene, hp, aktiv, beweglich, ziehend }) {
   const g = scene.gridSize;
   const groesse = token.size * g;
@@ -53,11 +75,6 @@ export default function Figur({ token, scene, hp, aktiv, beweglich, ziehend }) {
     </div>
   );
 }
-
-/**
- * Der Spieltisch selbst: Karte, Raster, Nebel und Figuren, mit Schieben,
- * Zoomen, Ziehen der Figuren, Nebelpinsel, Lineal und Zeigefinger.
- */
 
 /**
  * Der gestrichelte Ring um die gewählte Figur – nur für die Spielleitung.

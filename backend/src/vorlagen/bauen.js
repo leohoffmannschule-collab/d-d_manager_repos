@@ -33,6 +33,7 @@ export const FERTIGKEITEN = [
   'survival',
 ];
 
+/** Die Schlüssel der sechs Attribute, in der Reihenfolge des Blattes. */
 export const ATTRIBUTE = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
 
 const leer = (schluessel, wert) => Object.fromEntries(schluessel.map((k) => [k, wert]));

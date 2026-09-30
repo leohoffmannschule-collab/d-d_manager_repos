@@ -115,6 +115,7 @@ export function pinselGrenzen(scene, feldX, feldY, groesse) {
   return bereichGrenzen(scene, feldX - rand, feldY - rand, feldX + rand, feldY + rand);
 }
 
+/** Die Felder unter einem quadratischen Pinsel mit `groesse` Feldern Kantenlänge, mittig um (feldX, feldY). */
 export function felderImPinsel(scene, feldX, feldY, groesse) {
   const rand = Math.floor(Math.max(1, groesse) / 2);
   return felderImBereich(scene, feldX - rand, feldY - rand, feldX + rand, feldY + rand);
@@ -124,6 +125,7 @@ export function felderImPinsel(scene, feldX, feldY, groesse) {
 
 const FUSS_JE_METER = 3.280839895;
 
+/** Die beiden Maßeinheiten einer Karte und wie sie heißen. */
 export const EINHEIT = { fuss: 'Fuß', meter: 'Meter' };
 
 /** Wie viel Spielweite steckt in `felder` Feldern dieser Karte? */

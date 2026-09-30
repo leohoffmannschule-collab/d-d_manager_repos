@@ -12,6 +12,7 @@
 import { db, transaktion } from './db.js';
 import { trenne } from './events.js';
 
+/** So lange liegt eine gelöschte Kampagne im Papierkorb, bevor sie endgültig verschwindet. */
 export const FRIST_TAGE = 30;
 
 /**

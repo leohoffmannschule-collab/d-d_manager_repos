@@ -14,6 +14,7 @@ import InventoryTab from '../../components/sheet/InventoryTab.jsx';
 import SpellsTab from '../../components/sheet/SpellsTab.jsx';
 import BackgroundTab from '../../components/sheet/BackgroundTab.jsx';
 
+/** Die fünf Reiter als { key, label, Component } – `Component` bekommt `data`, `update` und `replace`. */
 export const DND_TABS = [
   { key: 'overview', label: 'Übersicht', Component: OverviewTab },
   { key: 'combat', label: 'Kampf', Component: CombatTab },

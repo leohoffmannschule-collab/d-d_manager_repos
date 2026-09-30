@@ -10,6 +10,7 @@
  * Wer eine Fertigkeit ergänzt, ergänzt sie hier, und sie erscheint überall.
  */
 
+/** Die sechs Attribute mit ihrem Schlüssel im Blatt und ihrem Namen. */
 export const ABILITIES = [
   { key: 'str', label: 'Stärke' },
   { key: 'dex', label: 'Geschicklichkeit' },

@@ -1,9 +1,3 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { campaignsApi } from './api.js';
-import { useAuth } from './auth.jsx';
-
-const CampaignContext = createContext(null);
-
 /**
  * Die aktive Kampagne der eigenen Sitzung.
  *
@@ -19,6 +13,14 @@ const CampaignContext = createContext(null);
  *
  * Aufgebaut wie lib/auth.jsx – ein Anbieter oben, `useCampaign()` unten.
  */
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { campaignsApi } from './api.js';
+import { useAuth } from './auth.jsx';
+
+// Der Behälter für den Zustand; `null` heißt: kein Anbieter darüber.
+const CampaignContext = createContext(null);
+
+/** Der Anbieter: hält Liste und aktive Kampagne und reicht beides samt Handgriffen weiter. */
 export function CampaignProvider({ children }) {
   const { user } = useAuth();
   const [campaigns, setCampaigns] = useState([]);
@@ -102,6 +104,13 @@ export function CampaignProvider({ children }) {
   return <CampaignContext.Provider value={value}>{children}</CampaignContext.Provider>;
 }
 
+/**
+ * Die aktive Kampagne, die Liste aller Kampagnen und die Handgriffe dazu
+ * (wechseln, anlegen, umbenennen, wegräumen).
+ *
+ * Wirft, wenn kein CampaignProvider darüber steht – lieber sofort und laut
+ * als später mit einem rätselhaften `undefined`.
+ */
 export function useCampaign() {
   const context = useContext(CampaignContext);
   if (!context) throw new Error('useCampaign braucht den CampaignProvider.');

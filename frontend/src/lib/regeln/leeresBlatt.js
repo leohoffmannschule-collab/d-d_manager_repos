@@ -19,6 +19,11 @@ import { newId } from '../id.js';
 import { ABILITIES, SKILLS, SPELL_LEVELS } from './listen.js';
 import { AUSSEHEN_FELDER } from './blattfelder.js';
 
+/**
+ * Ein leeres 5e-Blatt mit allen Feldern, die die Oberfläche erwartet – alle
+ * Attribute auf 10, nichts geübt, keine Plätze. Grundlage für neue Blätter
+ * und für withDefaults(), das ältere Blätter auffüllt.
+ */
 export function defaultCharacterData() {
   const abilities = Object.fromEntries(ABILITIES.map((a) => [a.key, 10]));
   const savingThrows = Object.fromEntries(ABILITIES.map((a) => [a.key, false]));
@@ -97,6 +102,7 @@ export function leeresMerkmal() {
   return { id: newId(), name: '', category: 'klasse', source: '', page: '', description: '' };
 }
 
+/** Eine neue, leere eigene Aktion mit frischer Kennung. */
 export function leereAktion() {
   return { id: newId(), name: '', art: 'aktion', description: '' };
 }
@@ -176,6 +182,7 @@ export function withDefaults(data) {
   };
 }
 
+/** Ein leeres freies Blatt: drei Abschnitte zum Beschriften, sonst nichts. */
 export function defaultFreeformData() {
   return {
     portrait: '',

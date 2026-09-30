@@ -1,15 +1,3 @@
-import { useKonten } from '../../lib/daten.js';
-import Einladungen from './runde/Einladungen.jsx';
-import Kampagnenmitglieder from './runde/Kampagnenmitglieder.jsx';
-import Umzugsgut from './runde/Umzugsgut.jsx';
-import Konten from './runde/Konten.jsx';
-import Charakterzuweisung from './runde/Charakterzuweisung.jsx';
-import WerBestimmt from './runde/WerBestimmt.jsx';
-import KampagneUmbenennen from './runde/KampagneUmbenennen.jsx';
-import KampagneLoeschen from './runde/KampagneLoeschen.jsx';
-import Papierkorb from './runde/Papierkorb.jsx';
-import { IconUsers } from '../icons.jsx';
-
 /**
  * Der Reiter „Runde“ hinter dem Schirm – und nur noch die Reihenfolge.
  *
@@ -32,6 +20,18 @@ import { IconUsers } from '../icons.jsx';
  * Gespielte einer Kampagne.** Wer neu im Almanach ist, braucht beides –
  * ein Konto *und* einen Platz in einer Kampagne.
  */
+import { useKonten } from '../../lib/daten.js';
+import Einladungen from './runde/Einladungen.jsx';
+import Kampagnenmitglieder from './runde/Kampagnenmitglieder.jsx';
+import Umzugsgut from './runde/Umzugsgut.jsx';
+import Konten from './runde/Konten.jsx';
+import Charakterzuweisung from './runde/Charakterzuweisung.jsx';
+import WerBestimmt from './runde/WerBestimmt.jsx';
+import KampagneUmbenennen from './runde/KampagneUmbenennen.jsx';
+import KampagneLoeschen from './runde/KampagneLoeschen.jsx';
+import Papierkorb from './runde/Papierkorb.jsx';
+import { IconUsers } from '../icons.jsx';
+
 export default function Party() {
   // Die Kontenliste brauchen drei Abschnitte. Sie einmal hier zu holen und
   // durchzureichen erspart drei gleiche Anfragen beim Öffnen des Reiters.

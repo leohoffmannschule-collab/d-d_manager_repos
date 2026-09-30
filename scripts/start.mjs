@@ -38,6 +38,7 @@ const ohneBau = schalter.has('--ohne-bau');
 // Prozessverwaltung dort nicht. Node selbst heißt überall `node`.
 const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
+/** Eine Zeile an die Konsole – ein Name, damit sich das Skript liest wie eine Anleitung. */
 const sagen = (text = '') => console.log(text);
 
 /* --- 1. Trägt dieses Node den Almanach? ---------------------------------- */
@@ -108,6 +109,10 @@ function fehlendeOrdner() {
   return ['backend', 'frontend'].filter((teil) => !fs.existsSync(path.join(wurzel, teil, 'node_modules')));
 }
 
+/**
+ * Die Pakete eines Teils (backend oder frontend) holen. `ohneOptionale`
+ * lässt better-sqlite3 weg – siehe den Kommentar im Rumpf.
+ */
 function installieren(teil, ohneOptionale = false) {
   sagen(`  Hole die Bausteine für ${teil} … (beim ersten Mal ein paar Minuten)`);
   // `--omit=optional` lässt better-sqlite3 weg. Das ist die Rückfallebene für

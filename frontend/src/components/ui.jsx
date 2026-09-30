@@ -42,6 +42,7 @@ export function FieldLabel({ children }) {
   );
 }
 
+/** Ein einzeiliges Textfeld mit Beschriftung darüber. `onChange` bekommt den Text, nicht das Ereignis. */
 export function TextField({ label, value, onChange, placeholder, className = '' }) {
   return (
     <label className={`block ${className}`}>
@@ -56,6 +57,7 @@ export function TextField({ label, value, onChange, placeholder, className = '' 
   );
 }
 
+/** Ein mehrzeiliges Textfeld mit Beschriftung darüber. `onChange` bekommt den Text. */
 export function TextAreaField({ label, value, onChange, rows = 3, className = '', placeholder }) {
   return (
     <label className={`block ${className}`}>
@@ -71,6 +73,10 @@ export function TextAreaField({ label, value, onChange, rows = 3, className = ''
   );
 }
 
+/**
+ * Ein Zahlenfeld mit Beschriftung. `onChange` bekommt eine Zahl – ein
+ * geleertes Feld wird zu 0, nicht zu NaN oder ''.
+ */
 export function NumberField({ label, value, onChange, className = '', min, step = 1 }) {
   return (
     <label className={`block ${className}`}>
@@ -88,6 +94,7 @@ export function NumberField({ label, value, onChange, className = '', min, step 
   );
 }
 
+/** Eine Auswahlliste mit Beschriftung; `options` als [[wert, text], …]. */
 export function SelectField({ label, value, onChange, options, className = '' }) {
   return (
     <label className={`block ${className}`}>
@@ -129,6 +136,10 @@ export function WeiteField({ label, fuss, units, onChange, className = '', step 
   );
 }
 
+/**
+ * Ein Zähler mit − und +, begrenzt auf [min, max] – für alles, was man am
+ * Tisch hoch- und runterzählt (verbrauchte Plätze, Ladungen, Trefferwürfel).
+ */
 export function Stepper({ label, value, onChange, min = 0, max = 999 }) {
   return (
     <div>
@@ -162,6 +173,10 @@ export function Stepper({ label, value, onChange, min = 0, max = 999 }) {
   );
 }
 
+/**
+ * Ein Kästchen zum An- und Abhaken, als Knopf gebaut – so ist die ganze
+ * Zeile mit dem Finger zu treffen, nicht nur das kleine Kästchen.
+ */
 export function Toggle({ checked, onChange, label }) {
   return (
     <button type="button" onClick={() => onChange(!checked)} className="flex min-h-11 items-center gap-2.5 text-left">

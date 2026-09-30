@@ -29,6 +29,15 @@ import {
 } from './abschnitte.js';
 import { formatModifier, passiverWert, proficiencyBonus } from '../dnd5e.js';
 
+/**
+ * Der ganze Bogen eines 5e-Blattes als HTML: Kopf, dann die Tafeln in der
+ * Reihenfolge des gedruckten Charakterbogens.
+ *
+ * @param {object} character  das Blatt (Name, System …)
+ * @param {object} data       seine Daten, schon mit Standardwerten aufgefüllt
+ * @param {{portrait: string|null}} bilder  eingebettete Bilder als data:-URL
+ * @param {Object<string, object>} texte    Kompendiumstexte je Zauber-Kennung
+ */
 export function dnd5eKoerper(character, data, bilder, texte) {
   const pb = proficiencyBonus(data.level);
   const erfahrung =
@@ -92,6 +101,7 @@ export function dnd5eKoerper(character, data, bilder, texte) {
   `;
 }
 
+/** Der Bogen eines freien Blattes: Kopf, Zusammenfassung und die selbst angelegten Abschnitte. */
 export function freiKoerper(character, data, bilder) {
   return `
     <header class="kopf">

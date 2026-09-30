@@ -1,8 +1,3 @@
-import { useState } from 'react';
-import { useAuth } from '../lib/auth.jsx';
-import { useCampaign } from '../lib/campaign.jsx';
-import { Fleuron, IconCrown, IconPlus, IconScroll } from '../components/icons.jsx';
-
 /**
  * Die Weiche zwischen Anmeldung und Tisch: Wer an mehreren Kampagnen
  * teilnimmt (oder noch an keiner sitzt), landet hier statt direkt im
@@ -18,6 +13,11 @@ import { Fleuron, IconCrown, IconPlus, IconScroll } from '../components/icons.js
  * nichts tun außer warten, bis ihn jemand einträgt – und bekommt deshalb
  * einen Satz zu lesen, der genau das sagt.
  */
+import { useState } from 'react';
+import { useAuth } from '../lib/auth.jsx';
+import { useCampaign } from '../lib/campaign.jsx';
+import { Fleuron, IconCrown, IconPlus, IconScroll } from '../components/icons.jsx';
+
 export default function Kampagnenwahl() {
   const { isDm, logout } = useAuth();
   const { campaigns, loading, switchTo, create } = useCampaign();

@@ -1,6 +1,16 @@
-// Kopiert die gebaute Oberfläche nach backend/public, damit der Server sie
-// mit ausliefert. Bewusst in Node geschrieben statt als cp/xcopy – so läuft
-// derselbe Befehl unter Windows, macOS und auf dem Raspberry Pi.
+/**
+ * Die gebaute Oberfläche nach backend/public kopieren, damit der Server sie
+ * mit ausliefert.
+ *
+ *   npm run build   (baut frontend/dist und ruft danach dieses Skript)
+ *
+ * Bewusst in Node geschrieben statt als cp/xcopy – so läuft derselbe Befehl
+ * unter Windows, macOS und auf dem Raspberry Pi.
+ *
+ * Der alte Stand in backend/public wird vorher ganz entfernt: Vite versieht
+ * jede gebaute Datei mit einem Prüfwert im Namen, und ohne das Aufräumen
+ * sammelten sich dort mit jedem Bau die Dateien aller früheren Stände.
+ */
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

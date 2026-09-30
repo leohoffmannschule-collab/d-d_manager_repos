@@ -1,8 +1,3 @@
-import { useState } from 'react';
-import { useCampaign } from '../../../lib/campaign.jsx';
-import { Rubric } from '../../ui.jsx';
-import { IconTrash } from '../../icons.jsx';
-
 /**
  * Die Kampagne wegräumen.
  *
@@ -13,6 +8,11 @@ import { IconTrash } from '../../icons.jsx';
  * Was hier gelöscht wird, sind Monate an Spielabenden – deshalb die rote
  * Umrandung, deshalb das Abtippen.
  */
+import { useState } from 'react';
+import { useCampaign } from '../../../lib/campaign.jsx';
+import { Rubric } from '../../ui.jsx';
+import { IconTrash } from '../../icons.jsx';
+
 export default function KampagneLoeschen() {
   const { active, remove } = useCampaign();
   const [bestaetigung, setBestaetigung] = useState('');

@@ -1,5 +1,3 @@
-import { px } from '../../../lib/stilwerte.js';
-
 /**
  * Die Zeigefinger: kurz aufleuchtende Ringe mit dem Namen dessen, der
  * gezeigt hat.
@@ -11,6 +9,8 @@ import { px } from '../../../lib/stilwerte.js';
  * Der Ring ist genau ein Feld groß – so zeigt er nicht auf einen Punkt,
  * sondern auf die Stelle, um die es geht.
  */
+import { px } from '../../../lib/stilwerte.js';
+
 export default function Zeigefinger({ pings, feld }) {
   return pings.map((ping) => (
     <span

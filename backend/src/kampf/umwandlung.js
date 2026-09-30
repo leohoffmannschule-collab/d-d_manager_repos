@@ -17,6 +17,7 @@ export function meta(campaignId) {
   return getState('kampf', campaignId, { round: 1, activeCombatantId: null });
 }
 
+/** Eine Zeile aus `combatants` so, wie sie die Oberfläche bekommt. */
 export function rowToCombatant(row) {
   return {
     id: row.id,

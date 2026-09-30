@@ -16,7 +16,9 @@ import { toNumber } from './werte.js';
 
 /** Die Münzsorten, von der größten zur kleinsten. */
 export const MUENZEN = ['pp', 'gp', 'ep', 'sp', 'cp'];
+/** Ein leerer Beutel mit allen fünf Sorten – eingefroren, damit niemand ihn aus Versehen füllt. */
 export const KEINE_MUENZEN = Object.freeze({ pp: 0, gp: 0, ep: 0, sp: 0, cp: 0 });
+/** Wie die Sorten am Tisch heißen – für die Sätze in der Chronik. */
 export const MUENZNAME = { pp: 'Platin', gp: 'Gold', ep: 'Elektrum', sp: 'Silber', cp: 'Kupfer' };
 
 // Der übliche Umrechnungskurs: alles in Kupfer, dann wieder hinauf.
@@ -24,6 +26,7 @@ const KURS = { pp: 1000, gp: 100, ep: 50, sp: 10, cp: 1 };
 
 /* --- Was in der Kiste liegt ---------------------------------------------- */
 
+/** Eine Zeile aus `stash_items` so, wie sie die Oberfläche bekommt (camelCase, Zahlen als Zahlen). */
 export function rowToItem(row) {
   return {
     id: row.id,
@@ -39,6 +42,7 @@ export function rowToItem(row) {
 /** Die Münzen, immer mit allen fünf Sorten – auch wenn nie etwas hineinkam. */
 export const muenzen = (campaignId) => ({ ...KEINE_MUENZEN, ...getState('beute', campaignId, null) });
 
+/** Alle Gegenstände in der Kiste dieser Kampagne, in der Reihenfolge, in der sie hineinkamen. */
 export const gegenstaende = (campaignId) =>
   db.prepare('SELECT * FROM stash_items WHERE campaign_id = ? ORDER BY created_at').all(campaignId).map(rowToItem);
 
@@ -50,6 +54,7 @@ export const kiste = (campaignId) => ({ items: gegenstaende(campaignId), coins: 
 /** Eine Münzsorte als Zahl – kaputte oder fehlende Werte zählen als nichts. */
 const anzahl = (vorrat, sorte) => toNumber(vorrat?.[sorte], 0);
 
+/** Ein Münzhaufen in Kupfer umgerechnet – die gemeinsame Währung fürs Teilen. */
 export const inKupfer = (vorrat) => MUENZEN.reduce((summe, m) => summe + anzahl(vorrat, m) * KURS[m], 0);
 
 /**

@@ -1,9 +1,3 @@
-import { useEffect, useRef, useState } from 'react';
-import { IconChat, IconClose, IconEyeOff, IconTrash } from './icons.jsx';
-import { chatApi } from '../lib/api.js';
-import { useAuth } from '../lib/auth.jsx';
-import { useChat } from '../lib/daten.js';
-
 /**
  * Der Chat am Tisch.
  *
@@ -18,6 +12,11 @@ import { useChat } from '../lib/daten.js';
  * Gezeichnet wird das Fenster von unten nach oben (`flex-col-reverse`), damit
  * die jüngste Zeile ohne Nachhelfen unten steht.
  */
+import { useEffect, useRef, useState } from 'react';
+import { IconChat, IconClose, IconEyeOff, IconTrash } from './icons.jsx';
+import { chatApi } from '../lib/api.js';
+import { useAuth } from '../lib/auth.jsx';
+import { useChat } from '../lib/daten.js';
 
 /** Nur die Uhrzeit; das Datum steht in der Chronik, hier stört es. */
 function uhrzeit(iso) {

@@ -15,6 +15,7 @@ import { useCallback, useEffect, useState } from 'react';
 // Start liest, bevor React überhaupt läuft. Wird er hier umbenannt, muss er
 // dort mit umbenannt werden.
 const STORAGE_KEY = 'almanach-theme';
+/** Die beiden Erscheinungsbilder – hell (Pergament) und dunkel (Kerzenlicht). */
 export const THEMES = ['pergament', 'kerzenlicht'];
 
 /**
@@ -34,6 +35,11 @@ function readStoredTheme() {
   return document.documentElement.dataset.theme === 'kerzenlicht' ? 'kerzenlicht' : 'pergament';
 }
 
+/**
+ * Das Erscheinungsbild samt Umschalter.
+ *
+ * @returns {{ theme: 'pergament'|'kerzenlicht', toggleTheme: () => void }}
+ */
 export function useTheme() {
   const [theme, setTheme] = useState(readStoredTheme);
 

@@ -18,6 +18,11 @@ import { authApi } from './api.js';
 
 const AuthContext = createContext(null);
 
+/**
+ * Der Anbieter der Anmeldung: fragt beim Start den Server, wer man ist, und
+ * reicht `user`, `isDm` und die Handgriffe (anmelden, abmelden, einrichten)
+ * an alles darunter weiter.
+ */
 export function AuthProvider({ children }) {
   // `user` ist null, solange niemand angemeldet ist. `needsSetup` heißt:
   // Der Almanach ist noch jungfräulich, das erste Konto führt dann die

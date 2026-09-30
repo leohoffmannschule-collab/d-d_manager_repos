@@ -1,10 +1,3 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { setClientId } from './api.js';
-import { useAuth } from './auth.jsx';
-import { useCampaign } from './campaign.jsx';
-
-const LiveContext = createContext(null);
-
 /**
  * Der Draht zum Server. Solange jemand angemeldet ist, hängt hier eine
  * offene Verbindung (Server-Sent Events), über die Änderungen an Kampf,
@@ -31,8 +24,18 @@ const LiveContext = createContext(null);
  * die Tore in App.jsx schicken einen zur Anmeldung oder Kampagnenauswahl –,
  * und liegt es an nichts davon, nach einer Pause neu angesetzt.
  */
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { setClientId } from './api.js';
+import { useAuth } from './auth.jsx';
+import { useCampaign } from './campaign.jsx';
+
+// Der Behälter für den Kanal; `null` heißt: kein Anbieter darüber.
+const LiveContext = createContext(null);
+
+// Wie lange nach einer Absage gewartet wird, bevor der Kanal neu ansetzt.
 const NEUER_ANLAUF_MS = 5000;
 
+/** Der Anbieter: öffnet den Kanal, solange jemand angemeldet ist und eine Kampagne gewählt hat. */
 export function LiveProvider({ children }) {
   const { user, refresh: anmeldungPruefen } = useAuth();
   const { refresh: kampagnePruefen } = useCampaign();

@@ -1,9 +1,35 @@
+/**
+ * Wie die Oberfläche gebaut wird.
+ *
+ * Drei Bausteine:
+ *
+ *   react()        – JSX und schnelles Nachladen beim Entwickeln
+ *   tailwindcss()  – die Hilfsklassen; die eigenen Regeln stehen in src/stile/
+ *   VitePWA()      – macht den Almanach installierbar (Home-Bildschirm auf
+ *                    iPad und Telefon) und hält ihn im Zwischenspeicher
+ *
+ * Beim Zwischenspeicher gilt je Art von Anfrage eine andere Regel, und das
+ * mit Absicht:
+ *
+ *   Kompendium   CacheFirst   – Regeltexte ändern sich nicht; einmal geholt,
+ *                               kommen sie vom Gerät, auch ohne Netz
+ *   Blätter      NetworkFirst – immer den frischen Stand, aber nach drei
+ *                               Sekunden ohne Antwort lieber den letzten
+ *                               bekannten als gar keinen
+ *   Bilder       CacheFirst   – eine Kennung, ein Bild, für immer
+ *
+ * Alles andere unter /api/ geht nie über den Zwischenspeicher: Kampf, Nebel
+ * und Würfe veraltet anzuzeigen wäre schlimmer, als sie gar nicht zu zeigen.
+ *
+ * Beim Entwickeln (`npm run dev`) leitet Vite /api an den Server auf Port
+ * 3001 weiter – so laufen Oberfläche und Server getrennt und trotzdem unter
+ * einer Adresse, und das Anmelde-Cookie funktioniert wie im Betrieb.
+ */
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import { defineConfig } from 'vite'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),

@@ -25,6 +25,7 @@ router.use(requireDm);
 
 const KATEGORIEN = new Set(['npc', 'monster']);
 
+/** Ein Statblock aus `library` so, wie ihn die Oberfläche bekommt. */
 function rowToEntry(row) {
   return {
     id: row.id,

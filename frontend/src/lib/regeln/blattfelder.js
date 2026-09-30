@@ -8,6 +8,7 @@
  * ohne etwas auszurechnen.
  */
 
+/** Was eine Handlung kostet: Aktion, Bonusaktion, Reaktion oder nichts. */
 export const AKTION_ARTEN = [
   ['aktion', 'Aktion'],
   ['bonus', 'Bonusaktion'],
@@ -15,6 +16,7 @@ export const AKTION_ARTEN = [
   ['frei', 'Freie Handlung'],
 ];
 
+/** Der Name einer Aktionsart („bonus“ → „Bonusaktion“); Unbekanntes gilt als Aktion. */
 export const aktionArtLabel = (art) => AKTION_ARTEN.find(([wert]) => wert === art)?.[1] ?? 'Aktion';
 
 /**
@@ -84,6 +86,7 @@ export const MERKMAL_ARTEN = [
   ['sonstiges', 'Sonstiges'],
 ];
 
+/** Der Name einer Merkmalsherkunft („klasse“ → „Klasse“); Unbekanntes gilt als Sonstiges. */
 export const merkmalArtLabel = (art) => MERKMAL_ARTEN.find(([wert]) => wert === art)?.[1] ?? 'Sonstiges';
 
 /* --- Aussehen und Person ------------------------------------------------- */
@@ -112,6 +115,7 @@ export const XP_THRESHOLDS = [
   225000, 265000, 305000, 355000,
 ];
 
+/** Die Stufe zu einer Zahl Erfahrungspunkte, nach der Tabelle des Grundregelwerks. */
 export function levelFromExperience(xp) {
   const wert = Number(xp) || 0;
   let stufe = 1;

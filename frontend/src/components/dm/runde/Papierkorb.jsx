@@ -1,8 +1,3 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useCampaign } from '../../../lib/campaign.jsx';
-import { Rubric } from '../../ui.jsx';
-import { IconTrash } from '../../icons.jsx';
-
 /**
  * Der Papierkorb: weggeräumte Kampagnen samt Restfrist.
  *
@@ -14,6 +9,11 @@ import { IconTrash } from '../../icons.jsx';
  * und „endgültig …“, das erst ein Feld aufklappt, in das der Name
  * abgetippt werden muss. Danach ist alles fort, ohne Wiederkehr.
  */
+import { useCallback, useEffect, useState } from 'react';
+import { useCampaign } from '../../../lib/campaign.jsx';
+import { Rubric } from '../../ui.jsx';
+import { IconTrash } from '../../icons.jsx';
+
 export default function Papierkorb() {
   const { restore, purge, papierkorb } = useCampaign();
   const [korb, setKorb] = useState([]);

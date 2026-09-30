@@ -1,8 +1,7 @@
+/** Ein Knopf, der einen Wurf für alle sichtbar auf den Tisch legt. */
 import { blattWurf } from '../../../lib/wuerfeln.js';
 import { IconD20 } from '../../icons.jsx';
 
-
-/** Ein Knopf, der einen Wurf für alle sichtbar auf den Tisch legt. */
 export default function Wurfknopf({ label, modifier, name }) {
   return (
     <button

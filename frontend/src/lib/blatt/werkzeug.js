@@ -12,12 +12,15 @@
  * beschriftetes Feld, eine Tabelle.
  */
 const ZEICHEN = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+/** Text für HTML entschärfen – alles, was vom Blatt kommt, läuft hier hindurch. */
 export const esc = (wert) => String(wert ?? '').replace(/[&<>"']/g, (z) => ZEICHEN[z]);
 
 /** Zeilenumbrüche aus Textfeldern erhalten. */
 export const escAbsatz = (wert) => esc(wert).replace(/\n/g, '<br>');
 
+/** Die dreibuchstabigen Kürzel der Attribute, wie sie auf dem gedruckten Bogen stehen. */
 export const KURZ = { str: 'STÄ', dex: 'GES', con: 'KON', int: 'INT', wis: 'WEI', cha: 'CHA' };
+/** Die Münzsorten als [Schlüssel, Name], von der wertvollsten zur kleinsten. */
 export const MUENZEN = [
   ['pp', 'Platin'],
   ['gp', 'Gold'],
@@ -30,7 +33,6 @@ export const MUENZEN = [
  * Bilder müssen mit in die Datei – ein Verweis auf den Server nützt nichts,
  * wenn der Server gerade aus ist.
  */
-
 export async function alsDatenUrl(quelle) {
   if (!quelle) return null;
   if (String(quelle).startsWith('data:')) return quelle;
@@ -76,9 +78,14 @@ export async function zaubertexte(spells) {
 export const tafel = (titel, inhalt) =>
   inhalt ? `<section class="tafel"><h2>${esc(titel)}</h2>${inhalt}</section>` : '';
 
+/** Ein beschriftetes Feld: kleine Beschriftung, Wert darunter; ein leerer Wert wird zu „–“. */
 export const feld = (label, wert) =>
   `<div class="feld"><span class="label">${esc(label)}</span><span class="wert">${esc(wert || '–')}</span></div>`;
 
+/**
+ * Eine Tabelle aus Kopf und Reihen – oder nichts, wenn es keine Reihen gibt.
+ * Die Zellen der Reihen sind schon HTML (bereits entschärft).
+ */
 export const zeilen = (kopf, reihen) =>
   reihen.length === 0
     ? ''

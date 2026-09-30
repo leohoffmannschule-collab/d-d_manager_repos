@@ -11,6 +11,7 @@ import {
 } from '../../dnd5e.js';
 import { MUENZEN, esc, feld, zeilen } from '../werkzeug.js';
 
+/** Die Tafel „Habe“: Münzen, Gegenstände mit Gewicht, getragene Last gegen die Traglast. */
 export function inventar(data) {
   const getragen = getragenesGewicht(data.inventory);
   const { ueberladen, schieben } = traglastStufen(data.abilities.str);

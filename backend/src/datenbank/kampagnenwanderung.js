@@ -75,6 +75,10 @@ function ersteKampagneSichern() {
   transaktion(umziehen);
 }
 
+/**
+ * Der eigentliche Umzug, in einer Transaktion: eine erste Kampagne anlegen,
+ * alle Konten hineinsetzen und jede Zeile ohne Kampagne ihr zuschlagen.
+ */
 function umziehen() {
   const nutzer = db.prepare('SELECT id FROM users ORDER BY created_at').all();
   if (nutzer.length === 0) return;

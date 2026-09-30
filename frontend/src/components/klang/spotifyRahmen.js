@@ -21,6 +21,14 @@ const QUELLE = 'https://open.spotify.com/embed/iframe-api/v1';
 
 let versprechen = null;
 
+/**
+ * Spotifys Einbettungs-Schnittstelle laden – höchstens einmal je Seite.
+ *
+ * Gibt immer dasselbe Versprechen zurück: Wer als Zweiter fragt, wartet auf
+ * denselben Ladevorgang, statt das Skript ein zweites Mal einzubinden.
+ *
+ * @returns {Promise<object>} die IFrameAPI von Spotify
+ */
 export function spotifyRahmen() {
   if (versprechen) return versprechen;
 

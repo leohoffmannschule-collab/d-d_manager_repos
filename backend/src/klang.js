@@ -59,6 +59,7 @@ export function webAdresse(uri) {
   return art && id ? `https://open.spotify.com/${art}/${id}` : null;
 }
 
+/** Eine Zeile aus `ambience` so, wie sie die Oberfläche bekommt – samt Web-Adresse zum Öffnen bei Spotify. */
 export function rowToKlang(row) {
   return {
     id: row.id,
@@ -72,6 +73,7 @@ export function rowToKlang(row) {
   };
 }
 
+/** Eine Ambiente aus der Klangbibliothek, roh aus der Datenbank – oder undefined. */
 export const holen = (id) => db.prepare('SELECT * FROM ambience WHERE id = ?').get(id);
 
 /* --- Was gerade aufliegt ------------------------------------------------- */
@@ -93,8 +95,10 @@ const STILLE = {
 /** Eine Stelle im Stück, in Sekunden. Vier Stunden sind mehr als genug. */
 export const stelle = (wert) => Math.min(4 * 60 * 60, Math.max(0, Number(wert) || 0));
 
+/** Was in dieser Kampagne gerade aufliegt – oder Stille, wenn nichts. */
 export const aktuellerKlang = (campaignId) => ({ ...STILLE, ...getState('klang', campaignId) });
 
+/** Den Klang dieser Kampagne setzen und allen Fenstern der Kampagne mitteilen. */
 export function setzeKlang(campaignId, werte) {
   const klang = setState('klang', campaignId, { ...STILLE, ...werte });
   broadcast('klang', klang, { campaignId });

@@ -31,6 +31,7 @@ const KIND_LABELS = {
   stufe: 'Stufenaufstieg',
 };
 
+/** Wie eine Art von Eintrag heißt („wurf“ → „Wurf“) – für das Protokoll; Unbekanntes bleibt, wie es ist. */
 export const kindLabel = (kind) => KIND_LABELS[kind] ?? kind;
 
 /** Die gerade offene Sitzung dieser Kampagne – oder gar keine. */
@@ -50,6 +51,10 @@ function heutigerTitel() {
   })}`;
 }
 
+/**
+ * Eine Sitzung beginnen – oder die laufende zurückgeben, wenn schon eine offen
+ * ist. Ohne Titel heißt sie nach dem Tag („Sitzung vom 3. Mai 2026“).
+ */
 export function starteSitzung(title, campaignId) {
   const laufend = offeneSitzung(campaignId);
   if (laufend) return laufend;
@@ -65,6 +70,7 @@ export function starteSitzung(title, campaignId) {
   return sitzung;
 }
 
+/** Die offene Sitzung dieser Kampagne schließen; danach beginnt der nächste Eintrag eine neue. */
 export function beendeSitzung(campaignId) {
   const laufend = offeneSitzung(campaignId);
   if (!laufend) return null;
@@ -121,6 +127,7 @@ export function log({ kind, actor = '', target = '', text, meta = {}, secret = f
   return eintrag;
 }
 
+/** Eine Zeile aus `chronicle` so, wie sie die Oberfläche bekommt; `meta` wird aus dem JSON gelesen. */
 export function rowToEntry(row) {
   return {
     id: row.id,

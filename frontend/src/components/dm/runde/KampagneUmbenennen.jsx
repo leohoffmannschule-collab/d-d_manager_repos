@@ -1,8 +1,3 @@
-import { useState } from 'react';
-import { useCampaign } from '../../../lib/campaign.jsx';
-import { Rubric } from '../../ui.jsx';
-import { IconCheck, IconQuill } from '../../icons.jsx';
-
 /**
  * Die Kampagne umbenennen.
  *
@@ -11,6 +6,11 @@ import { IconCheck, IconQuill } from '../../icons.jsx';
  * Charaktere, Szenen und Beute zeigen auf die Kennung der Kampagne, nie
  * auf ihren Namen. Es gibt also nichts nachzuziehen.
  */
+import { useState } from 'react';
+import { useCampaign } from '../../../lib/campaign.jsx';
+import { Rubric } from '../../ui.jsx';
+import { IconCheck, IconQuill } from '../../icons.jsx';
+
 export default function KampagneUmbenennen() {
   const { active, rename } = useCampaign();
   const [entwurf, setEntwurf] = useState('');

@@ -10,6 +10,7 @@ import { eintraege, sitzungHolen } from './abfragen.js';
 
 const router = Router();
 
+/** Nur die Uhrzeit eines Eintrags – das Datum steht einmal oben im Protokoll. */
 const uhrzeit = (iso) =>
   new Date(iso).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
 

@@ -1,5 +1,3 @@
-import { px } from '../../../lib/stilwerte.js';
-
 /**
  * Das Rasternetz über der Karte.
  *
@@ -10,6 +8,8 @@ import { px } from '../../../lib/stilwerte.js';
  * erst gezeigt: Ein Raster, dessen Felder fünf Bildpunkte groß sind, ist
  * kein Raster mehr, sondern ein Grauschleier.
  */
+import { px } from '../../../lib/stilwerte.js';
+
 const RASTER_AB = 5;
 
 export default function Rasternetz({ scene, feld, massstab }) {

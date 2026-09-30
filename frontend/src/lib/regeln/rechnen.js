@@ -36,16 +36,19 @@ export function getragenesGewicht(inventory) {
   return (inventory ?? []).reduce((summe, g) => summe + (Number(g.weight) || 0) * (Number(g.qty) || 1), 0);
 }
 
+/** Der Modifikator eines Attributwerts: (Wert − 10) / 2, abgerundet. Unlesbares zählt als 0. */
 export function abilityModifier(score) {
   const value = Number(score);
   if (Number.isNaN(value)) return 0;
   return Math.floor((value - 10) / 2);
 }
 
+/** Ein Modifikator mit Vorzeichen, wie er auf dem Blatt steht: „+3“, „−1“, „+0“. */
 export function formatModifier(mod) {
   return mod >= 0 ? `+${mod}` : `${mod}`;
 }
 
+/** Der Übungsbonus einer Stufe: +2 auf Stufe 1–4, +3 auf 5–8 … bis +6 auf 17–20. */
 export function proficiencyBonus(level) {
   const lvl = Number(level) || 1;
   return Math.floor((lvl - 1) / 4) + 2;
@@ -79,6 +82,7 @@ export function spellSaveDC(abilityScore, level) {
   return 8 + proficiencyBonus(level) + abilityModifier(abilityScore);
 }
 
+/** Der Zauberangriffsbonus: Übungsbonus plus Modifikator des Zauberattributs. */
 export function spellAttackBonus(abilityScore, level) {
   return proficiencyBonus(level) + abilityModifier(abilityScore);
 }

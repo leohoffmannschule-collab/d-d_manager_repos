@@ -18,6 +18,11 @@ import { useDaten } from './grundlage.js';
 
 /* --- Charaktere ---------------------------------------------------------- */
 
+/**
+ * Die Charaktere der Kampagne, geteilt in `meine` (die eigenen) und
+ * `geteilte` (alle, die in der Runde stehen). Trefferpunkte und Namen laufen
+ * über den Live-Kanal ein, statt die Liste neu zu laden.
+ */
 export function useCharaktere() {
   const { user } = useAuth();
   const holen = useCallback(() => charactersApi.list(), []);

@@ -21,6 +21,7 @@ export function aktionen(data) {
   );
 }
 
+/** Die Tafel „Kampf“: RK, Initiative, Tempo, Trefferpunkte, Trefferwürfel und Todesrettungswürfe. */
 export function kampf(data) {
   const k = data.combat;
   const pool = k.hitDicePool ?? { size: 8, total: 1, used: 0 };
@@ -40,6 +41,7 @@ export function kampf(data) {
     </div>`;
 }
 
+/** Die Tafel „Zustand“ – nur, wenn etwas vorliegt: Zustände, Erschöpfung, Konzentration. */
 export function zustand(data) {
   const k = data.combat;
   const teile = [];
@@ -53,6 +55,7 @@ export function zustand(data) {
   return teile.length ? `<div class="raster">${teile.join('')}</div>` : '';
 }
 
+/** Die Tafel „Ressourcen“: begrenzte Fähigkeiten mit Ladungen und wann sie zurückkommen. */
 export function ressourcen(data) {
   const liste = (data.resources ?? []).filter((r) => r.name);
   const teile = [];

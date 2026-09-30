@@ -45,6 +45,7 @@ export function merkmale(data) {
   }).join('');
 }
 
+/** Die Tafel „Hintergrund“: Persönlichkeit, Ideale, Bindungen, Makel, Übungen und die Geschichte. */
 export function hintergrund(data) {
   const t = data.traits;
   const p = data.proficiencies;

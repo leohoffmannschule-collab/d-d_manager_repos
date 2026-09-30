@@ -1,14 +1,13 @@
-import { newId } from '../../../lib/id.js';
-import { AUFFRISCHUNG } from './felder.js';
-import { NumberField, Stepper, TextField } from '../../ui.jsx';
-import { IconPlus, IconTrash } from '../../icons.jsx';
-
-
 /**
  * Selbstverwaltete Zähler: Handauflegen, Kampfrausch, Inspiration des
  * Barden. `recharge` sagt, wann sie sich füllen – bei kurzer oder langer
  * Rast; das wendet lib/rasten.js an.
  */
+import { newId } from '../../../lib/id.js';
+import { AUFFRISCHUNG } from './felder.js';
+import { NumberField, Stepper, TextField } from '../../ui.jsx';
+import { IconPlus, IconTrash } from '../../icons.jsx';
+
 export default function Ressourcen({ data, update }) {
   const liste = data.resources ?? [];
 

@@ -25,6 +25,14 @@ import { db } from './verbindung.js';
 
 let tiefe = 0;
 
+/**
+ * `arbeit` ganz oder gar nicht ausführen – verschachtelbar über SAVEPOINTs.
+ *
+ * @template T
+ * @param {() => T} arbeit  muss synchron sein (better-sqlite3 und node:sqlite sind es)
+ * @returns {T} was `arbeit` zurückgibt
+ * @throws was `arbeit` wirft – nach dem Zurückrollen
+ */
 export function transaktion(arbeit) {
   // Der Name muss nur innerhalb der Verschachtelung eindeutig sein.
   const name = `block_${tiefe}`;

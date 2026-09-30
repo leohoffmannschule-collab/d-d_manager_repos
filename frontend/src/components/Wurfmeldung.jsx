@@ -1,7 +1,3 @@
-import { useState } from 'react';
-import { useLive } from '../lib/live.jsx';
-import { IconEyeOff } from './icons.jsx';
-
 /**
  * Kurze Anzeige des jüngsten Wurfs – damit ein Wurf vom Charakterblatt
  * nicht stumm im Würfelbeutel verschwindet, sondern am Tisch auffällt.
@@ -13,6 +9,10 @@ import { IconEyeOff } from './icons.jsx';
  * Die natürliche 20 und die natürliche 1 werden eigens gesucht und gefeiert
  * – das ist der Moment, für den am Tisch alle aufschauen.
  */
+import { useState } from 'react';
+import { useLive } from '../lib/live.jsx';
+import { IconEyeOff } from './icons.jsx';
+
 export default function Wurfmeldung() {
   const [wurf, setWurf] = useState(null);
 

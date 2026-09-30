@@ -93,4 +93,5 @@ export function rollDice(expression, mode = 'normal') {
   return { total, details };
 }
 
+/** Ein einzelner W20 – kryptographisch zufällig, wie jeder Wurf im Almanach. */
 export const rollD20 = () => randomInt(1, 21);

@@ -19,6 +19,7 @@ import db from '../src/db.js';
 
 const [alt, neu] = process.argv.slice(2);
 
+/** Alle Kampagnen, auch die im Papierkorb – für die Liste, aus der man wählt. */
 const alleKampagnen = () =>
   db.prepare('SELECT id, name, created_at, deleted_at FROM campaigns ORDER BY created_at').all();
 

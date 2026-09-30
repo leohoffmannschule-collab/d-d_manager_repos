@@ -1,16 +1,16 @@
-import { useCallback, useEffect, useState } from 'react';
-import { charactersApi } from '../../../lib/api.js';
-import { useLive } from '../../../lib/live.jsx';
-import { Rubric } from '../../ui.jsx';
-
-export default /**
+/**
  * Welches Blatt gehört wem – und wer darf es lesen.
  *
  * Gebraucht, wenn jemand neu dazukommt und ein vorbereitetes Blatt
  * übernimmt, oder wenn ein Blatt aus der Zeit vor den Konten noch niemandem
  * gehört.
  */
-function Charakterzuweisung({ users, onChanged }) {
+import { useCallback, useEffect, useState } from 'react';
+import { charactersApi } from '../../../lib/api.js';
+import { useLive } from '../../../lib/live.jsx';
+import { Rubric } from '../../ui.jsx';
+
+export default function Charakterzuweisung({ users, onChanged }) {
   const [charaktere, setCharaktere] = useState([]);
 
   const laden = useCallback(() => {

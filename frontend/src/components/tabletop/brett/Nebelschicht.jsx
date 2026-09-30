@@ -1,7 +1,3 @@
-import { useLayoutEffect, useMemo, useRef } from 'react';
-import { hatStelle, rasterBereich } from '../../../lib/rasterkarte.js';
-import { px } from '../../../lib/stilwerte.js';
-
 /**
  * Der Nebel als Bildpunkte: ein Punkt je Rasterfeld, hochskaliert vom
  * Browser. Das ist um Größenordnungen billiger, als tausend Rechtecke zu
@@ -17,6 +13,10 @@ import { px } from '../../../lib/stilwerte.js';
  * Die mittlere Stufe entsteht nur, wenn der Server eine Sicht mitgeschickt
  * hat; sonst bleibt es beim alten Zweiklang aus auf und zu.
  */
+import { useLayoutEffect, useMemo, useRef } from 'react';
+import { hatStelle, rasterBereich } from '../../../lib/rasterkarte.js';
+import { px } from '../../../lib/stilwerte.js';
+
 export default function Nebelschicht({ scene, fog, sicht, dm }) {
   const canvasRef = useRef(null);
   const { g, minX, minY, cols, rows } = useMemo(() => rasterBereich(scene), [scene]);

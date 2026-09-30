@@ -1,6 +1,3 @@
-import { useEffect, useState } from 'react';
-import { fehlertext } from '../lib/beschriftung.js';
-
 /**
  * Das Sicherheitsnetz für Knöpfe, die ihren Fehler nicht selbst anzeigen.
  *
@@ -20,6 +17,9 @@ import { fehlertext } from '../lib/beschriftung.js';
  * Programmierfehler und gehört in die Konsole, nicht in eine Meldung, mit
  * der am Tisch niemand etwas anfangen kann.
  */
+import { useEffect, useState } from 'react';
+import { fehlertext } from '../lib/beschriftung.js';
+
 const ANZEIGEDAUER_MS = 6000;
 
 export default function Stoerung() {

@@ -6,6 +6,7 @@
  * von oben nach unten, Unteilbares wird eine Stufe tiefer gewechselt.
  */
 
+/** Die Münzsorten als [Schlüssel, Name], von der wertvollsten zur kleinsten. */
 export const MUENZEN = [
   ['pp', 'Platin'],
   ['gp', 'Gold'],

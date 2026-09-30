@@ -8,6 +8,13 @@
  */
 import { IconBook, IconCrown, IconMap, IconQuill, IconScroll } from '../icons.jsx';
 
+/**
+ * Die Einträge der Hauptnavigation – für die Spielleitung einer mehr
+ * („Spielleitung“, der Schirm).
+ *
+ * @param {boolean} isDm
+ * @returns {{to: string, label: string, Icon: Function, end?: boolean}[]}
+ */
 export function navItems(isDm) {
   return [
     { to: '/', label: 'Charaktere', Icon: IconScroll, end: true },

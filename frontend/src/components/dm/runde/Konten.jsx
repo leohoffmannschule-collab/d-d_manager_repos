@@ -1,16 +1,16 @@
+/**
+ * Die Konten der Runde: Rolle, Farbe, Kennwort zurücksetzen, entfernen.
+ *
+ * Die Farbe ist mehr als Zierde – an ihr erkennt man am Tisch, wessen Wurf
+ * und wessen Zeigefinger gerade aufleuchtet.
+ */
 import { useState } from 'react';
 import { authApi } from '../../../lib/api.js';
 import { useAuth } from '../../../lib/auth.jsx';
 import { Rubric } from '../../ui.jsx';
 import { IconCrown, IconKey, IconTrash } from '../../icons.jsx';
 
-export default /**
- * Die Konten der Runde: Rolle, Farbe, Kennwort zurücksetzen, entfernen.
- *
- * Die Farbe ist mehr als Zierde – an ihr erkennt man am Tisch, wessen Wurf
- * und wessen Zeigefinger gerade aufleuchtet.
- */
-function Konten({ users, onChanged }) {
+export default function Konten({ users, onChanged }) {
   const { user } = useAuth();
   const [passwort, setPasswort] = useState({});
 

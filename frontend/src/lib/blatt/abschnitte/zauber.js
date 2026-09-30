@@ -7,6 +7,13 @@
 import { ABILITIES, SPELL_LEVELS, formatModifier, spellAttackBonus, spellSaveDC } from '../../dnd5e.js';
 import { esc, escAbsatz, feld, zeilen } from '../werkzeug.js';
 
+/**
+ * Der volle Text eines Zaubers aus dem Kompendium – Kopfzeile, Werte,
+ * Beschreibung, höhere Grade. Leer, wenn es keinen Eintrag gibt.
+ *
+ * @param {object} spell   der Zauber vom Blatt
+ * @param {object|null} detail  der Kompendiumseintrag
+ */
 export function zauberblock(spell, detail) {
   if (!detail) return '';
   const kopfzeile = [
@@ -44,6 +51,7 @@ export function zauberblock(spell, detail) {
     </div>`;
 }
 
+/** Die Tafel „Zauberwirken“: Attribut, SG, Angriffsbonus, Plätze je Grad und die Zauberliste nach Grad. */
 export function zauber(data) {
   const z = data.spellcasting;
   const attribut = data.abilities[z.ability];

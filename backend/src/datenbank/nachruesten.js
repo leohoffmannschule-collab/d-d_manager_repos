@@ -32,6 +32,10 @@ export function addColumnIfMissing(table, column, definition) {
   db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
 }
 
+/**
+ * Alle Spalten nachrüsten, die nach der ersten Fassung dazukamen. Läuft bei
+ * jedem Start und tut nichts, wo die Spalte schon steht.
+ */
 export function ruesteNach() {
   addColumnIfMissing('characters', 'owner_id', 'TEXT');
   addColumnIfMissing('characters', 'shared', 'INTEGER NOT NULL DEFAULT 1');

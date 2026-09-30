@@ -20,6 +20,11 @@ import { fileURLToPath } from 'node:url';
 
 const wurzel = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
+/**
+ * Die .env im Wurzelverzeichnis in process.env laden, falls es sie gibt.
+ * Gibt zurück, was geschah – geworfen wird nie: Ein Server, der wegen einer
+ * kaputten .env gar nicht startet, hilft niemandem.
+ */
 function laden() {
   const datei = path.join(wurzel, '.env');
   if (!fs.existsSync(datei)) return { datei, gelesen: false, grund: 'keine' };
@@ -35,4 +40,5 @@ function laden() {
   }
 }
 
+/** Was beim Laden der .env herauskam – für die Meldung beim Start (start/bericht.js). */
 export const umgebung = laden();

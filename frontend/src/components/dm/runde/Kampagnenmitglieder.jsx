@@ -1,11 +1,11 @@
+/** Wer aus der Runde ist in *dieser* Kampagne dabei? Andere Kampagnen sehen sie nicht. */
 import { useCallback, useEffect, useState } from 'react';
 import { campaignsApi } from '../../../lib/api.js';
 import { useCampaign } from '../../../lib/campaign.jsx';
 import { Rubric } from '../../ui.jsx';
 import { IconCrown, IconPlus, IconScroll, IconTrash } from '../../icons.jsx';
 
-export default /** Wer aus der Runde ist in *dieser* Kampagne dabei? Andere Kampagnen sehen sie nicht. */
-function Kampagnenmitglieder({ users }) {
+export default function Kampagnenmitglieder({ users }) {
   const { active } = useCampaign();
   const [mitglieder, setMitglieder] = useState([]);
   const [auswahl, setAuswahl] = useState('');

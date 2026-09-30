@@ -16,6 +16,7 @@ import {
 } from '../../dnd5e.js';
 import { KURZ, esc, escAbsatz, feld } from '../werkzeug.js';
 
+/** Die sechs Attributkästen: Wert groß, Modifikator darunter. */
 export function attribute(data) {
   const kaesten = ABILITIES.map((a) => {
     const wert = data.abilities[a.key];
@@ -28,6 +29,7 @@ export function attribute(data) {
   return `<div class="attribute">${kaesten}</div>`;
 }
 
+/** Die Liste der Rettungswürfe; geübte sind hervorgehoben und tragen den Übungsbonus `pb`. */
 export function rettungswuerfe(data, pb) {
   const reihen = ABILITIES.map((a) => {
     const geuebt = data.savingThrows[a.key];
@@ -57,6 +59,7 @@ export function sinne(data) {
   return `<div class="raster">${passive}${weiten}${weitere}</div>`;
 }
 
+/** Die Liste der Fertigkeiten mit ihrem Bonus: ● geübt, ●● Expertise (doppelter Übungsbonus). */
 export function fertigkeiten(data, pb) {
   const reihen = SKILLS.map((s) => {
     const stand = data.skills[s.key] ?? { proficient: false, expertise: false };

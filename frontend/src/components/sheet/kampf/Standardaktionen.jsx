@@ -1,13 +1,12 @@
-import { useState } from 'react';
-import { STANDARD_AKTIONEN, aktionArtLabel } from '../../../lib/dnd5e.js';
-import { IconBook } from '../../icons.jsx';
-
-
 /**
  * Die Handlungen aus dem Grundregelwerk – zum Nachschlagen, nicht zum
  * Ausfüllen. Zugeklappt, weil sie sich nie ändern; wer sie einmal kennt,
  * braucht sie nicht jeden Abend vor Augen.
  */
+import { useState } from 'react';
+import { STANDARD_AKTIONEN, aktionArtLabel } from '../../../lib/dnd5e.js';
+import { IconBook } from '../../icons.jsx';
+
 export default function Standardaktionen() {
   const [offen, setOffen] = useState(false);
 

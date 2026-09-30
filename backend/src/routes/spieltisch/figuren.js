@@ -30,6 +30,7 @@ function blattDieserKampagne(characterId, campaignId) {
   return !!db.prepare('SELECT 1 FROM characters WHERE id = ? AND campaign_id = ?').get(characterId, campaignId);
 }
 
+/** Gehört der Kämpfer, an den eine Figur gebunden werden soll, zu dieser Kampagne? Keiner ist immer erlaubt. */
 const kaempferDieserKampagne = (combatantId, campaignId) =>
   combatantId == null ||
   !!db.prepare('SELECT 1 FROM combatants WHERE id = ? AND campaign_id = ?').get(combatantId, campaignId);

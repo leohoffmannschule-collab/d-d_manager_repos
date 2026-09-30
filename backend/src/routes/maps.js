@@ -40,6 +40,7 @@ const router = Router();
 // Kampagne, steht im Kopf dieser Datei.
 router.use(requireDm);
 
+/** Eine Karte aus `maps` so, wie sie die Oberfläche bekommt – samt Zahl der Szenen, die aus ihr entstanden. */
 function rowToMap(row) {
   return {
     id: row.id,
@@ -60,6 +61,7 @@ function rowToMap(row) {
   };
 }
 
+/** Eine Karte, roh aus der Datenbank – oder undefined. */
 const holen = (id) => db.prepare('SELECT * FROM maps WHERE id = ?').get(id);
 
 /**

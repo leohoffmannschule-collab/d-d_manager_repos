@@ -1,13 +1,12 @@
+/**
+ * Der Vorrat an Trefferwürfeln: die Währung der kurzen Rast. Gezählt wird
+ * `used` gegen `total`; eine lange Rast gibt die Hälfte zurück.
+ */
 import { ausdruckWurf } from '../../../lib/wuerfeln.js';
 import { abilityModifier, formatModifier } from '../../../lib/dnd5e.js';
 import { NumberField } from '../../ui.jsx';
 import { IconHeart } from '../../icons.jsx';
 
-
-/**
- * Der Vorrat an Trefferwürfeln: die Währung der kurzen Rast. Gezählt wird
- * `used` gegen `total`; eine lange Rast gibt die Hälfte zurück.
- */
 export default function Trefferwuerfel({ data, update }) {
   const pool = data.combat.hitDicePool;
   const uebrig = Math.max(0, (pool.total || 0) - (pool.used || 0));

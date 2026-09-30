@@ -1,12 +1,4 @@
-import { useEffect, useState } from 'react';
-import { campaignsApi } from '../../../lib/api.js';
-import { useAuth } from '../../../lib/auth.jsx';
-import { useCampaign } from '../../../lib/campaign.jsx';
-import { Rubric } from '../../ui.jsx';
-import { IconCheck, IconScroll } from '../../icons.jsx';
-import { aufzaehlen, inhalt, menge, satzteil, stueck } from './umfangText.js';
-
-export default /**
+/**
  * Alles in eine andere Kampagne.
  *
  * Für den Umzug einer laufenden Runde in eine neue Geschichte: die Helden
@@ -18,7 +10,15 @@ export default /**
  * ausgeführt steht drüben alles zweimal. Deshalb der Zwischenschritt, der
  * vorher aufzählt, was gleich hinübergeht.
  */
-function Umzugsgut() {
+import { useEffect, useState } from 'react';
+import { campaignsApi } from '../../../lib/api.js';
+import { useAuth } from '../../../lib/auth.jsx';
+import { useCampaign } from '../../../lib/campaign.jsx';
+import { Rubric } from '../../ui.jsx';
+import { IconCheck, IconScroll } from '../../icons.jsx';
+import { aufzaehlen, inhalt, menge, satzteil, stueck } from './umfangText.js';
+
+export default function Umzugsgut() {
   const { isDm } = useAuth();
   const { campaigns, activeId, active } = useCampaign();
   const [umfang, setUmfang] = useState(null);

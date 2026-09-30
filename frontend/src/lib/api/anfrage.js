@@ -68,8 +68,11 @@ export async function request(path, options = {}) {
 const senden = (method) => (path, payload) =>
   request(path, { method, body: payload === undefined ? undefined : JSON.stringify(payload) });
 
+/** Schicken mit POST – anlegen und auslösen. */
 export const post = senden('POST');
+/** Schicken mit PUT – einen Eintrag als Ganzes ersetzen. */
 export const put = senden('PUT');
+/** Schicken mit PATCH – einzelne Felder ändern. */
 export const patch = senden('PATCH');
 // Löschen trägt in der Regel nichts bei sich – außer dort, wo der Server eine
 // ausdrückliche Bestätigung verlangt (etwa den abgetippten Kampagnennamen).

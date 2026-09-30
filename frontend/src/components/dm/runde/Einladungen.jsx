@@ -1,16 +1,16 @@
+/**
+ * Einladungscodes: erzeugen, kopieren, zurückziehen.
+ *
+ * Jeder Code gilt für genau ein Konto und verfällt mit dem Einlösen. Das
+ * ist die einzige Tür in den Almanach hinein – ohne Code kein Konto.
+ */
 import { useState } from 'react';
 import { authApi } from '../../../lib/api.js';
 import { useEinladungen } from '../../../lib/daten.js';
 import { Rubric } from '../../ui.jsx';
 import { IconCheck, IconLink, IconPlus, IconTrash } from '../../icons.jsx';
 
-export default /**
- * Einladungscodes: erzeugen, kopieren, zurückziehen.
- *
- * Jeder Code gilt für genau ein Konto und verfällt mit dem Einlösen. Das
- * ist die einzige Tür in den Almanach hinein – ohne Code kein Konto.
- */
-function Einladungen() {
+export default function Einladungen() {
   const { einladungen, offene, laden } = useEinladungen();
   const [notiz, setNotiz] = useState('');
   const [kopiert, setKopiert] = useState(null);
