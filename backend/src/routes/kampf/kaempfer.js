@@ -8,24 +8,27 @@
  */
 import { Router } from 'express';
 import { randomUUID } from 'node:crypto';
-import { db, setState } from '../../db.js';
+import { db, setState, transaktion } from '../../db.js';
 import { isDm, requireDm } from '../../auth.js';
 import * as chronik from '../../chronicle.js';
 import { TYPEN, alleKaempfer, holen, meta } from '../../kampf/umwandlung.js';
 import { antwort } from '../../kampf/sicht.js';
 import { syncCharakter } from '../../kampf/blatt.js';
+import { verbergeGemeinsam } from '../../kampf/verbergen.js';
+import { saubererBonus } from '../../kampf/initiative.js';
+import { sendeSzene } from '../../spieltisch/melden.js';
 import { hatText, texte, toNumber } from '../../werte.js';
 
 // `GET /api/encounter` steht in ../encounter.js, vor diesem Router – hier
 // stand früher ein zweiter, der nie erreicht wurde.
 const router = Router();
 
-// POST /api/encounter/combatants  { name, type?, initiative?, hp?, maxHp?, ac?,
-// conditions?, notes?, characterId?, hidden? } – einen Kämpfer von Hand in den
+// POST /api/encounter/combatants  { name, type?, initiative?, initiativeBonus?,
+// hp?, maxHp?, ac?, conditions?, notes?, characterId?, hidden? } – einen Kämpfer von Hand in den
 // Kampf setzen. Meist kommen Kämpfer über „Runde holen“, das Bestiarium oder
 // eine vorbereitete Begegnung; dieser Weg ist für den Rest.
 router.post('/combatants', requireDm, (req, res) => {
-  const { name, type, initiative, hp, maxHp, ac, conditions, notes, characterId, hidden } = req.body ?? {};
+  const { name, type, initiative, initiativeBonus, hp, maxHp, ac, conditions, notes, characterId, hidden } = req.body ?? {};
   if (!hatText(name)) {
     return res.status(400).json({ code: 'name_fehlt', error: 'Name ist erforderlich.' });
   }
@@ -40,13 +43,15 @@ router.post('/combatants', requireDm, (req, res) => {
   }
   const hpValue = toNumber(hp, 0);
   db.prepare(
-    `INSERT INTO combatants (id, name, type, initiative, hp, max_hp, ac, conditions, notes, character_id, media_id, hidden, campaign_id, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT INTO combatants (id, name, type, initiative, initiative_bonus, hp, max_hp, ac, conditions, notes, character_id,
+                             media_id, hidden, campaign_id, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     randomUUID(),
     name.trim().slice(0, 100),
     TYPEN.has(type) ? type : 'monster',
     toNumber(initiative, 0),
+    saubererBonus(initiativeBonus),
     hpValue,
     toNumber(maxHp, hpValue),
     toNumber(ac, 10),
@@ -73,6 +78,7 @@ router.put('/combatants/:id', requireDm, (req, res) => {
     name: hatText(body.name) ? body.name.trim().slice(0, 100) : row.name,
     type: TYPEN.has(body.type) ? body.type : row.type,
     initiative: 'initiative' in body ? toNumber(body.initiative, row.initiative) : row.initiative,
+    initiative_bonus: 'initiativeBonus' in body ? saubererBonus(body.initiativeBonus, row.initiative_bonus) : row.initiative_bonus,
     hp: 'hp' in body ? toNumber(body.hp, row.hp) : row.hp,
     max_hp: 'maxHp' in body ? toNumber(body.maxHp, row.max_hp) : row.max_hp,
     ac: 'ac' in body ? toNumber(body.ac, row.ac) : row.ac,
@@ -81,21 +87,28 @@ router.put('/combatants/:id', requireDm, (req, res) => {
     hidden: 'hidden' in body ? (body.hidden ? 1 : 0) : row.hidden,
   };
 
-  db.prepare(
-    `UPDATE combatants SET name = ?, type = ?, initiative = ?, hp = ?, max_hp = ?, ac = ?,
-            conditions = ?, notes = ?, hidden = ? WHERE id = ?`
-  ).run(
-    felder.name,
-    felder.type,
-    felder.initiative,
-    felder.hp,
-    felder.max_hp,
-    felder.ac,
-    felder.conditions,
-    felder.notes,
-    felder.hidden,
-    row.id
-  );
+  // Wird der Kämpfer verborgen oder aufgedeckt, gehen seine Figuren auf dem
+  // Tisch mit (kampf/verbergen.js) – im selben Block wie die Zeile selbst.
+  const gespiegelt = transaktion(() => {
+    db.prepare(
+      `UPDATE combatants SET name = ?, type = ?, initiative = ?, initiative_bonus = ?, hp = ?, max_hp = ?, ac = ?,
+              conditions = ?, notes = ?, hidden = ? WHERE id = ?`
+    ).run(
+      felder.name,
+      felder.type,
+      felder.initiative,
+      felder.initiative_bonus,
+      felder.hp,
+      felder.max_hp,
+      felder.ac,
+      felder.conditions,
+      felder.notes,
+      felder.hidden,
+      row.id
+    );
+    return felder.hidden !== row.hidden ? verbergeGemeinsam(row.id, felder.hidden, req.campaignId) : null;
+  });
+  if (gespiegelt?.figuren > 0) sendeSzene(req.campaignId);
 
   if (felder.hp !== row.hp || felder.max_hp !== row.max_hp) syncCharakter(holen(row.id, req.campaignId), req.campaignId);
 

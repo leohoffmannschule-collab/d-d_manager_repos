@@ -39,6 +39,7 @@ import uebernehmen from './vertrag/17-uebernehmen.mjs';
 import review from './vertrag/18-review.mjs';
 import fehlerschluessel from './vertrag/19-fehlerschluessel.mjs';
 import werkzeuge from './vertrag/20-werkzeuge.mjs';
+import luecken from './vertrag/21-luecken.mjs';
 
 const KAPITEL = [
   konten,
@@ -61,6 +62,7 @@ const KAPITEL = [
   review,
   fehlerschluessel,
   werkzeuge,
+  luecken,
 ];
 
 try {

@@ -27,7 +27,9 @@ import {
   weiteMitEinheit,
   weiteNachFuss,
   withDefaults,
+  zauberwerte,
 } from '../frontend/src/lib/dnd5e.js';
+import { leseBlattdatei } from '../frontend/src/lib/blattEinfuhr.js';
 import { HELDEN } from '../backend/src/vorlagen/helden.js';
 import { blattAus, ATTRIBUTE, FERTIGKEITEN } from '../backend/src/vorlagen/bauen.js';
 
@@ -241,6 +243,71 @@ gleich(withDefaults({ playerName: 'Leo' }).units, 'metrisch', 'Ein bloßer Name 
   }
 }
 
+
+/* --- Zauberwirken: gerechnet oder von Hand ----------------------------- */
+{
+  // Stufe 5 (Übung +3), Intelligenz 18 (+4): SG 15, Angriff +7.
+  const magier = withDefaults({ level: 5, abilities: { int: 18 }, spellcasting: { ability: 'int' } });
+  const gerechnet = zauberwerte(magier);
+  gleich([gerechnet.sg, gerechnet.bonus], [15, 7], 'Zauber-SG und Angriff werden gerechnet');
+  gleich([gerechnet.sgVonHand, gerechnet.bonusVonHand], [null, null], 'Ohne eigenen Wert steht nichts von Hand');
+
+  // Ein Stab des Zauberers: +2 auf beides, von Hand eingetragen.
+  const mitStab = withDefaults({
+    level: 5,
+    abilities: { int: 18 },
+    spellcasting: { ability: 'int', manualSaveDC: 17, manualAttackBonus: 9 },
+  });
+  const vonHand = zauberwerte(mitStab);
+  gleich([vonHand.sg, vonHand.bonus], [17, 9], 'Ein eigener Wert gilt vor der Rechnung');
+  gleich([vonHand.berechneterSg, vonHand.berechneterBonus], [15, 7], 'Die Rechnung bleibt als Vorschlag daneben');
+
+  // Ein geleertes Feld heißt „rechnen“, auch wenn es als Text ankommt.
+  const geleert = withDefaults({ level: 5, abilities: { int: 18 }, spellcasting: { ability: 'int', manualSaveDC: '' } });
+  gleich(zauberwerte(geleert).sg, 15, 'Ein leeres Feld rechnet wieder');
+  // Eine 0 ist ein Wert, kein „nichts“ – wer sie einträgt, meint sie.
+  const null_ = withDefaults({ level: 5, abilities: { int: 18 }, spellcasting: { ability: 'int', manualAttackBonus: 0 } });
+  gleich(zauberwerte(null_).bonus, 0, 'Ein Bonus von 0 von Hand bleibt 0');
+}
+
+/* --- Mitgenommene Blätter wieder einlesen ------------------------------- */
+{
+  // So, wie blattAusfuhr.js den Datensatz ans Ende der Datei schreibt –
+  // samt maskiertem „<“, damit ein Text im Blatt das Skript nicht beendet.
+  const datensatz = {
+    name: 'Elara Nachtwind',
+    system: 'dnd5e',
+    data: { level: 3, backstory: 'Kam über die </script>-Brücke.' },
+    stand: '2026-09-30T12:00:00.000Z',
+  };
+  const html = `<!doctype html><html><body><div class="blatt">…</div>
+<script type="application/json" id="almanach-daten">${JSON.stringify(datensatz, null, 2).replace(/</g, '\\u003c')}</script>
+<script>/* drucken */</script></body></html>`;
+  const gelesen = leseBlattdatei(html);
+  gleich(gelesen.name, 'Elara Nachtwind', 'Einlesen: der Name kommt an');
+  gleich(gelesen.system, 'dnd5e', 'Einlesen: das Regelwerk kommt an');
+  gleich(gelesen.data, datensatz.data, 'Einlesen: der Datensatz kommt unverändert an, auch mit „</script>“ im Text');
+
+  // Der nackte Datensatz geht auch – für alle, die ihn schon herauskopiert haben.
+  gleich(leseBlattdatei(JSON.stringify(datensatz)).name, 'Elara Nachtwind', 'Einlesen: nackter JSON-Text geht auch');
+
+  const wirft = (text) => {
+    try {
+      leseBlattdatei(text);
+      return false;
+    } catch (fehler_) {
+      return typeof fehler_.message === 'string' && fehler_.message.length > 0;
+    }
+  };
+  pruefe(wirft('<html><body>Ein Einkaufszettel</body></html>'), 'Einlesen: eine fremde Datei wird abgelehnt');
+  pruefe(wirft(JSON.stringify({ ...datensatz, system: 'pathfinder' })), 'Einlesen: ein unbekanntes Regelwerk wird abgelehnt');
+  pruefe(wirft(JSON.stringify({ ...datensatz, name: '  ' })), 'Einlesen: ein Blatt ohne Namen wird abgelehnt');
+  pruefe(wirft(JSON.stringify({ ...datensatz, data: [] })), 'Einlesen: ein Datensatz, der kein Objekt ist, wird abgelehnt');
+  pruefe(
+    wirft('<script type="application/json" id="almanach-daten">{ kaputt</script>'),
+    'Einlesen: ein beschädigter Datensatz wird abgelehnt'
+  );
+}
 
 console.log('');
 if (fehler.length === 0) {

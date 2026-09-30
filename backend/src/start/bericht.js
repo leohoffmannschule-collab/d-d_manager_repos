@@ -6,12 +6,12 @@
  * zu reden: welche Datenbank, welcher Ordner, unter welchen Adressen die
  * Runde ihn erreicht – und was fehlt, bevor es mitten im Spielabend auffällt.
  */
-import os from 'node:os';
 import path from 'node:path';
 import fs from 'node:fs';
 import { db, dataDir, driver, mediaDir } from '../db.js';
 import { umgebung } from '../umgebung.js';
 import { countUsers } from '../auth.js';
+import { adressenImHeimnetz } from './adressen.js';
 
 /**
  * Karten und Bildnisse liegen als Dateien neben der Datenbank. Beim Umzug auf
@@ -25,12 +25,44 @@ function fehlendeBilder() {
   return { gesamt: alle.length, fehlen: fehlen.length };
 }
 
-/** Die IPv4-Adressen dieses Geräts im Heimnetz – für iPad und Telefon am Tisch. */
-function localAddresses() {
-  return Object.values(os.networkInterfaces())
-    .flat()
-    .filter((iface) => iface && iface.family === 'IPv4' && !iface.internal)
-    .map((iface) => iface.address);
+/**
+ * Was zu HTTPS im Heimnetz zu sagen ist (https/ablage.js).
+ *
+ * Ohne Zertifikat ein Satz, wie man es einrichtet – das Kennwort geht im
+ * WLAN sonst lesbar über die Luft. Mit Zertifikat die Adressen, der
+ * Fingerabdruck des Stammzertifikats (zum Vergleichen beim Installieren)
+ * und, falls nötig, eine Mahnung: bald abgelaufen, oder eine Adresse des
+ * Geräts steht nicht darin (der Router hat eine neue vergeben).
+ */
+function berichteHttps(https, PORT) {
+  const adressen = adressenImHeimnetz();
+  if (!https) {
+    console.log('');
+    console.log('  Im Heimnetz geht alles unverschlüsselt über http. Für HTTPS einmal:');
+    console.log('  npm run zertifikat   (dann neu starten; siehe docs/EINRICHTUNG.md)');
+    return;
+  }
+  if (https.fehler) {
+    console.log('');
+    console.log(`  HTTPS bleibt aus: ${https.fehler}`);
+    return;
+  }
+  console.log(`  Verschlüsselt  : https://localhost:${https.port}`);
+  for (const address of https.adressen.filter((a) => a !== '127.0.0.1')) {
+    console.log(`  Verschlüsselt  : https://${address}:${https.port}`);
+  }
+  if (https.fingerabdruck) {
+    console.log(`  Stammzertifikat: http://<Adresse>:${PORT}/almanach-stamm.crt`);
+    console.log(`  Fingerabdruck  : ${https.fingerabdruck}`);
+  }
+  const fehlen = adressen.filter((a) => !https.adressen.includes(a));
+  const tage = Math.floor((https.bis.getTime() - Date.now()) / (24 * 60 * 60 * 1000));
+  if (fehlen.length > 0 || tage < 30) {
+    console.log('');
+    if (fehlen.length > 0) console.log(`  Das Zertifikat kennt ${fehlen.join(', ')} noch nicht.`);
+    if (tage < 30) console.log(`  Das Zertifikat läuft ${tage < 0 ? 'nicht mehr' : `noch ${tage} Tage`}.`);
+    console.log('  Erneuern: npm run zertifikat – danach neu starten. An den Geräten ist nichts zu tun.');
+  }
 }
 
 /**
@@ -41,8 +73,9 @@ function localAddresses() {
  * @param {boolean} lage.hasFrontend  liefert dieser Server die Oberfläche mit?
  * @param {object} lage.domaene       die feste Adresse aus `DOMAENE` (domaene.js)
  * @param {number} lage.geraeumt      wie viele Kampagnen die Papierkorbfrist gerade überschritten haben
+ * @param {object|null} lage.https    was starteHttps() (https/ablage.js) ergab
  */
-export function berichteStart({ PORT, hasFrontend, domaene, geraeumt }) {
+export function berichteStart({ PORT, hasFrontend, domaene, geraeumt, https }) {
   console.log('');
   console.log('  Abenteuer-Almanach läuft');
   console.log(`  Datenbank      : ${driver}`);
@@ -55,9 +88,10 @@ export function berichteStart({ PORT, hasFrontend, domaene, geraeumt }) {
     console.log(`  Für die Runde  : ${domaene.adresse}   (solange der Weg nach außen offen ist)`);
   }
   console.log(`  Auf diesem PC  : http://localhost:${PORT}`);
-  for (const address of localAddresses()) {
+  for (const address of adressenImHeimnetz()) {
     console.log(`  Im Netzwerk    : http://${address}:${PORT}   (für iPad/iPhone)`);
   }
+  berichteHttps(https, PORT);
   if (domaene.gesetzt && !domaene.adresse) {
     console.log('');
     console.log(`  DOMAENE=${domaene.roh} ergibt keinen Domainnamen – bitte in .env nachsehen.`);

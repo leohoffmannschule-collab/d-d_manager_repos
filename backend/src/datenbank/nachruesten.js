@@ -81,4 +81,8 @@ export function ruesteNach() {
   addColumnIfMissing('scenes', 'scale', 'REAL NOT NULL DEFAULT 5');
   addColumnIfMissing('maps', 'unit', "TEXT NOT NULL DEFAULT 'fuss'");
   addColumnIfMissing('maps', 'scale', 'REAL NOT NULL DEFAULT 5');
+
+  // Der Initiativebonus eines Kämpfers (Geschicklichkeit aus dem Statblock).
+  // Vorher würfelten Gegner einen nackten W20; siehe kampf/initiative.js.
+  addColumnIfMissing('combatants', 'initiative_bonus', 'INTEGER NOT NULL DEFAULT 0');
 }

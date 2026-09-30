@@ -86,3 +86,37 @@ export function spellSaveDC(abilityScore, level) {
 export function spellAttackBonus(abilityScore, level) {
   return proficiencyBonus(level) + abilityModifier(abilityScore);
 }
+
+/** Ein von Hand eingetragener Wert – oder null, wenn gerechnet werden soll. */
+const vonHand = (wert) => (wert === null || wert === undefined || wert === '' || !Number.isFinite(Number(wert)) ? null : Number(wert));
+
+/**
+ * Zauber-SG und Angriffsbonus eines Blattes, wie sie gelten.
+ *
+ * Gerechnet wird nach den Regeln aus Stufe und Zauberattribut. Manches
+ * verschiebt das aber – ein Stab des Zauberers (+2 auf Angriff und SG), ein
+ * Hexenmeister-Pakt, eine Hausregel –, und dafür gibt es die Felder „von
+ * Hand“ (`manualSaveDC`, `manualAttackBonus`). Ist eines gesetzt, gilt es;
+ * sonst die Rechnung. Zurück kommen beide Fassungen, damit die Oberfläche
+ * die gerechnete als Vorschlag zeigen kann.
+ *
+ * Reiter und Blattausfuhr rufen dieselbe Funktion – so kann ein
+ * mitgenommenes Blatt nicht mit einer anderen Zahl dastehen als das im
+ * Almanach.
+ */
+export function zauberwerte(data) {
+  const z = data.spellcasting ?? {};
+  const attribut = data.abilities?.[z.ability];
+  const berechneterSg = spellSaveDC(attribut, data.level);
+  const berechneterBonus = spellAttackBonus(attribut, data.level);
+  const sgVonHand = vonHand(z.manualSaveDC);
+  const bonusVonHand = vonHand(z.manualAttackBonus);
+  return {
+    sg: sgVonHand ?? berechneterSg,
+    bonus: bonusVonHand ?? berechneterBonus,
+    berechneterSg,
+    berechneterBonus,
+    sgVonHand,
+    bonusVonHand,
+  };
+}

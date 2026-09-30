@@ -33,7 +33,8 @@ RUN mkdir -p /app/data && chown -R node:node /app
 USER node
 
 VOLUME ["/app/data"]
-EXPOSE 3001
+# 3443 nur, wenn im Datenordner ein Zertifikat liegt (npm run zertifikat).
+EXPOSE 3001 3443
 
 # Ein abgestürzter Server wird von Docker neu gestartet – ein hängender nicht.
 # Deshalb fragt der Container sich selbst, ob er noch antwortet. Node bringt

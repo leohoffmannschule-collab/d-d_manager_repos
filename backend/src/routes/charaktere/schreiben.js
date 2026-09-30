@@ -19,11 +19,22 @@ import { darfBearbeiten, holen, meldeAenderung, rowToCharacter, sinneAus } from 
 
 const router = Router();
 
-// POST /api/characters – create
+/** Die Regelwerke, die ein Blatt haben kann: D&D 5e und das freie Blatt. */
+const SYSTEME = new Set(['dnd5e', 'freeform']);
+
+// POST /api/characters  { name, system?, data?, npc? } – ein neues Blatt
+// anlegen: aus „Neuer Charakter“ oder aus einer mitgenommenen Datei.
 router.post('/', (req, res) => {
   const { name, system = 'dnd5e', data = {} } = req.body ?? {};
   if (!name || typeof name !== 'string' || !name.trim()) {
     return res.status(400).json({ code: 'name_fehlt', error: 'Name ist erforderlich' });
+  }
+  // Seit sich mitgenommene Blätter wieder einlesen lassen, kommt der Rumpf
+  // nicht mehr nur aus „Neuer Charakter“, sondern aus einer Datei, die
+  // jemand in der Hand hatte. Ein unbekanntes Regelwerk oder ein Datensatz,
+  // der kein Objekt ist, ergäbe ein Blatt, das keine Seite öffnen kann.
+  if (!SYSTEME.has(system) || data === null || typeof data !== 'object' || Array.isArray(data)) {
+    return res.status(400).json({ code: 'blatt_ungueltig', error: 'Dieses Blatt kann der Almanach nicht lesen.' });
   }
   // Ein NSC-Blatt ist nie geteilt – sonst wäre es keins.
   const npc = isDm(req.user) && req.body?.npc === true;

@@ -8,11 +8,13 @@
  */
 import { Router } from 'express';
 import { randomUUID } from 'node:crypto';
-import { db, getState, setState } from '../../db.js';
+import { db, getState, setState, transaktion } from '../../db.js';
 import { isDm, requireDm } from '../../auth.js';
 import { broadcast } from '../../events.js';
 import { holeFigur, holeSzene, rowToToken } from '../../spieltisch/umwandlung.js';
 import { darfBewegen, meldeFigur, sendeSzene } from '../../spieltisch/melden.js';
+import { sendeKampf } from '../../kampf/sicht.js';
+import { verbergeGemeinsam } from '../../kampf/verbergen.js';
 import { clamp, istFarbe, toNumber } from '../../werte.js';
 
 const router = Router();
@@ -72,37 +74,61 @@ router.post('/:id/figuren', requireDm, (req, res) => {
   res.status(201).json(rowToToken(row));
 });
 
-// PATCH /api/scenes/figuren/:id – Bewegen darf auch, wem die Figur gehört
+// PATCH /api/scenes/figuren/:id  { x?, y?, name?, size?, color?, mediaId?,
+// hidden?, lightBright?, lightDim?, characterId? } – Bewegen darf auch, wem
+// die Figur gehört; alles andere nur die Spielleitung.
 router.patch('/figuren/:id', (req, res) => {
   const row = holeFigur(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'figur_nicht_gefunden', error: 'Figur nicht gefunden.' });
   if (!darfBewegen(req.user, row)) return res.status(403).json({ code: 'figur_fremd', error: 'Diese Figur gehört jemand anderem.' });
 
   const body = req.body ?? {};
-  // Die Runde darf ihre Figur schieben, sonst nichts: Name, Größe, Licht und
-  // Unsichtbarkeit bleiben Sache der Spielleitung, auch wenn der Rumpf sie
-  // mitschickt. Stilles Übergehen statt 403, weil die Oberfläche beim
-  // Ziehen ohnehin nur x und y schickt.
+  // Die Runde darf ihre Figur schieben, sonst nichts: Name, Größe, Licht,
+  // Unsichtbarkeit und das Blatt dahinter bleiben Sache der Spielleitung,
+  // auch wenn der Rumpf sie mitschickt. Stilles Übergehen statt 403, weil
+  // die Oberfläche beim Ziehen ohnehin nur x und y schickt.
   const nurBewegen = !isDm(req.user);
 
-  db.prepare(
-    `UPDATE tokens SET x = ?, y = ?, name = ?, size = ?, color = ?, media_id = ?, hidden = ?,
-            light_bright = ?, light_dim = ? WHERE id = ?`
-  ).run(
-    'x' in body ? toNumber(body.x, row.x) : row.x,
-    'y' in body ? toNumber(body.y, row.y) : row.y,
-    !nurBewegen && typeof body.name === 'string' ? body.name.slice(0, 60) : row.name,
-    !nurBewegen && 'size' in body ? clamp(toNumber(body.size, row.size), 1, 6) : row.size,
-    !nurBewegen && istFarbe(body.color) ? body.color : row.color,
-    !nurBewegen && 'mediaId' in body ? (body.mediaId ?? null) : row.media_id,
-    !nurBewegen && 'hidden' in body ? (body.hidden ? 1 : 0) : row.hidden,
-    !nurBewegen && 'lightBright' in body ? clamp(toNumber(body.lightBright, row.light_bright), 0, 200) : row.light_bright,
-    !nurBewegen && 'lightDim' in body ? clamp(toNumber(body.lightDim, row.light_dim), 0, 200) : row.light_dim,
-    row.id
-  );
+  // Das Blatt hinter der Figur entscheidet, wer sie ziehen darf und wessen
+  // Sinne die Sicht bestimmen. Deshalb nur ein Blatt dieser Kampagne (oder
+  // keines) – geprüft, bevor irgendetwas geschrieben wird.
+  const mitBlatt = !nurBewegen && 'characterId' in body;
+  if (mitBlatt && !blattDieserKampagne(body.characterId, req.campaignId)) {
+    return res.status(400).json({ code: 'verweis_unbekannt', error: 'Blatt oder Kämpfer gibt es in dieser Kampagne nicht.' });
+  }
+  const verborgen = !nurBewegen && 'hidden' in body ? (body.hidden ? 1 : 0) : row.hidden;
+  // Hängt die Figur an einem Kämpfer, verbirgt oder zeigt sich die Zeile in
+  // der Kampfliste mit ihr (kampf/verbergen.js) – im selben Block, damit
+  // nie nur eine der beiden Seiten umgelegt ist.
+  const mitKaempfer = verborgen !== row.hidden && row.combatant_id;
+
+  const gespiegelt = transaktion(() => {
+    db.prepare(
+      `UPDATE tokens SET x = ?, y = ?, name = ?, size = ?, color = ?, media_id = ?, hidden = ?,
+              light_bright = ?, light_dim = ?, character_id = ? WHERE id = ?`
+    ).run(
+      'x' in body ? toNumber(body.x, row.x) : row.x,
+      'y' in body ? toNumber(body.y, row.y) : row.y,
+      !nurBewegen && typeof body.name === 'string' ? body.name.slice(0, 60) : row.name,
+      !nurBewegen && 'size' in body ? clamp(toNumber(body.size, row.size), 1, 6) : row.size,
+      !nurBewegen && istFarbe(body.color) ? body.color : row.color,
+      !nurBewegen && 'mediaId' in body ? (body.mediaId ?? null) : row.media_id,
+      verborgen,
+      !nurBewegen && 'lightBright' in body ? clamp(toNumber(body.lightBright, row.light_bright), 0, 200) : row.light_bright,
+      !nurBewegen && 'lightDim' in body ? clamp(toNumber(body.lightDim, row.light_dim), 0, 200) : row.light_dim,
+      mitBlatt ? (body.characterId ?? null) : row.character_id,
+      row.id
+    );
+    return mitKaempfer ? verbergeGemeinsam(row.combatant_id, verborgen, req.campaignId) : null;
+  });
 
   const next = holeFigur(row.id, req.campaignId);
-  meldeFigur(next, req);
+  // Standen weitere Figuren desselben Kämpfers auf dem Tisch, hat sich mehr
+  // als diese eine geändert – dann bekommt auch die Spielleitung die ganze
+  // Szene statt der einzelnen Figur.
+  if (gespiegelt?.figuren > 0) sendeSzene(req.campaignId);
+  else meldeFigur(next, req);
+  if (gespiegelt) sendeKampf(req.campaignId);
   res.json(rowToToken(next));
 });
 
@@ -140,26 +166,32 @@ router.post('/:id/figuren/aus-kampf', requireDm, (req, res) => {
      VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?)`
   );
 
-  for (const k of kaempfer) {
-    if (vorhanden.has(k.id)) continue;
-    // In einer Reihe am oberen Rand ablegen; die Spielleitung schiebt sie
-    // dann an ihren Platz.
-    einfuegen.run(
-      randomUUID(),
-      szene.id,
-      k.name,
-      (platz % 12) * raster,
-      Math.floor(platz / 12) * raster,
-      k.type === 'pc' ? '#2d4f7c' : k.type === 'npc' ? '#2f6b4f' : '#9a2b22',
-      // Ein Kämpfer mit Figurenbild steht damit auch auf der Karte.
-      k.media_id ?? null,
-      k.character_id,
-      k.id,
-      k.hidden,
-      now
-    );
-    platz += 1;
-  }
+  // Ein Block für alle: Bricht es beim dritten Goblin ab, liegt keiner auf
+  // dem Tisch statt zwei von fünf.
+  transaktion(() => {
+    for (const k of kaempfer) {
+      if (vorhanden.has(k.id)) continue;
+      // In einer Reihe am oberen Rand ablegen; die Spielleitung schiebt sie
+      // dann an ihren Platz.
+      einfuegen.run(
+        randomUUID(),
+        szene.id,
+        k.name,
+        (platz % 12) * raster,
+        Math.floor(platz / 12) * raster,
+        k.type === 'pc' ? '#2d4f7c' : k.type === 'npc' ? '#2f6b4f' : '#9a2b22',
+        // Ein Kämpfer mit Figurenbild steht damit auch auf der Karte.
+        k.media_id ?? null,
+        k.character_id,
+        k.id,
+        // Verborgen, wenn der Kämpfer es ist – die beiden gehören zusammen
+        // (kampf/verbergen.js).
+        k.hidden,
+        now
+      );
+      platz += 1;
+    }
+  });
 
   sendeSzene(req.campaignId);
   res.status(201).json({ created: platz });

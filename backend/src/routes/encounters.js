@@ -14,7 +14,7 @@ import { Router } from 'express';
 import { randomUUID } from 'node:crypto';
 import { db, transaktion } from '../db.js';
 import { requireDm } from '../auth.js';
-import { rollD20 } from '../dice.js';
+import { bonusAusBestiarium, initiativeWurf, saubererBonus } from '../kampf/initiative.js';
 import * as chronik from '../chronicle.js';
 import { sendeKampf } from '../kampf/sicht.js';
 import { TYPEN } from '../kampf/umwandlung.js';
@@ -54,8 +54,14 @@ function saubereEintraege(liste) {
       count: Math.min(Math.max(parseInt(e.count, 10) || 1, 1), 20),
       hidden: !!e.hidden,
       mediaId: typeof e.mediaId === 'string' ? e.mediaId : null,
+      // Fehlt der Bonus, wird er beim Stellen aus dem Bestiarium geholt
+      // (ältere Begegnungen kennen ihn noch nicht) – deshalb null statt 0.
+      initiativeBonus: e.initiativeBonus == null || e.initiativeBonus === '' ? null : saubererBonus(e.initiativeBonus),
     }));
 }
+
+/** Der Initiativebonus eines Postens: sein eigener, sonst der aus dem Bestiarium. */
+const bonusVon = (e) => e.initiativeBonus ?? bonusAusBestiarium(e.libraryId);
 
 // GET /api/encounters – alle vorbereiteten Begegnungen, nach Namen.
 // Sie gehören der ganzen Runde und stehen in jeder Kampagne bereit.
@@ -113,8 +119,9 @@ router.post('/:id/stellen', (req, res) => {
   const eintraege = JSON.parse(row.entries);
   const now = new Date().toISOString();
   const einfuegen = db.prepare(
-    `INSERT INTO combatants (id, name, type, initiative, hp, max_hp, ac, conditions, notes, character_id, media_id, hidden, campaign_id, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, '[]', '', NULL, ?, ?, ?, ?)`
+    `INSERT INTO combatants (id, name, type, initiative, initiative_bonus, hp, max_hp, ac, conditions, notes, character_id,
+                             media_id, hidden, campaign_id, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, '[]', '', NULL, ?, ?, ?, ?)`
   );
 
   // Bis zu fünfzig Gruppen zu je zwanzig: Einzeln geschrieben wären das bis
@@ -123,12 +130,14 @@ router.post('/:id/stellen', (req, res) => {
   const gestellt = transaktion(() => {
     let zahl = 0;
     for (const e of eintraege) {
+      const bonus = bonusVon(e);
       for (let i = 0; i < e.count; i++) {
         einfuegen.run(
           randomUUID(),
           e.count > 1 ? `${e.name} ${i + 1}` : e.name,
           e.type,
-          wuerfeln ? rollD20() : 0,
+          wuerfeln ? initiativeWurf(bonus) : 0,
+          bonus,
           e.hp,
           e.hp,
           e.ac,
@@ -178,7 +187,7 @@ router.post('/aus-kampf', (req, res) => {
   const gruppen = new Map();
   for (const k of kaempfer) {
     const grundname = k.name.replace(/\s+\d+$/, '');
-    const schluessel = `${grundname}|${k.type}|${k.max_hp}|${k.ac}|${k.hidden}`;
+    const schluessel = `${grundname}|${k.type}|${k.max_hp}|${k.ac}|${k.hidden}|${k.initiative_bonus}`;
     const vorhanden = gruppen.get(schluessel);
     if (vorhanden) {
       vorhanden.count += 1;
@@ -193,6 +202,7 @@ router.post('/aus-kampf', (req, res) => {
       count: 1,
       hidden: !!k.hidden,
       mediaId: k.media_id ?? null,
+      initiativeBonus: k.initiative_bonus ?? 0,
     });
   }
 

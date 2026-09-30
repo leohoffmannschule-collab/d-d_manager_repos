@@ -13,14 +13,14 @@
  *
  * Der Reiter hält den Zustand (was aufgeschlagen ist, was nachgeschlagen
  * wurde) und ordnet die Liste; gezeichnet wird in zauber/:
- *   Zauberwirken.jsx   – Attribut, SG, Angriffsbonus
+ *   Zauberwirken.jsx   – Attribut, SG, Angriffsbonus (gerechnet oder von Hand)
  *   Zauberplaetze.jsx  – verbraucht / höchstens je Grad
  *   Zaubersuche.jsx    – Suche im Kompendium
  *   Zaubereintrag.jsx  – ein Zauber, zugeklappt oder aufgeschlagen
  *   Zauberspalten.jsx, Kurzzeile.jsx, spalten.js – die Spalten eines Zaubers
  */
 import { useMemo, useState } from 'react';
-import { abilityModifier, proficiencyBonus } from '../../lib/dnd5e.js';
+import { zauberwerte } from '../../lib/dnd5e.js';
 import { compendiumApi } from '../../lib/api.js';
 import { newId } from '../../lib/id.js';
 import { Card } from '../ui.jsx';
@@ -37,10 +37,7 @@ export default function SpellsTab({ data, update }) {
   const [texte, setTexte] = useState({});
   const [laedt, setLaedt] = useState(null);
 
-  const pb = proficiencyBonus(data.level);
-  const abilityMod = abilityModifier(data.abilities[spellcasting.ability]);
-  const saveDC = spellcasting.manualSaveDC ?? 8 + pb + abilityMod;
-  const attackBonus = spellcasting.manualAttackBonus ?? pb + abilityMod;
+  const werte = zauberwerte(data);
 
   function updateSpellcasting(key, value) {
     update('spellcasting', { ...spellcasting, [key]: value });
@@ -97,9 +94,9 @@ export default function SpellsTab({ data, update }) {
     <div className="flex flex-col gap-4">
       <Zauberwirken
         ability={spellcasting.ability}
-        saveDC={saveDC}
-        attackBonus={attackBonus}
+        werte={werte}
         onAbility={(wert) => updateSpellcasting('ability', wert)}
+        onVonHand={(feld, wert) => updateSpellcasting(feld, wert)}
       />
 
       <Zauberplaetze slots={spellcasting.slots} onChange={(slots) => updateSpellcasting('slots', slots)} />

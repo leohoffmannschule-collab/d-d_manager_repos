@@ -34,6 +34,8 @@ import db, { driver } from './db.js';
 import { festeAdresse } from './domaene.js';
 import { attachUser, requireAuth, requireCampaign } from './auth.js';
 import { addClient, presence } from './events.js';
+import { sicherheitsKopfzeilen } from './kopfzeilen.js';
+import { TLS_DATEIEN, httpsAktiv, starteHttps } from './https/ablage.js';
 import { raeumePapierkorb } from './kampagnen.js';
 import { berichteStart, portBelegt } from './start/bericht.js';
 import ambienceRouter from './routes/ambience.js';
@@ -73,16 +75,9 @@ app.set('trust proxy', /^\d+$/.test(TRUST_PROXY) ? Number(TRUST_PROXY) : TRUST_P
 // früher stand, hätte jeder Seite im selben Netz (oder auf localhost) erlaubt,
 // im Namen der angemeldeten Spielleitung zu lesen und zu schreiben.
 
-app.use((req, res, next) => {
-  // Hochgeladene Karten und Bildnisse gibt der Server so zurück, wie sie
-  // abgelegt wurden – der Browser soll den Typ nicht selbst erraten.
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('Referrer-Policy', 'same-origin');
-  // Keine fremde Seite darf den Almanach in einen Rahmen setzen und darüber
-  // einen unsichtbaren Knopf legen („Kampagne endgültig entfernen“).
-  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-  next();
-});
+// Was der Browser dieser Seite erlauben soll – samt Content-Security-Policy
+// (kopfzeilen.js).
+app.use(sicherheitsKopfzeilen);
 
 app.use(attachUser);
 
@@ -106,7 +101,9 @@ app.get('/api/health', (req, res) => {
   } catch (err) {
     return res.status(503).json({ code: 'datenbank_unerreichbar', error: err.message, driver });
   }
-  res.json({ status: 'ok', driver, angemeldet: !!req.user, time: new Date().toISOString() });
+  // `https`: der Port des verschlüsselten Eingangs, falls einer offen ist –
+  // die Anmeldeseite bietet ihn an, wenn sie über http im Heimnetz geöffnet wurde.
+  res.json({ status: 'ok', driver, angemeldet: !!req.user, https: httpsAktiv(), time: new Date().toISOString() });
 });
 
 /**
@@ -146,6 +143,19 @@ app.use('/api', (req, res) => {
   res.status(404).json({ code: 'route_unbekannt', error: 'Diesen Weg kennt der Almanach nicht.' });
 });
 
+// Das Stammzertifikat für HTTPS im Heimnetz (https/zertifikat.js), zum
+// Installieren auf den Geräten der Runde. Es ist öffentlich – geheim ist nur
+// sein Schlüssel, und der verlässt den Datenordner nie. Wer es über http
+// lädt, vergleicht den Fingerabdruck mit dem aus dem Startbericht.
+app.get('/almanach-stamm.crt', (req, res) => {
+  if (!fs.existsSync(TLS_DATEIEN.stammZertifikat)) {
+    return res.status(404).json({ code: 'kein_zertifikat', error: 'Für diesen Almanach ist kein Zertifikat angelegt (npm run zertifikat).' });
+  }
+  res.type('application/x-x509-ca-cert');
+  res.setHeader('Content-Disposition', 'attachment; filename="almanach-stamm.crt"');
+  res.sendFile(TLS_DATEIEN.stammZertifikat);
+});
+
 // Die gebaute Oberfläche, sofern `npm run build` sie hierher kopiert hat.
 const frontendDist = path.join(__dirname, '..', 'public');
 const hasFrontend = fs.existsSync(path.join(frontendDist, 'index.html'));
@@ -174,5 +184,10 @@ const domaene = festeAdresse();
 // Was länger als die Frist im Papierkorb lag, wird beim Start geräumt.
 const geraeumt = raeumePapierkorb();
 
-const server = app.listen(PORT, () => berichteStart({ PORT, hasFrontend, domaene, geraeumt }));
+// Erst http (der Tunnel und alle, die HTTPS nicht eingerichtet haben), dann –
+// falls Zertifikate da sind – derselbe Almanach zusätzlich über HTTPS.
+const server = app.listen(PORT, async () => {
+  const https = await starteHttps(app);
+  berichteStart({ PORT, hasFrontend, domaene, geraeumt, https });
+});
 server.on('error', (err) => portBelegt(err, PORT));

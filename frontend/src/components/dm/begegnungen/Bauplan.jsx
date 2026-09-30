@@ -4,6 +4,7 @@
  * selbst – deshalb übersteht eine Begegnung das Löschen des Statblocks.
  */
 import { useState } from 'react';
+import { abilityModifier } from '../../../lib/dnd5e.js';
 import { Rubric } from '../../ui.jsx';
 import { IconPlus, IconSearch } from '../../icons.jsx';
 import Posten from './Posten.jsx';
@@ -26,6 +27,9 @@ export default function Bauplan({ entwurf, setEntwurf, bestiarium, onSpeichern, 
           count: 1,
           hidden: false,
           mediaId: e.mediaId ?? null,
+          // Der Posten trägt den Bonus selbst, wie TP und RK – so übersteht
+          // er das Löschen des Statblocks.
+          initiativeBonus: e.stats?.dex != null ? abilityModifier(e.stats.dex) : 0,
         },
       ],
     }));

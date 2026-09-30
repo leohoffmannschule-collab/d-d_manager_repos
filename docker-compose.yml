@@ -8,10 +8,15 @@ services:
       # Im Heimnetz erreichbar. Von außen kommt niemand über diesen Port,
       # sondern über den Tunnel unten – der braucht keine Portfreigabe.
       - "3001:3001"
+      # HTTPS im Heimnetz – erst, wenn ein Zertifikat angelegt ist
+      # (docker compose exec dnd-manager node scripts/zertifikat.mjs <Adresse des Pi>).
+      # Ohne Zertifikat lauscht hier niemand.
+      - "3443:3443"
     volumes:
       - dnd-manager-data:/app/data
     environment:
       - PORT=3001
+      - HTTPS_PORT=3443
       # 2014 = klassisches 5e-SRD-Regelwerk. Für die 2024er Regeln kann
       # "https://www.dnd5eapi.co/api/2024" verwendet werden.
       - DND5E_API_BASE=https://www.dnd5eapi.co/api/2014

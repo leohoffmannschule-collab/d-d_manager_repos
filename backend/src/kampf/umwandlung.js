@@ -24,6 +24,7 @@ export function rowToCombatant(row) {
     name: row.name,
     type: row.type,
     initiative: row.initiative,
+    initiativeBonus: row.initiative_bonus ?? 0,
     hp: row.hp,
     maxHp: row.max_hp,
     ac: row.ac,

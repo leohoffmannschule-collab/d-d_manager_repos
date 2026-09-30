@@ -4,7 +4,7 @@
  * Zaubers aus dem Kompendium (zauberblock), damit die Datei auch ohne Netz
  * vollständig ist.
  */
-import { ABILITIES, SPELL_LEVELS, formatModifier, spellAttackBonus, spellSaveDC } from '../../dnd5e.js';
+import { ABILITIES, SPELL_LEVELS, formatModifier, zauberwerte } from '../../dnd5e.js';
 import { esc, escAbsatz, feld, zeilen } from '../werkzeug.js';
 
 /**
@@ -54,9 +54,7 @@ export function zauberblock(spell, detail) {
 /** Die Tafel „Zauberwirken“: Attribut, SG, Angriffsbonus, Plätze je Grad und die Zauberliste nach Grad. */
 export function zauber(data) {
   const z = data.spellcasting;
-  const attribut = data.abilities[z.ability];
-  const sg = z.manualSaveDC ?? spellSaveDC(attribut, data.level);
-  const bonus = z.manualAttackBonus ?? spellAttackBonus(attribut, data.level);
+  const { sg, bonus } = zauberwerte(data);
 
   const plaetze = SPELL_LEVELS.filter((lvl) => (z.slots?.[lvl]?.max ?? 0) > 0)
     .map((lvl) => {

@@ -7,8 +7,10 @@ import { useState } from 'react';
 import { encounterApi } from '../../lib/api.js';
 import { IconPlus } from '../icons.jsx';
 
+const LEER = { name: '', type: 'monster', initiative: 0, initiativeBonus: 0, hp: 0, ac: 10 };
+
 export default function NeuerKaempfer({ onFertig }) {
-  const [werte, setWerte] = useState({ name: '', type: 'monster', initiative: 0, hp: 0, ac: 10 });
+  const [werte, setWerte] = useState(LEER);
   const setzen = (feld) => (e) =>
     setWerte((w) => ({ ...w, [feld]: feld === 'name' || feld === 'type' ? e.target.value : Number(e.target.value) || 0 }));
 
@@ -18,7 +20,7 @@ export default function NeuerKaempfer({ onFertig }) {
         e.preventDefault();
         if (!werte.name.trim()) return;
         await encounterApi.add({ ...werte, maxHp: werte.hp });
-        setWerte({ name: '', type: 'monster', initiative: 0, hp: 0, ac: 10 });
+        setWerte(LEER);
         onFertig?.();
       }}
       className="flex flex-wrap items-end gap-2.5 border border-dashed border-rule-strong p-3"
@@ -37,6 +39,8 @@ export default function NeuerKaempfer({ onFertig }) {
       </label>
       {[
         ['Init', 'initiative', 16],
+        // Wird bei „Initiative würfeln“ zum W20 gezählt, solange Init 0 ist.
+        ['Bonus', 'initiativeBonus', 16],
         ['TP', 'hp', 16],
         ['RK', 'ac', 16],
       ].map(([label, feld]) => (

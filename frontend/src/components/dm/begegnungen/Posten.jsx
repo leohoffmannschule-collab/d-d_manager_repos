@@ -6,6 +6,7 @@
  * siehe den Kopf von Encounters.jsx, warum.
  */
 import { mediaApi } from '../../../lib/api.js';
+import { formatModifier } from '../../../lib/dnd5e.js';
 import { IconEyeOff, IconTrash } from '../../icons.jsx';
 
 export default function Posten({ eintrag, onChange, onRemove }) {
@@ -14,7 +15,11 @@ export default function Posten({ eintrag, onChange, onRemove }) {
       {eintrag.mediaId && <img src={mediaApi.url(eintrag.mediaId)} alt="" className="h-10 w-10 object-contain" />}
       <span className="min-w-0 flex-1 truncate text-ink">
         {eintrag.name}
-        <span className="text-faint"> · {eintrag.hp} TP · RK {eintrag.ac}</span>
+        <span className="text-faint">
+          {' '}
+          · {eintrag.hp} TP · RK {eintrag.ac}
+          {eintrag.initiativeBonus != null && ` · Init ${formatModifier(eintrag.initiativeBonus)}`}
+        </span>
       </span>
       <input
         type="number"

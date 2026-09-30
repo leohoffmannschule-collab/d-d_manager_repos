@@ -15,7 +15,7 @@ import { Router } from 'express';
 import { randomUUID } from 'node:crypto';
 import { db, transaktion } from '../db.js';
 import { requireDm } from '../auth.js';
-import { rollD20 } from '../dice.js';
+import { bonusAusGeschick, initiativeWurf } from '../kampf/initiative.js';
 import { sendeKampf } from '../kampf/sicht.js';
 import * as chronik from '../chronicle.js';
 import { hatText, texte, toNumber, zahlOderLeer } from '../werte.js';
@@ -124,7 +124,9 @@ router.delete('/:id', (req, res) => {
   res.status(204).end();
 });
 
-// POST /api/library/:id/add-to-encounter – „3 Goblins“ mit einem Klick
+// POST /api/library/:id/add-to-encounter  { count?, rollInitiative?,
+// initiative?, hidden? } – „3 Goblins“ mit einem Klick. Gewürfelt wird W20
+// plus Geschicklichkeitsbonus des Statblocks.
 router.post('/:id/add-to-encounter', (req, res) => {
   const row = db.prepare('SELECT * FROM library WHERE id = ?').get(req.params.id);
   if (!row) return res.status(404).json({ code: 'eintrag_nicht_gefunden', error: 'Eintrag nicht gefunden.' });
@@ -133,11 +135,15 @@ router.post('/:id/add-to-encounter', (req, res) => {
   const anzahl = Math.min(Math.max(parseInt(body.count, 10) || 1, 1), 20);
   const wuerfeln = !!body.rollInitiative;
   const basis = toNumber(body.initiative, 0);
+  // Der Bonus kommt aus der Geschicklichkeit des Statblocks und bleibt am
+  // Kämpfer hängen – auch für „Initiative würfeln“ später (kampf/initiative.js).
+  const bonus = bonusAusGeschick(JSON.parse(row.stats)?.dex);
   const now = new Date().toISOString();
 
   const einfuegen = db.prepare(
-    `INSERT INTO combatants (id, name, type, initiative, hp, max_hp, ac, conditions, notes, character_id, media_id, hidden, campaign_id, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, '[]', '', NULL, ?, ?, ?, ?)`
+    `INSERT INTO combatants (id, name, type, initiative, initiative_bonus, hp, max_hp, ac, conditions, notes, character_id,
+                             media_id, hidden, campaign_id, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, '[]', '', NULL, ?, ?, ?, ?)`
   );
 
   // Die Kategorie des Statblocks ('npc' oder 'monster') ist zugleich die Art
@@ -148,7 +154,8 @@ router.post('/:id/add-to-encounter', (req, res) => {
         randomUUID(),
         anzahl > 1 ? `${row.name} ${i + 1}` : row.name,
         row.category,
-        wuerfeln ? rollD20() : basis,
+        wuerfeln ? initiativeWurf(bonus) : basis,
+        bonus,
         row.hp ?? 0,
         row.hp ?? 0,
         row.ac ?? 10,

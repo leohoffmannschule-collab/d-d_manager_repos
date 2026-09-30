@@ -3,11 +3,17 @@
  *
  * Steht am Spieltisch im Reiter „Figur“ und nur für die Spielleitung.
  *
- * Zwei Dinge, die mehr tun, als sie aussehen:
+ * Drei Dinge, die mehr tun, als sie aussehen:
+ *
+ *   *Blatt* – an welchem Charakterblatt die Figur hängt. Das entscheidet,
+ *   wer sie ziehen darf (die Besitzerin des Blattes) und wessen Sinne die
+ *   Sicht bestimmen. Ein NSC-Blatt macht sie zur Figur, durch deren Augen
+ *   die Spielleitung schauen kann.
  *
  *   *verbergen* – eine verborgene Figur wird einem Spielerfenster gar nicht
  *   erst geschickt. Der Hinterhalt steht also wirklich nicht da, statt nur
- *   durchsichtig zu sein.
+ *   durchsichtig zu sein. Hängt die Figur an einem Kämpfer, verbirgt oder
+ *   zeigt sich seine Zeile in der Kampfliste mit (der Server tut das).
  *
  *   *Lichtquelle* – hell und dämmrig in Fuß. In einer dunklen Szene
  *   erhellt sie die Karte für alle; sie ist damit das Gegenstück zur
@@ -17,6 +23,8 @@
 import { useRef, useState } from 'react';
 import { mediaApi, scenesApi } from '../../lib/api.js';
 import { bildLesen } from '../../lib/bilder.js';
+import { useCharaktere } from '../../lib/daten.js';
+import { FieldLabel } from '../ui.jsx';
 import { IconEye, IconEyeOff, IconTrash, IconUpload } from '../icons.jsx';
 
 const FARBEN = ['#9a2b22', '#2d4f7c', '#2f6b4f', '#6b3f8c', '#a86a1f', '#1f6f74', '#8c3f5f', '#4a5d23', '#3a3a3a'];
@@ -25,6 +33,8 @@ const FARBEN = ['#9a2b22', '#2d4f7c', '#2f6b4f', '#6b3f8c', '#a86a1f', '#1f6f74'
 export default function TokenPanel({ token, onChanged, onRemoved }) {
   const datei = useRef(null);
   const [laedt, setLaedt] = useState(false);
+  // Die Spielleitung bekommt alle Blätter der Kampagne, auch NSC-Blätter.
+  const { charaktere } = useCharaktere();
 
   if (!token) {
     return (
@@ -61,6 +71,23 @@ export default function TokenPanel({ token, onChanged, onRemoved }) {
           className="field-box"
           placeholder="ohne Namen"
         />
+      </label>
+
+      <label className="block">
+        <FieldLabel>Blatt</FieldLabel>
+        <select
+          value={token.characterId ?? ''}
+          onChange={(e) => aendern({ characterId: e.target.value || null })}
+          className="field-box w-full"
+        >
+          <option value="">– an keinem Blatt –</option>
+          {(charaktere ?? []).map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name || 'Namenlos'}
+              {c.npc ? ' (NSC)' : c.ownerName ? ` · ${c.ownerName}` : ''}
+            </option>
+          ))}
+        </select>
       </label>
 
       <div>
@@ -178,6 +205,9 @@ export default function TokenPanel({ token, onChanged, onRemoved }) {
         {token.hidden ? <IconEyeOff size={16} /> : <IconEye size={16} />}
         {token.hidden ? 'für die Runde verborgen' : 'für alle sichtbar'}
       </button>
+      {token.combatantId && (
+        <p className="-mt-2 text-[14px] text-sepia italic">Gilt auch für seine Zeile in der Kampfliste.</p>
+      )}
 
       <button
         onClick={async () => {

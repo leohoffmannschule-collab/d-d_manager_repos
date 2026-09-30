@@ -18,6 +18,7 @@
 import { useState } from 'react';
 import { useAuth } from '../lib/auth.jsx';
 import { Fleuron, IconD20Detailed, IconKey, IconQuill } from '../components/icons.jsx';
+import HttpsHinweis from '../components/HttpsHinweis.jsx';
 
 export default function Login() {
   const { needsSetup, login, register } = useAuth();
@@ -79,6 +80,8 @@ export default function Login() {
             <span className="h-px w-10 bg-rule" />
           </div>
         </div>
+
+        <HttpsHinweis />
 
         <form onSubmit={absenden} className="panel p-6">
           <h2 className="font-display text-[15px] font-semibold tracking-[0.14em] text-rubric uppercase">{titel}</h2>

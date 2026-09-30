@@ -8,7 +8,9 @@
  *     nur einen Zustand („verwundet“, „schwer_verwundet“),
  *   – bei Helden (`pc`) die Trefferpunkte genau – die eigenen wie die der
  *     Gefährten; wie es um die Gruppe steht, weiß man am Tisch ohnehin,
- *   – Notizen der Spielleitung zu keinem Kämpfer.
+ *   – Notizen der Spielleitung zu keinem Kämpfer,
+ *   – den Initiativebonus der Gegner nicht (er verrät die Geschicklichkeit
+ *     aus dem Statblock).
  *
  * Gefiltert wird hier, auf dem Server, nicht in der Oberfläche. Was ein
  * Spielerfenster nicht wissen soll, bekommt es nicht geschickt – sonst
@@ -37,6 +39,7 @@ export function encounterView(user, campaignId) {
                 hp: null,
                 maxHp: null,
                 ac: null,
+                initiativeBonus: null,
                 notes: '',
                 status: zustand(c.hp, c.maxHp),
               }

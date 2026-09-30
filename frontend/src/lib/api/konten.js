@@ -7,6 +7,9 @@ import { del, patch, post, request } from './anfrage.js';
 /** Anmelden, Konten, Einladungscodes. */
 export const authApi = {
   status: () => request('/auth/status'),
+  // Lebenszeichen des Servers – die Anmeldeseite liest daraus, ob es einen
+  // verschlüsselten Eingang im Heimnetz gibt (`https`: sein Port oder null).
+  lebenszeichen: () => request('/health'),
   login: (name, password) => post('/auth/login', { name, password }),
   register: (payload) => post('/auth/register', payload),
   logout: () => post('/auth/logout'),

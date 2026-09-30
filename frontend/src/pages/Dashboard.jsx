@@ -12,11 +12,15 @@
  *   – In Kampagne … – eine Kopie in einer *anderen* Kampagne, nur für die
  *                     Spielleitung (siehe components/Kopierziel.jsx)
  *   – Löschen    – das eigene Blatt, oder jedes, wenn man die Runde führt
+ *
+ * Und oben: ein neues Blatt anlegen oder ein mitgenommenes einlesen
+ * (components/BlattEinlesen.jsx).
  */
 import { Link, useNavigate } from 'react-router-dom';
 import { charactersApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
 import { useCharaktere } from '../lib/daten.js';
+import BlattEinlesen from '../components/BlattEinlesen.jsx';
 import Kopierziel from '../components/Kopierziel.jsx';
 import { IconCrown, IconEye, IconEyeOff, IconPlus, IconScroll } from '../components/icons.jsx';
 import { prozent } from '../lib/stilwerte.js';
@@ -135,10 +139,13 @@ export default function Dashboard() {
           </h1>
           <p className="mt-1 text-sepia italic">{subtitle(runde.length)}</p>
         </div>
-        <Link to="/neu" className="btn btn-seal">
-          <IconPlus size={17} />
-          Neuer Charakter
-        </Link>
+        <div className="flex flex-wrap items-start gap-2.5">
+          <BlattEinlesen />
+          <Link to="/neu" className="btn btn-seal">
+            <IconPlus size={17} />
+            Neuer Charakter
+          </Link>
+        </div>
       </div>
 
       {error && <p className="panel border-rubric p-4 text-rubric">{error}</p>}

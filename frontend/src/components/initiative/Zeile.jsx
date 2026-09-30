@@ -4,6 +4,7 @@
  */
 import { useState } from 'react';
 import { encounterApi } from '../../lib/api.js';
+import { formatModifier } from '../../lib/dnd5e.js';
 import { IconChevronRight, IconEye, IconEyeOff, IconHeart, IconPlus, IconTrash } from '../icons.jsx';
 import { TYP_FARBE, TYP_NAME } from './arten.js';
 import Lebensbalken from './Lebensbalken.jsx';
@@ -51,6 +52,12 @@ export default function Zeile({ combatant, aktiv, isDm, voll }) {
             </span>
             <Lebensbalken hp={combatant.hp} maxHp={combatant.maxHp} status={combatant.status} />
             {combatant.ac != null && <span className="text-[14px] text-sepia">RK {combatant.ac}</span>}
+            {/* Nur die Spielleitung bekommt den Bonus der Gegner geschickt. */}
+            {combatant.type !== 'pc' && combatant.initiativeBonus != null && combatant.initiativeBonus !== 0 && (
+              <span className="text-[14px] text-sepia" title="Initiativebonus – wird beim Würfeln hinzugezählt">
+                Init {formatModifier(combatant.initiativeBonus)}
+              </span>
+            )}
           </div>
           {combatant.conditions.length > 0 && (
             <p className="mt-1 flex flex-wrap gap-1">

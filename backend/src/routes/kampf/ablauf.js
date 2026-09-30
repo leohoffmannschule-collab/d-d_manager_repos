@@ -11,7 +11,7 @@ import { Router } from 'express';
 import { randomUUID } from 'node:crypto';
 import { db, setState } from '../../db.js';
 import { requireDm } from '../../auth.js';
-import { rollD20 } from '../../dice.js';
+import { initiativeWurf } from '../../kampf/initiative.js';
 import * as chronik from '../../chronicle.js';
 import { alleKaempfer, meta } from '../../kampf/umwandlung.js';
 import { toNumber } from '../../werte.js';
@@ -85,7 +85,8 @@ router.post('/reset', requireDm, (req, res) => {
   antwort(req, res);
 });
 
-// POST /api/encounter/roll-initiative – für alle NSC und Monster ohne Wert
+// POST /api/encounter/roll-initiative  { onlyEmpty? } – für alle NSC und
+// Monster ohne Wert: W20 plus ihr Initiativebonus.
 router.post('/roll-initiative', requireDm, (req, res) => {
   // Helden würfeln selbst (siehe kaempfer.js, /initiative); hier nur, was
   // die Spielleitung führt. Eine 0 gilt als „noch nicht gewürfelt“.
@@ -93,7 +94,7 @@ router.post('/roll-initiative', requireDm, (req, res) => {
   const setzen = db.prepare('UPDATE combatants SET initiative = ? WHERE id = ?');
   for (const row of db.prepare("SELECT * FROM combatants WHERE type != 'pc' AND campaign_id = ?").all(req.campaignId)) {
     if (nurLeere && row.initiative !== 0) continue;
-    setzen.run(rollD20(), row.id);
+    setzen.run(initiativeWurf(row.initiative_bonus), row.id);
   }
   antwort(req, res);
 });
