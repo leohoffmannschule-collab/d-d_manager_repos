@@ -116,6 +116,8 @@ Minuten** Ruhe, je Name und Herkunft. Das ist kein Fehler, sondern die Bremse
 gegen das Durchprobieren.
 
 Ein vergessenes Spieler-Passwort setzt die Spielleitung unter *Runde* neu.
+Hat die Spielleitung ihr eigenes vergessen, hilft `npm run kennwort -- "Name"`
+auf dem Rechner des Almanachs: Es würfelt ein neues aus und zeigt es einmal an.
 
 ---
 

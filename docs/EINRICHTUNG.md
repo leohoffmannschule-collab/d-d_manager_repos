@@ -347,6 +347,7 @@ Entfernung lässt du den Tunnel auf dem Pi laufen – oder du gehst
 | Adresse anzeigen | `npm run adresse` | `npm run adresse` |
 | Sichern | `docker compose exec dnd-manager node scripts/sicherung.mjs` | `npm run sicherung` |
 | Vorlagen nachlegen | `docker compose exec dnd-manager node scripts/vorlagen.mjs` | `npm run vorlagen` |
+| Kennwort neu setzen | `docker compose exec dnd-manager node scripts/kennwort.mjs "Name"` | `npm run kennwort -- "Name"` |
 | Aktualisieren | `git pull && docker compose up -d --build` | `git pull && npm start` |
 | Datenordner | im Docker-Volume `dnd-manager-data` | `backend/data` neben dem Programm |
 
@@ -932,8 +933,16 @@ funktionieren dann auch, wenn der Almanach gerade nicht läuft.
 niemand hantieren.
 
 **Passwort vergessen?** Du als Spielleitung setzt es unter *Runde* neu. Hast
-*du* deins vergessen, hilft nur der Weg über die Datenbank – dann melde dich
-lieber, bevor du darin herumschneidest.
+*du* deins vergessen, setzt du es auf dem Rechner des Almanachs neu:
+
+```bash
+npm run kennwort -- "Dein Name"                                   # Laptop
+docker compose exec dnd-manager node scripts/kennwort.mjs "Dein Name"   # Pi
+```
+
+Das Skript würfelt ein neues Kennwort aus, zeigt es einmal an und beendet
+alle Anmeldungen des Kontos. Damit anmelden und im Konto-Menü gleich ein
+eigenes wählen.
 
 ---
 
