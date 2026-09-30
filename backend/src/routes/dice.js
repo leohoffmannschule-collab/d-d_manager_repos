@@ -52,7 +52,12 @@ router.get('/history', (req, res) => {
   res.json(rows.map(rowToRoll));
 });
 
-// POST /api/dice/roll
+// POST /api/dice/roll  { expression, mode?, label?, secret? }
+//
+// Würfeln – auf dem Server, nicht im Browser: So kann niemand am eigenen
+// Ergebnis drehen, und alle sehen denselben Wurf. `mode` ist 'advantage'
+// oder 'disadvantage' für zwei W20, von denen der bessere oder schlechtere
+// zählt.
 router.post('/roll', (req, res) => {
   const { expression, mode, label } = req.body ?? {};
   if (!expression || typeof expression !== 'string') {
@@ -128,7 +133,8 @@ router.post('/roll', (req, res) => {
   res.status(201).json(nutzlast);
 });
 
-// DELETE /api/dice/history
+// DELETE /api/dice/history – den Würfelverlauf dieser Kampagne leeren, etwa
+// vor einem neuen Abend.
 router.delete('/history', requireDm, (req, res) => {
   db.prepare('DELETE FROM rolls WHERE campaign_id = ?').run(req.campaignId);
   broadcast('wuerfe:geleert', {}, { campaignId: req.campaignId });

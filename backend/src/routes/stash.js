@@ -43,7 +43,7 @@ function melden(req) {
   broadcast('beute', kiste(req.campaignId), { exceptClient: originClient(req), campaignId: req.campaignId });
 }
 
-// GET /api/stash
+// GET /api/stash – die Beutekiste dieser Kampagne: Gegenstände und Münzen.
 router.get('/', (req, res) => {
   res.json(kiste(req.campaignId));
 });
@@ -74,6 +74,9 @@ router.post('/items', (req, res) => {
   res.status(201).json(rowToItem(db.prepare('SELECT * FROM stash_items WHERE id = ?').get(id)));
 });
 
+// PUT /api/stash/items/:id  { name?, qty?, weight?, notes?, holderId? } –
+// ändern, auch wer den Gegenstand trägt. Der Träger muss ein Blatt dieser
+// Kampagne sein.
 router.put('/items/:id', (req, res) => {
   const row = db.prepare('SELECT * FROM stash_items WHERE id = ? AND campaign_id = ?').get(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'gegenstand_nicht_gefunden', error: 'Gegenstand nicht gefunden.' });
@@ -93,6 +96,7 @@ router.put('/items/:id', (req, res) => {
   res.json(rowToItem(db.prepare('SELECT * FROM stash_items WHERE id = ?').get(row.id)));
 });
 
+// DELETE /api/stash/items/:id – aus der Kiste nehmen.
 router.delete('/items/:id', (req, res) => {
   const info = db.prepare('DELETE FROM stash_items WHERE id = ? AND campaign_id = ?').run(req.params.id, req.campaignId);
   if (info.changes === 0) return res.status(404).json({ code: 'gegenstand_nicht_gefunden', error: 'Gegenstand nicht gefunden.' });
@@ -100,7 +104,8 @@ router.delete('/items/:id', (req, res) => {
   res.status(204).end();
 });
 
-// PUT /api/stash/coins
+// PUT /api/stash/coins  { pp?, gp?, ep?, sp?, cp? } – die Münzen in der Kiste
+// setzen. Nur, was mitgeschickt wird, ändert sich; nie unter null.
 router.put('/coins', (req, res) => {
   const body = req.body ?? {};
   const naechste = { ...KEINE_MUENZEN };

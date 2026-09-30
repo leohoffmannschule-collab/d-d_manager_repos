@@ -61,7 +61,8 @@ router.get('/papierkorb', (req, res) => {
   res.json(rows);
 });
 
-// POST /api/campaigns/:id/wiederherstellen
+// POST /api/campaigns/:id/wiederherstellen – eine Kampagne aus dem Papierkorb
+// zurückholen, solange die Frist läuft. Das darf nur, wer sie angelegt hat.
 router.post('/:id/wiederherstellen', (req, res) => {
   const kampagne = holen(req.params.id);
   if (!kampagne || !kampagne.deleted_at) {

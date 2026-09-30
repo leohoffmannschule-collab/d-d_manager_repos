@@ -120,6 +120,8 @@ app.get('/api/stream', requireCampaign, (req, res) => {
   addClient(req, res, req.user, req.campaignId);
 });
 
+// GET /api/anwesenheit – wer gerade mit einem offenen Fenster in dieser Kampagne sitzt
+// (für den Punkt neben dem Namen und die Auswahl beim Flüstern).
 app.get('/api/anwesenheit', requireCampaign, (req, res) => {
   res.json(presence(req.campaignId));
 });

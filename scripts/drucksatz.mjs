@@ -14,17 +14,18 @@
  * Strg+P, dann „Als PDF sichern“. Mehr braucht es nicht – kein pandoc, kein
  * LaTeX, kein Zusatzwerkzeug.
  *
- * Bewusst ein eigener, kleiner Markdown-Leser statt einer Bibliothek: Die
- * Handbücher benutzen eine Handvoll Formen – Überschriften, Listen, Tabellen,
- * Zitate, Codeblöcke –, und dafür lohnt keine Abhängigkeit, die bei jedem
- * `npm install` mitkommen müsste.
+ * Bewusst ein eigener, kleiner Markdown-Leser statt einer Bibliothek – er
+ * steht in drucksatz/markdown.mjs, das Gerüst der Seite in
+ * drucksatz/seite.mjs. Beide teilt sich dieses Skript mit dem großen
+ * Handbuch (scripts/handbuch.mjs).
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { nachHtml } from './drucksatz/markdown.mjs';
+import { seite } from './drucksatz/seite.mjs';
 
 const wurzel = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-
 // Der Satzspiegel liegt als echte .css-Datei daneben und wird hier als Text
 // hereingeholt. Node kennt kein `?raw` wie Vite – ein Dateilesen tut es
 // genauso, und im Editor ist es trotzdem richtiges CSS.
@@ -45,45 +46,6 @@ const BAENDE = [
   { datei: 'EINRICHTUNG.md', titel: 'Einrichtungs-Handbuch', unter: 'Vom nackten Gerät bis zur ersten Runde' },
 ];
 
-/* --- Markdown lesen ------------------------------------------------------ */
-
-const schuetzen = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-/** Überschrift zu Anker – dieselbe Regel, die auch GitHub anwendet. */
-function anker(text) {
-  const nackt = text.trim().toLowerCase().replace(/`|\*\*|\*|_/g, '').replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
-  return [...nackt]
-    .filter((c) => /[\p{L}\p{N}_-]/u.test(c) || /\s/.test(c))
-    .map((c) => (/\s/.test(c) ? '-' : c))
-    .join('');
-}
-
-/**
- * Merkzeichen für herausgenommene Code-Stellen. Ein Zeichen aus dem privaten
- * Bereich von Unicode: Es kommt in keinem Handbuch vor, also kann es sich
- * nicht mit dem Text verwechseln – anders als eine Ziffer in Leerzeichen, die
- * in „200 × 200 Felder“ prompt danebengriffe.
- */
-const MARKE = '\uE000';
-
-/**
- * Fett, kursiv, Code und Verweise. Code wird zuerst herausgenommen und ganz
- * zum Schluss wieder eingesetzt – sonst würde ein Sternchen in einem Befehl
- * als Kursivschrift gelesen.
- */
-function inline(text) {
-  const codes = [];
-  let s = text.replace(/`([^`]+)`/g, (_, c) => {
-    codes.push(`<code>${schuetzen(c)}</code>`);
-    return `${MARKE}${codes.length - 1}${MARKE}`;
-  });
-  s = schuetzen(s);
-  s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, t, u) => `<a href="${verweis(u)}">${t}</a>`);
-  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  s = s.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
-  return s.replace(new RegExp(`${MARKE}(\\d+)${MARKE}`, 'g'), (_, i) => codes[Number(i)]);
-}
-
 /**
  * Verweise umbiegen: Zwischen den gesetzten Bänden soll man springen können,
  * also zeigen sie im Druck auf die HTML-Fassung nebenan statt auf das
@@ -94,160 +56,6 @@ function verweis(ziel) {
   const marke = rest.length ? `#${rest.join('#')}` : '';
   if (BAENDE.some((b) => b.datei === datei)) return `${datei.replace(/\.md$/, '.html')}${marke}`;
   return ziel;
-}
-
-/** Eine Tabellenzeile in ihre Zellen zerlegen. */
-function zellen(z) {
-  return z.replace(/^\|/, '').replace(/\|$/, '').split('|').map((s) => s.trim());
-}
-
-const absaetze = (text) =>
-  text
-    .split(/\n{2,}/)
-    .filter((a) => a.trim())
-    .map((a) => `<p>${inline(a.replace(/\n/g, ' ').trim())}</p>`)
-    .join('');
-
-function nachHtml(markdown) {
-  const zeilen = markdown.split('\n');
-  const raus = [];
-  const offen = [];
-  let i = 0;
-
-  const listeSchliessen = () => {
-    while (offen.length) raus.push(`</${offen.pop()}>`);
-  };
-
-  while (i < zeilen.length) {
-    const z = zeilen[i];
-
-    // Codeblock
-    if (z.startsWith('```')) {
-      listeSchliessen();
-      const inhalt = [];
-      i += 1;
-      while (i < zeilen.length && !zeilen[i].startsWith('```')) inhalt.push(zeilen[i++]);
-      i += 1;
-      raus.push(`<pre><code>${schuetzen(inhalt.join('\n'))}</code></pre>`);
-      continue;
-    }
-
-    // Tabelle: Kopfzeile, Trennzeile, Rumpf
-    if (z.startsWith('|') && /^\|[\s:|-]+\|$/.test(zeilen[i + 1] ?? '')) {
-      listeSchliessen();
-      const kopf = zellen(z);
-      i += 2;
-      const rumpf = [];
-      while (i < zeilen.length && zeilen[i].startsWith('|')) rumpf.push(zellen(zeilen[i++]));
-      const kopfHtml = kopf.map((s) => `<th>${inline(s)}</th>`).join('');
-      const rumpfHtml = rumpf.map((r) => `<tr>${r.map((s) => `<td>${inline(s)}</td>`).join('')}</tr>`).join('');
-      raus.push(`<table><thead><tr>${kopfHtml}</tr></thead><tbody>${rumpfHtml}</tbody></table>`);
-      continue;
-    }
-
-    // Zitat – aufeinanderfolgende Zeilen gehören zusammen
-    if (z.startsWith('> ') || z === '>') {
-      listeSchliessen();
-      const inhalt = [];
-      while (i < zeilen.length && (zeilen[i].startsWith('> ') || zeilen[i] === '>')) {
-        inhalt.push(zeilen[i].replace(/^> ?/, ''));
-        i += 1;
-      }
-      raus.push(`<blockquote>${absaetze(inhalt.join('\n'))}</blockquote>`);
-      continue;
-    }
-
-    const ueber = z.match(/^(#{1,6}) (.+)$/);
-    if (ueber) {
-      listeSchliessen();
-      const stufe = ueber[1].length;
-      raus.push(`<h${stufe} id="${anker(ueber[2])}">${inline(ueber[2])}</h${stufe}>`);
-      i += 1;
-      continue;
-    }
-
-    if (/^(---|\*\*\*|___)\s*$/.test(z)) {
-      listeSchliessen();
-      raus.push('<hr>');
-      i += 1;
-      continue;
-    }
-
-    const punkt = z.match(/^[-*] (.+)$/);
-    const nummer = z.match(/^\d+\. (.+)$/);
-    if (punkt || nummer) {
-      const art = punkt ? 'ul' : 'ol';
-      if (offen[offen.length - 1] !== art) {
-        listeSchliessen();
-        offen.push(art);
-        raus.push(`<${art}>`);
-      }
-      // Eingerückte Folgezeilen gehören noch zu diesem Punkt.
-      const teile = [(punkt ?? nummer)[1]];
-      i += 1;
-      while (i < zeilen.length && /^\s{2,}\S/.test(zeilen[i]) && !/^\s*([-*] |\d+\. )/.test(zeilen[i])) {
-        teile.push(zeilen[i].trim());
-        i += 1;
-      }
-      raus.push(`<li>${inline(teile.join(' '))}</li>`);
-      continue;
-    }
-
-    if (z.trim() === '') {
-      listeSchliessen();
-      i += 1;
-      continue;
-    }
-
-    // Absatz – bis zur nächsten Leerzeile oder zum nächsten Block
-    listeSchliessen();
-    const teile = [];
-    while (
-      i < zeilen.length &&
-      zeilen[i].trim() !== '' &&
-      !/^(#{1,6} |[-*] |\d+\. |\||>|```|---)/.test(zeilen[i])
-    ) {
-      teile.push(zeilen[i].trim());
-      i += 1;
-    }
-    if (teile.length) raus.push(`<p>${inline(teile.join(' '))}</p>`);
-    else i += 1;
-  }
-
-  listeSchliessen();
-  return raus.join('\n');
-}
-
-/* --- Der Satzspiegel ----------------------------------------------------- */
-
-function seite(titel, unter, koerper) {
-  return `<!doctype html>
-<html lang="de">
-<head>
-<meta charset="utf-8">
-<title>${schuetzen(titel)} – Abenteuer-Almanach</title>
-<style>${STIL}</style>
-</head>
-<body>
-
-<div class="titelblatt">
-  <div class="marke">Abenteuer-Almanach</div>
-  <h1>${schuetzen(titel)}</h1>
-  <div class="unter">${schuetzen(unter)}</div>
-  <div class="zierat">
-    <svg width="160" height="16" viewBox="0 0 160 16" xmlns="http://www.w3.org/2000/svg">
-      <path d="M0 8h58M102 8h58" stroke="currentColor" stroke-width="0.8" fill="none"/>
-      <path d="M80 2c-3.6 0-6.5 2.7-6.5 6s2.9 6 6.5 6 6.5-2.7 6.5-6-2.9-6-6.5-6zm0 1.8c2.6 0 4.7 1.9 4.7 4.2s-2.1 4.2-4.7 4.2-4.7-1.9-4.7-4.2 2.1-4.2 4.7-4.2z" fill="currentColor"/>
-      <circle cx="66" cy="8" r="1.5" fill="currentColor"/>
-      <circle cx="94" cy="8" r="1.5" fill="currentColor"/>
-    </svg>
-  </div>
-</div>
-
-${koerper}
-
-</body>
-</html>`;
 }
 
 /* --- Los ----------------------------------------------------------------- */
@@ -261,7 +69,8 @@ for (const band of BAENDE) {
   // Die erste Überschrift steht schon auf dem Titelblatt.
   const markdown = fs.readFileSync(pfad, 'utf8').replace(/^# .+\n/, '');
   const name = band.datei.replace(/\.md$/, '.html');
-  fs.writeFileSync(path.join(ziel, name), seite(band.titel, band.unter, nachHtml(markdown)));
+  const koerper = nachHtml(markdown, { verweis });
+  fs.writeFileSync(path.join(ziel, name), seite({ titel: band.titel, unter: band.unter, koerper, stil: STIL }));
   gesetzt.push(name);
 }
 

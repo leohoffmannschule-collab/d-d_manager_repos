@@ -35,6 +35,9 @@ const kaempferDieserKampagne = (combatantId, campaignId) =>
   combatantId == null ||
   !!db.prepare('SELECT 1 FROM combatants WHERE id = ? AND campaign_id = ?').get(combatantId, campaignId);
 
+// POST /api/scenes/:id/figuren  { name, x, y, size?, color?, mediaId?,
+// characterId?, combatantId?, hidden? } – eine Figur auslegen. Ein Blatt oder
+// Kämpfer, an den sie gebunden wird, muss zu dieser Kampagne gehören.
 router.post('/:id/figuren', requireDm, (req, res) => {
   const szene = holeSzene(req.params.id, req.campaignId);
   if (!szene) return res.status(404).json({ code: 'szene_nicht_gefunden', error: 'Szene nicht gefunden.' });
@@ -103,6 +106,7 @@ router.patch('/figuren/:id', (req, res) => {
   res.json(rowToToken(next));
 });
 
+// DELETE /api/scenes/figuren/:id – eine Figur vom Tisch nehmen.
 router.delete('/figuren/:id', requireDm, (req, res) => {
   const row = holeFigur(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'figur_nicht_gefunden', error: 'Figur nicht gefunden.' });

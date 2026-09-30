@@ -50,10 +50,14 @@ function statsAus(quelle, vorgabe = {}) {
   return { str: feld('str'), dex: feld('dex'), con: feld('con'), int: feld('int'), wis: feld('wis'), cha: feld('cha') };
 }
 
+// GET /api/library – das Bestiarium: alle Statblöcke, nach Namen.
 router.get('/', (req, res) => {
   res.json(db.prepare('SELECT * FROM library ORDER BY name COLLATE NOCASE').all().map(rowToEntry));
 });
 
+// POST /api/library – einen Statblock von Hand anlegen. Zahlen, die sich
+// nicht lesen lassen, bleiben leer statt 0 – ein Monster ohne bekannte RK
+// ist etwas anderes als eines mit RK 0.
 router.post('/', (req, res) => {
   const body = req.body ?? {};
   if (!hatText(body.name)) {
@@ -85,6 +89,7 @@ router.post('/', (req, res) => {
   res.status(201).json(rowToEntry(db.prepare('SELECT * FROM library WHERE id = ?').get(id)));
 });
 
+// PUT /api/library/:id – ändern; nur, was mitgeschickt wird.
 router.put('/:id', (req, res) => {
   const row = db.prepare('SELECT * FROM library WHERE id = ?').get(req.params.id);
   if (!row) return res.status(404).json({ code: 'eintrag_nicht_gefunden', error: 'Eintrag nicht gefunden.' });
@@ -111,6 +116,8 @@ router.put('/:id', (req, res) => {
   res.json(rowToEntry(db.prepare('SELECT * FROM library WHERE id = ?').get(row.id)));
 });
 
+// DELETE /api/library/:id – löschen. Vorbereitete Begegnungen behalten ihre
+// Werte, denn jeder Posten hat eine eigene Abschrift.
 router.delete('/:id', (req, res) => {
   const info = db.prepare('DELETE FROM library WHERE id = ?').run(req.params.id);
   if (info.changes === 0) return res.status(404).json({ code: 'eintrag_nicht_gefunden', error: 'Eintrag nicht gefunden.' });

@@ -15,6 +15,8 @@ import { MIN_PASSWORT, letzteSpielleitung, passwortZuKurz } from './regeln.js';
 
 const router = Router();
 
+// GET /api/auth/users – alle Konten der Runde samt Rolle, Farbe und Zahl der
+// Blätter; die Spielleitung zuerst. Kennwort-Hashes verlassen den Server nie.
 router.get('/users', requireDm, (req, res) => {
   const rows = db
     .prepare(
@@ -71,6 +73,9 @@ router.patch('/users/:id', requireDm, asynchron(async (req, res) => {
   res.json(db.prepare('SELECT id, name, role, color, created_at FROM users WHERE id = ?').get(row.id));
 }));
 
+// DELETE /api/auth/users/:id – ein Konto entfernen. Das eigene nicht, und nie
+// die letzte Spielleitung. Die Blätter des Kontos bleiben und gehen an die
+// Spielleitung, die löscht.
 router.delete('/users/:id', requireDm, (req, res) => {
   const row = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
   if (!row) return res.status(404).json({ code: 'konto_nicht_gefunden', error: 'Konto nicht gefunden.' });

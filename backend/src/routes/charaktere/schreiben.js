@@ -125,7 +125,9 @@ router.patch('/:id', (req, res) => {
   res.json(rowToCharacter(row));
 });
 
-// DELETE /api/characters/:id
+// DELETE /api/characters/:id – ein Blatt löschen. Das darf, wem es gehört,
+// und die Spielleitung; Figuren auf dem Tisch verlieren dabei nur ihren
+// Verweis darauf.
 router.delete('/:id', (req, res) => {
   const existing = holen(req.params.id, req.campaignId);
   if (!existing) return res.status(404).json({ code: 'charakter_nicht_gefunden', error: 'Charakter nicht gefunden' });

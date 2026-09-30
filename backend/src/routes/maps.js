@@ -85,7 +85,8 @@ function bildFreigeben(mediaId) {
   db.prepare('DELETE FROM media WHERE id = ?').run(mediaId);
 }
 
-// GET /api/maps
+// GET /api/maps – die Kartenbibliothek, nach Namen, und zu jeder Karte, wie
+// viele Szenen in *dieser* Kampagne schon aus ihr entstanden sind.
 router.get('/', (req, res) => {
   const karten = db.prepare('SELECT * FROM maps ORDER BY name COLLATE NOCASE').all().map(rowToMap);
   // Wie oft liegt diese Karte schon als Szene vor? Gezählt wird nur in dieser
@@ -98,7 +99,9 @@ router.get('/', (req, res) => {
   res.json(karten.map((k) => ({ ...k, szenen: zahl.get(k.id) ?? 0 })));
 });
 
-// POST /api/maps
+// POST /api/maps  { name, mediaId, thumbMediaId?, width, height, gridSize?, unit?,
+// scale?, tags?, notes? } – eine Karte in die Bibliothek legen. Das Bild ist
+// vorher über /api/media hochgeladen; hier steht nur der Verweis darauf.
 router.post('/', (req, res) => {
   const body = req.body ?? {};
   if (!hatText(body.name)) {
@@ -152,7 +155,8 @@ router.put('/:id', (req, res) => {
   res.json(rowToMap(holen(row.id)));
 });
 
-// DELETE /api/maps/:id
+// DELETE /api/maps/:id – eine Karte aus der Bibliothek löschen. Szenen, die aus
+// ihr entstanden, bleiben; das Bild geht nur, wenn es niemand mehr braucht.
 router.delete('/:id', (req, res) => {
   const row = holen(req.params.id);
   if (!row) return res.status(404).json({ code: 'karte_nicht_gefunden', error: 'Karte nicht gefunden.' });

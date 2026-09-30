@@ -42,6 +42,11 @@ const ERLAUBT = {
 router.use(requireAuth);
 
 // POST /api/media  { dataUrl, filename }
+//
+// Ein Bild ablegen – eine Karte, ein Bildnis, das Bild einer Figur. Es kommt
+// als data:-URL, wird als Datei neben die Datenbank gelegt (data/medien/) und
+// bekommt eine Kennung, unter der GET es wieder ausliefert. Erlaubt sind nur
+// die Bildformate oben, und höchstens MAX_BYTES.
 router.post('/', express.json({ limit: '20mb' }), (req, res) => {
   const { dataUrl } = req.body ?? {};
   const treffer = /^data:([\w./+-]+);base64,(.+)$/s.exec(String(dataUrl ?? ''));
@@ -119,7 +124,9 @@ router.get('/:id', (req, res, next) => {
   );
 });
 
-// DELETE /api/media/:id
+// DELETE /api/media/:id – ein Bild samt Datei löschen. Wer es noch zeigt (eine
+// Szene, eine Figur), zeigt danach ins Leere; die Kartenbibliothek räumt
+// deshalb über `bildFreigeben` nur ab, was niemand mehr braucht.
 router.delete('/:id', requireDm, (req, res) => {
   const row = db.prepare('SELECT * FROM media WHERE id = ?').get(req.params.id);
   if (!row) {

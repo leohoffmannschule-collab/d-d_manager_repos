@@ -101,7 +101,9 @@ router.post('/register', asynchron(async (req, res) => {
   res.status(201).json({ user: { id: user.id, name: user.name, role: user.role, color: user.color } });
 }));
 
-// POST /api/auth/login
+// POST /api/auth/login  { name, password } – anmelden. Bei Erfolg setzt der
+// Server das Anmelde-Cookie; die Antwort enthält nur das Konto. Nach acht
+// Fehlversuchen je Absender und Name ist für zehn Minuten Schluss (429).
 router.post('/login', asynchron(async (req, res) => {
   const { name, password } = req.body ?? {};
   const schluessel = `${req.ip}|${nameKey(String(name ?? ''))}`;
@@ -132,7 +134,8 @@ router.post('/login', asynchron(async (req, res) => {
   res.json({ user: { id: row.id, name: row.name, role: row.role, color: row.color } });
 }));
 
-// POST /api/auth/logout
+// POST /api/auth/logout – diese eine Anmeldung beenden (andere Geräte bleiben
+// angemeldet) und ihre offenen Live-Kanäle schließen.
 router.post('/logout', (req, res) => {
   destroySession(req.sessionToken);
   clearSessionCookie(res);

@@ -7,7 +7,7 @@ import { db } from '../../db.js';
 import { saeVorlagen } from '../../vorlagen/index.js';
 import { jetzt } from '../../werte.js';
 
-/** So kurz darf ein Kennwort höchstens sein. */
+/** So lang muss ein Kennwort mindestens sein. */
 export const MIN_PASSWORT = 8;
 
 // Die Farben, die neue Konten der Reihe nach bekommen – dieselbe Palette,

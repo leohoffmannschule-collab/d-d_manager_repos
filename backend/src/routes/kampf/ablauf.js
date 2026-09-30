@@ -59,10 +59,14 @@ function zug(richtung) {
   };
 }
 
+// POST /api/encounter/next-turn und /prev-turn – der Nächste ist dran, oder
+// zurück zum Vorigen. Über das Ende der Liste hinaus beginnt eine neue Runde
+// (und die Chronik vermerkt sie); rückwärts geht es nie unter Runde 1.
 router.post('/next-turn', requireDm, zug(1));
 router.post('/prev-turn', requireDm, zug(-1));
 
-// POST /api/encounter/reset
+// POST /api/encounter/reset – den Kampf beenden: alle Kämpfer weg, zurück auf
+// Runde 1. Die Chronik vermerkt, wie viele Runden es waren.
 router.post('/reset', requireDm, (req, res) => {
   const meta_ = meta(req.campaignId);
   const zahl = db.prepare('SELECT COUNT(*) AS n FROM combatants WHERE campaign_id = ?').get(req.campaignId).n;

@@ -15,7 +15,8 @@ import { darfSehen, holen, meldeAenderung, rowToCharacter, summary } from './bla
 
 const router = Router();
 
-// POST /api/characters/:id/duplicate
+// POST /api/characters/:id/duplicate – eine Abschrift in derselben Kampagne,
+// die dem Fragenden gehört. So kommt eine Vorlage vom Schirm auf den Tisch.
 router.post('/:id/duplicate', (req, res) => {
   const existing = holen(req.params.id, req.campaignId);
   if (!existing) return res.status(404).json({ code: 'charakter_nicht_gefunden', error: 'Charakter nicht gefunden' });

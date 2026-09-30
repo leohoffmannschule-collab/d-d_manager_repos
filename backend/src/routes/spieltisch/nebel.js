@@ -22,6 +22,10 @@ const router = Router();
 const MAX_FELDER = 65536;
 
 // POST /api/scenes/:id/nebel  { cells: ['3,4', …], revealed: true }
+//
+// Felder aufdecken oder wieder verhüllen – ein Pinselstrich der
+// Spielleitung. Die Oberfläche bündelt die Felder eines Strichs, bevor sie
+// schickt (pages/tisch/useNebelpinsel.js); höchstens 4000 je Anfrage.
 router.post('/:id/nebel', requireDm, (req, res) => {
   const row = holeSzene(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'szene_nicht_gefunden', error: 'Szene nicht gefunden.' });
@@ -48,7 +52,8 @@ router.post('/:id/nebel', requireDm, (req, res) => {
   res.json({ ok: true, offen: naechste.length });
 });
 
-// POST /api/scenes/:id/nebel/alles  { revealed: true|false }
+// POST /api/scenes/:id/nebel/alles  { revealed: true|false } – die ganze Karte
+// auf einmal aufdecken oder zudecken.
 router.post('/:id/nebel/alles', requireDm, (req, res) => {
   const row = holeSzene(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'szene_nicht_gefunden', error: 'Szene nicht gefunden.' });

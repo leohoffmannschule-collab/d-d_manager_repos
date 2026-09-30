@@ -76,7 +76,7 @@ export function addClient(req, res, user, campaignId) {
 /**
  * Schickt ein Ereignis an alle passenden Fenster.
  *
- * @param {string} event Name des Ereignisses, z. B. 'kampf:aktualisiert'
+ * @param {string} event Name des Ereignisses, z. B. 'charakter:aktualisiert'
  * @param {unknown} data Nutzlast
  * @param {object} [options]
  * @param {boolean} [options.dmOnly] nur an die Spielleitung

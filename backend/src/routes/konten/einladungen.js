@@ -14,6 +14,8 @@ import { neuerEinladungscode } from './regeln.js';
 
 const router = Router();
 
+// GET /api/auth/invites – alle Einladungscodes, neueste zuerst, mit dem Namen
+// dessen, der einen eingelöst hat.
 router.get('/invites', requireDm, (req, res) => {
   res.json(
     db
@@ -26,6 +28,8 @@ router.get('/invites', requireDm, (req, res) => {
   );
 });
 
+// POST /api/auth/invites  { note? } – einen neuen Code erzeugen. Die Notiz
+// („für Mara“) hilft nur der Spielleitung beim Zuordnen.
 router.post('/invites', requireDm, (req, res) => {
   const note = typeof req.body?.note === 'string' ? req.body.note.trim().slice(0, 80) : '';
   const code = neuerEinladungscode();
@@ -34,6 +38,8 @@ router.post('/invites', requireDm, (req, res) => {
   res.status(201).json({ code, note, created_at: stand, used_at: null, used_by_name: null });
 });
 
+// DELETE /api/auth/invites/:code – einen Code zurückziehen. Groß- und
+// Kleinschreibung spielen keine Rolle, die Codes sind immer groß.
 router.delete('/invites/:code', requireDm, (req, res) => {
   const info = db.prepare('DELETE FROM invites WHERE code = ?').run(req.params.code.toUpperCase());
   if (info.changes === 0) return res.status(404).json({ code: 'einladung_nicht_gefunden', error: 'Einladung nicht gefunden.' });

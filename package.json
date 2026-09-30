@@ -21,6 +21,7 @@
     "sicherung": "node backend/scripts/sicherung.mjs",
     "vorlagen": "node backend/scripts/vorlagen.mjs",
     "drucksatz": "node scripts/drucksatz.mjs",
+    "handbuch": "node scripts/handbuch.mjs",
     "vertrag": "node scripts/vertrag.mjs",
     "blattprobe": "node scripts/blattprobe.mjs",
     "klangprobe": "node scripts/klangprobe.mjs",

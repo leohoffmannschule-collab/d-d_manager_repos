@@ -57,10 +57,14 @@ function saubereEintraege(liste) {
     }));
 }
 
+// GET /api/encounters – alle vorbereiteten Begegnungen, nach Namen.
+// Sie gehören der ganzen Runde und stehen in jeder Kampagne bereit.
 router.get('/', (req, res) => {
   res.json(db.prepare('SELECT * FROM encounters ORDER BY name COLLATE NOCASE').all().map(rowToEncounter));
 });
 
+// POST /api/encounters  { name, notes?, entries } – eine Begegnung anlegen.
+// Jeder Posten trägt seine Werte selbst (siehe saubereEintraege oben).
 router.post('/', (req, res) => {
   const body = req.body ?? {};
   if (!hatText(body.name)) {
@@ -78,6 +82,7 @@ router.post('/', (req, res) => {
   res.status(201).json(rowToEncounter(db.prepare('SELECT * FROM encounters WHERE id = ?').get(id)));
 });
 
+// PUT /api/encounters/:id – ändern; nur, was mitgeschickt wird.
 router.put('/:id', (req, res) => {
   const row = db.prepare('SELECT * FROM encounters WHERE id = ?').get(req.params.id);
   if (!row) return res.status(404).json({ code: 'begegnung_nicht_gefunden', error: 'Begegnung nicht gefunden.' });
@@ -91,6 +96,8 @@ router.put('/:id', (req, res) => {
   res.json(rowToEncounter(db.prepare('SELECT * FROM encounters WHERE id = ?').get(row.id)));
 });
 
+// DELETE /api/encounters/:id – löschen. Ein laufender Kampf, der aus ihr
+// gestellt wurde, bleibt davon unberührt.
 router.delete('/:id', (req, res) => {
   const info = db.prepare('DELETE FROM encounters WHERE id = ?').run(req.params.id);
   if (info.changes === 0) return res.status(404).json({ code: 'begegnung_nicht_gefunden', error: 'Begegnung nicht gefunden.' });

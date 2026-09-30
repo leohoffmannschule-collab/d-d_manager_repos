@@ -51,6 +51,12 @@ router.get('/', requireDm, (req, res) => {
   res.json(db.prepare('SELECT * FROM ambience ORDER BY name COLLATE NOCASE').all().map(rowToKlang));
 });
 
+// POST /api/ambience  { name, link, tags?, notes? }
+//
+// Einen Spotify-Link in die Klangbibliothek legen. Angenommen wird jede
+// Schreibweise, die Spotify selbst herausgibt – geteilter Link, Adresse aus
+// dem Browser, spotify:-Kennung –, gespeichert wird immer die Kennung.
+// Und nur die: Kein Stück, keine Datei, kein Konto – siehe den Kopf dieser Datei.
 router.post('/', requireDm, (req, res) => {
   const body = req.body ?? {};
   const adresse = spotifyAdresse(body.uri ?? body.link);
@@ -80,6 +86,8 @@ router.post('/', requireDm, (req, res) => {
   res.status(201).json(rowToKlang(holen(id)));
 });
 
+// PUT /api/ambience/:id – umbenennen, neu verschlagworten oder auf einen
+// anderen Link zeigen lassen. Nur, was mitgeschickt wird, ändert sich.
 router.put('/:id', requireDm, (req, res) => {
   const row = holen(req.params.id);
   if (!row) return res.status(404).json({ code: 'klang_nicht_gefunden', error: 'Ambiente nicht gefunden.' });
@@ -121,6 +129,8 @@ router.put('/:id', requireDm, (req, res) => {
   res.json(frisch);
 });
 
+// DELETE /api/ambience/:id – aus der Bibliothek nehmen. Karten, die diese
+// Ambiente mitbrachten, bringen danach keine mehr mit.
 router.delete('/:id', requireDm, (req, res) => {
   const row = holen(req.params.id);
   if (!row) return res.status(404).json({ code: 'klang_nicht_gefunden', error: 'Ambiente nicht gefunden.' });
@@ -132,7 +142,9 @@ router.delete('/:id', requireDm, (req, res) => {
   res.status(204).end();
 });
 
-// POST /api/ambience/:id/auflegen
+// POST /api/ambience/:id/auflegen – diese Ambiente für die ganze Runde
+// auflegen. Sie beginnt am Anfang und läuft; jedes Fenster bekommt sie über
+// den Live-Kanal (`klang`) und spielt sie im eigenen Spotify-Rahmen ab.
 router.post('/:id/auflegen', requireDm, (req, res) => {
   const klang = klangAuflegen(req.params.id, req.campaignId);
   if (!klang) return res.status(404).json({ code: 'klang_nicht_gefunden', error: 'Ambiente nicht gefunden.' });

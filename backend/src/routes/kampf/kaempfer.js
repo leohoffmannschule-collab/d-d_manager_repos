@@ -20,7 +20,10 @@ import { hatText, texte, toNumber } from '../../werte.js';
 // stand früher ein zweiter, der nie erreicht wurde.
 const router = Router();
 
-// POST /api/encounter/combatants
+// POST /api/encounter/combatants  { name, type?, initiative?, hp?, maxHp?, ac?,
+// conditions?, notes?, characterId?, hidden? } – einen Kämpfer von Hand in den
+// Kampf setzen. Meist kommen Kämpfer über „Runde holen“, das Bestiarium oder
+// eine vorbereitete Begegnung; dieser Weg ist für den Rest.
 router.post('/combatants', requireDm, (req, res) => {
   const { name, type, initiative, hp, maxHp, ac, conditions, notes, characterId, hidden } = req.body ?? {};
   if (!hatText(name)) {
@@ -58,7 +61,9 @@ router.post('/combatants', requireDm, (req, res) => {
   antwort(req, res);
 });
 
-// PUT /api/encounter/combatants/:id
+// PUT /api/encounter/combatants/:id – Werte eines Kämpfers ändern: Initiative,
+// Zustände, verborgen oder nicht. Trefferpunkte gehen besser über /damage,
+// das mit temporären TP und der Null richtig umgeht.
 router.put('/combatants/:id', requireDm, (req, res) => {
   const row = holen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'kaempfer_nicht_gefunden', error: 'Kämpfer nicht gefunden.' });
@@ -183,7 +188,9 @@ router.post('/combatants/:id/initiative', (req, res) => {
   antwort(req, res);
 });
 
-// DELETE /api/encounter/combatants/:id
+// DELETE /api/encounter/combatants/:id – einen Kämpfer aus dem Kampf nehmen.
+// War er gerade dran, ist es danach der, der in der Reihenfolge an seine
+// Stelle rückt.
 router.delete('/combatants/:id', requireDm, (req, res) => {
   const row = holen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'kaempfer_nicht_gefunden', error: 'Kämpfer nicht gefunden.' });

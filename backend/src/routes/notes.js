@@ -53,6 +53,8 @@ function rowToNote(row) {
   };
 }
 
+// GET /api/notes – die Spielleitung bekommt alles, die Runde nur die
+// ausgeteilten Handzettel (`visibility = 'runde'`).
 router.get('/', (req, res) => {
   const rows = isDm(req.user)
     ? db.prepare('SELECT * FROM notes WHERE campaign_id = ? ORDER BY updated_at DESC').all(req.campaignId)
@@ -62,6 +64,9 @@ router.get('/', (req, res) => {
   res.json(rows.map(rowToNote));
 });
 
+// POST /api/notes  { title, content?, tags?, visibility? } – eine Notiz
+// anlegen; ohne Angabe bleibt sie hinter dem Schirm. Wird sie gleich
+// ausgeteilt, erfährt es die Runde sofort und die Chronik vermerkt es.
 router.post('/', requireDm, (req, res) => {
   const body = req.body ?? {};
   if (!body.title || typeof body.title !== 'string' || !body.title.trim()) {
@@ -89,6 +94,7 @@ router.post('/', requireDm, (req, res) => {
   res.status(201).json(note);
 });
 
+// PUT /api/notes/:id – ändern, austeilen oder zurückziehen.
 router.put('/:id', requireDm, (req, res) => {
   const row = holen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'notiz_nicht_gefunden', error: 'Notiz nicht gefunden.' });
@@ -111,6 +117,8 @@ router.put('/:id', requireDm, (req, res) => {
   res.json(note);
 });
 
+// DELETE /api/notes/:id – löschen; war sie ausgeteilt, verschwindet sie
+// auch bei der Runde.
 router.delete('/:id', requireDm, (req, res) => {
   const row = holen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'notiz_nicht_gefunden', error: 'Notiz nicht gefunden.' });

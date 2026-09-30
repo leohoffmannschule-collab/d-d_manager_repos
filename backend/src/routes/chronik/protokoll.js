@@ -59,6 +59,9 @@ export function protokoll(session, liste) {
   return zeilen.join('\n');
 }
 
+// GET /api/chronicle/sessions/:id/protokoll – die Sitzung als Markdown zum
+// Sichern oder Weitergeben. Jede und jeder bekommt die eigene Sicht: Die
+// Runde sieht keine verdeckten Einträge, auch nicht im Protokoll.
 router.get('/sessions/:id/protokoll', (req, res) => {
   const row = sitzungHolen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'sitzung_nicht_gefunden', error: 'Sitzung nicht gefunden.' });

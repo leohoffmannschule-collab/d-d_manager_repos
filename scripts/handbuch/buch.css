@@ -1,0 +1,268 @@
+/**
+ * Der Satzspiegel des Handbuchs – DIN A4, zum Drucken und als PDF.
+ *
+ * Gehört zu scripts/handbuch.mjs. Das Skript liest diese Datei, schneidet
+ * diesen Erklärkopf ab und bettet den Rest in die gesetzte Seite ein – die
+ * Druckfassung ist eine einzige Datei ohne Nachbarn.
+ *
+ * Maßgebend sind Millimeter, Punkt und `@page`: Das hier ist kein
+ * Bildschirm. Wer daran schraubt, prüft das Ergebnis im PDF, nicht im
+ * Browserfenster.
+ *
+ * Die Seitenzahlen stehen in den Randfeldern von `@page` (`@bottom-center`)
+ * und zählen von selbst mit. Titelblatt und Teilblätter tragen keine – dafür
+ * sind die benannten Seiten `titel` und `teil` da.
+ */
+@page {
+  size: A4;
+  margin: 22mm 20mm 20mm;
+  @top-left {
+    content: "Abenteuer-Almanach · Handbuch";
+    font: italic 8pt "Liberation Serif", "DejaVu Serif", Georgia, serif;
+    color: #8a7960;
+  }
+  @bottom-center {
+    content: counter(page);
+    font: 9pt "Liberation Serif", "DejaVu Serif", Georgia, serif;
+    color: #5c4c38;
+  }
+}
+
+@page titel {
+  @top-left { content: none; }
+  @bottom-center { content: none; }
+}
+
+@page teil {
+  @top-left { content: none; }
+  @bottom-center { content: none; }
+}
+
+:root {
+  --tinte: #241c12;
+  --sepia: #5c4c38;
+  --schwach: #8a7960;
+  --linie: #cbb68d;
+  --rubrik: #8f2820;
+  --gold: #a8842b;
+  --blatt: #fdfaf3;
+  --code: #f2ead7;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #fff;
+  color: var(--tinte);
+  font-family: "Liberation Serif", "DejaVu Serif", Georgia, "Times New Roman", serif;
+  font-size: 10.5pt;
+  line-height: 1.5;
+  hyphens: auto;
+}
+
+/* --- Titelblatt ---------------------------------------------------------- */
+
+.titelblatt {
+  page: titel;
+  height: 250mm;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  break-after: page;
+}
+.titelblatt .marke {
+  font-size: 9pt;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--schwach);
+  margin-bottom: 14mm;
+}
+.titelblatt h1 {
+  font-size: 32pt;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+.titelblatt .unter {
+  font-style: italic;
+  font-size: 13pt;
+  color: var(--sepia);
+  margin-top: 6mm;
+  max-width: 130mm;
+}
+.titelblatt .stand {
+  margin-top: 30mm;
+  font-size: 9pt;
+  color: var(--schwach);
+  letter-spacing: 0.08em;
+}
+.zierat { margin-top: 14mm; color: var(--gold); }
+
+/* --- Inhaltsverzeichnis --------------------------------------------------- */
+
+.verzeichnis { break-after: page; }
+.verzeichnis h1 { margin-bottom: 8mm; }
+.verzeichnis ol { list-style: none; margin: 0; padding: 0; }
+.verzeichnis li { margin: 0; break-inside: avoid; }
+.verzeichnis a { color: var(--tinte); display: flex; align-items: baseline; gap: 2mm; }
+.verzeichnis .fuellung { flex: 1; border-bottom: 0.6pt dotted var(--linie); transform: translateY(-1mm); }
+.verzeichnis .seite { min-width: 9mm; text-align: right; font-variant-numeric: tabular-nums; }
+.verzeichnis .v-teil {
+  margin-top: 5mm;
+  font-size: 10pt;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rubrik);
+  font-weight: 600;
+}
+.verzeichnis .v-teil a { color: var(--rubrik); }
+.verzeichnis .v-kapitel { margin-top: 1.8mm; font-weight: 600; }
+.verzeichnis .v-kapitel .nummer { display: inline-block; min-width: 8mm; color: var(--gold); }
+.verzeichnis .v-abschnitt { padding-left: 8mm; font-size: 9.5pt; color: var(--sepia); }
+.verzeichnis .v-abschnitt a { color: var(--sepia); }
+
+/* --- Teile und Kapitel ---------------------------------------------------- */
+
+.teilblatt {
+  page: teil;
+  height: 250mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  break-before: page;
+  break-after: page;
+  padding: 0 12mm;
+}
+.teilblatt .teil-nummer {
+  font-size: 10pt;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.teilblatt h1 {
+  font-size: 26pt;
+  border: 0;
+  margin: 3mm 0 8mm;
+  padding: 0;
+}
+.teilblatt .teil-text { font-size: 11pt; color: var(--sepia); max-width: 140mm; }
+
+.kapitel { break-before: page; }
+.kapitel-nummer {
+  font-size: 9pt;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1mm;
+}
+
+/* --- Überschriften -------------------------------------------------------- */
+
+h1, h2, h3, h4, h5 { font-weight: 600; break-after: avoid; }
+h1 {
+  font-size: 20pt;
+  letter-spacing: 0.05em;
+  border-bottom: 1.5pt solid var(--gold);
+  padding-bottom: 2mm;
+  margin: 0 0 7mm;
+}
+h2 {
+  font-size: 14pt;
+  letter-spacing: 0.03em;
+  color: var(--rubrik);
+  margin: 9mm 0 3mm;
+  border-bottom: 0.5pt solid var(--linie);
+  padding-bottom: 1.5mm;
+}
+h3 { font-size: 11.5pt; margin: 6mm 0 2mm; }
+h4 { font-size: 10.5pt; margin: 4mm 0 1.5mm; color: var(--sepia); }
+h5 { font-size: 10pt; margin: 3mm 0 1mm; font-style: italic; }
+
+p { margin: 0 0 3mm; orphans: 3; widows: 3; text-align: justify; }
+
+a { color: var(--rubrik); text-decoration: none; }
+
+ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+li { margin-bottom: 1.2mm; }
+li > ul, li > ol { margin: 1.2mm 0 0; }
+li::marker { color: var(--rubrik); }
+
+code {
+  font-family: "DejaVu Sans Mono", "Liberation Mono", monospace;
+  font-size: 8.6pt;
+  background: var(--code);
+  padding: 0.2mm 0.9mm;
+  border-radius: 0.6mm;
+  hyphens: none;
+  overflow-wrap: anywhere;
+}
+
+pre {
+  background: var(--blatt);
+  border: 0.5pt solid var(--linie);
+  border-left: 2pt solid var(--gold);
+  padding: 2.5mm 3mm;
+  margin: 0 0 3.5mm;
+  white-space: pre-wrap;
+}
+pre code { background: none; padding: 0; font-size: 8.3pt; line-height: 1.4; overflow-wrap: anywhere; }
+
+blockquote {
+  margin: 0 0 3.5mm;
+  padding: 2mm 3mm;
+  background: rgba(168, 132, 43, 0.09);
+  border-left: 2pt solid var(--gold);
+  break-inside: avoid;
+}
+blockquote p:last-child { margin-bottom: 0; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 4mm;
+  font-size: 9.2pt;
+}
+thead { display: table-header-group; }
+tr { break-inside: avoid; }
+th {
+  text-align: left;
+  font-size: 7.8pt;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--schwach);
+  border-bottom: 0.8pt solid var(--linie);
+  padding: 1.5mm 2mm 1mm 0;
+  font-weight: 600;
+}
+td {
+  vertical-align: top;
+  border-bottom: 0.4pt dotted var(--linie);
+  padding: 1.4mm 2mm 1.4mm 0;
+}
+td p { text-align: left; }
+
+figure {
+  margin: 2mm 0 5mm;
+  break-inside: avoid;
+  text-align: center;
+}
+figure img {
+  max-width: 100%;
+  max-height: 150mm;
+  border: 0.5pt solid var(--linie);
+}
+figcaption {
+  font-size: 9pt;
+  font-style: italic;
+  color: var(--sepia);
+  margin-top: 1.5mm;
+}
+
+hr { border: 0; border-top: 0.5pt solid var(--linie); margin: 6mm 0; }
+
+strong { font-weight: 700; }

@@ -30,17 +30,23 @@ function rowToSession(row, user) {
   };
 }
 
+// GET /api/chronicle/sessions – alle Sitzungen dieser Kampagne, jüngste zuerst.
+// Die Zahl der Einträge zählt für die Runde nur, was sie sehen darf.
 router.get('/sessions', (req, res) => {
   const rows = db.prepare('SELECT * FROM game_sessions WHERE campaign_id = ? ORDER BY started_at DESC').all(req.campaignId);
   res.json(rows.map((row) => rowToSession(row, req.user)));
 });
 
+// GET /api/chronicle/sessions/:id – eine Sitzung samt Einträgen; verdeckte
+// nur für die Spielleitung.
 router.get('/sessions/:id', (req, res) => {
   const row = sitzungHolen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'sitzung_nicht_gefunden', error: 'Sitzung nicht gefunden.' });
   res.json({ ...rowToSession(row, req.user), entries: eintraege(row.id, req.user) });
 });
 
+// POST /api/chronicle/sessions  { title? } – eine Sitzung beginnen. Läuft
+// schon eine, kommt diese zurück – es gibt nie zwei offene zugleich.
 router.post('/sessions', requireDm, (req, res) => {
   res.status(201).json(rowToSession(chronik.starteSitzung(req.body?.title, req.campaignId), req.user));
 });
@@ -56,6 +62,7 @@ router.post('/sessions/:id/ende', requireDm, (req, res) => {
   res.json(rowToSession(beendet, req.user));
 });
 
+// PATCH /api/chronicle/sessions/:id  { title } – umbenennen.
 router.patch('/sessions/:id', requireDm, (req, res) => {
   const row = sitzungHolen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'sitzung_nicht_gefunden', error: 'Sitzung nicht gefunden.' });
@@ -65,6 +72,8 @@ router.patch('/sessions/:id', requireDm, (req, res) => {
   res.json(rowToSession(sitzungHolen(row.id, req.campaignId), req.user));
 });
 
+// DELETE /api/chronicle/sessions/:id – eine Sitzung samt allen Einträgen
+// löschen (die Einträge hängen per Fremdschlüssel daran).
 router.delete('/sessions/:id', requireDm, (req, res) => {
   const row = sitzungHolen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'sitzung_nicht_gefunden', error: 'Sitzung nicht gefunden.' });
@@ -89,6 +98,7 @@ router.post('/eintrag', requireDm, (req, res) => {
   res.status(201).json(eintrag);
 });
 
+// DELETE /api/chronicle/eintrag/:id – einen einzelnen Eintrag streichen.
 router.delete('/eintrag/:id', requireDm, (req, res) => {
   // Ein Eintrag gehört zu einer Sitzung, die zu dieser Kampagne gehört – so
   // lässt sich kein Eintrag aus einer fremden Kampagne treffen.

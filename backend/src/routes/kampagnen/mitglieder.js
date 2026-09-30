@@ -13,7 +13,8 @@ import { trenne } from '../../events.js';
 
 const router = Router();
 
-// GET /api/campaigns/:id/mitglieder
+// GET /api/campaigns/:id/mitglieder – wer in dieser Kampagne mitspielt, die
+// Spielleitung zuerst.
 router.get('/:id/mitglieder', requireDm, (req, res) => {
   const kampagne = db.prepare('SELECT id FROM campaigns WHERE id = ?').get(req.params.id);
   if (!kampagne) return res.status(404).json({ code: 'kampagne_nicht_gefunden', error: 'Kampagne nicht gefunden.' });
@@ -30,7 +31,8 @@ router.get('/:id/mitglieder', requireDm, (req, res) => {
   );
 });
 
-// POST /api/campaigns/:id/mitglieder { userId }
+// POST /api/campaigns/:id/mitglieder  { userId } – ein Konto in diese Kampagne
+// aufnehmen. Wer schon dabei ist, bleibt einfach dabei.
 router.post('/:id/mitglieder', requireDm, (req, res) => {
   const kampagne = db.prepare('SELECT id FROM campaigns WHERE id = ?').get(req.params.id);
   if (!kampagne) return res.status(404).json({ code: 'kampagne_nicht_gefunden', error: 'Kampagne nicht gefunden.' });
@@ -45,7 +47,9 @@ router.post('/:id/mitglieder', requireDm, (req, res) => {
   res.status(204).end();
 });
 
-// DELETE /api/campaigns/:id/mitglieder/:userId
+// DELETE /api/campaigns/:id/mitglieder/:userId – ein Konto aus der Kampagne
+// nehmen. Die Blätter bleiben liegen; wer gerade in ihr saß, landet wieder in
+// der Kampagnenauswahl.
 router.delete('/:id/mitglieder/:userId', requireDm, (req, res) => {
   db.prepare('DELETE FROM campaign_members WHERE campaign_id = ? AND user_id = ?').run(
     req.params.id,

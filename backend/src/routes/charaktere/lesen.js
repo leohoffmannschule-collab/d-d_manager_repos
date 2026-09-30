@@ -24,7 +24,9 @@ router.get('/', (req, res) => {
   res.json(rows.map(summary));
 });
 
-// GET /api/characters/:id
+// GET /api/characters/:id – ein Blatt vollständig, samt `editable`: ob der
+// Fragende es ändern darf (eigenes Blatt oder Spielleitung). Fremde, nicht
+// geteilte Blätter und NSC-Blätter bekommt die Runde nicht (403).
 router.get('/:id', (req, res) => {
   const row = holen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'charakter_nicht_gefunden', error: 'Charakter nicht gefunden' });

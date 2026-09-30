@@ -85,7 +85,11 @@ export function bekannteNamen(code) {
   // Das ist eine Erklärung, kein Aufruf. Die schließende Klammer mit der
   // geschweiften dahinter unterscheidet sie von einem echten Aufruf, der als
   // Argument eines anderen steht (`f(a, bar(x))` – dort folgt `)`, nicht `{`).
-  for (const m of code.matchAll(/[,{]\s*(?:async\s+)?(\w+)\s*\([^()]*\)\s*\{/g)) merken(m[1]);
+  // Die Parameter in den Klammern sind ebenso erklärt wie der Name davor.
+  for (const m of code.matchAll(/[,{]\s*(?:async\s+)?(\w+)\s*\(([^()]*)\)\s*\{/g)) {
+    merken(m[1]);
+    for (const teil of m[2].split(',')) merken(teil.split(/[:=]/)[0].replace(/[{}[\].]/g, ''));
+  }
 
   // Parameter – grob, aber für diesen Zweck genau genug: alles in den
   // Klammern einer Funktion oder vor einem Pfeil.

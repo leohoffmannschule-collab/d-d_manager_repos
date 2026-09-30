@@ -36,10 +36,16 @@ const KI_SCHLUESSEL = process.env.CHRONIK_KI_SCHLUESSEL || '';
 // Ohne Frist bliebe die Anfrage der Spielleitung sonst ewig offen.
 const KI_FRIST_MS = 3 * 60 * 1000;
 
+// GET /api/chronicle/ki – ist ein Sprachmodell eingestellt? Die Oberfläche
+// zeigt den Knopf „Rückblick schreiben lassen“ nur, wenn ja.
 router.get('/ki', (req, res) => {
   res.json({ verfuegbar: !!KI_URL, modell: KI_URL ? KI_MODELL : null });
 });
 
+// POST /api/chronicle/sessions/:id/rueckblick – das Sprachmodell einen
+// Rückblick auf die Sitzung schreiben lassen und ihn an der Sitzung speichern.
+// Geschickt wird nur, was die Runde sehen darf (siehe oben), und nur auf
+// Anfrage der Spielleitung – nie von selbst.
 router.post('/sessions/:id/rueckblick', requireDm, async (req, res) => {
   if (!KI_URL) {
     return res.status(501).json({

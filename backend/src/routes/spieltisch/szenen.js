@@ -45,6 +45,10 @@ router.get('/aktiv', (req, res) => {
   res.json(szenenSicht(req.user, req.campaignId));
 });
 
+// POST /api/scenes  { name, mediaId?, width, height, gridSize?, unit?, scale? }
+//
+// Eine Szene anlegen, unter vollem Nebel. Die erste Szene einer Kampagne
+// kommt gleich auf den Tisch; alle weiteren warten, bis sie aufgelegt werden.
 router.post('/', requireDm, (req, res) => {
   const body = req.body ?? {};
   if (!hatText(body.name)) {
@@ -74,6 +78,9 @@ router.post('/', requireDm, (req, res) => {
   res.status(201).json(rowToScene(holeSzene(id, req.campaignId)));
 });
 
+// PUT /api/scenes/:id – Raster, Nebel, Dunkelheit, Sichtweite, Maßstab.
+// Alle Zahlen werden auf vernünftige Grenzen gestutzt (siehe werte.js,
+// `clamp`), damit ein Tippfehler keine Karte aus einer Million Feldern macht.
 router.put('/:id', requireDm, (req, res) => {
   const row = holeSzene(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'szene_nicht_gefunden', error: 'Szene nicht gefunden.' });
@@ -104,6 +111,8 @@ router.put('/:id', requireDm, (req, res) => {
   res.json(rowToScene(holeSzene(row.id, req.campaignId)));
 });
 
+// DELETE /api/scenes/:id – eine Szene samt Figuren und Nebel löschen. Lag
+// sie auf dem Tisch, rückt die jüngste andere nach.
 router.delete('/:id', requireDm, (req, res) => {
   const row = holeSzene(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'szene_nicht_gefunden', error: 'Szene nicht gefunden.' });
