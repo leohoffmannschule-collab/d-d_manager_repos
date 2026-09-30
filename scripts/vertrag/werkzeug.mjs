@@ -17,7 +17,14 @@ const wurzel = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 
 export const PORT = 3400 + Math.floor(Math.random() * 400);
 /** Die Adresse der API dieses Prüfservers. */
 export const BASIS = `http://localhost:${PORT}/api`;
-const datenordner = mkdtempSync(path.join(tmpdir(), 'almanach-vertrag-'));
+/**
+ * Der Datenordner des Prüfservers – frisch und leer. Ausgeführt, damit ein
+ * Kapitel auch die Werkzeuge aus backend/scripts/ gegen denselben Almanach
+ * laufen lassen kann (siehe 05-vorlagen.mjs).
+ */
+export const datenordner = mkdtempSync(path.join(tmpdir(), 'almanach-vertrag-'));
+/** Das Wurzelverzeichnis des Almanachs, für Kapitel, die ein Skript starten. */
+export { wurzel };
 
 let bestanden = 0;
 const maengel = [];

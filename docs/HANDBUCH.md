@@ -195,7 +195,8 @@ Almanach alles fassen kann.
 
 > **Gesät wird genau einmal.** Wer eine Vorlage löscht, hat sie gelöscht; sie
 > wächst beim nächsten Start nicht nach. Zurückholen lassen sie sich mit
-> `npm run vorlagen` – das legt nur an, was fehlt.
+> `npm run vorlagen` – das legt in jeder Kampagne nur an, was fehlt; mit
+> `npm run vorlagen -- "Name der Kampagne"` nur in dieser einen.
 
 ### 3.6 Jeder Wert ist ein Würfelknopf
 

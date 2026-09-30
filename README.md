@@ -450,8 +450,8 @@ Nützliche Befehle im Projektstamm:
 | `npm run vertrag`   | Die Schnittstelle gegen einen eigenen Testserver prüfen               |
 | `npm run blattprobe`| Nachrechnen, was das Charakterblatt ausrechnet                        |
 | `npm run lint`      | oxlint über Oberfläche, Server und Werkzeuge                          |
-| `npm test`          | Alles davon der Reihe nach: Lint, Einfuhr-, Blatt-, Klangprobe, Vertrag |
-| `npm run vorlagen`  | Gelöschte Vorlagen-Charaktere nachlegen                               |
+| `npm test`          | Alles davon der Reihe nach: Lint, Einfuhr-, Stil-, Kommentar-, Blatt-, Klangprobe, Vertrag |
+| `npm run vorlagen`  | Gelöschte Vorlagen-Charaktere nachlegen (alle Kampagnen, oder `-- "Name"` für eine) |
 
 `npm start` nimmt außerdem `-- --neu-bauen` (Bau erzwingen) und `-- --ohne-bau` (Bau überspringen).
 

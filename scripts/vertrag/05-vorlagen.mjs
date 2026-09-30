@@ -3,7 +3,8 @@
  *
  * Jede Kampagne bringt zwölf fertige Charaktere als NSC-Blätter mit. Die
  * Runde sieht keines davon; eine Abschrift holt eines hinter dem Schirm
- * hervor.
+ * hervor. Und wer eine gelöscht hat, bekommt sie mit `npm run vorlagen`
+ * zurück.
  *
  * Zwölf fertige Charaktere werden beim ersten Start angelegt. Sie sind
  * NSC-Blätter: Die Spielleitung sieht sie, die Runde nicht. Wer eine davon
@@ -13,7 +14,9 @@
  * gemeinsamen Stand `lage` – die angemeldeten Klienten und was frühere
  * Kapitel angelegt haben – und trägt ein, was spätere brauchen.
  */
-import { gleich, pruefe } from './werkzeug.mjs';
+import { spawnSync } from 'node:child_process';
+import path from 'node:path';
+import { datenordner, gleich, pruefe, wurzel } from './werkzeug.mjs';
 
 export default async function vorlagen(lage) {
   const { sl, spieler } = lage;
@@ -52,6 +55,18 @@ export default async function vorlagen(lage) {
       'Die Abschrift trägt dieselben Werte wie die Vorlage'
     );
     await sl.ruf(`/characters/${abschrift.id}`, { methode: 'DELETE' });
+
+    // Gelöscht ist gelöscht – bis jemand `npm run vorlagen` aufruft. Das
+    // Skript läuft gegen denselben Datenordner, während der Server weiterläuft.
+    await sl.ruf(`/characters/${eine.id}`, { methode: 'DELETE' });
+    gleich((await sl.ruf(`/characters/${eine.id}`)).status, 404, 'Eine gelöschte Vorlage ist fort');
+    const lauf = spawnSync('node', [path.join(wurzel, 'backend', 'scripts', 'vorlagen.mjs')], {
+      env: { ...process.env, DATA_DIR: datenordner },
+      encoding: 'utf8',
+    });
+    gleich(lauf.status, 0, '`npm run vorlagen` läuft durch');
+    pruefe(/1 von 12 Vorlagen nachgelegt/.test(lauf.stdout), 'Und meldet, was es nachgelegt hat', lauf.stdout + lauf.stderr);
+    gleich((await sl.ruf(`/characters/${eine.id}`)).status, 200, 'Danach liegt die Vorlage wieder hinter dem Schirm');
   }
 
 }
