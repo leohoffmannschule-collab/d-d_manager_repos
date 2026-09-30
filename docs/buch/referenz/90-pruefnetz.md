@@ -79,6 +79,9 @@ Geprüft wird:
    Stilblätter. Farben haben Namen – siehe stile/farben.css.
 6. Die index.html lädt ihre Skripte und Stilblätter, statt sie zu
    enthalten.
+7. Dieselbe Regel gilt für design/: Die Artboards dort sind von Hand
+   bearbeitetes HTML, kein Bau-Ergebnis – aber genauso wenig ein Ort
+   für style="…" (siehe design/README.md).
 
 Wie die Einfuhrprobe kommt sie ohne ein zusätzliches Paket aus.
 

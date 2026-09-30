@@ -271,7 +271,7 @@ d-d_manager_repos/
 │   └── vite.config.js       Bau, PWA, Weiterleitung beim Entwickeln
 ├── scripts/                 Start, Tunnel, Proben, Vertrag, Drucksatz, Handbuch
 ├── docs/                    die Handbücher und dieses Buch
-├── design/                  Entwürfe des Erscheinungsbildes (Design-Canvas)
+├── design/                  Entwürfe des Erscheinungsbildes (statisches HTML, eigenes Stilblatt)
 ├── Dockerfile, docker-compose.yml
 └── starten.cmd/.sh, tunnel.cmd/.sh   zum Doppelklicken
 ```

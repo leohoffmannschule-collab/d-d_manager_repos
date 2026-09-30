@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entwurf: Stilfibel</title>
+  <link rel="stylesheet" href="stil.css">
+</head>
+<body>
+<div class="seite seite-fibel">
+
+  <div class="fibel-kopf">
+    <div class="titelblock">
+      <span class="titel">Stilfibel</span>
+      <span class="untertitel">Illuminierte Handschrift — Pergament und Kerzenlicht</span>
+    </div>
+    <span class="fibel-marke">Abenteuer-Almanach</span>
+  </div>
+
+  <div class="fibel-spalten">
+
+    <div class="fibel-spalte">
+      <span class="fibel-abschnittstitel">Farben</span>
+      <div class="palette-raster">
+
+        <div class="farbfeld">
+          <div class="farbkachel farbkachel-pergament"></div>
+          <span class="farbname">Pergament</span>
+          <span class="farbwert">--grund</span>
+        </div>
+
+        <div class="farbfeld">
+          <div class="farbkachel farbkachel-velin"></div>
+          <span class="farbname">Velin</span>
+          <span class="farbwert">--flaeche</span>
+        </div>
+
+        <div class="farbfeld">
+          <div class="farbkachel farbkachel-eisengallus"></div>
+          <span class="farbname">Eisengallus</span>
+          <span class="farbwert">--tinte</span>
+        </div>
+
+        <div class="farbfeld">
+          <div class="farbkachel farbkachel-sepia"></div>
+          <span class="farbname">Sepia</span>
+          <span class="farbwert">--sepia</span>
+        </div>
+
+        <div class="farbfeld">
+          <div class="farbkachel farbkachel-rubrik"></div>
+          <span class="farbname">Rubrik</span>
+          <span class="farbwert">--rubrik</span>
+        </div>
+
+        <div class="farbfeld">
+          <div class="farbkachel farbkachel-blattgold"></div>
+          <span class="farbname">Blattgold</span>
+          <span class="farbwert">--gold</span>
+        </div>
+
+        <div class="farbfeld">
+          <div class="farbkachel farbkachel-lapis"></div>
+          <span class="farbname">Lapis</span>
+          <span class="farbwert">Kompendium</span>
+        </div>
+
+        <div class="farbfeld">
+          <div class="farbkachel farbkachel-buchleder"></div>
+          <span class="farbname">Buchleder</span>
+          <span class="farbwert">--leder</span>
+        </div>
+
+      </div>
+
+      <span class="fibel-abschnittstitel">Schrift</span>
+      <div class="schrift-tafel">
+        <div class="schrift-zeile">
+          <span class="schrift-probe schrift-probe-display">Charakterkopf</span>
+          <span class="schrift-zweck">Cinzel — Überschriften</span>
+        </div>
+        <div class="schrift-trenner"></div>
+        <div class="schrift-zeile">
+          <span class="schrift-probe">Fließtext für Merkmale und Beschreibungen</span>
+          <span class="schrift-zweck">EB Garamond — Text</span>
+        </div>
+        <div class="schrift-trenner"></div>
+        <div class="schrift-zeile">
+          <span class="schrift-probe schrift-probe-initial">E</span>
+          <span class="schrift-zweck">UnifrakturMaguntia — Initialen</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="fibel-spalte">
+      <span class="fibel-abschnittstitel">Bausteine</span>
+      <div class="bausteine-raster">
+
+        <div class="baustein">
+          <span class="baustein-label">Knöpfe</span>
+          <button class="knopf knopf-siegel">Siegeln</button>
+          <button class="knopf knopf-pergament">Verwerfen</button>
+        </div>
+
+        <div class="baustein">
+          <span class="baustein-label">Feld auf Linie</span>
+          <div class="feldgruppe">
+            <span class="feld-label">Name</span>
+            <div class="feld-wert">Elara Nachtwind</div>
+          </div>
+        </div>
+
+        <div class="baustein">
+          <span class="baustein-label">Häkchen und Zähler</span>
+          <div class="fertigkeit-zeile">
+            <span class="haekchen haekchen-geuebt">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#f4ead2" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"></path></svg>
+            </span>
+            <span class="fertigkeit-name">Geübt</span>
+          </div>
+          <div class="zaehler">
+            <span class="zaehler-taste">−</span>
+            <span class="zaehler-wert">3</span>
+            <span class="zaehler-taste">+</span>
+          </div>
+        </div>
+
+        <div class="baustein">
+          <span class="baustein-label">Wappenschild und Zierrat</span>
+          <div class="wappenschild">
+            <div class="wappenschild-rahmen">
+              <svg width="74" height="88" viewBox="0 0 74 88" fill="#f6e9c6" stroke="#b8912f" stroke-width="2"><path d="M4 5h66v42c0 20-14 30-33 36C18 77 4 67 4 47z"></path></svg>
+              <div class="wappenschild-zahlen">
+                <span class="wappenschild-wert">18</span>
+                <span class="wappenschild-modifikator">+4</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <span class="fibel-abschnittstitel">Tafelkopf</span>
+      <section class="tafel">
+        <div class="tafel-kopf">
+          <svg class="zierstern" width="15" height="15" viewBox="0 0 24 24" fill="#b8912f" stroke="none"><path d="M12 2.5 14 9l6.5 1.5L15.5 15l1.5 6.5L12 18l-5 3.5L8.5 15 3.5 10.5 10 9z"></path></svg>
+          <span class="tafel-kopf-titel">Muster-Tafel</span>
+          <span class="tafel-kopf-linie"></span>
+        </div>
+        <p class="fliesstext">Goldener Stern, Rubrik-Überschrift, durchlaufende Linie — so beginnt jede Tafel im Almanach.</p>
+      </section>
+    </div>
+
+  </div>
+
+</div>
+</body>
+</html>

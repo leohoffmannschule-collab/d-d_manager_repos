@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entwurf: Würfelbeutel auf dem Telefon</title>
+  <link rel="stylesheet" href="stil.css">
+</head>
+<body>
+<div class="seite seite-iphone">
+
+  <!-- Kopfleiste: schmale Fassung fürs Telefon, ohne Navigation -->
+  <div class="kopfleiste kopfleiste-schmal">
+    <div class="marke">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d9b451" stroke-width="1.4" stroke-linejoin="round">
+        <path d="M12 2.6 20.2 7v10L12 21.4 3.8 17V7z"></path>
+        <path d="M12 2.6 20.2 7 12 11.4 3.8 7z"></path>
+        <path d="M12 11.4V21.4"></path>
+      </svg>
+      <span class="marke-schrift marke-schrift-klein">Abenteuer-Almanach</span>
+    </div>
+  </div>
+
+  <!-- Das Blatt im Hintergrund: leserlich, aber abgedunkelt -->
+  <div class="vorschau-blatt">
+    <div class="vorschau-kopf">
+      <div class="avatar avatar-54">
+        <span class="avatar-buchstabe">E</span>
+      </div>
+      <div>
+        <div class="vorschau-name">Elara Nachtwind</div>
+        <div class="vorschau-beschreibung">Waldelfe · Waldläuferin 5</div>
+      </div>
+    </div>
+    <div class="kampfwerte-raster">
+      <div class="feldgruppe"><span class="kampfwert-label">Rüstungsklasse</span><span class="kampfwert-zahl">15</span></div>
+      <div class="feldgruppe"><span class="kampfwert-label">Initiative</span><span class="kampfwert-zahl">+4</span></div>
+      <div class="feldgruppe"><span class="kampfwert-label">Bewegung</span><span class="kampfwert-zahl">30′</span></div>
+    </div>
+  </div>
+
+  <!-- Abdunklung, weil der Würfelbeutel als Bogen darüberliegt -->
+  <div class="abdunklung"></div>
+
+  <!-- Der Würfelbeutel selbst: als Bogen von unten -->
+  <div class="wuerfelbeutel">
+
+    <div class="wuerfelbeutel-kopf">
+      <div class="wuerfelbeutel-titelgruppe">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#9a2b22" stroke-width="1.6" stroke-linejoin="round">
+          <path d="M12 2.6 20.2 7v10L12 21.4 3.8 17V7z"></path>
+          <path d="M12 2.6 20.2 7 12 11.4 3.8 7z"></path>
+          <path d="M12 11.4V21.4"></path>
+        </svg>
+        <span class="wuerfelbeutel-titel">Würfelbeutel</span>
+      </div>
+      <div class="schliessen-knopf">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6d5c45" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+      </div>
+    </div>
+
+    <div class="eingabepaar">
+      <div class="eingabe">
+        <span class="feld-label">Ausdruck</span>
+        <div class="eingabefeld">2W6+3</div>
+      </div>
+      <div class="eingabe">
+        <span class="feld-label">Bonus</span>
+        <div class="eingabefeld">+0</div>
+      </div>
+    </div>
+
+    <div class="wuerfel-raster">
+      <div class="wuerfel-taste">W4</div>
+      <div class="wuerfel-taste wuerfel-taste-gewaehlt">W6</div>
+      <div class="wuerfel-taste">W8</div>
+      <div class="wuerfel-taste">W10</div>
+      <div class="wuerfel-taste">W12</div>
+      <div class="wuerfel-taste">W20</div>
+      <div class="wuerfel-taste">W100</div>
+      <div class="wuerfel-taste wuerfel-taste-leeren">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a3865c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h14M10 11v6M14 11v6M7 7l1-3h8l1 3M6 7l1 13h10l1-13"></path></svg>
+        Leeren
+      </div>
+    </div>
+
+    <div class="wurfchronik-kopf">
+      <span class="wurfchronik-label">Letzte Würfe</span>
+    </div>
+
+    <div class="wurfliste">
+      <div class="wurf-zeile wurf-zeile-neu">
+        <span class="wurf-ausdruck wurf-ausdruck-neu">2W6+3 <span class="wurf-einzelwerte">(4, 5)</span></span>
+        <span class="wurf-ergebnis wurf-ergebnis-neu">12</span>
+      </div>
+      <div class="wurf-zeile">
+        <span class="wurf-ausdruck">W20+7 <span class="wurf-einzelwerte">(13)</span></span>
+        <span class="wurf-ergebnis">20</span>
+      </div>
+      <div class="wurf-zeile">
+        <span class="wurf-ausdruck">W8 <span class="wurf-einzelwerte">(3)</span></span>
+        <span class="wurf-ergebnis">3</span>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</body>
+</html>

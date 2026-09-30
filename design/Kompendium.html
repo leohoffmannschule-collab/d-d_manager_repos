@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entwurf: Kompendium mit Detailansicht</title>
+  <link rel="stylesheet" href="stil.css">
+</head>
+<body>
+<div class="seite seite-ipad">
+
+  <div class="kopfleiste">
+    <div class="marke">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#d9b451" stroke-width="1.4" stroke-linejoin="round">
+        <path d="M12 2.6 20.2 7v10L12 21.4 3.8 17V7z"></path>
+        <path d="M12 2.6 20.2 7 12 11.4 3.8 7z"></path>
+        <path d="M12 11.4V21.4"></path>
+      </svg>
+      <span class="marke-schrift">Abenteuer-Almanach</span>
+    </div>
+    <nav class="nav">
+      <div class="nav-punkt">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#c9b189" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 3h9a3 3 0 0 1 3 3v15H8a2 2 0 0 1-2-2z"></path>
+          <path d="M18 3a3 3 0 0 0-3 3v12"></path>
+          <path d="M9 8h6M9 12h6"></path>
+        </svg>
+        Charaktere
+      </div>
+      <div class="nav-punkt nav-punkt-aktiv">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#e8cf8d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 5.5C5.5 4 8.5 4 12 5.8 15.5 4 18.5 4 21 5.5v13c-2.5-1.5-5.5-1.5-9 .3-3.5-1.8-6.5-1.8-9-.3z"></path>
+          <path d="M12 5.8v13"></path>
+        </svg>
+        Kompendium
+      </div>
+      <div class="nav-punkt">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#c9b189" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"></circle>
+          <path d="M9.6 9.2a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.7-.9 1.3v.6"></path>
+          <path d="M12 17.2h.01"></path>
+        </svg>
+        Hilfe
+      </div>
+    </nav>
+  </div>
+
+  <div class="inhalt inhalt-kompendium">
+
+    <div class="titelblock">
+      <span class="titel">Kompendium</span>
+      <span class="untertitel">Gesammeltes Wissen über Völker, Künste und Ungeheuer</span>
+    </div>
+
+    <div class="kategorien">
+      <div class="kategorie kategorie-aktiv">Völker</div>
+      <div class="kategorie">Klassen</div>
+      <div class="kategorie">Hintergründe</div>
+      <div class="kategorie">Zauber</div>
+      <div class="kategorie">Ausrüstung</div>
+      <div class="kategorie">Monster</div>
+      <div class="kategorie">Zustände</div>
+    </div>
+
+    <div class="kompendium-spalten">
+
+      <div class="kompendium-liste-spalte">
+        <div class="suchfeld">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8a7355" stroke-width="1.6" stroke-linecap="round">
+            <circle cx="11" cy="11" r="6.5"></circle>
+            <path d="m16 16 4.5 4.5"></path>
+          </svg>
+          <span class="suchfeld-text">Suchen …</span>
+        </div>
+
+        <div class="eintragsliste">
+          <div class="eintrag">Drache</div>
+          <div class="eintrag">Zwerg</div>
+          <div class="eintrag-aktiv">
+            <span class="eintrag-aktiv-name">Elf</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f0dca8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"></path></svg>
+          </div>
+          <div class="eintrag">Gnom</div>
+          <div class="eintrag">Halbelf</div>
+          <div class="eintrag">Halbling</div>
+          <div class="eintrag">Halbork</div>
+          <div class="eintrag">Mensch</div>
+          <div class="eintrag">Tiefling</div>
+        </div>
+      </div>
+
+      <div class="kompendium-detail">
+
+        <div class="initiale-zeile">
+          <span class="initiale">E</span>
+          <span class="initiale-rest">lf</span>
+        </div>
+
+        <div class="zierlinie-mit-stern">
+          <span class="zierlinie zierlinie-kurz"></span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="#b8912f" stroke="none"><path d="M12 2.5 14 9l6.5 1.5L15.5 15l1.5 6.5L12 18l-5 3.5L8.5 15 3.5 10.5 10 9z"></path></svg>
+          <span class="zierlinie"></span>
+        </div>
+
+        <p class="fliesstext">Elfen sind ein magisches Volk von überirdischer Anmut, das in der Welt lebt, ohne ganz zu ihr zu gehören. Sie hausen an Orten von ätherischer Schönheit, inmitten uralter Wälder oder in silbrigen Türmen, die von Feenlicht schimmern.</p>
+
+        <div class="eigenschaften-raster">
+          <div class="eigenschaft"><span class="feld-label">Attributsbonus</span><span class="eigenschaft-wert">Geschicklichkeit +2</span></div>
+          <div class="eigenschaft"><span class="feld-label">Größe</span><span class="eigenschaft-wert">Mittelgroß</span></div>
+          <div class="eigenschaft"><span class="feld-label">Bewegungsrate</span><span class="eigenschaft-wert">30 Fuß</span></div>
+          <div class="eigenschaft"><span class="feld-label">Sprachen</span><span class="eigenschaft-wert">Gemeinsprache, Elfisch</span></div>
+        </div>
+
+        <div class="merkmal-kasten">
+          <span class="fibel-abschnittstitel">Merkmale</span>
+          <div class="merkmal-liste">
+            <div class="merkmal">
+              <span class="merkmal-name">Dunkelsicht.</span>
+              <span class="merkmal-text">Du siehst bei schwachem Licht 60 Fuß weit, als wäre es helles Licht.</span>
+            </div>
+            <div class="merkmal">
+              <span class="merkmal-name">Feenblut.</span>
+              <span class="merkmal-text">Vorteil bei Rettungswürfen gegen Bezauberung; Magie kann dich nicht einschläfern.</span>
+            </div>
+            <div class="merkmal">
+              <span class="merkmal-name">Trance.</span>
+              <span class="merkmal-text">Vier Stunden tiefer Meditation ersetzen acht Stunden Schlaf.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="quellen-hinweis">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8a7355" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"></circle>
+            <path d="M12 7.5v5l3 2"></path>
+          </svg>
+          Aus dem SRD, örtlich verwahrt — auch ohne Botenreiter verfügbar
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="schwebeknopf">
+    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#f0dca8" stroke-width="1.3" stroke-linejoin="round">
+      <path d="M12 2.6 20.2 7v10L12 21.4 3.8 17V7z"></path>
+      <path d="M12 2.6 20.2 7 12 11.4 3.8 7zM12 11.4V21.4M3.8 7l8.2 4.4M20.2 7 12 11.4"></path>
+    </svg>
+  </div>
+
+</div>
+</body>
+</html>

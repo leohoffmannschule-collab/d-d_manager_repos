@@ -7,7 +7,7 @@ Der Almanach ist in kleinen Schritten gewachsen, und jeder Schritt hat eine Nach
 
 Die Nachrichten sind so abgedruckt, wie sie geschrieben wurden. Die ersten, vom 1. September, sind englisch; ab dem 3. September wurde der Almanach deutsch, im Code wie in seiner Geschichte.
 
-Insgesamt 92 Schritte an 13 Tagen.
+Insgesamt 94 Schritte an 13 Tagen.
 
 ## 1. September 2026
 
@@ -1346,3 +1346,24 @@ Was das Handbuch unter „Bekannte Grenzen“ und „Was nicht geschützt ist“
 - HTTPS im Heimnetz ohne Download: `npm run zertifikat` stellt mit Node allein ein beschränktes Stammzertifikat (nur private Netze und Heimnetznamen) und ein Serverzertifikat aus; der Server lauscht dann zusätzlich auf 3443, bietet das Stammzertifikat unter /almanach-stamm.crt an, und die Anmeldeseite weist über http auf den verschlüsselten Eingang hin. Die Schlüssel liegen in data/tls/ und sind von git ausgeschlossen.
 
 Neues Vertragskapitel 21-luecken.mjs (56 Prüfungen, darunter ein zweiter Server mit echtem TLS); Gegenprobe: ohne die Korrekturen schlagen sie an. Blattprobe um Zauberwerte und das Einlesen erweitert (355).
+
+### Nichts mehr eingebettet: kein style, kein Inline-Skript, kein SVG im Bauteil
+
+`0736f9a`
+
+Werte, die erst im Browser feststehen (Lage der Figuren, gewählte Farben, Balken), standen als CSS-Variable im style-Attribut. Jetzt bekommt jedes Bauteil eine eigene Klasse und eine Regel in einem Laufzeit-Stilblatt, gesetzt über das CSSOM (lib/laufstil.js, components/Laufwert.jsx); ältere iPads nehmen dafür die leere Datei public/laufstil.css. Im ganzen Dokument steht kein style-Attribut mehr – nachgemessen im Browser –, und die Content-Security-Policy kommt ohne 'unsafe-inline' aus: keine einzige Verletzung auf allen Seiten, in beiden Rollen, beim Ziehen, Mitnehmen und Einlesen.
+
+- Alle 25 style-Attribute ersetzt; beim Ziehen wird eine Regel geändert, keine neue angelegt.
+- Lineal: Farbe und Strich ins Stilblatt statt als SVG-Attribute; der Wappenschild des Blattes ist ein Symbol in components/icons/.
+- Handbuch und Drucksatz tragen ihr Stilblatt nicht mehr in sich, sondern verweisen auf buch.css bzw. drucksatz.css daneben; der Zierrat ist eine eigene SVG-Datei.
+- Das mitgenommene Blatt enthält kein Skript mehr (Hinweis „Strg+P“ statt Druckknopf); der Datensatz steht entschärft in einem <template>. Das Stilblatt bleibt darin – die Datei muss ohne Server funktionieren; die Stilprobe lässt genau diese eine Stelle mit Grund zu. Ältere Dateien liest „Blatt einlesen“ weiterhin.
+- Stilprobe verschärft: kein style= im JSX, keine CSS-Werte in SVG-Attributen, SVG nur in components/icons/, kein <style>/<script>/ on…= in erzeugtem HTML. Gegenprobe: ein eingeschmuggeltes style= und ein <script> im Handbuch-Satz fallen auf.
+- initiative_bonus auch im Schema (nicht nur nachgerüstet).
+
+Dokumentation nachgezogen: Bekannte Grenzen (alle fünf geschlossen), Sicherheit (CSP, HTTPS im Heimnetz, Bedrohungstabelle), Einrichtung (Schritt 9.1 HTTPS samt Installation des Stammzertifikats je Gerät), Betrieb, Fehlersuche, Oberfläche (Laufzeit-Stilblatt), Datenmodell (Ausfuhr und Einlesen), Spielabend (ein Schalter statt zwei), Arbeiten (das Beispiel ist jetzt umgesetzt), Grundsätze, Begriffe, API, Hilfe im Almanach. Ein alter kaputter Anker in SPIELLEITUNG.md korrigiert. Handbuch neu gebaut: 541 Seiten.
+
+### design/: Inline-Stil als bewusste Ausnahme dokumentiert
+
+`bab84b2`
+
+Die .dc.html-Artboards des Claude-Design-Tools nutzen Inline-Stil als natives Format – nur so bleiben sie im Tool weiter zu öffnen und anzupassen. Das war bisher nirgends festgehalten, sodass es wie eine übersehene Stelle aussah. Jetzt steht es an beiden Stellen, an denen man danach suchen würde: im Kopf von scripts/stilprobe.mjs (die den Ordner ohnehin nie geprüft hat) und in design/README.md.

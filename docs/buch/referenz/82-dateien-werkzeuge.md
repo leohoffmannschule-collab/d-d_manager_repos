@@ -3,7 +3,7 @@
 > Dieses Kapitel schreibt `npm run handbuch` aus dem Code (scripts/handbuch/referenz/).
 > Änderungen gehören in den Code und seine Kommentare, nicht hierher.
 
-Alles unter scripts/ (64 Dateien, 7.556 Zeilen): Start und Tunnel, die Proben und der Vertrag, Drucksatz und dieses Handbuch.
+Alles unter scripts/ (64 Dateien, 7.568 Zeilen): Start und Tunnel, die Proben und der Vertrag, Drucksatz und dieses Handbuch.
 
 ## scripts/
 
@@ -273,7 +273,7 @@ Schalter:
 
 ### scripts/stilprobe.mjs
 
-*173 Zeilen*
+*185 Zeilen*
 
 Die Stilprobe: Steht Aussehen oder Verhalten irgendwo, wo es nicht hingehört?
 
@@ -304,6 +304,9 @@ Geprüft wird:
    Stilblätter. Farben haben Namen – siehe stile/farben.css.
 6. Die index.html lädt ihre Skripte und Stilblätter, statt sie zu
    enthalten.
+7. Dieselbe Regel gilt für design/: Die Artboards dort sind von Hand
+   bearbeitetes HTML, kein Bau-Ergebnis – aber genauso wenig ein Ort
+   für style="…" (siehe design/README.md).
 
 Wie die Einfuhrprobe kommt sie ohne ein zusätzliches Paket aus.
 

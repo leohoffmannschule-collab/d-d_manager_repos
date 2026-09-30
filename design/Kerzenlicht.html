@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="de" data-theme="kerzenlicht">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entwurf: Charakterblatt bei Kerzenlicht</title>
+  <link rel="stylesheet" href="stil.css">
+</head>
+<body>
+<div class="seite seite-kerze">
+
+  <div class="titelzeile">
+    <div class="titelblock">
+      <span class="titel">Elara Nachtwind</span>
+      <span class="untertitel">Waldelfe · Waldläuferin 5</span>
+    </div>
+    <span class="abzeichen">Alternative: Kerzenlicht</span>
+  </div>
+
+  <div class="charakterkopf">
+    <div class="avatar avatar-78">
+      <span class="avatar-buchstabe">E</span>
+    </div>
+    <div class="charakterkopf-mitte">
+      <div class="charakterkopf-zeile">
+        <span class="charakterkopf-abstammung">Für Runden im abgedunkelten Zimmer</span>
+      </div>
+    </div>
+    <div class="hp-tafel">
+      <span class="feld-label">Trefferpunkte</span>
+      <span class="hp-tafel-zahl">38<span class="hp-tafel-maximum"> / 44</span></span>
+    </div>
+  </div>
+
+  <!-- Tafel: Attribute als Wappenschilde, drei statt sechs -->
+  <section class="tafel">
+    <div class="tafel-kopf">
+      <svg class="zierstern" width="15" height="15" viewBox="0 0 24 24" fill="#d9b451" stroke="none"><path d="M12 2.5 14 9l6.5 1.5L15.5 15l1.5 6.5L12 18l-5 3.5L8.5 15 3.5 10.5 10 9z"></path></svg>
+      <span class="tafel-kopf-titel">Attribute</span>
+      <span class="tafel-kopf-linie"></span>
+    </div>
+    <div class="charakter-raster">
+
+      <div class="wappenschild">
+        <span class="attribut-label">Stärke</span>
+        <div class="wappenschild-rahmen">
+          <svg width="74" height="88" viewBox="0 0 74 88" fill="#2f2416" stroke="#7a5f2c" stroke-width="1.5"><path d="M4 5h66v42c0 20-14 30-33 36C18 77 4 67 4 47z"></path></svg>
+          <div class="wappenschild-zahlen">
+            <span class="wappenschild-wert">12</span>
+            <span class="wappenschild-modifikator">+1</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="wappenschild">
+        <span class="attribut-label">Gesch.</span>
+        <div class="wappenschild-rahmen">
+          <svg width="74" height="88" viewBox="0 0 74 88" fill="#382b18" stroke="#d9b451" stroke-width="2"><path d="M4 5h66v42c0 20-14 30-33 36C18 77 4 67 4 47z"></path></svg>
+          <div class="wappenschild-zahlen">
+            <span class="wappenschild-wert">18</span>
+            <span class="wappenschild-modifikator">+4</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="wappenschild">
+        <span class="attribut-label">Konst.</span>
+        <div class="wappenschild-rahmen">
+          <svg width="74" height="88" viewBox="0 0 74 88" fill="#2f2416" stroke="#7a5f2c" stroke-width="1.5"><path d="M4 5h66v42c0 20-14 30-33 36C18 77 4 67 4 47z"></path></svg>
+          <div class="wappenschild-zahlen">
+            <span class="wappenschild-wert">14</span>
+            <span class="wappenschild-modifikator">+2</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Tafel: Fertigkeiten, zwei Zeilen als Ausschnitt -->
+  <section class="tafel tafel-wachsend">
+    <div class="tafel-kopf">
+      <svg class="zierstern" width="15" height="15" viewBox="0 0 24 24" fill="#d9b451" stroke="none"><path d="M12 2.5 14 9l6.5 1.5L15.5 15l1.5 6.5L12 18l-5 3.5L8.5 15 3.5 10.5 10 9z"></path></svg>
+      <span class="tafel-kopf-titel">Fertigkeiten</span>
+      <span class="tafel-kopf-linie"></span>
+    </div>
+    <div class="fertigkeiten-raster">
+
+      <div class="fertigkeit-zeile">
+        <span class="haekchen haekchen-geuebt">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1c150d" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"></path></svg>
+        </span>
+        <span class="fertigkeit-name">Heimlichkeit <span class="fertigkeit-attribut">(GES)</span></span>
+        <span class="fertigkeit-bonus">+7</span>
+      </div>
+
+      <div class="fertigkeit-zeile">
+        <span class="haekchen"></span>
+        <span class="fertigkeit-name fertigkeit-name-ungeuebt">Akrobatik <span class="fertigkeit-attribut">(GES)</span></span>
+        <span class="fertigkeit-bonus fertigkeit-bonus-ungeuebt">+4</span>
+      </div>
+
+    </div>
+    <div class="tafel-fuss">Passive Wahrnehmung <span class="tafel-fuss-wert tafel-fuss-wert-tinte">16</span></div>
+  </section>
+
+  <div class="knopf-paar">
+    <button class="knopf knopf-pergament">Reiter wechseln</button>
+    <button class="knopf knopf-siegel">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d9b451" stroke-width="1.4" stroke-linejoin="round">
+        <path d="M12 2.6 20.2 7v10L12 21.4 3.8 17V7z"></path>
+        <path d="M12 2.6 20.2 7 12 11.4 3.8 7z"></path>
+        <path d="M12 11.4V21.4"></path>
+      </svg>
+      Würfeln
+    </button>
+  </div>
+
+</div>
+</body>
+</html>

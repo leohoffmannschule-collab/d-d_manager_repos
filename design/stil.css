@@ -1,0 +1,1486 @@
+/**
+ * Das Stilblatt der Design-Entwürfe.
+ *
+ * Früher trug jedes Artboard sein Aussehen als `style="…"` an jedem
+ * einzelnen Element – das Format, in dem das Claude-Design-Tool Artboards
+ * erzeugt. Zum Nachschlagen taugte das, zum Weiterbearbeiten von Hand nicht:
+ * dieselbe Farbe stand an hundert Stellen, eine Änderung hieß Suchen und
+ * Ersetzen quer durch sechs Dateien. Jetzt gilt für `design/` dieselbe Regel
+ * wie für den Almanach selbst – wie etwas aussieht, steht hier, nicht im
+ * Markup –, nur eben ohne Vite, Tailwind oder Laufzeit-Regeln: Diese
+ * Dateien öffnen sich mit einem Doppelklick im Browser, ganz ohne Bau.
+ *
+ * Die Farbnamen spiegeln absichtlich `frontend/src/stile/farben.css` – nur
+ * auf Deutsch, weil Tailwinds `@theme`-Mechanismus dort englische Namen
+ * verlangt (`--color-ink` wird zu den Klassen `text-ink`, `bg-ink` …), was
+ * es hier nicht gibt. Wer eine Farbe hier ändert, soll sofort sehen, welche
+ * Farbe der App sie entspricht.
+ *
+ * Zwei Fassungen, ein Satz Namen: `:root` ist Pergament (die Standardfarben
+ * der App), `[data-theme="kerzenlicht"]` überschreibt dieselben Namen für
+ * die dunkle Fassung – exakt der Schalter, den `frontend/src/lib/useTheme.js`
+ * in der echten App auch benutzt. Kerzenlicht.html setzt das Attribut auf
+ * sein `<html>` und braucht sonst keine einzige eigene Regel: dieselben
+ * Bausteine, nur im Dunkeln, wie der Untertitel des Artboards selbst sagt.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=UnifrakturMaguntia&display=swap');
+
+:root {
+  /* Pergament – Standardfassung */
+  --grund: #e6d7b0;
+  --flaeche: #f4ead2;
+  --flaeche-hell: #f8f0dc;
+  --tinte: #2b2114;
+  --sepia: #6d5c45;
+  --blass: #8a7355;
+  --blasser: #a3927a;
+  --linie: #c2a878;
+  --linie-stark: #a3865c;
+  --rubrik: #9a2b22;
+  --rubrik-tief: #7d2018;
+  --rubrik-schrift: #f4ead2;
+  --gold: #b8912f;
+  --gold-hell: #d9b451;
+  --leder: #382718;
+  --leder-schrift: #e8cf8d;
+  --leder-blass: #c9b189;
+  --ok: #5f7a4e;
+  --marke-schrift: #f0dca8;
+
+  --schrift-display: 'Cinzel', Georgia, 'Times New Roman', serif;
+  --schrift-text: 'EB Garamond', Georgia, 'Times New Roman', serif;
+  --schrift-initial: 'UnifrakturMaguntia', 'Cinzel', Georgia, serif;
+}
+
+/* Kerzenlicht – für Runden im abgedunkelten Zimmer. Dasselbe Attribut, mit
+   dem auch die App umschaltet (data-theme am <html>-Element). */
+[data-theme='kerzenlicht'] {
+  --grund: #1c150d;
+  --flaeche: #261d12;
+  --flaeche-hell: #2f2416;
+  --tinte: #f2e4c2;
+  --sepia: #c4b391;
+  --blass: #a89372;
+  --blasser: #a89372;
+  --linie: #5a4526;
+  --linie-stark: #7a5f2c;
+  --rubrik: #c1483a;
+  --rubrik-tief: #9a2b22;
+  --rubrik-schrift: #1c150d;
+  --gold: #d9b451;
+  --gold-hell: #e8cf8d;
+  --leder: #100c07;
+  --leder-schrift: #e8cf8d;
+  --leder-blass: #a89372;
+}
+
+/* --- Grundlage -------------------------------------------------------- */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+body {
+  font-family: var(--schrift-text);
+  background-color: #4a3d2c;
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+
+a {
+  color: var(--rubrik);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--rubrik-tief);
+}
+
+svg {
+  display: block;
+}
+
+/* --- Die Seite: Grund, Kopfleiste, Inhalt ------------------------------ */
+
+/**
+ * Der Rahmen eines Artboards – Pergament oder Buchleder als Grund, mit den
+ * weichen Lichthöfen, die in jedem Entwurf wiederkehren. Die Größe kommt
+ * über eine zweite Klasse dazu (`.seite-ipad`, `.seite-iphone` …), eine je
+ * Gerät oder Zweck – kein `style="width: …"` an einzelnen Seiten.
+ */
+.seite {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  background-color: var(--grund);
+  background-image:
+    radial-gradient(ellipse at 18% 12%, rgba(255, 250, 235, 0.6), transparent 55%),
+    radial-gradient(ellipse at 82% 68%, rgba(150, 120, 78, 0.2), transparent 60%),
+    radial-gradient(ellipse at 45% 98%, rgba(112, 88, 54, 0.14), transparent 55%);
+  color: var(--tinte);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme='kerzenlicht'] .seite {
+  background-image:
+    radial-gradient(ellipse at 30% 8%, rgba(216, 180, 81, 0.16), transparent 58%),
+    radial-gradient(ellipse at 78% 82%, rgba(154, 43, 34, 0.1), transparent 60%);
+}
+
+/* Die Größen: ein Artboard je Gerät oder Zweck. */
+.seite-ipad {
+  width: 820px;
+  height: 1180px;
+}
+
+.seite-iphone {
+  width: 390px;
+  height: 844px;
+}
+
+.seite-fibel {
+  width: 900px;
+  height: 820px;
+  padding: 28px 30px;
+  gap: 22px;
+}
+
+.seite-kerze {
+  width: 620px;
+  height: 820px;
+  padding: 22px 24px;
+  gap: 16px;
+}
+
+/** Die Kopfleiste: Buchdeckel aus dunklem Leder, mit Marke und Navigation. */
+.kopfleiste {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 22px;
+  height: 62px;
+  background-color: var(--leder);
+  background-image: linear-gradient(180deg, rgba(255, 225, 170, 0.1), rgba(0, 0, 0, 0.18));
+  border-bottom: 2px solid var(--gold);
+  flex-shrink: 0;
+}
+
+.kopfleiste-schmal {
+  height: 56px;
+  padding: 0 16px;
+  gap: 10px;
+}
+
+.marke {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.marke-schrift {
+  font-family: var(--schrift-display);
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: var(--leder-schrift);
+  text-transform: uppercase;
+}
+
+.marke-schrift-klein {
+  font-size: 15px;
+}
+
+/** Die Wege in der Kopfleiste. */
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-punkt {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 14px;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  font-family: var(--schrift-display);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  color: var(--leder-blass);
+}
+
+.nav-punkt-aktiv {
+  border-color: var(--gold);
+  background-color: rgba(216, 180, 81, 0.14);
+  color: var(--leder-schrift);
+}
+
+/** Der Inhalt unter der Kopfleiste. */
+.inhalt {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 26px 26px 0;
+  min-height: 0;
+}
+
+.inhalt-knapp {
+  gap: 15px;
+  padding: 20px 24px 0;
+}
+
+.inhalt-kompendium {
+  padding-top: 24px;
+}
+
+.titelzeile {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.titelblock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.titel {
+  font-family: var(--schrift-display);
+  font-size: 27px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--tinte);
+  text-transform: uppercase;
+}
+
+.untertitel {
+  font-size: 17px;
+  font-style: italic;
+  color: var(--sepia);
+}
+
+/* --- Schaltflächen ------------------------------------------------------ */
+
+/** Die gesiegelte Schaltfläche: die eine Handlung, auf die es ankommt. */
+.knopf {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  height: 48px;
+  padding: 0 20px;
+  font-family: var(--schrift-display);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.knopf-siegel {
+  background-color: var(--rubrik);
+  border: 1px solid var(--rubrik-tief);
+  box-shadow: 0 0 0 1px var(--gold) inset, 0 2px 6px rgba(60, 45, 25, 0.32);
+  color: var(--rubrik-schrift);
+}
+
+[data-theme='kerzenlicht'] .knopf-siegel {
+  color: var(--gold-hell);
+}
+
+.knopf-pergament {
+  background-color: var(--flaeche);
+  border: 1px solid var(--linie-stark);
+  color: var(--sepia);
+}
+
+[data-theme='kerzenlicht'] .knopf-pergament {
+  color: var(--sepia);
+}
+
+.knopf-paar {
+  display: flex;
+  gap: 12px;
+}
+
+.knopf-paar .knopf {
+  flex-grow: 1;
+}
+
+/** Die schwebende Schaltfläche unten rechts – der Würfelbeutel. */
+.schwebeknopf {
+  position: absolute;
+  right: 26px;
+  bottom: 22px;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  background-color: var(--rubrik);
+  box-shadow: 0 0 0 2px var(--gold), 0 4px 12px rgba(60, 45, 25, 0.42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- Tafeln (Karten) ----------------------------------------------------- */
+
+/** Ein aufgelegtes Velinblatt: heller als der Grund, feine Umrandung, Schatten. */
+.tafel {
+  background-color: var(--flaeche);
+  border: 1px solid var(--linie);
+  box-shadow: 0 2px 7px rgba(60, 45, 25, 0.1);
+  padding: 16px 18px 18px;
+}
+
+[data-theme='kerzenlicht'] .tafel {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.42);
+}
+
+.tafel-wachsend {
+  flex-grow: 1;
+}
+
+/** Der Kopf einer Tafel: goldener Stern, Rubrik-Überschrift, durchlaufende Linie. */
+.tafel-kopf {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.tafel-kopf-titel {
+  font-family: var(--schrift-display);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--rubrik);
+  text-transform: uppercase;
+}
+
+.tafel-kopf-linie {
+  flex-grow: 1;
+  height: 1px;
+  background-color: var(--linie);
+}
+
+.tafel-fuss {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--leder-blass);
+  font-size: 15px;
+  font-style: italic;
+  color: var(--sepia);
+}
+
+.tafel-fuss-wert {
+  font-family: var(--schrift-display);
+  font-style: normal;
+  font-weight: 600;
+  color: var(--rubrik);
+}
+
+.tafel-fuss-wert-tinte {
+  color: var(--tinte);
+}
+
+/* --- Zierrat: Stern und Linien ------------------------------------------- */
+
+.zierstern {
+  flex-shrink: 0;
+}
+
+/* --- Felder: Beschriftung über einer Linie ------------------------------ */
+
+/** Das Raster der Charaktertafel: drei Spalten, Volk bis Gesinnung. */
+.charakter-raster {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 22px;
+}
+
+/** Das Raster der Fertigkeiten: zwei Spalten. */
+.fertigkeiten-raster {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px 26px;
+}
+
+.feldgruppe {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.feld-label {
+  font-family: var(--schrift-display);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--blass);
+  text-transform: uppercase;
+}
+
+.feld-wert {
+  border-bottom: 1px solid var(--linie);
+  padding-bottom: 6px;
+  font-size: 18px;
+  color: var(--tinte);
+}
+
+.feld-wert-leer {
+  font-style: italic;
+  color: var(--blasser);
+}
+
+/* --- Attribute als Wappenschilde ----------------------------------------- */
+
+.wappenschild {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.wappenschild-rahmen {
+  position: relative;
+  width: 74px;
+  height: 88px;
+}
+
+.wappenschild-zahlen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+
+.wappenschild-wert {
+  font-family: var(--schrift-display);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--tinte);
+}
+
+.wappenschild-modifikator {
+  font-family: var(--schrift-display);
+  font-size: 14px;
+  color: var(--rubrik);
+}
+
+.wappenschild-modifikator-neutral {
+  color: var(--sepia);
+}
+
+/* --- Fertigkeiten: Häkchen, Name, Bonus ---------------------------------- */
+
+.fertigkeit-zeile {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 8px 2px;
+}
+
+.haekchen {
+  width: 17px;
+  height: 17px;
+  border: 1.5px solid var(--linie-stark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.haekchen-geuebt {
+  background-color: var(--rubrik);
+}
+
+.fertigkeit-name {
+  flex-grow: 1;
+  font-size: 17px;
+  color: var(--tinte);
+}
+
+.fertigkeit-name-ungeuebt {
+  color: var(--sepia);
+}
+
+.fertigkeit-attribut {
+  font-size: 13px;
+  color: var(--blass);
+}
+
+.fertigkeit-bonus {
+  font-family: var(--schrift-display);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--rubrik);
+}
+
+.fertigkeit-bonus-ungeuebt {
+  font-weight: 400;
+  color: var(--sepia);
+}
+
+/* --- Reiter --------------------------------------------------------------- */
+
+.reiter-leiste {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--linie-stark);
+}
+
+.reiter {
+  padding: 11px 20px;
+  font-family: var(--schrift-display);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  color: var(--sepia);
+}
+
+.reiter-aktiv {
+  background-color: var(--flaeche);
+  border: 1px solid var(--linie-stark);
+  border-bottom: 1px solid var(--flaeche);
+  margin-bottom: -1px;
+  color: var(--rubrik);
+}
+
+/* --- Charakterkarten (Übersicht) ------------------------------------------ */
+
+.karten-raster {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.karte-charakter {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  background-color: var(--flaeche);
+  border: 1px solid var(--linie);
+  box-shadow: 0 2px 7px rgba(60, 45, 25, 0.1);
+}
+
+.karte-kopf {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.karte-name {
+  font-family: var(--schrift-display);
+  font-size: 21px;
+  font-weight: 600;
+  color: var(--tinte);
+}
+
+.karte-beschreibung {
+  font-size: 16px;
+  font-style: italic;
+  color: var(--sepia);
+}
+
+.karte-fuss {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  padding-top: 11px;
+  border-top: 1px dashed var(--leder-blass);
+}
+
+.karte-aktion {
+  font-size: 15px;
+  color: var(--sepia);
+}
+
+.karte-aktion-rubrik {
+  color: var(--rubrik);
+}
+
+/** Der Kreis mit dem Anfangsbuchstaben – als Vorschau, bis ein Bildnis liegt. */
+.avatar {
+  border-radius: 50%;
+  flex-shrink: 0;
+  background-color: #d8c49a;
+  box-shadow:
+    0 0 0 2px var(--gold),
+    0 0 0 4px var(--flaeche),
+    0 0 0 5px var(--linie-stark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-theme='kerzenlicht'] .avatar {
+  background-color: var(--flaeche-hell);
+}
+
+.avatar-buchstabe {
+  font-family: var(--schrift-display);
+  font-weight: 600;
+  color: var(--rubrik);
+}
+
+/* Die Größen: 92 px am Charakterblatt, 66 px in der Übersicht, 54 px im
+   Würfelbeutel, 78 px bei Kerzenlicht. Die Schrift ist rund 0,52 × die
+   Kreisgröße – von Hand abgestimmt, nicht errechnet. */
+.avatar-92 {
+  width: 92px;
+  height: 92px;
+}
+
+.avatar-92 .avatar-buchstabe {
+  font-size: 49px;
+}
+
+.avatar-78 {
+  width: 78px;
+  height: 78px;
+}
+
+.avatar-78 .avatar-buchstabe {
+  font-size: 42px;
+}
+
+.avatar-66 {
+  width: 66px;
+  height: 66px;
+}
+
+.avatar-66 .avatar-buchstabe {
+  font-size: 34px;
+}
+
+.avatar-54 {
+  width: 54px;
+  height: 54px;
+}
+
+.avatar-54 .avatar-buchstabe {
+  font-size: 28px;
+}
+
+/** Der Trefferpunkte-Balken einer Charakterkarte. */
+.hp-zeile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hp-leiste {
+  flex-grow: 1;
+  height: 9px;
+  background-color: #ddcaa4;
+  border: 1px solid var(--linie-stark);
+  overflow: hidden;
+  display: flex;
+}
+
+[data-theme='kerzenlicht'] .hp-leiste {
+  background-color: var(--flaeche-hell);
+}
+
+.hp-fuellung {
+  background-color: var(--rubrik);
+}
+
+/* Die vier Stände der Übersicht – feste Werte, keine Rechnung: Ein Mockup
+   zeigt Beispielcharaktere, keine echten, sich ändernden Trefferpunkte. */
+.hp-100 {
+  width: 100%;
+}
+
+.hp-86 {
+  width: 86%;
+}
+
+.hp-70 {
+  width: 70%;
+}
+
+.hp-41 {
+  width: 41%;
+}
+
+.hp-wert {
+  font-family: var(--schrift-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--rubrik);
+}
+
+/** Die Tafel mit den großen Trefferpunkten, oben am Charakterkopf. */
+.hp-tafel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 9px 16px;
+  border: 1px solid var(--linie);
+  background-color: rgba(244, 234, 210, 0.75);
+}
+
+[data-theme='kerzenlicht'] .hp-tafel {
+  background-color: rgba(60, 46, 26, 0.5);
+  border-color: var(--linie-stark);
+}
+
+.hp-tafel-zahl {
+  font-family: var(--schrift-display);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--rubrik);
+}
+
+[data-theme='kerzenlicht'] .hp-tafel-zahl {
+  color: var(--gold);
+}
+
+.hp-tafel-maximum {
+  font-size: 15px;
+  color: var(--blass);
+}
+
+/** Leerer Platz, wo noch niemand steht. */
+.leerzustand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 34px;
+  border: 1px dashed var(--linie-stark);
+}
+
+.leerzustand-text {
+  font-size: 17px;
+  font-style: italic;
+  color: var(--sepia);
+}
+
+/* --- Charakterkopf (Charakterblatt) --------------------------------------- */
+
+.charakterkopf {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.charakterkopf-mitte {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.charakterkopf-name {
+  font-family: var(--schrift-display);
+  font-size: 31px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--tinte);
+}
+
+.charakterkopf-zeile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.charakterkopf-abstammung {
+  font-size: 16px;
+  color: var(--sepia);
+  font-style: italic;
+}
+
+.punkt {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: var(--gold);
+  flex-shrink: 0;
+}
+
+.chronik-hinweis {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  color: var(--ok);
+}
+
+/* --- Attributraster am Charakterblatt -------------------------------------- */
+
+.attribut-raster {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.attribut-label {
+  font-family: var(--schrift-display);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--blass);
+  text-transform: uppercase;
+}
+
+/* --- Kompendium ------------------------------------------------------------ */
+
+.kategorien {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.kategorie {
+  padding: 9px 15px;
+  border: 1px solid var(--linie);
+  background-color: rgba(244, 234, 210, 0.6);
+  font-family: var(--schrift-display);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--sepia);
+}
+
+.kategorie-aktiv {
+  border-color: var(--linie-stark);
+  background-color: var(--rubrik);
+  color: var(--flaeche);
+}
+
+.kompendium-spalten {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 20px;
+  flex-grow: 1;
+  min-height: 0;
+}
+
+.kompendium-liste-spalte {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.suchfeld {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 46px;
+  padding: 0 13px;
+  background-color: var(--flaeche);
+  border: 1px solid var(--linie);
+}
+
+.suchfeld-text {
+  font-size: 17px;
+  color: var(--blass);
+  font-style: italic;
+}
+
+.eintragsliste {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--flaeche);
+  border: 1px solid var(--linie);
+  box-shadow: 0 2px 7px rgba(60, 45, 25, 0.1);
+  overflow: hidden;
+}
+
+.eintrag {
+  padding: 13px 15px;
+  font-size: 17px;
+  color: var(--tinte);
+  border-bottom: 1px solid var(--linie);
+  opacity: 0.55;
+}
+
+.eintrag:last-child {
+  border-bottom: none;
+}
+
+.eintrag-aktiv {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--rubrik);
+  border-bottom: 1px solid var(--rubrik-tief);
+  opacity: 1;
+}
+
+.eintrag-aktiv-name {
+  font-family: var(--schrift-display);
+  font-size: 16px;
+  color: var(--flaeche);
+}
+
+.kompendium-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px 24px;
+  background-color: var(--flaeche);
+  border: 1px solid var(--linie);
+  box-shadow: 0 2px 7px rgba(60, 45, 25, 0.1);
+}
+
+.initiale-zeile {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.initiale {
+  font-family: var(--schrift-initial), var(--schrift-display);
+  font-size: 42px;
+  line-height: 1;
+  color: var(--rubrik);
+}
+
+.initiale-rest {
+  font-family: var(--schrift-display);
+  font-size: 27px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--tinte);
+}
+
+.zierlinie-mit-stern {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.zierlinie {
+  flex-grow: 1;
+  height: 1px;
+  background-color: var(--gold);
+}
+
+.zierlinie-kurz {
+  flex-grow: 0;
+  width: 42px;
+}
+
+.fliesstext {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.62;
+  color: var(--tinte);
+}
+
+.eigenschaften-raster {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 26px;
+}
+
+.eigenschaft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 8px;
+  border-bottom: 1px dotted var(--linie);
+}
+
+.eigenschaft-wert {
+  font-size: 17px;
+  color: var(--tinte);
+}
+
+.merkmal-kasten {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px 17px;
+  background-color: rgba(216, 180, 81, 0.16);
+  border-left: 3px solid var(--gold);
+}
+
+.merkmal-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.merkmal {
+  display: flex;
+  gap: 9px;
+}
+
+.merkmal-name {
+  font-family: var(--schrift-display);
+  font-size: 16px;
+  color: var(--tinte);
+  flex-shrink: 0;
+}
+
+.merkmal-text {
+  font-size: 17px;
+  color: #4a3d2c;
+}
+
+[data-theme='kerzenlicht'] .merkmal-text {
+  color: var(--tinte);
+}
+
+.quellen-hinweis {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px dashed var(--leder-blass);
+  font-size: 15px;
+  font-style: italic;
+  color: var(--blass);
+}
+
+/* --- Würfelbeutel ----------------------------------------------------------- */
+
+.vorschau-blatt {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 16px 0;
+}
+
+.vorschau-kopf {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vorschau-name {
+  font-family: var(--schrift-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--tinte);
+}
+
+.vorschau-beschreibung {
+  font-size: 15px;
+  font-style: italic;
+  color: var(--sepia);
+}
+
+.kampfwerte-raster {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.kampfwert-label {
+  font-family: var(--schrift-display);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--blass);
+  text-transform: uppercase;
+}
+
+.kampfwert-zahl {
+  font-family: var(--schrift-display);
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--tinte);
+}
+
+/** Abdunklung, wenn der Würfelbeutel als Bogen über dem Blatt liegt. */
+.abdunklung {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(40, 28, 14, 0.55);
+}
+
+.wuerfelbeutel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 18px 26px;
+  background-color: var(--flaeche-hell);
+  border-top: 2px solid var(--gold);
+  box-shadow: 0 -6px 22px rgba(40, 28, 14, 0.35);
+}
+
+.wuerfelbeutel-kopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wuerfelbeutel-titelgruppe {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wuerfelbeutel-titel {
+  font-family: var(--schrift-display);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--rubrik);
+  text-transform: uppercase;
+}
+
+.schliessen-knopf {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--linie);
+}
+
+.eingabepaar {
+  display: flex;
+  gap: 12px;
+}
+
+.eingabe {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.eingabefeld {
+  display: flex;
+  align-items: center;
+  height: 46px;
+  padding: 0 14px;
+  background-color: var(--flaeche-hell);
+  border: 1px solid var(--linie);
+  font-family: var(--schrift-display);
+  font-size: 19px;
+  color: var(--tinte);
+}
+
+.wuerfel-raster {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.wuerfel-taste {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--flaeche-hell);
+  border: 1px solid var(--linie);
+  font-family: var(--schrift-display);
+  font-size: 17px;
+  color: var(--tinte);
+}
+
+.wuerfel-taste-gewaehlt {
+  background-color: var(--rubrik);
+  border-color: var(--rubrik-tief);
+  box-shadow: 0 0 0 1px var(--gold) inset;
+  font-weight: 600;
+  color: var(--rubrik-schrift);
+}
+
+[data-theme='kerzenlicht'] .wuerfel-taste-gewaehlt {
+  color: var(--gold-hell);
+}
+
+.wuerfel-taste-leeren {
+  flex-direction: column;
+  border-style: dashed;
+  border-color: var(--linie-stark);
+  font-size: 13px;
+  font-style: italic;
+  color: var(--blass);
+}
+
+.wurfchronik-kopf {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wurfchronik-label {
+  font-family: var(--schrift-display);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--blass);
+  text-transform: uppercase;
+}
+
+.wurfliste {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wurf-zeile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 14px;
+}
+
+.wurf-zeile-neu {
+  background-color: rgba(216, 180, 81, 0.2);
+  border-left: 3px solid var(--gold);
+}
+
+.wurf-ausdruck {
+  font-size: 16px;
+  color: var(--sepia);
+}
+
+.wurf-ausdruck-neu {
+  color: #4a3d2c;
+}
+
+[data-theme='kerzenlicht'] .wurf-ausdruck-neu {
+  color: var(--tinte);
+}
+
+.wurf-einzelwerte {
+  color: var(--blasser);
+}
+
+.wurf-ergebnis {
+  font-family: var(--schrift-display);
+  font-size: 19px;
+  color: var(--sepia);
+}
+
+.wurf-ergebnis-neu {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--rubrik);
+}
+
+/* --- Stilfibel -------------------------------------------------------------- */
+
+.fibel-kopf {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  border-bottom: 2px solid var(--gold);
+  padding-bottom: 12px;
+}
+
+.fibel-marke {
+  font-family: var(--schrift-display);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: var(--blass);
+  text-transform: uppercase;
+}
+
+.fibel-abschnittstitel {
+  font-family: var(--schrift-display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: var(--rubrik);
+  text-transform: uppercase;
+}
+
+.fibel-spalten {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 26px;
+}
+
+.fibel-spalte {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.palette-raster {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.farbfeld {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.farbkachel {
+  height: 52px;
+  border: 1px solid var(--linie-stark);
+}
+
+/* Die acht Farben der Stilfibel – als eigene Klasse, nicht über die
+   Token-Variablen: Die Fibel zeigt die Werte selbst, sie soll nicht von
+   ihrer eigenen Definition abhängen (sonst prüfte sie nichts mehr). */
+.farbkachel-pergament {
+  background-color: #e6d7b0;
+}
+
+.farbkachel-velin {
+  background-color: #f4ead2;
+}
+
+.farbkachel-eisengallus {
+  background-color: #2b2114;
+}
+
+.farbkachel-sepia {
+  background-color: #6d5c45;
+}
+
+.farbkachel-rubrik {
+  background-color: #9a2b22;
+}
+
+.farbkachel-blattgold {
+  background-color: #b8912f;
+}
+
+.farbkachel-lapis {
+  background-color: #2b4a7a;
+}
+
+.farbkachel-buchleder {
+  background-color: #382718;
+}
+
+.farbname {
+  font-size: 13px;
+  color: var(--sepia);
+}
+
+.farbwert {
+  font-family: var(--schrift-display);
+  font-size: 11px;
+  color: var(--blass);
+}
+
+.schrift-tafel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 18px;
+  background-color: var(--flaeche);
+  border: 1px solid var(--linie);
+}
+
+.schrift-zeile {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.schrift-probe {
+  font-size: 26px;
+  color: var(--tinte);
+}
+
+.schrift-probe-display {
+  font-family: var(--schrift-display);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+.schrift-probe-initial {
+  font-family: var(--schrift-initial);
+  font-size: 30px;
+  color: var(--rubrik);
+}
+
+.schrift-zweck {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--blass);
+}
+
+.schrift-trenner {
+  height: 1px;
+  background-color: var(--linie);
+}
+
+.bausteine-raster {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.baustein {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.baustein-label {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--blass);
+}
+
+.zaehler {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zaehler-taste {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--flaeche);
+  border: 1px solid var(--linie-stark);
+  font-size: 22px;
+  color: var(--sepia);
+}
+
+.zaehler-wert {
+  width: 56px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--flaeche-hell);
+  border: 1px solid var(--linie);
+  font-family: var(--schrift-display);
+  font-size: 19px;
+  color: var(--tinte);
+}
+
+/* --- Kerzenlicht: kleine Sonderfälle ---------------------------------------- */
+
+.abzeichen {
+  padding: 5px 11px;
+  border: 1px solid var(--linie-stark);
+  font-family: var(--schrift-display);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--gold-hell);
+  text-transform: uppercase;
+}

@@ -27,6 +27,9 @@
  *      Stilblätter. Farben haben Namen – siehe stile/farben.css.
  *   6. Die index.html lädt ihre Skripte und Stilblätter, statt sie zu
  *      enthalten.
+ *   7. Dieselbe Regel gilt für design/: Die Artboards dort sind von Hand
+ *      bearbeitetes HTML, kein Bau-Ergebnis – aber genauso wenig ein Ort
+ *      für style="…" (siehe design/README.md).
  *
  * Wie die Einfuhrprobe kommt sie ohne ein zusätzliches Paket aus.
  */
@@ -152,6 +155,15 @@ for (const datei of dateien('frontend/src', /\.(jsx?|mjs)$/)) {
 
 {
   const datei = path.join(wurzel, 'frontend', 'index.html');
+  const text = fs.readFileSync(datei, 'utf8');
+  for (const treffer of text.matchAll(/<script(?![^>]*\bsrc=)[^>]*>|<style\b|\son[a-z]+="|\sstyle="/g)) {
+    maengel.push(`${kurz(datei)}:${zeileVon(text, treffer.index)} – eingebetteter Stil oder eingebettetes Skript`);
+  }
+}
+
+/* --- 7. design/: dieselbe Regel wie im Almanach selbst -------------------- */
+
+for (const datei of dateien('design', /\.html$/)) {
   const text = fs.readFileSync(datei, 'utf8');
   for (const treffer of text.matchAll(/<script(?![^>]*\bsrc=)[^>]*>|<style\b|\son[a-z]+="|\sstyle="/g)) {
     maengel.push(`${kurz(datei)}:${zeileVon(text, treffer.index)} – eingebetteter Stil oder eingebettetes Skript`);
