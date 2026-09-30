@@ -40,7 +40,7 @@ export default function Rastervorschau({ karte, entwurf }) {
         <div
           aria-hidden="true"
           className="karten-raster pointer-events-none absolute inset-0"
-          // Das Netz selbst steht in stile/spieltisch.css (.karten-raster) –
+          // Das Netz selbst steht in stile/spieltisch/flaeche.css (.karten-raster) –
           // hier nur Linienfarbe, Feldgröße und Versatz der Vorschau.
           style={{
             '--linie': linie,

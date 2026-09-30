@@ -1,0 +1,12 @@
+{
+  "$schema": "./frontend/node_modules/oxlint/configuration_schema.json",
+  // Prüfregeln für alles, was unter Node läuft: der Server (backend/) und
+  // die Werkzeuge (scripts/). Die Oberfläche hat ihre eigenen Regeln in
+  // frontend/.oxlintrc.json, weil sie im Browser läuft.
+  "env": { "node": true, "es2024": true },
+  "rules": {
+    // Ein Name, den es nicht gibt, fällt in Node erst auf, wenn die Zeile
+    // läuft – beim Server also womöglich erst am Spielabend.
+    "no-undef": "error"
+  }
+}

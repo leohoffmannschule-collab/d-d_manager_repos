@@ -25,9 +25,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const wurzel = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+import { dateien, kurz, wurzel, zeileVon } from './gemeinsam/dateien.mjs';
 
 /**
  * Ausnahmen, jede mit ihrem Grund. Eine Farbe ist hier kein Aussehen,
@@ -37,21 +35,6 @@ const FARBEN_ALS_DATEN = new Map([
   ['frontend/src/components/tabletop/TokenPanel.jsx', 'die Farben, aus denen die Spielleitung für eine Figur wählt'],
 ]);
 
-function dateien(ordner, muster) {
-  const gefunden = [];
-  const gehen = (verzeichnis) => {
-    for (const eintrag of fs.readdirSync(verzeichnis, { withFileTypes: true })) {
-      const pfad = path.join(verzeichnis, eintrag.name);
-      if (eintrag.isDirectory()) gehen(pfad);
-      else if (muster.test(eintrag.name)) gefunden.push(pfad);
-    }
-  };
-  gehen(path.join(wurzel, ordner));
-  return gefunden;
-}
-
-const zeileVon = (text, stelle) => text.slice(0, stelle).split('\n').length;
-const kurz = (datei) => path.relative(wurzel, datei);
 const maengel = [];
 
 /**
@@ -95,7 +78,7 @@ for (const datei of dateien('frontend/src', /\.jsx$/)) {
 const ERZEUGER = [
   ...dateien('frontend/src/lib', /\.js$/).filter((d) => /blatt/i.test(d)),
   path.join(wurzel, 'scripts', 'drucksatz.mjs'),
-  ...(fs.existsSync(path.join(wurzel, 'scripts', 'buch')) ? dateien('scripts/buch', /\.mjs$/) : []),
+  ...dateien('scripts/buch', /\.mjs$/),
 ];
 for (const datei of ERZEUGER) {
   const text = fs.readFileSync(datei, 'utf8');

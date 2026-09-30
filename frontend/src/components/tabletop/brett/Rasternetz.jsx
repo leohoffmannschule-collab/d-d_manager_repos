@@ -3,7 +3,7 @@ import { px } from '../../../lib/stilwerte.js';
 /**
  * Das Rasternetz über der Karte.
  *
- * Gezeichnet wird es in stile/spieltisch.css aus zwei gekreuzten
+ * Gezeichnet wird es in stile/spieltisch/flaeche.css aus zwei gekreuzten
  * Linienmustern – hier stehen nur Feldgröße und Versatz.
  *
  * Unterhalb einer gewissen Kantenlänge auf dem Schirm wird es gar nicht

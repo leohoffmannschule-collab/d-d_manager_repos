@@ -1,0 +1,112 @@
+/**
+ * Spieltisch, Teil 3: alles, was auf der Karte steht und mit ihr wandert –
+ * die Bühne selbst, Figuren mit Lebensbalken und Namensschild, der
+ * Auswahlring und der Zeigefinger.
+ *
+ * Eine Figur steht in *Kartenpunkten*: Ihre Lage kommt als CSS-Variable
+ * (`--x`, `--y`) aus dem JSX, gezoomt wird darüber mit einer einzigen
+ * Transformation auf der Bühne (`.tisch-buehne`).
+ */
+
+/* --- Der Lebensbalken unter einer Figur ---------------------------------- */
+
+.figur-balken {
+  width: var(--anteil);
+  height: 100%;
+}
+
+/* Über der Hälfte grün, darunter rot – der schnellste Blick am Tisch. Rot
+   ist dasselbe Rot wie beim Nebel-Verhüllen weiter oben; Grün hat sonst
+   nirgends eine Rolle und steht deshalb nur hier. */
+.figur-balken-gut {
+  background-color: #2f6b4f;
+}
+
+.figur-balken-schlecht {
+  background-color: var(--tisch-akzent-zu);
+}
+
+/* --- Die Bühne: alles, was mit der Karte wandert ------------------------- */
+
+/**
+ * Eine Transformation für alles: Karte, Raster, Figuren und Nebel liegen in
+ * diesem einen Behälter und wandern beim Schieben und Zoomen gemeinsam. Die
+ * drei Werte der Ansicht setzt Board.jsx bei jeder Bewegung neu.
+ */
+.tisch-buehne {
+  position: absolute;
+  transform-origin: top left;
+  transform: translate(var(--tx), var(--ty)) scale(var(--massstab));
+  width: var(--breite);
+  height: var(--hoehe);
+}
+
+/**
+ * Schrift auf der Karte, die bei jedem Zoom gleich groß *aussehen* soll –
+ * die Größe ist deshalb schon durch den Maßstab geteilt, wenn sie ankommt.
+ */
+.tisch-schriftgroesse {
+  font-size: var(--schrift);
+}
+
+/* --- Figuren ------------------------------------------------------------- */
+
+/* Eine Figur steht in Kartenpunkten, nicht in Bildschirmpunkten – die
+   Bühne oben erledigt die Umrechnung. */
+.figur {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--groesse);
+  height: var(--groesse);
+}
+
+/* Die runde Scheibe: in der Farbe der Figur, oder durchsichtig, wenn ein
+   Bild darauf liegt (dann ist `--figur-farbe` nicht gesetzt). */
+.figur-scheibe {
+  background-color: var(--figur-farbe, transparent);
+}
+
+.figur-buchstabe {
+  color: var(--tisch-figur-schrift);
+  font-size: var(--schrift);
+}
+
+/* Der Rahmen des Lebensbalkens, etwas schmaler als die Figur selbst. */
+.figur-balkenrahmen {
+  width: var(--breite);
+}
+
+.figur-name {
+  color: var(--tisch-namensschild);
+  font-size: var(--schrift);
+}
+
+/* Der gestrichelte Ring um die gewählte Figur, drei Punkte größer als sie. */
+.auswahlring {
+  position: absolute;
+  left: calc(var(--x) - 3px);
+  top: calc(var(--y) - 3px);
+  width: calc(var(--groesse) + 6px);
+  height: calc(var(--groesse) + 6px);
+}
+
+/* --- Der Zeigefinger ----------------------------------------------------- */
+
+/* Mitten auf die gezeigte Stelle, in der Farbe dessen, der zeigt. */
+.zeigefinger {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  transform: translate(-50%, -50%);
+}
+
+.zeigefinger-ring {
+  width: var(--feld);
+  height: var(--feld);
+  border: 3px solid var(--farbe);
+}
+
+.zeigefinger-name {
+  color: var(--farbe);
+}

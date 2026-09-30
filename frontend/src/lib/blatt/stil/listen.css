@@ -1,0 +1,80 @@
+/**
+ * Ausgeführtes Blatt, Teil 3: Zauberliste, Merkmale und Fließtext – und die
+ * Hinweise am Rand.
+ */
+.zauberliste {
+  margin-top: 10px;
+}
+
+.zaubergrad {
+  margin-bottom: 8px;
+}
+
+.zauber {
+  display: inline-block;
+  border: 1px solid var(--linie);
+  padding: 1px 7px;
+  margin: 2px 4px 2px 0;
+  font-size: 15px;
+}
+
+.zauber.vorbereitet {
+  border-color: var(--gold);
+  background: rgba(184, 145, 47, .18);
+  font-weight: 600;
+}
+
+.zaubergrad .label {
+  margin-bottom: 2px;
+  color: var(--rubrik);
+}
+
+.merkmalgruppe {
+  margin-bottom: 12px;
+  break-inside: avoid;
+}
+
+.merkmalgruppe>.label {
+  margin-bottom: 4px;
+  color: var(--rubrik);
+  letter-spacing: .14em;
+  font-size: 12px;
+}
+
+.merkmal {
+  margin-bottom: 10px;
+  break-inside: avoid;
+}
+
+.merkmal p {
+  margin: 2px 0 0;
+  color: var(--sepia);
+  white-space: pre-line;
+}
+
+.klein {
+  font-size: 14px;
+  color: var(--sepia);
+}
+
+.fliesstext {
+  margin-top: 10px;
+}
+
+.fliesstext p {
+  margin: 2px 0 0;
+  white-space: normal;
+}
+
+.hinweis {
+  margin: 8px 0 0;
+  color: var(--blass);
+  font-size: 15px;
+  font-style: italic;
+}
+
+/* Der Satz ganz unten, dass Änderungen in dieser Datei nicht zurückwandern. */
+.hinweis-fuss {
+  text-align: center;
+  margin-top: 24px;
+}

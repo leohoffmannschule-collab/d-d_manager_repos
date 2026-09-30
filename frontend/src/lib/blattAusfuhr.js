@@ -15,7 +15,7 @@
  *   blatt/werkzeug.js    entschärfen, einrahmen, Bilder einbetten
  *   blatt/abschnitte.js  je eine Funktion für je eine Karte des Bogens
  *   blatt/koerper.js     welche Karte in welcher Reihenfolge
- *   blattAusfuhr.css     das Aussehen, als richtiges Stilblatt
+ *   blatt/stil/*.css     das Aussehen, als richtige Stilblätter
  *   blatt/drucken.js     der Druckknopf, als richtiges Skript
  *
  * Die fertige Datei trägt ihr Stilblatt und ihr Skript in sich – sie muss
@@ -27,18 +27,26 @@ import { withDefaults } from './dnd5e.js';
 import { alsDatenUrl, esc, zaubertexte } from './blatt/werkzeug.js';
 import { dnd5eKoerper, freiKoerper } from './blatt/koerper.js';
 
-// Das Stilblatt liegt als echte .css-Datei daneben und wird beim Bauen als
-// Text hereingeholt (`?raw` ist Vites Weg dafür). So hat es im Editor alles,
-// was CSS haben soll – Hervorhebung, Prüfung, Formatierung –, landet aber
-// trotzdem eingebettet in der fertigen Datei, die ja ohne Netz und ohne
-// Almanach funktionieren muss.
-import ROHSTIL from './blattAusfuhr.css?raw';
+// Das Stilblatt liegt als echte .css-Dateien in blatt/stil/ und wird beim
+// Bauen als Text hereingeholt (`?raw` ist Vites Weg dafür). So hat es im
+// Editor alles, was CSS haben soll – Hervorhebung, Prüfung, Formatierung –,
+// landet aber trotzdem eingebettet in der fertigen Datei, die ja ohne Netz
+// und ohne Almanach funktionieren muss.
+//
+// Die Reihenfolge der Teile ist die der Kaskade: Ein späterer darf einen
+// früheren überschreiben (leiste.css enthält die Fassung für Papier und
+// muss deshalb zuletzt kommen).
+import GRUND from './blatt/stil/grund.css?raw';
+import BOGEN from './blatt/stil/bogen.css?raw';
+import LISTEN from './blatt/stil/listen.css?raw';
+import ZAUBERBLOCK from './blatt/stil/zauberblock.css?raw';
+import LEISTE from './blatt/stil/leiste.css?raw';
 import ROHSKRIPT from './blatt/drucken.js?raw';
 
 // Die Erklärköpfe von Stilblatt und Skript richten sich an Mitarbeitende am
 // Code und haben im Blatt der Spielerin nichts verloren – also weg damit.
 const ohneKopf = (text) => text.replace(/^\s*\/\*\*[\s\S]*?\*\/\s*/, '');
-const STIL = ohneKopf(ROHSTIL);
+const STIL = [GRUND, BOGEN, LISTEN, ZAUBERBLOCK, LEISTE].map(ohneKopf).join('\n');
 const SKRIPT = ohneKopf(ROHSKRIPT);
 
 /**

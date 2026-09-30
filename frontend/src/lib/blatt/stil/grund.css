@@ -1,0 +1,61 @@
+/**
+ * Ausgeführtes Blatt, Teil 1: die Grundlagen – eigene Farben und Schriften,
+ * der Seitenrand und die beiden Überschriftenstufen.
+ *
+ * Die Farben stehen hier eigens und greifen nicht auf stile/farben.css zu:
+ * Das Blatt gehört nach dem Mitnehmen niemandem mehr und soll aussehen wie
+ * ein Ausdruck, nicht wie ein Fenster des Almanachs.
+ */
+:root {
+  --grund: #e6d7b0;
+  --tafel: #f4ead2;
+  --sanft: #f8f0dc;
+  --tinte: #2b2114;
+  --sepia: #6d5c45;
+  --blass: #a3927a;
+  --linie: #c2a878;
+  --stark: #a3865c;
+  --rubrik: #9a2b22;
+  --gold: #b8912f;
+  --schrift: "EB Garamond", Georgia, "Times New Roman", serif;
+  --kapital: Cinzel, Georgia, serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 24px 16px 60px;
+  background: var(--grund);
+  color: var(--tinte);
+  font-family: var(--schrift);
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+.blatt {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+h1 {
+  margin: 0;
+  font-family: var(--kapital);
+  font-size: 31px;
+  font-weight: 600;
+  letter-spacing: .04em;
+}
+
+h2 {
+  margin: 0 0 10px;
+  font-family: var(--kapital);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--rubrik);
+  border-bottom: 1px solid var(--linie);
+  padding-bottom: 5px;
+}

@@ -1,0 +1,47 @@
+/**
+ * Ausgeführtes Blatt, Teil 4: der volle Text eines Zaubers, wie ihn das
+ * Kompendium liefert – damit die Datei auch ohne Netz alles enthält.
+ */
+.zauberblock {
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px dotted var(--linie);
+  break-inside: avoid;
+}
+
+.zauberblock:last-child {
+  border-bottom: 0;
+}
+
+.zauberblock b {
+  font-family: var(--kapital);
+  font-size: 17px;
+}
+
+.zauberblock .kopfzeile {
+  color: var(--rubrik);
+  font-size: 15px;
+}
+
+.zauberwerte {
+  margin: 2px 0 6px;
+  color: var(--sepia);
+  font-size: 15px;
+}
+
+.zauberwerte i {
+  color: var(--blass);
+  font-style: normal;
+  font-family: var(--kapital);
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.zauberblock p {
+  margin: 4px 0 0;
+}
+
+.zauberblock .hoeher {
+  color: var(--sepia);
+}

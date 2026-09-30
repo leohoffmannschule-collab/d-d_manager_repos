@@ -11,7 +11,9 @@
  *   3. farben        – die Namen, auf die sich alles Folgende beruft
  *   4. grundlage     – Seite, Pergament, Grundschrift
  *   5. bauteile      – Velinblatt, Felder, Knöpfe
- *   6. spieltisch    – Raster, Figuren, Nebelvorschau
+ *   6. spieltisch/   – der Tisch: Farben, Fläche, Figuren, Nebel und Lineal
+ *                      (in dieser Reihenfolge; eine Regel darf die einer
+ *                      früheren Datei überschreiben)
  *   7. eigenheiten   – Kleinkram des Browsers
  *
  * (CSS verlangt außerdem, dass alle @import-Zeilen vor jeder anderen Regel
@@ -22,5 +24,8 @@
 @import "./stile/farben.css";
 @import "./stile/grundlage.css";
 @import "./stile/bauteile.css";
-@import "./stile/spieltisch.css";
+@import "./stile/spieltisch/farben.css";
+@import "./stile/spieltisch/flaeche.css";
+@import "./stile/spieltisch/figuren.css";
+@import "./stile/spieltisch/schichten.css";
 @import "./stile/eigenheiten.css";

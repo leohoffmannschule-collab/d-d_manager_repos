@@ -1,0 +1,27 @@
+/**
+ * Spieltisch, Teil 1: die Farben des Tisches.
+ *
+ * Sie stehen fest und folgen nicht `[data-theme]` wie die in
+ * stile/farben.css – siehe den Kommentar über :root.
+ */
+
+/**
+ * Der Tisch sieht aus wie ein Tisch – ob ringsum Pergament oder Kerzenlicht
+ * gilt, spielt keine Rolle. Wie eine echte Tischplatte unter beliebigem
+ * Deckenlicht bleibt die Fläche selbst gleich dunkel. Deshalb folgen diese
+ * Farben nicht `[data-theme]` wie die in farben.css, sondern stehen einmal
+ * fest – und zwar hier benannt, statt als Zahl in fünf Dateien verstreut.
+ */
+:root {
+  --tisch-grund: #14100a; /* die Fläche selbst, und der Schatten um jede Beschriftung */
+  --tisch-leer: #241c12; /* eine Szene ohne aufgelegte Karte */
+  --tisch-schrift: #e8cf8d; /* Beschriftungen über der Karte */
+  --tisch-schrift-matt: #a89372; /* Fließtext auf dem leeren Tisch */
+  --tisch-akzent-auf: #d9b451; /* Gold deckt auf – dieselbe Sprache wie in der Werkzeugleiste */
+  --tisch-akzent-zu: #9a2b22; /* Rot verhüllt */
+  --tisch-figur-schrift: #f4ead2; /* der Anfangsbuchstabe auf einer Figur ohne Bild */
+  --tisch-namensschild: #f2e4c2; /* der Name unter einer Figur */
+  --tisch-hinweis-zeichen: #7a5f2c; /* das große Zeichen auf dem leeren Tisch */
+  --tisch-hinweis-titel: #c9b189; /* die Überschrift darunter */
+  --tisch-hinweis-karte: #5a4526; /* das Kartenzeichen, solange nichts aufliegt */
+}

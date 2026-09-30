@@ -53,7 +53,7 @@ export default function Kartenkachel({ karte, onAufschlagen, onAuflegen, onLoesc
 
         <div className="flex gap-1.5">
           <button
-            onClick={() => onAuflegen(k)}
+            onClick={() => onAuflegen(karte)}
             className="btn btn-seal flex-1 text-[13px]"
             title={karte.szenen > 0 ? 'Die vorhandene Szene samt Nebel zurückholen' : 'Als neue Szene auf den Tisch'}
           >
@@ -61,7 +61,7 @@ export default function Kartenkachel({ karte, onAufschlagen, onAuflegen, onLoesc
           </button>
           {karte.szenen > 0 && (
             <button
-              onClick={() => onAuflegen(k, true)}
+              onClick={() => onAuflegen(karte, true)}
               className="btn-plate min-h-12 px-3 text-[13px]"
               title="Neue Szene aus dieser Karte – alles wieder verhüllt"
             >
@@ -69,7 +69,7 @@ export default function Kartenkachel({ karte, onAufschlagen, onAuflegen, onLoesc
             </button>
           )}
           <button
-            onClick={() => onLoeschen(k)}
+            onClick={() => onLoeschen(karte)}
             className="flex h-12 w-12 items-center justify-center border border-rule text-sepia hover:border-rubric hover:text-rubric"
             aria-label={`${karte.name} löschen`}
           >

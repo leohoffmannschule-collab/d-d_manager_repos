@@ -1,7 +1,13 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["react", "oxc"],
+  // Die Oberfläche läuft im Browser: window, document, fetch & Co. sind da.
+  "env": { "browser": true, "es2024": true },
   "rules": {
+    // Ein Name, den es nicht gibt, ist im Bau unsichtbar – Vite hält ihn für
+    // eine globale Variable – und fällt erst beim Klick auf. Genau so stand
+    // in der Kartenbibliothek `onAuflegen(k)`, ohne dass es ein `k` gab.
+    "no-undef": "error",
     "react/rules-of-hooks": "error",
     "react/only-export-components": ["warn", { "allowConstantExport": true }],
 

@@ -13,159 +13,18 @@
  * Umgekehrt geht es auch: „Kampf sichern“ macht aus der laufenden
  * Aufstellung eine Begegnung – gleichnamige Gegner werden dabei wieder zu
  * einer Gruppe zusammengefasst.
+ *
+ * Diese Datei zeigt die Liste der Begegnungen und hält den Entwurf; gebaut
+ * wird in begegnungen/Bauplan.jsx, Zeile für Zeile in begegnungen/Posten.jsx.
  */
 import { useState } from 'react';
-import { encountersApi, mediaApi } from '../../lib/api.js';
+import { encountersApi } from '../../lib/api.js';
 import { useBegegnungen, useBestiarium } from '../../lib/daten.js';
-import { Rubric } from '../ui.jsx';
-import { IconEyeOff, IconPlus, IconSearch, IconSwords, IconTrash } from '../icons.jsx';
+import { IconPlus, IconSwords, IconTrash } from '../icons.jsx';
+import Bauplan from './begegnungen/Bauplan.jsx';
 
+/** Der leere Entwurf, mit dem „Neue Begegnung“ beginnt. */
 const LEER = { name: '', notes: '', entries: [] };
-
-/** Eine Zeile im Bauplan einer Begegnung. */
-function Posten({ eintrag, onChange, onRemove }) {
-  return (
-    <div className="flex flex-wrap items-center gap-2.5 border border-rule bg-panel-soft px-3 py-2">
-      {eintrag.mediaId && <img src={mediaApi.url(eintrag.mediaId)} alt="" className="h-10 w-10 object-contain" />}
-      <span className="min-w-0 flex-1 truncate text-ink">
-        {eintrag.name}
-        <span className="text-faint"> · {eintrag.hp} TP · RK {eintrag.ac}</span>
-      </span>
-      <input
-        type="number"
-        min={1}
-        max={20}
-        value={eintrag.count}
-        onChange={(e) => onChange({ ...eintrag, count: Math.max(1, Number(e.target.value) || 1) })}
-        className="h-11 w-16 border border-rule bg-panel text-center font-display text-ink"
-        aria-label="Anzahl"
-      />
-      <button
-        type="button"
-        onClick={() => onChange({ ...eintrag, hidden: !eintrag.hidden })}
-        className={`flex h-11 w-11 items-center justify-center border ${
-          eintrag.hidden ? 'border-rubric bg-rubric/15 text-rubric' : 'border-rule text-sepia'
-        }`}
-        title={eintrag.hidden ? 'tritt verborgen auf' : 'tritt offen auf'}
-      >
-        <IconEyeOff size={16} />
-      </button>
-      <button
-        type="button"
-        onClick={onRemove}
-        className="flex h-11 w-11 items-center justify-center border border-rule text-sepia hover:border-rubric hover:text-rubric"
-        aria-label="Entfernen"
-      >
-        <IconTrash size={16} />
-      </button>
-    </div>
-  );
-}
-
-/**
- * Der Bauplan einer Begegnung: welche Gegner in welcher Zahl, wer verborgen
- * beginnt. Posten kommen aus dem Bestiarium, tragen ihre Werte danach aber
- * selbst – deshalb übersteht eine Begegnung das Löschen des Statblocks.
- */
-function Bauplan({ entwurf, setEntwurf, bestiarium, onSpeichern, onAbbrechen }) {
-  const [suche, setSuche] = useState('');
-  const treffer = bestiarium.filter((e) => e.name.toLowerCase().includes(suche.trim().toLowerCase()));
-
-  const hinzu = (e) =>
-    setEntwurf((v) => ({
-      ...v,
-      entries: [
-        ...v.entries,
-        {
-          libraryId: e.id,
-          name: e.name,
-          type: e.category,
-          hp: e.hp ?? 0,
-          ac: e.ac ?? 10,
-          count: 1,
-          hidden: false,
-          mediaId: e.mediaId ?? null,
-        },
-      ],
-    }));
-
-  return (
-    <form
-      onSubmit={(ev) => {
-        ev.preventDefault();
-        if (!entwurf.name.trim()) return;
-        onSpeichern(entwurf);
-      }}
-      className="panel space-y-4 p-4"
-    >
-      <Rubric>{entwurf.id ? 'Begegnung ändern' : 'Neue Begegnung'}</Rubric>
-
-      <input
-        value={entwurf.name}
-        onChange={(e) => setEntwurf((v) => ({ ...v, name: e.target.value }))}
-        placeholder="Name, z. B. Hinterhalt am Wegkreuz"
-        className="field-box font-display text-lg"
-      />
-      <textarea
-        value={entwurf.notes}
-        onChange={(e) => setEntwurf((v) => ({ ...v, notes: e.target.value }))}
-        rows={3}
-        placeholder="Wie tritt die Begegnung auf? Was wollen die Gegner? Wann geben sie auf?"
-        className="field-box resize-y leading-relaxed"
-      />
-
-      <div className="space-y-2">
-        {entwurf.entries.map((e, i) => (
-          <Posten
-            key={`${e.libraryId ?? e.name}-${i}`}
-            eintrag={e}
-            onChange={(neu) =>
-              setEntwurf((v) => ({ ...v, entries: v.entries.map((x, j) => (j === i ? neu : x)) }))
-            }
-            onRemove={() => setEntwurf((v) => ({ ...v, entries: v.entries.filter((_, j) => j !== i) }))}
-          />
-        ))}
-        {entwurf.entries.length === 0 && (
-          <p className="text-sepia italic">Noch steht niemand bereit. Hol dir unten Gegner aus dem Bestiarium.</p>
-        )}
-      </div>
-
-      <div className="border-t border-dashed border-rule pt-3">
-        <label className="mb-2 flex items-center gap-2.5 border border-rule bg-panel-soft px-3">
-          <IconSearch size={16} className="text-faint" />
-          <input
-            value={suche}
-            onChange={(e) => setSuche(e.target.value)}
-            placeholder="Aus dem Bestiarium holen"
-            className="min-h-11 flex-1 bg-transparent text-ink outline-none"
-          />
-        </label>
-        <div className="flex max-h-44 flex-wrap gap-1.5 overflow-y-auto">
-          {treffer.slice(0, 30).map((e) => (
-            <button
-              key={e.id}
-              type="button"
-              onClick={() => hinzu(e)}
-              className="btn-plate flex min-h-11 items-center gap-1.5 px-3 text-[13px]"
-            >
-              <IconPlus size={14} /> {e.name}
-            </button>
-          ))}
-          {bestiarium.length === 0 && <p className="text-sepia italic">Das Bestiarium ist noch leer.</p>}
-        </div>
-      </div>
-
-      <div className="flex gap-2.5">
-        <button type="submit" className="btn btn-seal">
-          Speichern
-        </button>
-        <button type="button" onClick={onAbbrechen} className="btn btn-plate">
-          Zurück
-        </button>
-      </div>
-    </form>
-  );
-}
 
 /**
  * Vorbereitete Begegnungen: einmal zusammenstellen, an jedem Abend wieder

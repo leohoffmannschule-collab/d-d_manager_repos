@@ -1,0 +1,74 @@
+/**
+ * Spieltisch, Teil 2: die Fläche, das Rasternetz, die Vorschau des
+ * nächsten Nebelstrichs und die Beschriftungen auf der Karte.
+ */
+
+/* --- Die Fläche ---------------------------------------------------------- */
+
+/* Ohne das versucht der Browser auf dem iPad zu blättern, sobald jemand
+   eine Figur zieht – der Tisch verwaltet seine Gesten selbst. */
+.tisch-flaeche {
+  touch-action: none;
+}
+
+/* --- Das Rasternetz ------------------------------------------------------ */
+
+/* Zwei gekreuzte Linienmuster statt tausend einzelner Striche: Der Browser
+   wiederholt sie von selbst, das kostet nichts und bleibt beim Zoomen
+   scharf. */
+.tisch-raster {
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.28) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.28) 1px, transparent 1px);
+  background-size: var(--feld) var(--feld);
+  background-position: var(--versatz-x) var(--versatz-y);
+}
+
+/* Dasselbe für die Vorschau in der Kartenbibliothek. Dort liegt das Netz
+   über einem verkleinerten Bild, deshalb eine eigene Linienfarbe. */
+.karten-raster {
+  background-image:
+    repeating-linear-gradient(to right, var(--linie) 0 1px, transparent 1px var(--feld)),
+    repeating-linear-gradient(to bottom, var(--linie) 0 1px, transparent 1px var(--feld));
+  background-position: var(--versatz-x) var(--versatz-y);
+}
+
+/* --- Nebel: was der nächste Strich träfe --------------------------------- */
+
+.tisch-vorschau {
+  position: absolute;
+  z-index: 6;
+  left: var(--x);
+  top: var(--y);
+  width: var(--breite);
+  height: var(--hoehe);
+  border-style: dashed;
+  /* Durch den Maßstab geteilt, damit der Rand bei jedem Zoom gleich dick
+     *aussieht* (gerechnet in Nebelvorschau.jsx). */
+  border-width: var(--strichstaerke);
+  pointer-events: none;
+}
+
+/* Gold deckt auf, Rot verhüllt – dieselbe Sprache wie in der Werkzeugleiste,
+   über die beiden gemeinsamen Werte oben statt über eine zweite Abschrift. */
+.tisch-vorschau-auf {
+  border-color: var(--tisch-akzent-auf);
+  background-color: rgba(217, 180, 81, 0.16);
+}
+
+.tisch-vorschau-zu {
+  border-color: var(--tisch-akzent-zu);
+  background-color: rgba(154, 43, 34, 0.2);
+}
+
+/* --- Beschriftungen auf der Karte ---------------------------------------- */
+
+/* Ein heller Text auf einer unbekannten Karte ist mal lesbar und mal nicht.
+   Der Schattenrand macht ihn über jedem Untergrund lesbar. */
+.tisch-marke {
+  color: var(--tisch-schrift);
+  paint-order: stroke;
+  text-shadow:
+    0 1px 3px var(--tisch-grund),
+    0 0 2px var(--tisch-grund);
+}

@@ -1,15 +1,3 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
-import Board from '../components/tabletop/Board.jsx';
-import SceneBar from '../components/tabletop/SceneBar.jsx';
-import TokenPanel from '../components/tabletop/TokenPanel.jsx';
-import Initiative from '../components/Initiative.jsx';
-import Beute from '../components/Beute.jsx';
-import { scenesApi } from '../lib/api.js';
-import { useAuth } from '../lib/auth.jsx';
-import { useCharaktere, useKampf, useNotizen, usePings, useSzene } from '../lib/daten.js';
-import { useLive } from '../lib/live.jsx';
-import { IconFog, IconHeart, IconMap, IconPlus, IconScroll, IconSwords } from '../components/icons.jsx';
-
 /**
  * Der Spieltisch: Karte, Figuren, Nebel – und rechts die Leiste mit Kampf,
  * Beute und Handzetteln.
@@ -24,41 +12,22 @@ import { IconFog, IconHeart, IconMap, IconPlus, IconScroll, IconSwords } from '.
  * Pinselstrich werden sofort örtlich angezeigt und erst danach geschickt.
  * Würde man auf die Antwort warten, ruckelte jeder Strich um die Laufzeit
  * der Anfrage hinterher.
+ *
+ *   tisch/useNebelpinsel.js  Nebelstriche sammeln und gebündelt schicken
+ *   tisch/Seitenleiste.jsx   Kampf, Beute, Handzettel, Figur
+ *   tisch/LeererTisch.jsx    was ohne Karte zu sehen ist
+ *   tisch/Handzettel.jsx     die ausgeteilten Handzettel
  */
-
-// So lange werden Pinselstriche gesammelt, bevor sie gebündelt hinausgehen.
-// 120 ms fühlen sich noch unmittelbar an, sparen aber aus einem Strich über
-// dreißig Felder eine einzige Anfrage statt dreißig.
-const PINSEL_MS = 120;
-
-/** Die ausgeteilten Handzettel in der Seitenleiste – für alle am Tisch. */
-function Handzettel() {
-  const { handzettel } = useNotizen();
-
-  if (handzettel.length === 0) {
-    return <p className="text-sepia italic">Noch hat die Spielleitung nichts ausgeteilt.</p>;
-  }
-
-  return (
-    <ul className="space-y-3">
-      {handzettel.map((n) => (
-        <li key={n.id} className="border border-rule bg-panel-soft p-3">
-          <h3 className="font-display text-[15px] font-semibold text-ink">{n.title}</h3>
-          {n.tags.length > 0 && (
-            <p className="mt-0.5 flex flex-wrap gap-1">
-              {n.tags.map((t) => (
-                <span key={t} className="border border-rule px-1.5 text-[13px] text-faint">
-                  {t}
-                </span>
-              ))}
-            </p>
-          )}
-          <p className="mt-1.5 whitespace-pre-wrap text-sepia">{n.content}</p>
-        </li>
-      ))}
-    </ul>
-  );
-}
+import { useCallback, useMemo, useState } from 'react';
+import Board from '../components/tabletop/Board.jsx';
+import SceneBar from '../components/tabletop/SceneBar.jsx';
+import { scenesApi } from '../lib/api.js';
+import { useAuth } from '../lib/auth.jsx';
+import { useCharaktere, useKampf, usePings, useSzene } from '../lib/daten.js';
+import { useLive } from '../lib/live.jsx';
+import LeererTisch from './tisch/LeererTisch.jsx';
+import Seitenleiste from './tisch/Seitenleiste.jsx';
+import { useNebelpinsel } from './tisch/useNebelpinsel.js';
 
 export default function Tabletop() {
   const { isDm } = useAuth();
@@ -90,12 +59,6 @@ export default function Tabletop() {
   const [reiter, setReiter] = useState('kampf');
   const [seite, setSeite] = useState(false);
 
-  // Zwei Töpfe, weil ein Strich beides enthalten kann: aufgedeckte und
-  // wieder verhüllte Felder. Mengen (Set), damit ein doppelt überstrichenes
-  // Feld nur einmal hinausgeht.
-  const pinselPuffer = useRef({ auf: new Set(), zu: new Set() });
-  const pinselZeit = useRef(null);
-
   // Eine entfernte Figur darf nicht ausgewählt bleiben.
   useLive('figur:entfernt', ({ id }) => setGewaehlt((g) => (g === id ? null : g)));
 
@@ -121,33 +84,8 @@ export default function Tabletop() {
     [figurSetzen, ladeSzene]
   );
 
-  /**
-   * Malen fühlt sich flüssig an, weil der Nebel zuerst lokal weicht.
-   *
-   * Schlägt das Senden fehl, wird die Szene neu geladen – sonst sähe die
-   * Spielleitung aufgedecktes Land, das die Runde nie zu sehen bekommt.
-   * Ein Strich, der beim Verlassen des Tisches noch im Puffer liegt, geht
-   * trotzdem hinaus: Der Zeitgeber läuft weiter, und das ist gewollt.
-   */
-  const nebelMalen = useCallback(
-    (cells, revealed) => {
-      if (!scene) return;
-      nebelSetzen(cells, revealed);
-
-      const topf = revealed ? pinselPuffer.current.auf : pinselPuffer.current.zu;
-      for (const cell of cells) topf.add(cell);
-
-      if (pinselZeit.current) return;
-      pinselZeit.current = setTimeout(() => {
-        pinselZeit.current = null;
-        const { auf, zu } = pinselPuffer.current;
-        pinselPuffer.current = { auf: new Set(), zu: new Set() };
-        if (auf.size) scenesApi.fog(scene.id, [...auf], true).catch(() => ladeSzene());
-        if (zu.size) scenesApi.fog(scene.id, [...zu], false).catch(() => ladeSzene());
-      }, PINSEL_MS);
-    },
-    [scene, nebelSetzen, ladeSzene]
-  );
+  // Nebelstriche weichen sofort und gehen gebündelt hinaus (tisch/useNebelpinsel.js).
+  const nebelMalen = useNebelpinsel(scene, nebelSetzen, ladeSzene);
 
   // Ein verlorener Zeigefinger ist kein Fehler, den jemand sehen muss.
   const zeigen = useCallback((punkt) => {
@@ -155,15 +93,6 @@ export default function Tabletop() {
   }, []);
 
   const gewaehlteFigur = useMemo(() => tokens.find((t) => t.id === gewaehlt) ?? null, [tokens, gewaehlt]);
-
-  /* --- Anzeige ---------------------------------------------------------- */
-
-  const reiterListe = [
-    { id: 'kampf', label: 'Kampf', Icon: IconSwords },
-    { id: 'beute', label: 'Beute', Icon: IconHeart },
-    { id: 'handzettel', label: 'Handzettel', Icon: IconScroll },
-    ...(isDm && scene ? [{ id: 'figur', label: 'Figur', Icon: IconPlus }] : []),
-  ];
 
   return (
     <div className="-mx-4 -mt-5 flex flex-col lg:h-[calc(100vh-4.6rem)] lg:flex-row">
@@ -216,30 +145,7 @@ export default function Tabletop() {
               }}
             />
           ) : (
-            <div className="flex h-full flex-col items-center justify-center gap-3 bg-[var(--tisch-grund)] px-6 text-center">
-              {vorhang ? (
-                <>
-                  <IconFog size={36} className="tisch-hinweis-zeichen" />
-                  <p className="tisch-hinweis-titel font-display text-[15px] tracking-[0.14em] uppercase">
-                    Der Vorhang ist zu
-                  </p>
-                  <p className="max-w-sm text-[var(--tisch-schrift-matt)] italic">
-                    {isDm
-                      ? 'Die Runde sieht gerade nichts vom Tisch. Leg in Ruhe auf, stell die Gegner, mal den Nebel – und öffne oben, wenn du so weit bist.'
-                      : 'Die Spielleitung baut auf. Gleich geht es weiter – Kampf, Beute und Handzettel stehen rechts schon bereit.'}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <IconMap size={34} className="tisch-hinweis-karte" />
-                  <p className="max-w-sm text-[var(--tisch-schrift-matt)] italic">
-                    {isDm
-                      ? 'Noch liegt keine Karte auf dem Tisch. Lade eine hoch – bis dahin lässt sich rechts trotzdem kämpfen, teilen und lesen.'
-                      : 'Die Spielleitung hat noch keine Karte aufgelegt. Kampf, Beute und Handzettel stehen rechts trotzdem bereit.'}
-                  </p>
-                </>
-              )}
-            </div>
+            <LeererTisch vorhang={vorhang} isDm={isDm} />
           )}
 
           {scene && (
@@ -256,59 +162,28 @@ export default function Tabletop() {
           </button>
         </div>
       </div>
-
-      <aside
-        className={`w-full shrink-0 border-rule bg-panel lg:block lg:w-[22rem] lg:overflow-y-auto lg:border-l ${
-          seite ? 'block' : 'hidden'
-        }`}
-      >
-        <div className="flex border-b border-rule">
-          {reiterListe.map(({ id, label, Icon }) => (
-            <button
-              key={id}
-              onClick={() => setReiter(id)}
-              className={`flex flex-1 items-center justify-center gap-1.5 py-3 font-display text-[11px] tracking-[0.08em] uppercase ${
-                reiter === id ? 'border-b-2 border-gold text-ink' : 'text-sepia'
-              }`}
-            >
-              <Icon size={15} />
-              <span className="hidden sm:inline">{label}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="p-4">
-          {reiter === 'kampf' && <Initiative variant="tafel" />}
-          {reiter === 'beute' && <Beute />}
-          {reiter === 'handzettel' && <Handzettel />}
-          {reiter === 'figur' && isDm && scene && (
-            <>
-              <button
-                onClick={async () => {
-                  const neu = await scenesApi.addToken(scene.id, {
-                    name: 'Neue Figur',
-                    x: Math.round(scene.width / 2),
-                    y: Math.round(scene.height / 2),
-                  });
-                  setGewaehlt(neu.id);
-                  ladeSzene();
-                }}
-                className="btn btn-seal mb-4 w-full"
-              >
-                <IconPlus size={16} /> Figur auslegen
-              </button>
-              <TokenPanel
-                token={gewaehlteFigur}
-                onChanged={ladeSzene}
-                onRemoved={() => {
-                  setGewaehlt(null);
-                  ladeSzene();
-                }}
-              />
-            </>
-          )}
-        </div>
-      </aside>
+      <Seitenleiste
+        offen={seite}
+        reiter={reiter}
+        onReiter={setReiter}
+        isDm={isDm}
+        scene={scene}
+        gewaehlteFigur={gewaehlteFigur}
+        onFigurAuslegen={async () => {
+          const neu = await scenesApi.addToken(scene.id, {
+            name: 'Neue Figur',
+            x: Math.round(scene.width / 2),
+            y: Math.round(scene.height / 2),
+          });
+          setGewaehlt(neu.id);
+          ladeSzene();
+        }}
+        onFigurGeaendert={ladeSzene}
+        onFigurEntfernt={() => {
+          setGewaehlt(null);
+          ladeSzene();
+        }}
+      />
     </div>
   );
 }

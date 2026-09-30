@@ -1,0 +1,169 @@
+/**
+ * Ausgeführtes Blatt, Teil 2: der Bogen – Kopf mit Bildnis, Tafeln,
+ * Beschriftungen und Werte, Raster, die sechs Attribute, Wertelisten
+ * (Rettungswürfe, Fertigkeiten) und Tabellen.
+ */
+.kopf {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  background: var(--tafel);
+  border: 1px solid var(--linie);
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.kopf>div:first-of-type, .kopf>div:nth-of-type(1) {
+  flex: 1 1 240px;
+}
+
+.bildnis {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--gold);
+  background: var(--sanft);
+}
+
+.unterzeile {
+  margin: 4px 0 0;
+  color: var(--sepia);
+  font-style: italic;
+}
+
+.unterzeile.klein {
+  font-size: 15px;
+}
+
+.kopfwerte {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.tafel {
+  background: var(--tafel);
+  border: 1px solid var(--linie);
+  padding: 16px;
+  margin-bottom: 14px;
+  break-inside: avoid;
+}
+
+.label {
+  display: block;
+  font-family: var(--kapital);
+  font-size: 10px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--blass);
+}
+
+.wert {
+  display: block;
+  font-family: var(--kapital);
+  font-size: 17px;
+}
+
+.wert.gross {
+  font-size: 23px;
+  font-weight: 700;
+  color: var(--rubrik);
+}
+
+.raster {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+}
+
+.raster.schmal {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+}
+
+.feld p {
+  margin: 2px 0 0;
+}
+
+.feld.breit {
+  grid-column: 1/-1;
+}
+
+.attribute {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+}
+
+.attribut {
+  border: 1px solid var(--stark);
+  background: var(--sanft);
+  padding: 8px 4px;
+  text-align: center;
+}
+
+.attribut .zahl {
+  display: block;
+  font-family: var(--kapital);
+  font-size: 25px;
+  font-weight: 700;
+}
+
+.attribut .mod {
+  display: block;
+  font-family: var(--kapital);
+  color: var(--rubrik);
+}
+
+.werteliste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.werteliste.zweispaltig {
+  columns: 2;
+  column-gap: 26px;
+}
+
+.werteliste li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px dotted var(--linie);
+  padding: 2px 0;
+  break-inside: avoid;
+}
+
+.werteliste li.geuebt b {
+  color: var(--rubrik);
+}
+
+.werteliste i {
+  color: var(--blass);
+  font-size: 14px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 4px;
+}
+
+th {
+  font-family: var(--kapital);
+  font-size: 10px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--blass);
+  text-align: left;
+  padding: 3px 6px 3px 0;
+  border-bottom: 1px solid var(--linie);
+}
+
+td {
+  padding: 4px 6px 4px 0;
+  border-bottom: 1px dotted var(--linie);
+  vertical-align: top;
+}

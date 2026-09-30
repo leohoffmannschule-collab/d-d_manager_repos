@@ -1,0 +1,49 @@
+/**
+ * Ausgeführtes Blatt, Teil 5: die Leiste oben (Stand und Drucken-Knopf) und
+ * die Fassung für Papier.
+ *
+ * Beim Drucken verschwindet die Leiste, der Hintergrund wird weiß und die
+ * Schrift auf Punkt umgestellt – ein sauberer Bogen statt eines
+ * Bildschirmfotos.
+ */
+.leiste {
+  max-width: 960px;
+  margin: 0 auto 14px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  color: var(--sepia);
+  font-size: 15px;
+  font-style: italic;
+}
+
+.leiste button {
+  font-family: var(--kapital);
+  font-size: 12px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: 9px 16px;
+  color: #f0dca8;
+  background: var(--rubrik);
+  border: 1px solid #7d2018;
+  cursor: pointer;
+}
+
+@media print {
+  body {
+    background: #fff;
+    padding: 0;
+    font-size: 11pt;
+  }
+  .leiste {
+    display: none;
+  }
+  .tafel, .kopf {
+    border-color: #999;
+    background: #fff;
+  }
+  .attribut {
+    background: #fff;
+  }
+}
