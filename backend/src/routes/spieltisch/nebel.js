@@ -10,7 +10,7 @@ import { Router } from 'express';
 import { db } from '../../db.js';
 import { requireDm } from '../../auth.js';
 import { broadcast, originClient } from '../../events.js';
-import { holeSzene, offeneFelder, rowToScene } from '../../spieltisch/umwandlung.js';
+import { aktiveSzeneId, holeSzene, offeneFelder, rowToScene, vorhangZu } from '../../spieltisch/umwandlung.js';
 import { rasterBereich } from '../../sicht.js';
 import { sendeFigurenWennGeaendert, sendeSzene } from '../../spieltisch/melden.js';
 
@@ -45,8 +45,17 @@ router.post('/:id/nebel', requireDm, (req, res) => {
   const naechste = [...offen].slice(0, MAX_FELDER);
   db.prepare('UPDATE scenes SET fog = ? WHERE id = ?').run(JSON.stringify(naechste), row.id);
 
-  // Nur die Änderung wandert übers Netz, nicht die ganze Karte.
-  broadcast('nebel', { sceneId: row.id, cells, revealed }, { exceptClient: originClient(req), campaignId: req.campaignId });
+  // Nur die Änderung wandert übers Netz, nicht die ganze Karte. Die Runde
+  // bekommt sie nur für die Szene, die offen auf dem Tisch liegt: Hinter dem
+  // Vorhang oder auf einer Szene, die erst vorbereitet wird, verrieten schon
+  // die Felder, wo die Spielleitung gerade arbeitet – derselbe Grund, aus dem
+  // der Zeigefinger hinter dem Vorhang stumm bleibt (siehe zeigen.js). Geht
+  // der Vorhang auf, bekommt die Runde den ganzen Nebel ohnehin mit der Szene.
+  const strich = { sceneId: row.id, cells, revealed };
+  broadcast('nebel', strich, { role: 'sl', exceptClient: originClient(req), campaignId: req.campaignId });
+  if (row.id === aktiveSzeneId(req.campaignId) && !vorhangZu(req.campaignId)) {
+    broadcast('nebel', strich, { role: 'spieler', campaignId: req.campaignId });
+  }
   // Deckt der Strich eine Figur auf oder wieder zu, muss auch das ankommen.
   sendeFigurenWennGeaendert(req.campaignId);
   res.json({ ok: true, offen: naechste.length });

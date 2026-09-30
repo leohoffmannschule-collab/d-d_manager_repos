@@ -2,14 +2,15 @@
  * Vertrag, Kapitel: Der Vorhang.
  *
  * Hinter geschlossenem Vorhang bekommt die Runde gar nichts vom Tisch –
- * nicht ausgeblendet, sondern nicht geschickt. Und die Chronik vermerkt den
- * Ort erst, wenn er sich hebt.
+ * nicht ausgeblendet, sondern nicht geschickt, auch nicht als einzelner
+ * Pinselstrich im Nebel. Und die Chronik vermerkt den Ort erst, wenn er sich
+ * hebt.
  *
  * Ein Kapitel des Prüfdurchgangs (siehe ../vertrag.mjs). Es bekommt den
  * gemeinsamen Stand `lage` – die angemeldeten Klienten und was frühere
  * Kapitel angelegt haben – und trägt ein, was spätere brauchen.
  */
-import { gleich, pruefe } from './werkzeug.mjs';
+import { gleich, mitschreiben, pruefe } from './werkzeug.mjs';
 
 export default async function vorhang(lage) {
   const { sl, spieler } = lage;
@@ -68,6 +69,12 @@ export default async function vorhang(lage) {
     );
     gleich((await sl.ruf('/scenes/aktiv')).daten.name, 'Die Schatzkammer', 'Die Spielleitung steht schon dort');
 
+    // Auch ein Pinselstrich hinter dem Vorhang bleibt dort: Schon die Felder
+    // verrieten, wo die Spielleitung gerade aufbaut.
+    const ohr = await mitschreiben(spieler);
+    await ohr.warteAuf('event: willkommen');
+    await sl.ruf(`/scenes/${zweite.id}/nebel`, { methode: 'POST', koerper: { cells: ['2,3', '2,4'], revealed: true } });
+
     // Und jetzt Bühne frei.
     await sl.ruf('/scenes/vorhang', { methode: 'POST', koerper: { zu: false } });
     gleich(
@@ -75,6 +82,12 @@ export default async function vorhang(lage) {
       'Die Schatzkammer',
       'Geöffnet sieht die Runde die neue Karte'
     );
+
+    // Offen kommt jeder Strich sofort an – und der von vorhin nie als Strich.
+    await sl.ruf(`/scenes/${zweite.id}/nebel`, { methode: 'POST', koerper: { cells: ['5,6'], revealed: true } });
+    pruefe(await ohr.warteAuf('"cells":["5,6"]'), 'Bei offenem Vorhang erreicht ein Pinselstrich die Runde sofort');
+    pruefe(!ohr.text().includes('"2,3"'), 'Ein Pinselstrich hinter dem Vorhang erreicht die Runde nicht');
+    await ohr.zu();
 
     // Die Chronik führt den Ort erst, wenn die Runde ihn erreicht hat.
     const eintraege = (await sl.ruf('/chronicle/sessions')).daten;

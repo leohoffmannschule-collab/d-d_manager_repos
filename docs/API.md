@@ -106,7 +106,7 @@ springt eine gezogene Figur kurz an ihren alten Platz.
 | `szene`                 | die aufgelegte Szene samt Figuren und Nebel|
 | `figur`                 | eine einzelne Figur (neu oder verändert)   |
 | `figur:entfernt`        | `{ id }`                                   |
-| `nebel`                 | `{ sceneId, cells, revealed }` – nur die Änderung |
+| `nebel`                 | `{ sceneId, cells, revealed }` – nur die Änderung; an die Runde nur für die offen aufliegende Szene |
 | `ping`                  | `{ x, y, color, name, at }`                |
 | `wurf`                  | ein Würfelwurf                             |
 | `wuerfe:geleert`        | `{}`                                       |
