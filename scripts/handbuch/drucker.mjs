@@ -71,9 +71,11 @@ export function findeBrowser() {
  * @param {string} browser  Pfad zum Browser
  * @param {string} html     Pfad zur HTML-Datei
  * @param {string} pdf      wohin das PDF soll
+ * @param {number} [minuten] wie lange der Browser höchstens drucken darf –
+ *   das Zeilenbuch mit über tausend Seiten braucht auf langsamen Rechnern länger
  * @returns {Buffer} das gedruckte PDF
  */
-export function drucken(browser, html, pdf) {
+export function drucken(browser, html, pdf, minuten = 10) {
   const schalter = [
     '--headless',
     '--disable-gpu',
@@ -84,7 +86,7 @@ export function drucken(browser, html, pdf) {
   ];
   if (process.getuid?.() === 0) schalter.unshift('--no-sandbox');
   fs.rmSync(pdf, { force: true });
-  const lauf = spawnSync(browser, schalter, { stdio: 'pipe', timeout: 10 * 60 * 1000 });
+  const lauf = spawnSync(browser, schalter, { stdio: 'pipe', timeout: minuten * 60 * 1000 });
   if (!fs.existsSync(pdf)) {
     const grund = lauf.error?.message ?? lauf.stderr?.toString().trim().split('\n').slice(-3).join('\n');
     throw new Error(`Der Browser hat kein PDF geschrieben.\n${grund ?? ''}`);

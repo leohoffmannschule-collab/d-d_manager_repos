@@ -6,7 +6,10 @@ JavaScript, sondern die Antwort auf: *Wo fange ich an zu lesen, und warum
 steht das so da?*
 
 Die Erklärungen im Einzelnen stehen als Kommentare in den Dateien selbst.
-Dieses Dokument sagt, wie die Dateien zueinander stehen.
+Dieses Dokument sagt, wie die Dateien zueinander stehen. Wer eine Datei
+Zeile für Zeile verstehen will, schlägt sie im **Zeilenbuch** nach
+(`docs/Abenteuer-Almanach-Zeile-fuer-Zeile.pdf`, gebaut mit
+`npm run zeilenbuch`): der ganze Code, neben jeder Zeile erklärt.
 
 ---
 
@@ -85,7 +88,7 @@ frontend/src/
   components/        Bauteile; dm/ nur für die Spielleitung, sheet/, tabletop/
 
 scripts/             Werkzeuge: starten, Tunnel, Proben, Vertrag, Drucksatz,
-                     Handbuch
+                     Handbuch, Zeilenbuch
 docs/                die Handbücher, dieses Dokument und in buch/ das
                      ganze Handbuch zum Almanach
 ```

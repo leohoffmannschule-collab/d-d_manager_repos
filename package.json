@@ -24,6 +24,7 @@
     "zertifikat": "node backend/scripts/zertifikat.mjs",
     "drucksatz": "node scripts/drucksatz.mjs",
     "handbuch": "node scripts/handbuch.mjs",
+    "zeilenbuch": "node scripts/zeilenbuch.mjs",
     "vertrag": "node scripts/vertrag.mjs",
     "blattprobe": "node scripts/blattprobe.mjs",
     "klangprobe": "node scripts/klangprobe.mjs",

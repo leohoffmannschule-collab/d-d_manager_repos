@@ -1362,8 +1362,15 @@ Werte, die erst im Browser feststehen (Lage der Figuren, gewählte Farben, Balke
 
 Dokumentation nachgezogen: Bekannte Grenzen (alle fünf geschlossen), Sicherheit (CSP, HTTPS im Heimnetz, Bedrohungstabelle), Einrichtung (Schritt 9.1 HTTPS samt Installation des Stammzertifikats je Gerät), Betrieb, Fehlersuche, Oberfläche (Laufzeit-Stilblatt), Datenmodell (Ausfuhr und Einlesen), Spielabend (ein Schalter statt zwei), Arbeiten (das Beispiel ist jetzt umgesetzt), Grundsätze, Begriffe, API, Hilfe im Almanach. Ein alter kaputter Anker in SPIELLEITUNG.md korrigiert. Handbuch neu gebaut: 541 Seiten.
 
-### design/: Inline-Stil als bewusste Ausnahme dokumentiert
+### design/: Artboards als atomares HTML+CSS statt Claude-Design-Format
 
-`bab84b2`
+`b385f49`
 
-Die .dc.html-Artboards des Claude-Design-Tools nutzen Inline-Stil als natives Format – nur so bleiben sie im Tool weiter zu öffnen und anzupassen. Das war bisher nirgends festgehalten, sodass es wie eine übersehene Stelle aussah. Jetzt steht es an beiden Stellen, an denen man danach suchen würde: im Kopf von scripts/stilprobe.mjs (die den Ordner ohnehin nie geprüft hat) und in design/README.md.
+Die sechs .dc.html-Artboards trugen ihr Aussehen als style="…" an jedem Element – das native Format des Claude-Design-Tools, mit dem sie entstanden. Zum Nachschlagen taugte das, zum Weiterbearbeiten von Hand nicht: dieselbe Farbe stand an hundert Stellen, eine Änderung hieß Suchen und Ersetzen quer durch sechs Dateien. Jetzt gilt für design/ dieselbe Regel wie für den Almanach selbst – wie etwas aussieht, steht im Stilblatt, nicht im Markup.
+
+- Sechs .html-Dateien neu geschrieben, alle über design/stil.css, das die Token-Namen aus frontend/src/stile/farben.css spiegelt (Pergament als :root, Kerzenlicht über [data-theme="kerzenlicht"] – derselbe Schalter wie in der echten App).
+- Die alten .dc.html-Dateien und canvas.json entfernt; dessen Design-Rationale steht jetzt in design/README.md.
+- .gitignore: die alte Regel design/*.html (ignoriert) / !design/*.dc.html (verfolgt) aufgehoben – die .html-Dateien sind jetzt die echten Quellen.
+- Stilprobe um design/*.html erweitert (Prüfung 7): kein style=, kein eingebettetes <style> oder <script> – wie im Rest des Projekts.
+- Dokumentation nachgezogen (13-architektur.md, design/README.md), Handbuch neu gebaut (542 Seiten).
+- .vscode/extensions.json: SQLite Viewer, Docker, GitLens ergänzt.

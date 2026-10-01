@@ -143,6 +143,59 @@ Am Ende nennt das Werkzeug die Zahl der Seiten und die Größe des PDFs.
 
 Neben dem Buch setzt `npm run drucksatz` die Handbücher einzeln – für die Runde, die Spielleitung, die Einrichtung und das Handbuch im Almanach – als eigenständige HTML-Dateien in `docs/druck/`, zum Ausdrucken oder Weitergeben (`scripts/drucksatz.mjs`, derselbe Markdown-Leser, eigenes Stilblatt `scripts/drucksatz.css`). Wer seiner Runde nur die zwei Seiten „Für die Runde“ geben will, nimmt diese.
 
+## Das Zeilenbuch
+
+Neben dem Handbuch gibt es ein zweites Buch: **Zeile für Zeile** (`docs/Abenteuer-Almanach-Zeile-fuer-Zeile.pdf`). Es enthält den ganzen Code des Almanachs – jede Datei, jede Zeile – und neben jeder Zeile eine Erklärung. Das Handbuch erklärt den Almanach von oben, das Zeilenbuch von unten.
+
+```bash
+npm run zeilenbuch                     # erklären, setzen, drucken
+npm run zeilenbuch -- --ohne-pdf       # nur docs/druck/zeilenbuch.html (zwei Sekunden)
+npm run zeilenbuch -- --nur frontend/src/components/sheet/kampf
+                                       # nur Dateien unter diesem Pfad – zum Ausprobieren,
+                                       # gedruckt nach docs/druck/zeilenbuch-probe.pdf
+```
+
+Geschrieben ist an diesem Buch nur der Vorspann – Vorwort und Lesehilfe in `docs/zeilenbuch/`. Alles andere **erzeugt** `scripts/zeilenbuch.mjs` bei jedem Bau neu, so wie die Verzeichnisse des Handbuchs: Bei über 40.000 Zeilen wären handgeschriebene Erklärungen veraltet, bevor sie fertig wären.
+
+### Wie eine Erklärung entsteht
+
+Das Werkzeug liest jede Datei, die git verfolgt und Code ist (`scripts/zeilenbuch/sammlung.mjs` – ausgenommen sind `docs/`, Bilder, Schriften und `package-lock.json`), und gibt sie dem Erklärer ihrer Sprache:
+
+| Sprache | Erklärer | Wie er liest |
+|---|---|---|
+| JavaScript, JSX | `zeilenbuch/js/` | mit dem Parser `@babel/parser`, der mit Vite ohnehin in `frontend/node_modules` liegt – kein neues Paket |
+| CSS | `zeilenbuch/css.mjs` | Regel für Regel, mit Tailwind-Variablen und `@layer` |
+| HTML, SVG | `zeilenbuch/html.mjs` | Tag für Tag, mit einem Stapel offener Elemente |
+| SQL in Vorlagentexten | `zeilenbuch/sql.mjs` | Anweisung für Anweisung, mit der Bedeutung jeder Spalte |
+| Tailwind-Klassen | `zeilenbuch/tailwind.mjs` | jede Klasse einzeln, mit Pixeln und Farbnamen |
+| Shell, Stapeldatei | `zeilenbuch/shell.mjs` | Befehl für Befehl |
+| Dockerfile, Compose | `zeilenbuch/docker.mjs` | Anweisung für Anweisung, YAML nach seinem Schlüsselpfad |
+| JSON, Ignore-Listen, `.env` | `zeilenbuch/daten.mjs` | Schlüssel für Schlüssel |
+
+Bei JavaScript bestimmt der Erklärer für jede Zeile, was in ihr **beginnt** – eine Anweisung, ein Argument, ein Attribut – und was in ihr **endet**. Daraus wird der Satz: „Legt den Zustand `offen` an …“, „Schließt das `<div>` aus Zeile 12“.
+
+Woher der Inhalt der Sätze kommt:
+
+1. **Aus den Kommentaren des Almanachs.** `zeilenbuch/projekt.mjs` legt vorab einen Index an: welche Funktion wo steht und was ihr Kommentar sagt, welche Datei welche Namen ausführt, welcher Weg der Schnittstelle welche Methode hat, welche Klasse in welchem Stilblatt steht. Ruft eine Zeile `blattWurf(…)` auf, steht daneben der erste Satz des Kommentars über `blattWurf` – auch wenn die Funktion in einer anderen Datei steht.
+2. **Aus Wörterbüchern** für alles, was nicht aus dem Almanach stammt: `zeilenbuch/woerterbuch/` – JavaScript, React, Node und Express, der Browser, CSS, HTML, die Umgebungsvariablen.
+
+Daraus folgt der wichtigste Handgriff: **Wer eine Erklärung im Zeilenbuch verbessern will, verbessert den Kommentar im Code** – oder, bei eingebauten Dingen, den Eintrag im Wörterbuch. Beim nächsten Bau steht es dann an jeder Stelle richtig, an der der Name vorkommt.
+
+### Satz und Druck
+
+`zeilenbuch/satz.mjs` setzt das Buch: Titelblatt, Verzeichnis, der Vorspann, dann je Teil (Server, Werkzeuge des Servers, Oberfläche, Werkzeuge, Betrieb, Entwürfe) ein Teilblatt und je Datei eine Tabelle – links der Code mit Zeilennummern, rechts die Erklärung. Kommentarblöcke stehen als *eine* Reihe da. Verweise auf andere Zeilen werden zu Sprungmarken. Das Aussehen steht in `scripts/zeilenbuch/zeilenbuch.css`.
+
+Gedruckt wird wie beim Handbuch: derselbe Browser, zweimal, mit `seitenzahlen.mjs` dazwischen. Das Buch hat weit über tausend Seiten; ein Druck dauert auf einem gewöhnlichen Rechner einige Minuten, das Werkzeug wartet bis zu 45.
+
+Zwei Entscheidungen halten das PDF klein:
+
+- **Keine gepunkteten Linien.** Chromium zeichnet jeden Punkt einer `dotted`-Linie als eigenes Rechteck – bei Zehntausenden Tabellenzeilen über hundert Megabyte. Das Stilblatt nimmt deshalb nur durchgezogene Haarlinien.
+- **Die Code-Tabellen tragen `aria-hidden`.** Sonst legt Chromium für jedes Element jeder Zeile einen Eintrag in der Struktur für Vorleseprogramme an – eine halbe Million Einträge, die das Buch verdreifachen. Text bleibt Text: Er lässt sich suchen und kopieren, und die Lesezeichen am Rand entstehen weiter aus den Überschriften.
+
+### Prüfen, was herauskommt
+
+Am Ende nennt das Werkzeug, wie viele Dateien und Zeilen erklärt sind – und, falls es sie gibt, Zeilen, die der Erklärer nicht deuten konnte (sie zeigen dann nur ihren Code). Nach einer größeren Änderung am Erklärer lohnt `--ohne-pdf` und ein Blick in `docs/druck/zeilenbuch.html` an den Stellen, die man geändert hat. Der Generator steht selbst im Buch (Teil IV), seine Dateien gehen durch dieselben Proben wie jeder andere Code.
+
 ## Ein Kapitel ergänzen
 
 1. Die Datei in `docs/buch/` anlegen, mit einer Überschrift erster Ebene als Titel.

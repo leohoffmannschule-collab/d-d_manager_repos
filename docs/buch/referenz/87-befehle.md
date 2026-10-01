@@ -27,6 +27,7 @@ Die Befehle für den Alltag. Sie laufen alle aus dem Wurzelverzeichnis des Alman
 | `npm run zertifikat` | `node backend/scripts/zertifikat.mjs` |
 | `npm run drucksatz` | `node scripts/drucksatz.mjs` |
 | `npm run handbuch` | `node scripts/handbuch.mjs` |
+| `npm run zeilenbuch` | `node scripts/zeilenbuch.mjs` |
 | `npm run vertrag` | `node scripts/vertrag.mjs` |
 | `npm run blattprobe` | `node scripts/blattprobe.mjs` |
 | `npm run klangprobe` | `node scripts/klangprobe.mjs` |
@@ -99,6 +100,10 @@ Aus den Handbüchern druckfertige Seiten setzen.
 ### npm run handbuch
 
 Das Handbuch bauen – als Markdown zum Lesen auf GitHub und als PDF.
+
+### npm run zeilenbuch
+
+Das Zeilenbuch bauen: der ganze Code des Almanachs, jede Zeile erklärt.
 
 ### npm run vertrag
 

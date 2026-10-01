@@ -37,6 +37,7 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
 | [Betriebsanleitung Runde](docs/SPIELER.md) | mitspielen: beitreten, Blatt, Spieltisch, Würfeln, Beute |
 | [API.md](docs/API.md) | wer die Oberfläche umbaut oder austauscht |
 | [Der Almanach von innen](docs/CODE.md) | wer am Code arbeitet: Landkarte, Vokabeln, Lesereihenfolge |
+| **[Zeile für Zeile](docs/Abenteuer-Almanach-Zeile-fuer-Zeile.pdf)** (PDF) | wer den Code lesen lernen will: jede Datei, jede Zeile, daneben erklärt, was sie tut – erzeugt aus dem Code |
 
 ## Funktionen
 
@@ -445,6 +446,7 @@ Nützliche Befehle im Projektstamm:
 | `npm run sicherung` | Datenbank sichern; `-- --medien` nimmt Karten und Bildnisse mit       |
 | `npm run drucksatz` | Die Handbücher druckfertig setzen (`docs/druck/`, dann Strg+P → PDF)  |
 | `npm run handbuch`  | Das ganze Handbuch bauen: Verzeichnisse aus dem Code, dann `docs/Abenteuer-Almanach-Handbuch.pdf` |
+| `npm run zeilenbuch` | Das Zeilenbuch bauen: jede Zeile Code erklärt, dann `docs/Abenteuer-Almanach-Zeile-fuer-Zeile.pdf` (dauert einige Minuten) |
 | `npm run setup`     | Abhängigkeiten für Backend und Frontend installieren                  |
 | `npm run dev`       | Entwicklung: Server (3001) und Oberfläche (5173) gleichzeitig         |
 | `npm run build`     | Oberfläche bauen und ins Backend kopieren                             |

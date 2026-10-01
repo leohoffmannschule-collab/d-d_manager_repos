@@ -3,7 +3,7 @@
 > Dieses Kapitel schreibt `npm run handbuch` aus dem Code (scripts/handbuch/referenz/).
 > Änderungen gehören in den Code und seine Kommentare, nicht hierher.
 
-Alles unter scripts/ (64 Dateien, 7.568 Zeilen): Start und Tunnel, die Proben und der Vertrag, Drucksatz und dieses Handbuch.
+Alles unter scripts/ (98 Dateien, 14.884 Zeilen): Start und Tunnel, die Proben und der Vertrag, Drucksatz und dieses Handbuch.
 
 ## scripts/
 
@@ -273,7 +273,7 @@ Schalter:
 
 ### scripts/stilprobe.mjs
 
-*185 Zeilen*
+*187 Zeilen*
 
 Die Stilprobe: Steht Aussehen oder Verhalten irgendwo, wo es nicht hingehört?
 
@@ -385,6 +385,41 @@ der Reihenfolge eines Spielabends. Die Reihenfolge ist nicht beliebig:
 Spätere Kapitel bauen auf dem auf, was frühere angelegt haben (Konten,
 die Kampagne, den Helden) – das reichen sie über `lage` weiter.
 
+### scripts/zeilenbuch.mjs
+
+*129 Zeilen*
+
+Das Zeilenbuch bauen: der ganze Code des Almanachs, jede Zeile erklärt.
+
+```
+npm run zeilenbuch                   alles: erklären, setzen, drucken
+npm run zeilenbuch -- --ohne-pdf     nur die gesetzte HTML-Fassung
+npm run zeilenbuch -- --nur <pfad>   nur Dateien, deren Pfad so beginnt (zum Ausprobieren)
+```
+
+Das Buch wird nicht geschrieben, sondern *erzeugt* – wie die
+Verzeichnisse des Handbuchs: Es liest jede Datei, zerlegt sie mit dem
+Parser ihrer Sprache und erklärt jede Zeile aus dem, was dort steht (und
+aus den Kommentaren, die der Almanach über jede Funktion schreibt).
+Ändert sich der Code, baut man das Buch neu, und es stimmt wieder.
+
+Die Teile:
+```
+zeilenbuch/sammlung.mjs   welche Dateien, in welcher Ordnung
+zeilenbuch/projekt.mjs    der Index: was jede Funktion tut, wo sie steht
+zeilenbuch/erklaeren.mjs  der passende Erklärer je Sprache
+zeilenbuch/satz.mjs       das HTML, zeilenbuch/zeilenbuch.css sein Aussehen
+```
+
+Gedruckt wird wie beim Handbuch mit einem Browser, der ohnehin da ist,
+zweimal – der zweite Druck trägt die Seitenzahlen ins Verzeichnis ein.
+Ergebnis:
+
+```
+docs/druck/zeilenbuch.html                 die gesetzte Fassung (nicht im Git)
+docs/Abenteuer-Almanach-Zeile-fuer-Zeile.pdf das Buch
+```
+
 ## scripts/drucksatz/
 
 ### scripts/drucksatz/markdown.mjs
@@ -458,7 +493,7 @@ können, ohne die Namenssuche drumherum.
 
 ### scripts/einfuhrprobe/namen.mjs
 
-*147 Zeilen*
+*149 Zeilen*
 
 Die Namenssuche der Einfuhrprobe: was ausgeführt, was bekannt, was benutzt
 wird.
@@ -523,7 +558,7 @@ sind die benannten Seiten `titel` und `teil` da.
 
 ### scripts/handbuch/drucker.mjs
 
-*94 Zeilen*
+*96 Zeilen*
 
 Aus HTML ein PDF drucken – mit einem Browser, der ohnehin auf dem Rechner
 liegt.
@@ -1409,3 +1444,748 @@ lässt die Kapitel der Reihe nach laufen und fällt am Ende das Urteil.
 - `beenden` (function) – Server anhalten, Datenordner wegräumen, mit diesem Code enden.
 - `mangel` (function) – Einen Mangel eintragen, der keine einzelne Prüfung ist – etwa einen Abbruch.
 - `urteil` (function) – Das Urteil: alles bestanden, oder die Liste dessen, was nicht hielt.
+
+## scripts/zeilenbuch/
+
+### scripts/zeilenbuch/blatt.mjs
+
+*107 Zeilen*
+
+Das Blatt einer Datei: zu jeder Zeile ihre Erklärung.
+
+Die Erklärer (js/, css.mjs, sql.mjs …) schreiben hier hinein – Zeile für
+Zeile mit `dazu()`, für zusammenhängende Kommentarblöcke mit `gruppe()`.
+`abschnitte()` macht daraus die Reihen, die satz.mjs setzt: jede Zeile
+genau einmal, ein Kommentarblock als *eine* Reihe über mehrere Zeilen.
+
+Ein Teil ist entweder Erklärung (`text`) oder ein Hinweis (`hinweis`) –
+das, was ein Wort aus dem Code allgemein bedeutet („`map` wendet eine
+Funktion auf jedes Element an …“). Hinweise setzt das Buch kleiner,
+damit die eigentliche Erklärung vorne steht.
+
+**Ausfuhren**
+
+- `Blatt` (class) – Zu jeder Zeile einer Datei ihre Erklärung.
+
+### scripts/zeilenbuch/css-leser.mjs
+
+*88 Zeilen*
+
+CSS in Regeln zerlegen – so weit, wie das Zeilenbuch es braucht.
+
+Kein vollständiger CSS-Parser: Gesucht werden die Stellen, an denen ein
+Block beginnt (`selektor {` oder `@media … {`), mit der Zeile, der Tiefe
+der Verschachtelung und dem Kommentar direkt davor. Daraus entstehen zwei
+Dinge: das Verzeichnis der eigenen CSS-Klassen (welche Klasse steht in
+welchem Stilblatt, und was sagt der Kommentar dazu – siehe projekt.mjs)
+und das Gerüst, an dem css.mjs die Zeilen eines Stilblatts erklärt.
+
+**Ausfuhren**
+
+- `bloecke` (function) – Die Blöcke eines Stilblatts, in Lesereihenfolge.
+- `klassenIn` (function) – Alle Klassennamen in einem Selektor: `.btn:hover, .btn-seal` → btn, btn-seal.
+
+### scripts/zeilenbuch/css.mjs
+
+*291 Zeilen*
+
+Stilblätter Zeile für Zeile erklären.
+
+Ein Stilblatt besteht aus Regeln: oben der Selektor (wen die Regel
+betrifft), in geschweiften Klammern die Deklarationen (Eigenschaft: Wert;).
+Der Leser hier geht Zeile für Zeile durch und merkt sich, in welcher
+Regel er gerade steht – so kann eine schließende Klammer sagen, wessen
+Ende sie ist, und eine Variable in `@theme` sagen, welche Tailwind-Klassen
+aus ihr entstehen.
+
+Kommentare (/* … *\/) fasst `erklaereCss` zu Blöcken zusammen; den Rest
+erklärt die Klasse `CssZeilen`, die auch für CSS in Vorlagentexten des
+Codes benutzt wird (vorlage.mjs).
+
+**Ausfuhren**
+
+- `selektor` (function) – Ein ganzer Selektor in Worten – mit Kombinatoren (Leerzeichen, >) und Kommata.
+- `CssZeilen` (class) – Ein Leser, der CSS Zeile für Zeile erklärt.
+- `erklaereCss` (function) – Ein ganzes Stilblatt erklären: Kommentare als Blöcke, jede andere Zeile mit `CssZeilen`.
+
+### scripts/zeilenbuch/daten.mjs
+
+*309 Zeilen*
+
+Datendateien erklären: JSON-Einstellungen, Ignore-Listen, .gitattributes
+und die Beispieldatei .env.example.
+
+Diese Dateien enthalten keine Abläufe, nur Angaben – aber jede Zeile
+bewirkt etwas: welche Pakete installiert werden, was git übergeht, mit
+welchen Zeilenenden eine Datei gespeichert wird. JSON liest sich wie ein
+Baum aus Schlüsseln; der Leser merkt sich, wo er steht (scripts → test),
+denn dieselbe Zeile `"dev": "vite"` bedeutet unter `scripts` etwas
+anderes als anderswo.
+
+**Ausfuhren**
+
+- `erklaereJson` (function) – Eine JSON-Datei erklären (auch mit // -Kommentaren, wie VS Code sie erlaubt).
+- `erklaereIgnore` (function) – Eine .gitignore oder .dockerignore erklären.
+- `erklaereAttribute` (function) – Die .gitattributes erklären: wie git Dateien beim Speichern behandelt.
+- `erklaereEnv` (function) – Die .env.example erklären: Kommentare als Blöcke, jede Einstellung mit dem, was sie bewirkt.
+
+### scripts/zeilenbuch/docker.mjs
+
+*196 Zeilen*
+
+Docker erklären: das Dockerfile und docker-compose.yml.
+
+Docker packt den Almanach mit allem, was er braucht (Node, die Pakete, die
+gebaute Oberfläche), in ein Abbild – ein fertiges kleines Linux, das auf
+jedem Rechner mit Docker gleich läuft, etwa auf dem Raspberry Pi. Das
+Dockerfile ist das Rezept für dieses Abbild, Schritt für Schritt;
+docker-compose.yml sagt, welche Behälter (Container) daraus gestartet
+werden, mit welchen Ports, Ordnern und Einstellungen.
+
+Kommentare (#) werden zu Blöcken zusammengefasst; jede andere Zeile
+erklärt der Befehl bzw. der Schlüssel, mit dem sie beginnt. In YAML
+zählt die Einrückung: Der Leser merkt sich, unter welchem Schlüssel eine
+Zeile steht (services → dnd-manager → ports).
+
+**Ausfuhren**
+
+- `erklaereDockerfile` (function) – Das Dockerfile erklären.
+- `erklaereCompose` (function) – docker-compose.yml erklären.
+
+### scripts/zeilenbuch/erklaeren.mjs
+
+*112 Zeilen*
+
+Eine Datei erklären – mit dem Erklärer, der zu ihrer Sprache gehört.
+
+Hier laufen die Fäden zusammen: Die Sprache einer Datei (sammlung.mjs)
+bestimmt den Erklärer (js/, css.mjs, html.mjs, shell.mjs, docker.mjs,
+daten.mjs). Was danach noch ohne Erklärung ist, bekommt eine Notlösung –
+und wird gezählt, damit das Buch sagen kann, ob es wirklich jede Zeile
+erklärt.
+
+**Ausfuhren**
+
+- `erklaereDatei` (function) – Eine Datei erklären.
+- `zweck` (function) – Wozu es eine Datei gibt – für die Zeile unter ihrem Namen im Buch: der erste Absatz ihres Kopfkommentars, oder eine feste Beschreibung für Dateien, die keinen haben können (JSON, Ignore-Listen).
+
+### scripts/zeilenbuch/html.mjs
+
+*162 Zeilen*
+
+HTML Zeile für Zeile erklären.
+
+HTML beschreibt, *was* auf einer Seite steht: Elemente in spitzen
+Klammern (`<p>…</p>`), mit Attributen (`class="knopf"`), ineinander
+verschachtelt. Gebraucht wird das für die echten HTML-Dateien
+(frontend/index.html, die Entwürfe in design/) und für HTML, das der Code
+als Vorlagentext zusammensetzt (das mitgenommene Blatt, der Drucksatz,
+das Handbuch) – dort stehen eingesetzte Werte als „…“.
+
+Der Leser merkt sich, welche Elemente offen sind, damit ein schließendes
+`</div>` sagen kann, wo es geöffnet wurde, und ein Tag, dessen Attribute
+über mehrere Zeilen gehen, auf jeder Zeile weiß, zu wem sie gehören.
+
+**Ausfuhren**
+
+- `HtmlZeilen` (class) – Ein Leser für HTML, Zeile für Zeile.
+- `erklaereHtml` (function) – Eine ganze HTML-Datei erklären.
+
+### scripts/zeilenbuch/projekt.mjs
+
+*364 Zeilen*
+
+Der Projekt-Index: was der Almanach über sich selbst weiß.
+
+Eine Zeile wie `blattWurf(name, modifier)` ist nur halb erklärt, wenn das
+Buch sagt „ruft `blattWurf` auf“. Was `blattWurf` *tut*, steht im
+Kommentar über der Funktion – in einer anderen Datei. Dieser Index liest
+deshalb vorab alle Dateien und merkt sich:
+
+- zu jeder Datei ihren Kopfkommentar (wozu es sie gibt),
+- zu jeder Funktion, Komponente und Konstante mit einem Kommentar
+  darüber dessen ersten Satz,
+- was jede Datei woher einführt und was sie ausführt – so lässt sich
+  ein Name über Dateigrenzen hinweg bis zu seiner Erklärung verfolgen,
+- zu jedem Weg der Schnittstelle Methode, ganzen Pfad, Wächter und
+  Kommentar (gelesen wie im Handbuch, handbuch/referenz/wege.mjs),
+- zu jeder eigenen CSS-Klasse ihr Stilblatt und ihren Kommentar,
+- zu jeder Umgebungsvariablen ihre Erklärung aus der .env.example.
+
+**Ausfuhren**
+
+- `Projekt` (class) – Der Index über alle Dateien des Almanachs.
+
+### scripts/zeilenbuch/sammlung.mjs
+
+*138 Zeilen*
+
+Welche Dateien ins Zeilenbuch kommen, in welcher Reihenfolge, mit welchem
+Erklärer.
+
+Genommen wird alles, was git verfolgt und Code ist – Programme,
+Stilblätter, HTML, Skripte, Einstellungen. Nicht genommen wird, was kein
+Code ist (Handbücher in docs/, Bilder, Schriften, die Datenbank) und was
+ein Werkzeug erzeugt statt ein Mensch schreibt: package-lock.json legt
+npm an, Zeile für Zeile genau so, wie es die installierten Pakete
+vorfinden – sie zu erklären hieße, das npm-Verzeichnis abzuschreiben.
+
+Gegliedert wird nach Teilen (Server, Oberfläche, Werkzeuge …) und darin
+nach Ordnern, so wie man die Dateien im Editor findet.
+
+**Ausfuhren**
+
+- `TEILE` (const) – Die Teile des Buches: Titel, Einleitungssatz, welche Pfade dazugehören.
+- `sprache` (function) – Welcher Erklärer zu einer Datei gehört – und wie ihre Sprache im Buch heißt.
+- `ZWECK` (const) – Was eine Datei ohne Kopfkommentar ist – für die Zeile unter ihrem Namen.
+- `sammeln` (function) – Die Dateien des Buches, gegliedert.
+
+### scripts/zeilenbuch/satz.mjs
+
+*169 Zeilen*
+
+Das Zeilenbuch setzen: aus den erklärten Dateien ein HTML-Dokument, das
+der Browser zum PDF druckt.
+
+Aufbau: Titelblatt, Inhaltsverzeichnis, Vorwort und Lesehilfe (aus
+docs/zeilenbuch/), dann je Teil ein Teilblatt und je Datei ein Abschnitt
+mit einer Tabelle aus zwei Spalten – links der Code mit Zeilennummern,
+rechts die Erklärung. Ein Kommentarblock steht als *eine* Reihe da, weil
+man ihn als Ganzes liest; jede andere Zeile hat ihre eigene.
+
+Verweise auf andere Zeilen („bis Zeile 17“) werden zu Sprungmarken im
+PDF. Die Seitenzahlen im Verzeichnis trägt der zweite Druck ein (siehe
+scripts/handbuch/seitenzahlen.mjs) – deshalb nimmt `setzen` die Seiten
+des ersten Drucks entgegen.
+
+**Ausfuhren**
+
+- `setzen` (function) – Das ganze Buch.
+
+### scripts/zeilenbuch/shell.mjs
+
+*117 Zeilen*
+
+Shell-Skripte (.sh) und Stapeldateien für Windows (.cmd) erklären.
+
+Beide sind Listen von Befehlen, die ein Kommandozeilen-Programm der Reihe
+nach ausführt – die .sh-Dateien die Shell von macOS und Linux, die
+.cmd-Dateien die Eingabeaufforderung von Windows. Im Almanach tun sie nur
+eines: prüfen, ob Node da ist, und dann ein Skript in scripts/ starten.
+Die eigentliche Arbeit steht in Node, damit sie auf allen Systemen
+dieselbe ist.
+
+Erklärt wird Zeile für Zeile nach dem Befehl am Zeilenanfang; Kommentare
+(# bzw. rem) werden zu Blöcken zusammengefasst.
+
+**Ausfuhren**
+
+- `erklaereShell` (function) – Ein Shell-Skript oder eine Stapeldatei erklären.
+
+### scripts/zeilenbuch/sql.mjs
+
+*317 Zeilen*
+
+SQL in Worten.
+
+SQL ist die Sprache, in der der Server mit der Datenbank spricht: Er
+schreibt Anweisungen wie `SELECT name FROM characters WHERE id = ?` als
+Text und übergibt sie SQLite. Die Fragezeichen sind Platzhalter, die beim
+Ausführen mit Werten gefüllt werden – so kann kein eingegebener Text die
+Anweisung selbst verändern.
+
+Zwei Werkzeuge:
+
+```
+zusammenfassung(sql)   eine ganze Anweisung in einem Satz – für
+                       `db.prepare('…')` in einer Zeile
+new SqlZeilen()        ein Leser, der mehrzeiliges SQL Zeile für Zeile
+                       erklärt und sich merkt, wo er steht (in einer
+                       Tabelle, in der Spaltenliste eines SELECT …)
+```
+
+**Ausfuhren**
+
+- `spalteBedeutet` (const) – Was eine Spalte bedeutet – oder ''.
+- `zusammenfassung` (function) – Eine ganze SQL-Anweisung in einem Satz.
+- `SqlZeilen` (class) – Ein Leser, der SQL Zeile für Zeile erklärt.
+
+### scripts/zeilenbuch/tailwind.mjs
+
+*423 Zeilen*
+
+Klassen in Worten: was `flex items-center gap-2 text-rubric` bedeutet.
+
+Die Oberfläche beschreibt ihr Aussehen mit Tailwind: Jede Klasse ist ein
+einzelner Baustein („flex“: Kinder nebeneinander, „gap-2“: 8 px Abstand).
+Tailwind erzeugt beim Bau für jede Klasse, die im Code vorkommt, genau
+eine CSS-Regel. Dazu kommen die eigenen Klassen des Almanachs (`btn`,
+`panel`, `field-box` …), die in den Stilblättern unter frontend/src/stile/
+stehen – die erklärt der Projekt-Index mit dem Kommentar ihres Stilblatts.
+
+Gelesen wird so, wie Tailwind liest: erst die Vorsätze (`hover:`, `sm:` …),
+dann ein optionales Minus, dann der Baustein mit seinem Wert, zuletzt
+eine Deckkraft (`/20`). Was das hier nicht kennt, nennt die Erklärung
+ehrlich „Tailwind-Klasse“ ohne Deutung.
+
+**Ausfuhren**
+
+- `klasse` (function) – Eine einzelne Klasse erklären.
+- `klassenErklaeren` (function) – Eine ganze Klassenliste erklären: `flex gap-2` → „`flex` Flexbox …; `gap-2` Abstand …“.
+- `sindKlassen` (function) – Sieht ein Text aus wie eine Liste von Klassen (jedes Wort eine bekannte Klasse)?
+
+### scripts/zeilenbuch/text.mjs
+
+*197 Zeilen*
+
+Sprachhilfen für die Erklärungen des Zeilenbuchs.
+
+Eine Erklärung ist ein deutscher Satz mit eingestreutem Code. Damit beim
+Setzen nichts verrutscht, wird Code nicht als HTML hineingeschrieben,
+sondern zwischen zwei Steuerzeichen gelegt (`code()`); erst satz.mjs macht
+daraus ein <code>-Element. So darf ein Stück Code selbst Backticks,
+spitze Klammern oder Anführungszeichen enthalten. Dasselbe gilt für
+Verweise auf eine andere Zeile derselben Datei (`zeile()`): Sie werden im
+PDF zu Sprungmarken, die man anklicken kann.
+
+**Ausfuhren**
+
+- `CODE_AUF` (const) – Steuerzeichen um ein Stück Code. Im Quelltext des Almanachs kommen sie nie vor.
+- `CODE_ZU` (const) – Das Gegenstück zu CODE_AUF.
+- `ZEILE_AUF` (const) – Steuerzeichen um eine Zeilennummer, auf die verwiesen wird.
+- `ZEILE_ZU` (const) – Das Gegenstück zu ZEILE_AUF.
+- `kuerzen` (function) – Text auf höchstens `laenge` Zeichen kürzen – mit „…“ am Ende, wenn etwas fehlt. Gekürzt wird an einer Wortgrenze, wenn eine in der Nähe liegt.
+- `code` (function) – Ein Stück Code für eine Erklärung – geglättet, gekürzt, markiert.
+- `zeile` (function) – Ein Verweis auf eine Zeile derselben Datei („Zeile 12“, anklickbar).
+- `aufzaehlen` (function) – „a“, „a und b“, „a, b und c“.
+- `ordnung` (function) – Die Ordnungszahl zu einer Stelle ab 0, mit der Endung, die das Wort dahinter verlangt: (0, 's') → „erstes“ (Argument), (1, 'r') → „zweiter“ (Eintrag). Ab der elften Stelle schlicht „11.“.
+- `gross` (function) – Den ersten Buchstaben groß schreiben. Beginnt der Text mit Code, bleibt er, wie er ist – `type` darf nicht zu `Type` werden.
+- `satz` (function) – Einen Satz daraus machen: groß anfangen, mit einem Satzzeichen enden.
+- `mitCode` (function) – Markdown-Backticks (`x`) in markierten Code verwandeln.
+- `ersterSatz` (function) – Der erste Satz eines Kommentars – für die Erklärung einer Funktion, die an anderer Stelle beschrieben ist. Code in Backticks wird markiert.
+- `kommentarInhalt` (function) – Den Inhalt eines Kommentars ohne Sternchen und Einrückung – so, wie Babel ihn liefert (`value` ohne die Zeichen /* und *\/).
+- `zitat` (function) – Ein Zitat in deutschen Anführungszeichen. Anführungszeichen im Zitat selbst werden zu einfachen (‚…‘), damit man sieht, wo das Zitat endet.
+- `dativ` (function) – Eine Wendung in den Dativ setzen – für „aus …“ und „mit …“. Die Erklärer bilden ihre Wendungen im Nominativ („das Ergebnis von …“); hinter einer Präposition braucht es den Dativ („aus dem Ergebnis von …“). Umgestellt wird nur der Anfang, und nur bei den Wendungen, die die Erklärer bilden.
+- `akkusativ` (function) – Eine Wendung in den Akkusativ setzen – für „gibt … zurück“, „setzt … auf“, „wirft …“. Nur die männlichen Wendungen ändern sich („der Text“ → „den Text“, „ein Fehler“ → „einen Fehler“); alle anderen bleiben, wie sie sind.
+- `zahl` (const) – Eine Zahl mit deutschem Tausenderpunkt.
+- `px` (const) – Pixelangaben in Worten – 16 px sind ein rem, das Grundmaß der Schrift. `10` → „10 px“; `2.5` rem → „40 px“.
+
+### scripts/zeilenbuch/zeilenbuch.css
+
+*285 Zeilen*
+
+Der Satzspiegel des Zeilenbuchs – DIN A4 hoch, zum Drucken und als PDF.
+
+Gehört zu scripts/zeilenbuch.mjs. Das Skript legt diese Datei (ohne
+diesen Kopf) neben die gesetzte Seite; die Seite verweist darauf.
+
+Jede Datei ist eine Tabelle aus zwei Spalten: links der Code in fester
+Breite mit Zeilennummern, rechts die Erklärung. Lange Zeilen brechen um
+und rücken hinter der Nummer ein, damit die Nummer frei steht. Der
+Tabellenkopf wiederholt sich auf jeder Seite.
+
+Wer am Satz schraubt, prüft das Ergebnis im PDF, nicht im Browserfenster:
+Maßgebend sind Millimeter, Punkt und `@page`.
+
+## scripts/zeilenbuch/js/
+
+### scripts/zeilenbuch/js/anweisung.mjs
+
+*370 Zeilen*
+
+Anweisungen in Worten: Einfuhren, Festlegungen, Funktionen, Verzweigungen,
+Schleifen, Rückgaben.
+
+Eine Anweisung ist ein ganzer Schritt des Programms – sie bekommt einen
+ganzen Satz („Legt den Zustand `offen` an …“, „Wenn `liste` leer ist:
+Gibt `null` zurück.“). Was innerhalb der Anweisung in derselben Zeile
+steht, beschreibt der Satz mit; was in späteren Zeilen folgt, bekommt dort
+seine eigene Erklärung.
+
+**Ausfuhren**
+
+- `eingefuehrt` (function) – Ein eingeführter Name samt Hinweis, was er ist.
+- `funktionsSatz` (function) – Wie eine Funktion beginnt – für Deklarationen und Variablen mit Funktion.
+- `festlegung` (function) – Eine Festlegung `const x = …` (ein einzelner Deklarator).
+- `wenn` (function) – `if (…) …` – mit `sonst` für ein `else if`.
+- `anweisung` (function) – Eine Anweisung als ganzer Satz.
+
+### scripts/zeilenbuch/js/aufruf.mjs
+
+*474 Zeilen*
+
+Aufrufe in Worten: was `foo(a, b)` tut.
+
+Ein Aufruf kommt in drei Satzformen vor, und jede braucht ihre eigene
+Wortstellung:
+
+```
+satz     als eigene Anweisung       „Ruft `speichern()` auf“
+relativ  im Nebensatz               „…, die `speichern()` aufruft“
+wert     als Wert in einem Satz     „das Ergebnis von `speichern()`“
+```
+
+Was die gerufene Funktion bedeutet, kommt als Hinweis dazu: aus dem
+Projekt-Index (eigene Funktionen, mit dem ersten Satz ihres Kommentars),
+aus den Wörterbüchern (JavaScript, React, Node, Express, Browser) – oder,
+für eine Handvoll häufiger Muster, als eigene Wendung: das Ändern eines
+Zustands, das Anlegen eines Server-Weges, das Antworten mit einem Status,
+SQL über `db.prepare`, die Aufrufe der eigenen Schnittstelle.
+
+**Ausfuhren**
+
+- `wegSatz` (function) – Der erste Satz des Kommentars über einem Weg, ohne die Kopfzeile „POST /api/… { … } –“.
+- `werDarf` (function) – Wer einen Weg benutzen darf – aus den Wächtern davor.
+- `bedeutung` (function) – Was der gerufene Name bedeutet – oder null, wenn ihn niemand kennt.
+- `rufName` (function) – Der Name eines Aufrufs für den Satz: `foo`, `db.prepare`, `.run` (am Ende einer Kette).
+- `besonders` (function) – Die besonderen Muster (Antwort, Datenbank, Schnittstelle, Listenmethode) - für ein Glied einer Kette, das auf eigener Zeile steht.
+- `aufrufWendung` (function) – Ein Aufruf in Worten.
+- `abhaengigkeiten` (function) – Die Abhängigkeiten eines Effekts, einer gemerkten Rechnung oder Funktion in Worten.
+
+### scripts/zeilenbuch/js/ausdruck.mjs
+
+*452 Zeilen*
+
+Ausdrücke in Worten: aus `user?.name ?? 'Gast'` wird „`user?.name`,
+ersatzweise `'Gast'`“.
+
+Zwei Formen, je nach Platz im Satz:
+
+```
+wendung(n, k)    ein Satzteil, der für einen Wert steht
+                 („eine Funktion mit dem Parameter `x` …“)
+bedingung(n, k)  ein Nebensatz für „wenn …“ und „ob …“
+                 („`liste` leer ist“, „`a` gleich `b` ist“)
+```
+
+Beschrieben wird nur, was in der aktuellen Zeile steht (`k.L`). Teile,
+die später beginnen, bekommen ihre Erklärung in ihrer eigenen Zeile;
+hier heißt es dann „folgt“ oder „bis Zeile N“.
+
+**Ausfuhren**
+
+- `kurzwert` (function) – Kurz und als Code: für einfache Werte, die man am besten so liest, wie sie dastehen.
+- `parameterText` (function) – Die Parameter einer Funktion in Worten.
+- `funktionWendung` (function) – Eine Funktion als Wert (Pfeilfunktion oder function-Ausdruck).
+- `wendung` (function) – Ein Ausdruck als Satzteil.
+- `bedingung` (function) – Eine Bedingung als Nebensatz – zum Einsetzen hinter „wenn“ oder „ob“. `!liste.length` → „`liste` leer ist“.
+
+### scripts/zeilenbuch/js/erklaerer.mjs
+
+*247 Zeilen*
+
+Eine JavaScript- oder JSX-Datei Zeile für Zeile erklären.
+
+Der Ablauf:
+
+1. Den Code in seinen Baum zerlegen (parser.mjs) und zu jedem Knoten
+   den Elternknoten merken.
+2. Die „Köpfe“ finden: Knoten, die in einer anderen Zeile beginnen als
+   ihr Elternknoten. Das sind die Dinge, die eine Zeile *neu* bringt –
+   eine Anweisung, ein Argument auf eigener Zeile, ein Attribut, ein
+   Element. Jeder Kopf bekommt einen Satz (rolle.mjs, anweisung.mjs).
+3. Mehrzeilige Vorlagentexte (SQL, HTML …) mit dem Leser ihrer Sprache
+   erklären (vorlage.mjs).
+4. Kommentare als Blöcke eintragen (kommentar.mjs) und Text im Markup
+   Zeile für Zeile.
+5. Was eine Zeile schließt (`}`, `</div>`), aus den Knoten, die dort
+   enden (schluss.mjs).
+6. Was dann noch ohne Erklärung ist, als Fortsetzung des umgebenden
+   Knotens benennen – damit keine Zeile leer bleibt.
+
+**Ausfuhren**
+
+- `erklaereJs` (function) – 
+
+### scripts/zeilenbuch/js/hilfen.mjs
+
+*135 Zeilen*
+
+Gemeinsame Hilfen der JavaScript-Erklärer.
+
+Alle Erklärer bekommen einen Kontext `k` mit: die Datei, ihren Text, den
+Projekt-Index, die Elternkarte des Baums, die Zeile, die gerade erklärt
+wird (`k.L`), und die Hinweise, die zu dieser Zeile gesammelt werden.
+„Hier“ heißt dabei immer: in Zeile `k.L`. Ein Teil, der erst in einer
+späteren Zeile beginnt, wird nicht hier beschrieben, sondern dort – die
+Erklärung sagt dann nur, dass er folgt.
+
+**Ausfuhren**
+
+- `quelle` (const) – Der Quelltext eines Knotens.
+- `schnipsel` (function) – Ein Stück Code für die Erklärung. Mehrzeilige Knoten zeigen nur ihre erste Zeile, mit „…“ für den Rest.
+- `hier` (const) – Beginnt der Knoten in der Zeile, die gerade erklärt wird?
+- `einzeilig` (const) – Steht der Knoten ganz in einer Zeile?
+- `hinweis` (function) – Ein Hinweis zur aktuellen Zeile – höchstens einmal je Datei und Schlüssel.
+- `nameVon` (function) – Der Name eines Ausdrucks wie `a` oder `a.b.c` – oder null, wenn es keiner ist.
+- `eltern` (const) – Der Elternknoten samt Feld (`schluessel`) und Stelle – oder null.
+- `istFunktion` (const) – Ist der Knoten eine Funktion?
+- `umgebendeFunktion` (function) – Die Funktion, in der ein Knoten steht – oder null.
+- `namenIn` (function) – Alle Namen, die ein Parametermuster anlegt: `{ a, b: c }` → a, c.
+- `parameterVon` (function) – Wurde `name` einer umgebenden Funktion als Parameter mitgegeben? Bei einer Komponente heißt das: Es ist eine Prop.
+- `istKomponente` (function) – Ist die Funktion eine Komponente (großer Anfangsbuchstabe, liefert JSX)?
+- `funktionsName` (function) – Wie eine Funktion heißt: ihr eigener Name, der der Variablen oder des Feldes, an das sie gebunden ist – oder null bei namenlosen Rückrufen.
+- `funktionsArt` (function) – Was für eine Funktion: Komponente, Hook oder Funktion.
+
+### scripts/zeilenbuch/js/jsx.mjs
+
+*267 Zeilen*
+
+JSX in Worten: was ein `<button onClick={…}>` auf dem Bildschirm ist.
+
+JSX sieht aus wie HTML, ist aber JavaScript: Jedes Element wird zu einem
+Aufruf, den React in echtes HTML verwandelt. Kleingeschriebene Namen
+(`<div>`, `<button>`) sind HTML-Elemente; großgeschriebene (`<Wurfknopf>`)
+sind Komponenten – Funktionen des Almanachs, die selbst wieder JSX
+liefern. In geschweiften Klammern `{…}` steht wieder JavaScript.
+
+Erklärt wird hier ein Element (`jsxElementSatz`), ein Attribut, das auf
+eigener Zeile steht (`jsxAttributSatz`), ein `{…}` im Inhalt
+(`jsxKindSatz`) und eine Zeile reinen Texts (`jsxTextSatz`).
+
+**Ausfuhren**
+
+- `klein` (const) – Die Steuerzeichen sind die Code- und Zeilenmarken aus text.mjs. eslint-disable-next-line no-control-regex
+- `elementName` (function) – Der Name eines Elements: `div`, `Wurfknopf`, `t.Component`.
+- `jsxWendung` (function) – Ein Element als Satzteil – ohne Attribute, mit dem Inhalt, wenn er kurz ist.
+- `klassenWert` (function) – Ein className in Worten – Text, Vorlage oder Bedingung.
+- `jsxElementSatz` (function) – Ein Element, das in dieser Zeile beginnt, als ganzer Satz.
+- `jsxAttributSatz` (function) – Ein Attribut auf eigener Zeile als ganzer Satz.
+- `jsxKindSatz` (function) – Ein `{…}` im Inhalt eines Elements als ganzer Satz.
+- `jsxTextSatz` (function) – Eine Zeile, die nur Text des Markups enthält.
+
+### scripts/zeilenbuch/js/kommentar.mjs
+
+*94 Zeilen*
+
+Kommentare im JavaScript: was für einer, und wozu er gehört.
+
+Kommentare sind Text für Menschen; das Programm überspringt sie. Im Buch
+stehen sie trotzdem Zeile für Zeile – als Block: Ein Kommentar über
+mehrere Zeilen bekommt eine Erklärung, die für alle seine Zeilen gilt. Sie
+sagt, welche Art Kommentar es ist (der Kopf der Datei, die Beschreibung
+einer Funktion darunter, eine Zwischenüberschrift, eine Anweisung an die
+Prüfregeln) und auf welche Zeile er sich bezieht.
+
+**Ausfuhren**
+
+- `kommentareErklaeren` (function) – Die Kommentare einer Datei ins Blatt eintragen.
+
+### scripts/zeilenbuch/js/parser.mjs
+
+*92 Zeilen*
+
+JavaScript und JSX lesen – mit dem Parser, der ohnehin da ist.
+
+Um eine Zeile zu erklären, muss man wissen, was in ihr steht: eine
+Funktion, die beginnt, ein Aufruf, ein Element der Oberfläche. Das sagt
+ein Parser, der den Code in einen Baum zerlegt (AST, abstrakter
+Syntaxbaum). Babel bringt einen mit, der auch JSX versteht – und er liegt
+schon in frontend/node_modules, weil das Bauwerkzeug der Oberfläche ihn
+benutzt (über die React- und die PWA-Erweiterung von Vite). Geholt wird
+also nichts; fehlt er, weil die Oberfläche noch nicht eingerichtet ist,
+sagt das Skript, was zu tun ist.
+
+**Ausfuhren**
+
+- `parsen` (function) – Einen Quelltext in seinen Baum zerlegen. Jeder Knoten trägt `loc` mit Zeile (ab 1) und Spalte (ab 0) von Anfang und Ende; die Kommentare stehen gesammelt in `comments`.
+- `kinder` (function) – Die Kinder eines Knotens, der Reihe nach – jeweils mit dem Feld, in dem sie stehen, und ihrer Stelle, wenn das Feld eine Liste ist.
+- `durchgehen` (function) – Den ganzen Baum durchgehen. `besuch(knoten, eltern)` bekommt zu jedem Knoten den Elternknoten samt Feld und Stelle.
+
+### scripts/zeilenbuch/js/rolle.mjs
+
+*256 Zeilen*
+
+Ein Teil auf eigener Zeile: welche Rolle er im Ganzen spielt.
+
+Langer Code wird auf mehrere Zeilen verteilt – die Argumente eines
+Aufrufs, die Felder eines Objekts, die Attribute eines Elements, die
+Glieder einer Kette (`.filter(…)` / `.map(…)`). Eine solche Zeile ist erst
+verständlich, wenn man weiß, wozu sie gehört: „Zweites Argument für
+`useEffect`: die Abhängigkeiten …“. Dieses Modul sagt das – abhängig davon,
+in welchem Feld des Elternknotens der Teil steht.
+
+**Ausfuhren**
+
+- `kopfSatz` (function) – Der Satz zu einem Teil, der auf eigener Zeile beginnt.
+
+### scripts/zeilenbuch/js/schluss.mjs
+
+*238 Zeilen*
+
+Zeilen, die etwas schließen: `}`, `});`, `</div>`, `)`.
+
+Eine schließende Klammer ist für sich nichtssagend – sie wird verständlich
+durch das, was sie beendet, und wo es angefangen hat. Gesucht werden
+deshalb alle Knoten, die in dieser Zeile enden und in einer früheren
+begonnen haben. Weil an einer einzigen `}` oft mehrere Knoten enden (der
+Block, die Funktion, die Anweisung um sie herum), wird je Stelle der
+aussagekräftigste genommen: lieber „Ende der Funktion `speichern`“ als
+„Ende des Blocks“.
+
+**Ausfuhren**
+
+- `schlussSaetze` (function) – Was in einer Zeile endet – als Sätze, getrennt nach „vor den neuen Teilen der Zeile“ und „danach“.
+
+### scripts/zeilenbuch/js/vorlage.mjs
+
+*123 Zeilen*
+
+Mehrzeilige Vorlagentexte im Code: SQL, HTML, CSS, Klassen, Text.
+
+Ein Vorlagentext zwischen Backticks darf über viele Zeilen gehen – das
+Schema der Datenbank ist einer, das HTML des mitgenommenen Blattes ein
+anderer. Für JavaScript ist das alles nur Text. Für das Buch nicht: Jede
+dieser Zeilen ist Code in einer anderen Sprache und wird mit dem Leser
+dieser Sprache erklärt (sql.mjs, html.mjs, css.mjs). Steht im Text selbst
+JavaScript (ein Skript, das an einen eigenen Node-Prozess geht), wird es
+wie jede andere Datei erklärt – über `k.eingebettet`.
+
+Eingesetzte Werte (`${…}`) sind JavaScript; sie erklärt der übrige
+Erklärer in ihrer Zeile. Im Text stehen sie hier als „…“.
+
+**Ausfuhren**
+
+- `vorlageArt` (function) – Welche Sprache in einem Vorlagentext steht.
+- `vorlageErklaeren` (function) – Die Zeilen eines mehrzeiligen Vorlagentexts erklären.
+
+## scripts/zeilenbuch/woerterbuch/
+
+### scripts/zeilenbuch/woerterbuch/browser.mjs
+
+*92 Zeilen*
+
+Wörterbuch: was der Browser anbietet – das Dokument, das Fenster, der
+lokale Speicher, Ereignisse, Dateien, Zeichenflächen.
+
+Das gilt nur für die Oberfläche (frontend/): Der Server läuft in Node und
+kennt weder `document` noch `window`.
+
+**Ausfuhren**
+
+- `BROWSER` (const) – `objekt.methode` bzw. `objekt.eigenschaft` → was es tut.
+
+### scripts/zeilenbuch/woerterbuch/css.mjs
+
+*248 Zeilen*
+
+Wörterbuch: CSS – Eigenschaften, Werte, Selektoren, At-Regeln.
+
+CSS beschreibt, wie etwas aussieht. Eine Regel besteht aus einem
+Selektor (wen sie betrifft: `.btn`, `h1`, `:root`) und Deklarationen in
+geschweiften Klammern (`color: red;` – Eigenschaft und Wert). Variablen
+beginnen mit zwei Strichen (`--tinte`) und werden mit `var(--tinte)`
+gelesen.
+
+**Ausfuhren**
+
+- `EIGENSCHAFTEN` (const) – Eigenschaften: Name → was sie bestimmt.
+- `WERTE` (const) – Häufige Werte in Worten.
+- `PSEUDO` (const) – Pseudoklassen und -elemente.
+- `AT_REGELN` (const) – At-Regeln: was mit `@` beginnt.
+- `FUNKTIONEN` (const) – Funktionen in Werten.
+- `EINHEITEN` (const) – Einheiten.
+
+### scripts/zeilenbuch/woerterbuch/html.mjs
+
+*176 Zeilen*
+
+Wörterbuch: HTML- und SVG-Elemente und ihre Attribute.
+
+Gebraucht an zwei Stellen: im JSX der Oberfläche (`<button …>` ist dort
+ein echtes HTML-Element, `<Wurfknopf …>` eine Komponente) und in den
+HTML-Dateien selbst (frontend/index.html, die Entwürfe in design/, die
+erzeugten Seiten des Drucksatzes).
+
+**Ausfuhren**
+
+- `ELEMENTE` (const) – Elemente: Name → was es ist.
+- `HTML_ATTRIBUTE` (const) – Attribute in HTML-Dateien (in JSX gelten die Namen aus react.mjs).
+- `META` (const) – Was eine `<meta name="…">`-Angabe bedeutet.
+- `LINK` (const) – Was ein `<link rel="…">` bedeutet.
+
+### scripts/zeilenbuch/woerterbuch/javascript.mjs
+
+*262 Zeilen*
+
+Wörterbuch: was die eingebauten Teile von JavaScript tun.
+
+Drei Listen: globale Namen (`Number`, `setTimeout` …), Methoden an festen
+Objekten (`Math.max`, `JSON.parse` …) und Methoden an Werten – an Listen,
+Texten, Maps und Zusagen (`.map`, `.trim`, `.get`, `.then` …). Jeder
+Eintrag ist eine Wendung, die hinter dem Namen stehen kann:
+„`map` – wendet eine Funktion auf jedes Element an …“.
+
+Erfasst ist, was im Almanach vorkommt; was fehlt, erklärt die Erklärung
+dann allgemein („ruft die Methode `x` auf“). Wer ein neues Wort benutzt,
+trägt es hier nach.
+
+**Ausfuhren**
+
+- `GLOBALE` (const) – Globale Funktionen und Klassen.
+- `STATISCH` (const) – Methoden an festen Objekten: `Objekt.methode`.
+- `METHODEN` (const) – Methoden an Werten. Der Schlüssel ist der Methodenname allein – an welcher Art von Wert sie hängt, entscheidet der Erklärer, wo es darauf ankommt (`.get` an einer Map ist etwas anderes als an einer SQL-Anweisung).
+- `EIGENSCHAFTEN` (const) – Eigenschaften (ohne Klammern), die so oft vorkommen, dass ein Hinweis lohnt.
+- `OPERATOREN` (const) – Die Operatoren, wie sie in einer Erklärung heißen.
+- `SPRACHMITTEL` (const) – Sprachmittel, die ein Hinweis beim ersten Vorkommen in einer Datei erklärt. Der Schlüssel ist das, was im Code steht.
+
+### scripts/zeilenbuch/woerterbuch/node.mjs
+
+*188 Zeilen*
+
+Wörterbuch: Node, seine eingebauten Module und Express.
+
+Node ist das Programm, das JavaScript außerhalb des Browsers ausführt –
+hier: den Server und die Werkzeuge in scripts/. Seine Module beginnen mit
+`node:` (`node:fs` für Dateien, `node:path` für Pfade …). Express ist das
+Paket, mit dem der Server Anfragen entgegennimmt und beantwortet: Ein
+„Weg“ (Route) verbindet eine Methode und einen Pfad (`GET /api/health`)
+mit einer Funktion, die die Antwort schreibt.
+
+**Ausfuhren**
+
+- `MODULE` (const) – Was ein Modul ist – für die Zeile, die es einführt.
+- `NODE` (const) – Funktionen der Node-Module und Methoden ihrer Objekte: `Name` oder `objekt.methode`.
+- `EXPRESS` (const) – Express und seine Objekte: `app`, `router`, `req` (Anfrage), `res` (Antwort).
+- `STATUS` (const) – Statuscodes einer Antwort – was sie bedeuten.
+- `SQLITE` (const) – Methoden einer vorbereiteten SQL-Anweisung (node:sqlite).
+- `METHODE` (const) – HTTP-Methoden eines Weges.
+
+### scripts/zeilenbuch/woerterbuch/react.mjs
+
+*163 Zeilen*
+
+Wörterbuch: React, React Router und die Attribute im JSX.
+
+React ist die Bibliothek, mit der die Oberfläche gebaut ist: Eine
+Komponente ist eine Funktion, die beschreibt, was auf dem Bildschirm
+stehen soll (JSX); ändert sich ihr Zustand, ruft React sie erneut auf und
+bringt den Bildschirm auf den neuen Stand. Die „Hooks“ (alles, was mit
+`use` beginnt) sind die Werkzeuge, mit denen eine Komponente sich etwas
+merkt oder auf etwas reagiert.
+
+Die Attribute stehen hier, weil React sie anders schreibt als HTML
+(`className` statt `class`, `onClick` statt `onclick`).
+
+**Ausfuhren**
+
+- `REACT` (const) – Was die Pakete react, react-dom und react-router-dom anbieten.
+- `EREIGNISSE` (const) – Ereignis-Attribute: wann die angegebene Funktion aufgerufen wird. React übergibt ihr dabei ein Ereignisobjekt (oft `e` genannt).
+- `ATTRIBUTE` (const) – Die übrigen Attribute im JSX – was sie bewirken.
+
+### scripts/zeilenbuch/woerterbuch/umgebung.mjs
+
+*29 Zeilen*
+
+Wörterbuch: die Umgebungsvariablen des Almanachs.
+
+Eine Umgebungsvariable ist eine Einstellung, die einem Programm von außen
+mitgegeben wird – im Dockerfile mit `ENV`, in docker-compose.yml unter
+`environment`, beim Start von Hand in der Datei `.env`. Der Code liest sie
+über `process.env`, mit ihrem Namen dahinter. Was hier steht, ergänzt die
+Erklärungen aus der .env.example (die der Projekt-Index liest) um die
+Variablen, die dort nicht stehen, weil man sie selten anfasst.
+
+**Ausfuhren**
+
+- `UMGEBUNG` (const) – Name → was die Einstellung bewirkt.

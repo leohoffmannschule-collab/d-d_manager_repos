@@ -1,0 +1,284 @@
+/**
+ * Der Satzspiegel des Zeilenbuchs – DIN A4 hoch, zum Drucken und als PDF.
+ *
+ * Gehört zu scripts/zeilenbuch.mjs. Das Skript legt diese Datei (ohne
+ * diesen Kopf) neben die gesetzte Seite; die Seite verweist darauf.
+ *
+ * Jede Datei ist eine Tabelle aus zwei Spalten: links der Code in fester
+ * Breite mit Zeilennummern, rechts die Erklärung. Lange Zeilen brechen um
+ * und rücken hinter der Nummer ein, damit die Nummer frei steht. Der
+ * Tabellenkopf wiederholt sich auf jeder Seite.
+ *
+ * Wer am Satz schraubt, prüft das Ergebnis im PDF, nicht im Browserfenster:
+ * Maßgebend sind Millimeter, Punkt und `@page`.
+ */
+@page {
+  size: A4;
+  margin: 16mm 13mm 15mm;
+  @top-left {
+    content: "Abenteuer-Almanach · Zeile für Zeile";
+    font: italic 7.5pt "Liberation Serif", "DejaVu Serif", Georgia, serif;
+    color: #8a7960;
+  }
+  @bottom-center {
+    content: counter(page);
+    font: 8.5pt "Liberation Serif", "DejaVu Serif", Georgia, serif;
+    color: #5c4c38;
+  }
+}
+
+@page titel {
+  @top-left { content: none; }
+  @bottom-center { content: none; }
+}
+
+@page teil {
+  @top-left { content: none; }
+  @bottom-center { content: none; }
+}
+
+:root {
+  --tinte: #241c12;
+  --sepia: #5c4c38;
+  --schwach: #8a7960;
+  --linie: #cbb68d;
+  --rubrik: #8f2820;
+  --gold: #a8842b;
+  --blatt: #fbf7ee;
+  --code: #f2ead7;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #fff;
+  color: var(--tinte);
+  font-family: "Liberation Serif", "DejaVu Serif", Georgia, "Times New Roman", serif;
+  font-size: 9.5pt;
+  line-height: 1.45;
+  hyphens: auto;
+}
+
+a { color: var(--rubrik); text-decoration: none; }
+
+code {
+  font-family: "DejaVu Sans Mono", "Liberation Mono", monospace;
+  font-size: 0.9em;
+  background: var(--code);
+  padding: 0 0.6mm;
+  border-radius: 0.5mm;
+  hyphens: none;
+  overflow-wrap: anywhere;
+}
+
+/* --- Titelblatt ------------------------------------------------------------ */
+
+.titelblatt {
+  page: titel;
+  height: 255mm;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  break-after: page;
+}
+.titelblatt .marke {
+  font-size: 9pt;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--schwach);
+  margin-bottom: 14mm;
+}
+.titelblatt h1 {
+  font-size: 34pt;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0;
+  font-weight: 600;
+}
+.titelblatt .unter {
+  font-style: italic;
+  font-size: 13pt;
+  color: var(--sepia);
+  margin-top: 6mm;
+  max-width: 140mm;
+}
+.titelblatt .zierat { margin-top: 14mm; }
+.titelblatt .stand {
+  margin-top: 6mm;
+  font-size: 9pt;
+  color: var(--schwach);
+  letter-spacing: 0.06em;
+}
+.titelblatt .zierat + .stand { margin-top: 26mm; }
+
+/* --- Inhaltsverzeichnis ------------------------------------------------------ */
+
+.verzeichnis { break-after: page; }
+.verzeichnis h1 { font-size: 20pt; border-bottom: 1.5pt solid var(--gold); padding-bottom: 2mm; margin: 0 0 6mm; font-weight: 600; }
+.verzeichnis ol { list-style: none; margin: 0; padding: 0; }
+.verzeichnis li { margin: 0; }
+.verzeichnis li > a { color: var(--tinte); display: flex; align-items: baseline; gap: 2mm; }
+.verzeichnis .fuellung { flex: 1; border-bottom: 0.4pt solid var(--linie); transform: translateY(-1mm); }
+.verzeichnis .seite { min-width: 10mm; text-align: right; font-variant-numeric: tabular-nums; }
+.verzeichnis .v-vor { font-weight: 600; margin-top: 1.5mm; }
+.verzeichnis .v-teil {
+  margin-top: 5mm;
+  font-size: 10pt;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 600;
+  break-after: avoid;
+}
+.verzeichnis .v-teil a { color: var(--rubrik); }
+.verzeichnis .v-ordner { margin-top: 1.6mm; font-family: "DejaVu Sans Mono", "Liberation Mono", monospace; font-size: 8pt; break-after: avoid; }
+.verzeichnis .v-dateien {
+  padding-left: 6mm;
+  font-size: 7.6pt;
+  line-height: 1.5;
+  color: var(--sepia);
+}
+.verzeichnis .v-dateien a { color: var(--sepia); white-space: nowrap; }
+.verzeichnis .seite-klein { color: var(--schwach); font-variant-numeric: tabular-nums; }
+
+/* --- Vorspann (Vorwort, Lesehilfe) ------------------------------------------- */
+
+.vorspann { break-before: page; font-size: 10pt; line-height: 1.5; }
+.vorspann h1 { font-size: 20pt; border-bottom: 1.5pt solid var(--gold); padding-bottom: 2mm; margin: 0 0 6mm; font-weight: 600; }
+.vorspann h2 { font-size: 13pt; color: var(--rubrik); margin: 7mm 0 2.5mm; border-bottom: 0.5pt solid var(--linie); padding-bottom: 1mm; font-weight: 600; break-after: avoid; }
+.vorspann h3 { font-size: 11pt; margin: 5mm 0 2mm; font-weight: 600; break-after: avoid; }
+.vorspann p { margin: 0 0 2.6mm; text-align: justify; orphans: 3; widows: 3; }
+.vorspann ul, .vorspann ol { margin: 0 0 3mm; padding-left: 6mm; }
+.vorspann li { margin-bottom: 1mm; }
+.vorspann li::marker { color: var(--rubrik); }
+.vorspann pre {
+  background: var(--blatt);
+  border: 0.5pt solid var(--linie);
+  border-left: 2pt solid var(--gold);
+  padding: 2mm 3mm;
+  margin: 0 0 3mm;
+  white-space: pre-wrap;
+  break-inside: avoid;
+}
+.vorspann pre code { background: none; padding: 0; font-size: 8pt; line-height: 1.4; }
+.vorspann table { width: 100%; border-collapse: collapse; margin: 0 0 4mm; font-size: 9pt; }
+.vorspann th { text-align: left; font-size: 7.5pt; letter-spacing: 0.08em; text-transform: uppercase; color: var(--schwach); border-bottom: 0.8pt solid var(--linie); padding: 1mm 2mm 1mm 0; }
+.vorspann td { vertical-align: top; border-bottom: 0.3pt solid var(--linie); padding: 1.2mm 2mm 1.2mm 0; }
+.vorspann tr { break-inside: avoid; }
+.vorspann blockquote { margin: 0 0 3mm; padding: 2mm 3mm; background: rgba(168, 132, 43, 0.09); border-left: 2pt solid var(--gold); }
+
+/* --- Teile und Ordner ---------------------------------------------------------- */
+
+.teilblatt {
+  page: teil;
+  height: 255mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  break-before: page;
+  break-after: page;
+  padding: 0 14mm;
+}
+.teilblatt .teil-nummer { font-size: 10pt; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); }
+.teilblatt h1 { font-size: 28pt; margin: 3mm 0 7mm; font-weight: 600; }
+.teilblatt .teil-text { font-size: 11pt; color: var(--sepia); max-width: 140mm; margin: 0 0 4mm; }
+.teilblatt .teil-zahlen { font-size: 9pt; color: var(--schwach); letter-spacing: 0.06em; margin: 0; }
+
+.ordner {
+  font-family: "DejaVu Sans Mono", "Liberation Mono", monospace;
+  font-size: 11pt;
+  font-weight: 600;
+  color: var(--rubrik);
+  border-bottom: 1.2pt solid var(--gold);
+  padding-bottom: 1.5mm;
+  margin: 9mm 0 3mm;
+  break-after: avoid;
+}
+
+/* --- Eine Datei ---------------------------------------------------------------- */
+
+.datei { margin: 0 0 7mm; }
+.datei-name {
+  margin: 6mm 0 1mm;
+  font-size: 10.5pt;
+  font-weight: 600;
+  break-after: avoid;
+}
+.datei-name .pfad {
+  font-family: "DejaVu Sans Mono", "Liberation Mono", monospace;
+  background: var(--code);
+  padding: 0.5mm 1.5mm;
+  border-left: 2pt solid var(--rubrik);
+}
+.datei-angaben {
+  margin: 0 0 2mm;
+  font-size: 8.4pt;
+  color: var(--schwach);
+  font-style: italic;
+  break-after: avoid;
+}
+.datei-angaben .zweck { color: var(--sepia); }
+
+table.zeilen {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+table.zeilen col.sp-c { width: 51%; }
+table.zeilen col.sp-e { width: 49%; }
+table.zeilen thead { display: table-header-group; }
+table.zeilen th {
+  text-align: left;
+  font-size: 6.8pt;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--schwach);
+  border-bottom: 0.7pt solid var(--linie);
+  padding: 0.8mm 1.5mm 0.6mm;
+  font-weight: 600;
+}
+table.zeilen tr { break-inside: avoid; }
+table.zeilen tr.gruppe { break-inside: auto; }
+table.zeilen td {
+  vertical-align: top;
+  border-bottom: 0.25pt solid #e6dbc2;
+  padding: 0.6mm 1.5mm;
+}
+table.zeilen td.c {
+  background: var(--blatt);
+  border-right: 0.5pt solid var(--linie);
+  font-family: "DejaVu Sans Mono", "Liberation Mono", monospace;
+  font-size: 6.6pt;
+  line-height: 1.38;
+}
+table.zeilen tr.gruppe td.c { background: #f5efe0; color: #6f6250; }
+table.zeilen tr.leer td { padding: 0 1.5mm; border-bottom: 0; height: 1.6mm; }
+table.zeilen tr.leer td.c { font-size: 5pt; line-height: 1; }
+table.zeilen tr.leer .q { display: none; }
+
+.z { display: flex; align-items: baseline; }
+.z .nr {
+  flex: 0 0 7mm;
+  color: var(--schwach);
+  text-align: right;
+  padding-right: 1.6mm;
+  font-size: 0.92em;
+  user-select: none;
+}
+.z .q {
+  flex: 1;
+  min-width: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  hyphens: none;
+}
+
+td.e { font-size: 7.7pt; line-height: 1.38; }
+td.e p { margin: 0 0 0.6mm; text-align: left; hyphens: auto; }
+td.e p:last-child { margin-bottom: 0; }
+td.e p.h { color: var(--schwach); font-size: 6.9pt; padding-left: 2.6mm; text-indent: -2.6mm; }
+td.e p.h::before { content: "▸ "; color: var(--gold); }
+td.e code { font-size: 0.88em; }

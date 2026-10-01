@@ -124,6 +124,8 @@ const ERZEUGER = [
   ...dateien('scripts/drucksatz'),
   path.join(wurzel, 'scripts', 'handbuch.mjs'),
   ...dateien('scripts/handbuch'),
+  path.join(wurzel, 'scripts', 'zeilenbuch.mjs'),
+  ...dateien('scripts/zeilenbuch'),
 ];
 for (const datei of ERZEUGER) {
   const text = fs.readFileSync(datei, 'utf8');

@@ -81,12 +81,14 @@ export function bekannteNamen(code) {
     for (const teil of m[1].split(',')) merken(teil.split(':').pop()?.split('=')[0]);
   }
 
-  // Kurzschreibweise für Methoden in einem Objekt: `async protokoll(id) { … }`.
-  // Das ist eine Erklärung, kein Aufruf. Die schließende Klammer mit der
-  // geschweiften dahinter unterscheidet sie von einem echten Aufruf, der als
-  // Argument eines anderen steht (`f(a, bar(x))` – dort folgt `)`, nicht `{`).
-  // Die Parameter in den Klammern sind ebenso erklärt wie der Name davor.
-  for (const m of code.matchAll(/[,{]\s*(?:async\s+)?(\w+)\s*\(([^()]*)\)\s*\{/g)) {
+  // Kurzschreibweise für Methoden in einem Objekt oder einer Klasse:
+  // `async protokoll(id) { … }`. Das ist eine Erklärung, kein Aufruf. Die
+  // schließende Klammer mit der geschweiften dahinter unterscheidet sie von
+  // einem echten Aufruf, der als Argument eines anderen steht (`f(a, bar(x))`
+  // – dort folgt `)`, nicht `{`). In einer Klasse steht vor der Methode die
+  // `}` der vorigen. Die Parameter in den Klammern sind ebenso erklärt wie
+  // der Name davor.
+  for (const m of code.matchAll(/[,{};]\s*(?:static\s+)?(?:async\s+)?(\w+)\s*\(([^()]*)\)\s*\{/g)) {
     merken(m[1]);
     for (const teil of m[2].split(',')) merken(teil.split(/[:=]/)[0].replace(/[{}[\].]/g, ''));
   }
