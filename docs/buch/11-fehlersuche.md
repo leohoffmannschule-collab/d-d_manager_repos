@@ -156,6 +156,11 @@ Der **Status** sagt die Art, der **Schlüssel** die Sache, der **Satz** ist für
 | Ein Bildnis lässt sich nicht setzen | Ein Format, das der Browser nicht lesen kann (HEIC vom iPhone). | Als JPEG oder PNG speichern. |
 | Weiten stehen plötzlich in Fuß | Das Blatt ist älter als die Umstellung auf Meter und behält Fuß. | Unter *Übersicht → Maße* umstellen. |
 | Die Zaubersuche findet nichts | Das Kompendium ist nicht erreichbar. | Zauber von Hand eintragen. |
+| Einlesen: „Der Datensatz … ist beschädigt – Zeile …, Spalte …“ | Die Datei wurde bearbeitet (oft von einer KI), und dabei fehlt ein Komma oder Anführungszeichen. | Der KI genau diese Meldung geben und um die reparierte, vollständige Datei bitten. |
+| Einlesen: „… gekürzt“ | Die KI hat die Datei abgekürzt („…“, „Rest unverändert“) oder sie endet mittendrin. | Um die **vollständige** Datei bitten; notfalls die Änderung in kleineren Schritten verlangen. |
+| Einlesen: „kein mitgenommenes Blatt“ | Eine andere Datei – oder die KI hat Datensatz und Seite ganz neu geschrieben. | Die Datei aus „Mitnehmen“ nehmen und der KI sagen, dass sie die Datei nur ändern, nicht neu bauen soll. |
+| Die KI hat etwas geändert, das nach dem Einlesen fehlt | Sie hat nur die sichtbare Seite geändert, und zwar an einer Stelle ohne Feldmarke – etwas Gerechnetes (Initiative, Modifikator) oder ein neuer Eintrag. | Die Vorschau zeigt, was ankommt. Die KI bitten, die Änderung im Datensatz am Ende der Datei vorzunehmen – das sagt ihr auch die Anleitung oben in der Datei. |
+| Einlesen bietet kein „… aktualisieren“ an | Die Datei trägt keine Kennung (ältere Fassung), das Blatt gehört jemand anderem, liegt in einer anderen Kampagne, oder das Regelwerk passt nicht. | Auf dem Blatt selbst **Einlesen** nehmen, oder als neues Blatt anlegen und das alte löschen. |
 
 ### Würfel, Chat, Musik
 

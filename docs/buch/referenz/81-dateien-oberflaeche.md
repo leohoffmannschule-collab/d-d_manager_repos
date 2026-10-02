@@ -3,7 +3,7 @@
 > Dieses Kapitel schreibt `npm run handbuch` aus dem Code (scripts/handbuch/referenz/).
 > Änderungen gehören in den Code und seine Kommentare, nicht hierher.
 
-Alle Dateien der Oberfläche (204 Dateien, 17.760 Zeilen): Seiten, Bauteile, die Datenschicht in lib/, die Stilblätter und der Bau. Zu jeder Datei ihr Kopfkommentar und ihre Ausfuhren.
+Alle Dateien der Oberfläche (213 Dateien, 19.331 Zeilen): Seiten, Bauteile, die Datenschicht in lib/, die Stilblätter und der Bau. Zu jeder Datei ihr Kopfkommentar und ihre Ausfuhren.
 
 Sammelstellen wie icons.jsx oder lib/api.js führen nichts Eigenes aus, sondern reichen weiter – bei ihnen steht, woher.
 
@@ -103,19 +103,30 @@ NeuerFund; die Münzsorten in beute/muenzen.js.
 
 ### frontend/src/components/BlattEinlesen.jsx
 
-*63 Zeilen*
+*149 Zeilen*
 
 Ein mitgenommenes Blatt wieder einlesen – der Gegenknopf zu „Mitnehmen“.
 
-Steht in der Übersicht neben „Neuer Charakter“. Die gewählte Datei wird
-im Browser gelesen (lib/blattEinfuhr.js) und als neues Blatt in der
-gewählten Kampagne angelegt; es gehört danach der Person, die angemeldet
-ist. Ein vorhandenes Blatt wird nie überschrieben – wer zwei Stände hat,
-soll beide vor sich sehen und selbst entscheiden.
+Gedacht für den Weg hin und zurück: Blatt mitnehmen, die Datei bearbeiten
+- von Hand oder von einer KI („mach ihn Stufe 5“) –, und hier wieder
+hereinholen. Danach ist es ein ganz gewöhnliches Blatt im Almanach.
+
+Steht an zwei Stellen:
+- in der Übersicht („Blatt einlesen“): Trägt die Datei die Kennung eines
+  Blattes, das man ändern darf, wird angeboten, dieses zu aktualisieren;
+  sonst entsteht ein neues.
+- im Kopf eines Blattes („Einlesen“, mit `ziel`): Die Datei aktualisiert
+  dieses Blatt – über denselben Weg wie jede Änderung am Blatt
+  (`onErsetzen`, gespeichert von pages/blatt/useBlatt.js).
+
+Gespeichert wird nie sofort: Erst zeigt die Vorschau
+(einlesen/Vorschau.jsx), was die Datei enthält und was sich ändern würde.
+Gelesen wird im Browser (lib/blattEinfuhr.js) – die Datei geht nicht als
+Ganzes an den Server, nur das fertige Blatt.
 
 **Ausfuhren**
 
-- `BlattEinlesen` (default function)
+- `BlattEinlesen` (default function) – 
 
 ### frontend/src/components/Chat.jsx
 
@@ -1036,6 +1047,32 @@ Ein leerer Fleck ist schlimmer als eine Absage, die sagt, woran es liegt.
 **Ausfuhren**
 
 - `WerBestimmt` (default function)
+
+## frontend/src/components/einlesen/
+
+### frontend/src/components/einlesen/Vorschau.jsx
+
+*131 Zeilen*
+
+Die Vorschau beim Einlesen einer Blattdatei – bevor irgendetwas
+gespeichert wird.
+
+Sie zeigt, was in der Datei steht und was das Einlesen daraus gemacht
+hat: welche Werte nur auf der sichtbaren Seite geändert waren (und
+übernommen wurden), was repariert oder angeglichen wurde – und, wenn es
+das Blatt im Almanach schon gibt, was sich daran ändern würde. Wer einer
+KI eine Aufgabe gegeben hat, sieht hier, ob sie getan hat, was sie sollte.
+
+Zwei Wege hinaus:
+- „… aktualisieren“: Das vorhandene Blatt bekommt den Stand der Datei.
+  Angeboten nur, wenn es eines gibt, das man ändern darf, und das
+  Regelwerk passt.
+- „Als neues Blatt anlegen“: Das vorhandene bleibt, wie es ist. Das ist
+  immer möglich, und wer unsicher ist, nimmt diesen Weg.
+
+**Ausfuhren**
+
+- `Vorschau` (default function) – 
 
 ## frontend/src/components/icons/
 
@@ -2420,7 +2457,7 @@ dann hilft ein kleineres Bild oder eine geteilte Karte.
 
 ### frontend/src/lib/blattAusfuhr.js
 
-*146 Zeilen*
+*150 Zeilen*
 
 Das Blatt zum Mitnehmen.
 
@@ -2432,14 +2469,23 @@ oder Telefon. Gedruckt sieht sie aus wie ein Charakterbogen.
 Am Ende der Datei steckt außerdem der vollständige Datensatz, in einem
 `<template>` – Daten, kein Skript. Die Datei ist damit zugleich eine
 Sicherung: „Blatt einlesen“ in der Übersicht legt daraus wieder ein Blatt
-an (blattEinfuhr.js).
+an oder bringt das vorhandene auf ihren Stand (blattEinfuhr.js).
+
+**Die Datei darf bearbeitet zurückkommen** – von Hand oder von einer KI.
+Dafür steht ganz oben eine Anleitung für KI-Assistenten (als Kommentar,
+im Browser unsichtbar), und jeder sichtbare Wert trägt den Pfad, unter
+dem er im Datensatz steht. Ändert jemand nur die sichtbare Seite, findet
+das Einlesen die Änderung daran wieder. Beides steht in blatt/datensatz.js
+und blatt/werkzeug.js (`marke`).
 
 Diese Datei setzt nur noch zusammen; gebaut wird nebenan:
 
 ```
-blatt/werkzeug.js    entschärfen, einrahmen, Bilder einbetten
+blatt/werkzeug.js    entschärfen, einrahmen, markieren, Bilder einbetten
 blatt/abschnitte.js  je eine Funktion für je eine Karte des Bogens
 blatt/koerper.js     welche Karte in welcher Reihenfolge
+blatt/datensatz.js   der Datensatz und die Anleitung für eine KI
+blatt/glossar.js     welcher Wert wo steht und wie er heißt
 blatt/stil/*.css     das Aussehen, als richtige Stilblätter
 ```
 
@@ -2465,30 +2511,40 @@ Stelle zu und keine andere.
 
 ### frontend/src/lib/blattEinfuhr.js
 
-*66 Zeilen*
+*158 Zeilen*
 
-Das mitgenommene Blatt wieder hereinholen.
+Das mitgenommene Blatt wieder hereinholen – auch nachdem eine KI es
+bearbeitet hat.
 
 Die Datei, die „Mitnehmen“ erzeugt (blattAusfuhr.js), trägt am Ende den
-vollständigen Datensatz des Blattes, als entschärften Text:
+vollständigen Datensatz des Blattes als JSON, oben eine Anleitung für
+KI-Assistenten und an jedem sichtbaren Wert den Pfad, unter dem er im
+Datensatz steht. Das Einlesen geht in fünf Schritten:
 
-```
-<template id="almanach-daten">{ &quot;name&quot;: …, &quot;system&quot;: …, &quot;data&quot;: … }</template>
-```
+1. aufbereiten    – aus einer Chat-Antwort den Codeblock holen,
+                    Zeilenenden vereinheitlichen (einfuhr/datei.js)
+2. Datensatz      – finden und lesen, notfalls repariert: Kommentare,
+                    überzählige Kommas, Zeilenumbrüche in Texten
+                    (einfuhr/json.js)
+3. Sichtbares     – Werte, die nur auf der Seite geändert wurden, in
+                    den Datensatz übernehmen (einfuhr/sichtbar.js)
+4. angleichen     – jeden Wert in die Form bringen, die das Blatt
+                    erwartet; neue Listeneinträge bekommen Kennungen
+                    (einfuhr/angleichen.js)
+5. prüfen         – Name und Regelwerk
 
-Ältere Dateien trugen ihn in einem `<script type="application/json">`
-(roh, mit `\u003c` statt `<`); auch die werden gelesen. Angenommen wird
-die HTML-Datei selbst oder – für alle, die den Datensatz schon
-herauskopiert haben – der nackte JSON-Text.
+Fehlt der Datensatz ganz (eine KI hat ihn weggelassen), wird das Blatt
+aus den sichtbaren, markierten Werten gebaut – mit einem Hinweis, dass
+Häkchen und leere Felder dann auf dem Ausgangswert stehen.
 
-Gelesen wird mit einem regulären Ausdruck statt mit DOMParser: Ein
-DOMParser baute die ganze fremde Seite als Dokument auf, samt Bildern.
-Gebraucht wird nur der eine Block, und der steht in einer Form da, die
-blattAusfuhr.js selbst schreibt.
+Angenommen werden auch Dateien aus älteren Fassungen (Datensatz
+entschärft im `<template>` oder roh im `<script>`) und der nackte
+JSON-Text. Alles läuft ohne Browser-Schnittstellen – die Blattprobe
+prüft es in Node (scripts/blattprobe.mjs).
 
 **Ausfuhren**
 
-- `leseBlattdatei` (function) – Den Datensatz aus einer mitgenommenen Blattdatei holen.
+- `leseBlattdatei` (function) – Eine Blattdatei lesen.
 
 ### frontend/src/lib/campaign.jsx
 
@@ -2947,9 +3003,85 @@ Welcher Abschnitt wo auf dem Bogen steht, entscheidet koerper.js.
 - `hintergrund` (aus ./abschnitte/person.js)
 - `merkmale` (aus ./abschnitte/person.js)
 
+### frontend/src/lib/blatt/datensatz.js
+
+*149 Zeilen*
+
+Der Datensatz am Ende des mitgenommenen Blattes – und die Anleitung für
+eine KI, die das Blatt bearbeiten soll.
+
+Wer sein Blatt einer KI gibt („mach ihn Stufe 5“, „trag die Beute von
+gestern ein“), bekommt eine geänderte Datei zurück und liest sie mit
+„Blatt einlesen“ wieder in den Almanach. Damit das gelingt, muss die KI
+wissen, wo die Werte stehen und was sie dort darf. Das sagt ihr ein
+Kommentar im Kopf der Datei – unsichtbar im Browser, aber das Erste, was
+eine KI im Quelltext liest. Das Feldverzeichnis darin wird aus
+glossar.js geschrieben, steht also nie neben dem echten Datenmodell.
+
+Der Datensatz selbst ist schlichtes, eingerücktes JSON in einem
+`<template>`. Die drei Zeichen, die HTML etwas bedeuten (`<`, `>`, `&`),
+stehen als JSON-Escapes (`<` …) darin: So ist der Block gültiges
+JSON, das eine KI ohne Umweg lesen und ändern kann, und ein Text wie
+„</template>“ in einer Hintergrundgeschichte kann ihn trotzdem nicht
+beenden.
+
+Keine Abhängigkeit vom Browser: Die Blattprobe baut damit in Node echte
+Dateien nach (scripts/blattprobe.mjs).
+
+**Ausfuhren**
+
+- `FASSUNG` (const) – Die Fassung des Dateiformats. 2: lesbares JSON, Kennung, Feldmarken, Anleitung.
+- `jsonFuerHtml` (function) – JSON, das in HTML stehen darf, ohne etwas zu bedeuten – und gültiges JSON bleibt.
+- `kiAnleitung` (function) – Die Anleitung für eine KI, als HTML-Kommentar. Nur „–“ statt doppelter Bindestriche: Zwei Bindestriche hintereinander beenden in manchen Werkzeugen einen Kommentar.
+- `datensatzBlock` (function) – Der Datensatz als `<template>`-Block.
+
+### frontend/src/lib/blatt/glossar.js
+
+*222 Zeilen*
+
+Das Feldverzeichnis des Blattes: welcher Wert wo im Datensatz steht, wie
+er auf Deutsch heißt und von welcher Art er ist.
+
+Gebraucht an drei Stellen – und deshalb an einer einzigen gepflegt:
+
+- Die Ausfuhr markiert die sichtbaren Werte damit (`data-feld`) und
+  schreibt daraus die Anleitung für eine KI in die Datei
+  (blatt/datensatz.js).
+- Das Einlesen weiß damit, wie es einen sichtbar geänderten Wert wieder
+  in den Datensatz zurückliest (einfuhr/sichtbar.js) und welche Form
+  jeder Wert haben muss (einfuhr/angleichen.js).
+- Die Vorschau beim Einlesen benennt Unterschiede damit
+  (einfuhr/unterschiede.js).
+
+Die Arten:
+```
+text     beliebiger Text, Zeilenumbrüche erlaubt
+zahl     eine Zahl
+weite    eine Entfernung – gespeichert in Fuß, angezeigt nach dem
+         Maßsystem des Blattes („9 m“ oder „30 Fuß“)
+gewicht  ein Gewicht – gespeichert in Pfund, angezeigt nach Maßsystem
+ja       wahr oder falsch
+wahl     einer von wenigen festen Schlüsseln (`optionen`)
+```
+
+Ein Listeneintrag wird über seine Kennung angesprochen, nicht über seine
+Stelle: `attacks.#<id>.name`. So trifft eine Änderung den richtigen
+Eintrag, auch wenn eine KI die Reihenfolge umgestellt hat.
+
+**Ausfuhren**
+
+- `FELDER_5E` (const) – Die Felder eines 5e-Blattes, die einzeln dastehen (Listen stehen in LISTEN_5E).
+- `LISTEN_5E` (const) – Die Listen eines 5e-Blattes: wo sie stehen, wie ein Eintrag heißt, welche Felder er hat.
+- `FELDER_FREI` (const) – Die Felder eines freien Blattes.
+- `LISTEN_FREI` (const) – Die eine Liste eines freien Blattes: seine Abschnitte.
+- `verzeichnis` (const) – Verzeichnis und Listen zu einem Regelwerk.
+- `leererEintrag` (function) – Ein leerer Listeneintrag mit den Vorgaben seiner Felder (ohne Kennung).
+- `feldZu` (function) – Was zu einem Pfad gehört: der Eintrag des Verzeichnisses, und bei einem Listenfeld auch die Liste und die Kennung des Eintrags. `name` – der Name des Blattes selbst – steht außerhalb von `data` und wird eigens genannt.
+- `anzeige` (function) – Ein Wert so, wie er auf dem ausgeführten Blatt steht – als Text. Dieselbe Form schreibt die Ausfuhr in `data-war`, und das Einlesen vergleicht damit; beide müssen also exakt gleich rechnen.
+
 ### frontend/src/lib/blatt/koerper.js
 
-*120 Zeilen*
+*135 Zeilen*
 
 Der Satzspiegel: Welche Abschnitte stehen in welcher Reihenfolge auf dem
 Bogen?
@@ -2971,7 +3103,7 @@ braucht, unten, was man zwischen den Abenden liest.
 
 ### frontend/src/lib/blatt/werkzeug.js
 
-*95 Zeilen*
+*134 Zeilen*
 
 Das Handwerkszeug für die Blattausfuhr: entschärfen, einrahmen, Bilder
 einbetten.
@@ -2985,6 +3117,11 @@ Bösartigerem ausführbarer Code.
 Abschnitt des Blattes gebaut ist – eine Karte mit Überschrift, ein
 beschriftetes Feld, eine Tabelle.
 
+Dazu `marke`: Sie umgibt einen sichtbaren Wert mit dem Pfad, unter dem er
+im Datensatz steht. Ändert jemand – oder eine KI – nur die sichtbare
+Seite, findet „Blatt einlesen“ die Änderung daran wieder
+(lib/einfuhr/sichtbar.js).
+
 **Ausfuhren**
 
 - `esc` (const) – Text für HTML entschärfen – alles, was vom Blatt kommt, läuft hier hindurch.
@@ -2993,15 +3130,18 @@ beschriftetes Feld, eine Tabelle.
 - `MUENZEN` (const) – Die Münzsorten als [Schlüssel, Name], von der wertvollsten zur kleinsten.
 - `alsDatenUrl` (async function) – Bilder müssen mit in die Datei – ein Verweis auf den Server nützt nichts, wenn der Server gerade aus ist.
 - `zaubertexte` (async function) – Die Zaubertexte aus dem Kompendium holen. Genau dafür nimmt man das Blatt ja mit: Wer den ganzen Abend nachschlagen muss, hat vom Ausdruck nichts. Schlägt der Abruf fehl, bleibt es beim Namen.
+- `marke` (function) – Ein sichtbarer Wert, den „Blatt einlesen“ wiedererkennt.
+- `zelle` (const) – Eine Tabellenzelle aus einem Listeneintrag – markiert, wenn der Eintrag eine Kennung hat.
 - `tafel` (const) – Eine Karte mit Überschrift. Leerer Inhalt heißt: gar keine Karte.
-- `feld` (const) – Ein beschriftetes Feld: kleine Beschriftung, Wert darunter; ein leerer Wert wird zu „–“.
+- `feld` (const) – Ein beschriftetes Feld: kleine Beschriftung, Wert darunter; ein leerer Wert wird zu „–“. Mit `pfad` ist der Wert markiert (siehe `marke`).
+- `feldHtml` (const) – Ein beschriftetes Feld, dessen Wert schon fertiges HTML ist (mit Marken darin).
 - `zeilen` (const) – Eine Tabelle aus Kopf und Reihen – oder nichts, wenn es keine Reihen gibt. Die Zellen der Reihen sind schon HTML (bereits entschärft).
 
 ## frontend/src/lib/blatt/abschnitte/
 
 ### frontend/src/lib/blatt/abschnitte/inventar.js
 
-*45 Zeilen*
+*51 Zeilen*
 
 Abschnitt des ausgeführten Blattes: die Habe – Münzen, Gegenstände,
 Gewicht und Traglast.
@@ -3012,7 +3152,7 @@ Gewicht und Traglast.
 
 ### frontend/src/lib/blatt/abschnitte/kampf.js
 
-*76 Zeilen*
+*96 Zeilen*
 
 Abschnitte des ausgeführten Blattes für den Kampf: Aktionen, Kampfwerte,
 Zustand (Erschöpfung, Todesrettungswürfe) und begrenzte Ressourcen.
@@ -3026,7 +3166,7 @@ Zustand (Erschöpfung, Todesrettungswürfe) und begrenzte Ressourcen.
 
 ### frontend/src/lib/blatt/abschnitte/person.js
 
-*77 Zeilen*
+*83 Zeilen*
 
 Abschnitte des ausgeführten Blattes über die Person hinter den Zahlen:
 Erscheinung, Merkmale nach Herkunft und die Hintergrundgeschichte.
@@ -3056,7 +3196,7 @@ das Ergebnis auf dem Papier aussieht.
 
 ### frontend/src/lib/blatt/abschnitte/zauber.js
 
-*112 Zeilen*
+*115 Zeilen*
 
 Abschnitte des ausgeführten Blattes für Zauberwirkende: Zauberwerte,
 Plätze und die Zauberliste – auf Wunsch mit dem vollen Text jedes
@@ -3220,6 +3360,146 @@ Antwort an, ruckelte das Ziehen um die Laufzeit der Anfrage hinterher.
 - `usePings` (function) – Kurz aufleuchtende Zeigefinger – nichts davon wird gespeichert.
 - `useKarten` (function) – Die Vorbereitungs-Bibliothek des DM. Karten liegen hier, bevor sie jemand sieht – deshalb lädt der Haken nichts, solange die Rolle nicht stimmt: ein Spielerfenster würde sonst bei jedem Start ein 403 einsammeln.
 
+## frontend/src/lib/einfuhr/
+
+### frontend/src/lib/einfuhr/angleichen.js
+
+*238 Zeilen*
+
+Einen eingelesenen Datensatz so herrichten, dass das Blatt im Almanach
+danach ganz normal funktioniert.
+
+Eine KI schreibt Werte gern in einer Form, die für sie gleichbedeutend
+ist, für die Oberfläche aber nicht: „16“ statt 16, „ja“ statt true,
+„Vergiftet“ als „vergiftet“, einen neuen Angriff ohne Kennung. Ohne
+Kennung kann die Liste ihre Zeilen nicht auseinanderhalten (siehe
+components/RepeatingRows.jsx), aus „16“ + 2 würde „162“. Deshalb wird
+hier jeder Wert in die Form gebracht, die das leere Blatt vorgibt
+(lib/regeln/leeresBlatt.js) – und alles, was dabei geändert oder
+weggelassen wurde, als Hinweis gemeldet. Erraten wird nichts: Was sich
+nicht eindeutig lesen lässt, fällt auf den Ausgangswert zurück, und der
+Hinweis sagt es.
+
+**Ausfuhren**
+
+- `angleichen` (function) – Einen eingelesenen Datensatz herrichten.
+
+### frontend/src/lib/einfuhr/datei.js
+
+*78 Zeilen*
+
+Eine Blattdatei aufbereiten und ihren Datensatz finden.
+
+Was zurückkommt, wenn man eine Datei durch eine KI geschickt hat, sieht
+nicht immer aus wie das, was hineinging: Mal steht die Datei in einem
+Codeblock mit ```html davor und einem Satz dahinter (aus dem Chatfenster
+kopiert), mal fehlt die Hülle und es kommt nur das JSON, mal sind die
+Anführungszeichen des Datensatzes wieder als `&quot;` geschrieben wie in
+Dateien vor Fassung 2. Das alles wird hier auf eine Form gebracht.
+
+**Ausfuhren**
+
+- `entitaeten` (const) – Was HTML entschärft, zurückverwandelt – benannt (`&amp;`) und als Zahl (`&#39;`, `&#x27;`).
+- `aufbereiten` (function) – Den Dateitext auf eine Form bringen: ohne Byte-Order-Mark, mit `\n` als Zeilenende – und aus einer Chat-Antwort der Codeblock, in dem die Datei (oder der Datensatz) steht.
+- `datensatzFinden` (function) – Den Datensatz in der Datei finden.
+
+### frontend/src/lib/einfuhr/json.js
+
+*127 Zeilen*
+
+JSON lesen, das eine KI (oder eine Hand) geschrieben hat.
+
+Gültiges JSON geht wie immer durch `JSON.parse`. Scheitert das, versucht
+`reparieren` die Fehler, die beim Bearbeiten durch eine KI am häufigsten
+entstehen – und nur diese, damit nichts erraten wird:
+
+- Kommentare (`// …`, `/* … *\/`), die eine KI gern dazuschreibt,
+- ein Komma nach dem letzten Eintrag eines Objekts oder einer Liste,
+- echte Zeilenumbrüche und Tabulatoren mitten in einem Text, wo JSON
+  `\n` und `\t` verlangt.
+
+Bleibt es danach kaputt, nennt die Fehlermeldung Zeile und Spalte in der
+Datei und zeigt die Stelle – damit man der KI sagen kann, was sie
+reparieren soll.
+
+**Ausfuhren**
+
+- `reparieren` (function) – Die drei Reparaturen in einem Durchgang. Gibt den reparierten Text zurück und für jedes seiner Zeichen die Stelle im Original – für Fehlermeldungen, die auf die richtige Zeile zeigen.
+- `jsonLesen` (function) – JSON lesen, notfalls repariert.
+
+### frontend/src/lib/einfuhr/pfad.js
+
+*61 Zeilen*
+
+Pfade in einen Datensatz – mit Listeneinträgen über ihre Kennung.
+
+```
+combat.hp.max              ein Feld in verschachtelten Objekten
+attacks.#<id>.damage       ein Feld im Listeneintrag mit dieser Kennung
+attunement.1               die zweite Stelle einer einfachen Liste
+```
+
+Anders als lib/setPath.js ändern `pfadSetzen` und `pfadHolen` hier in einem
+Datensatz, der dem Einlesen allein gehört (eine Abschrift), und legen
+fehlende Ebenen an: Eine Datei, deren Datensatz eine KI verloren hat,
+wird aus den sichtbaren Feldern neu aufgebaut – samt Listeneinträgen,
+die es vorher nur als Pfad gab.
+
+**Ausfuhren**
+
+- `pfadHolen` (function) – Ein Wert unter einem Pfad, oder undefined, wenn unterwegs etwas fehlt.
+- `pfadSetzen` (function) – Einen Wert unter einem Pfad setzen; fehlende Objekte, Listen und Listeneinträge werden angelegt. Ändert `obj` selbst.
+
+### frontend/src/lib/einfuhr/sichtbar.js
+
+*131 Zeilen*
+
+Was auf der sichtbaren Seite geändert wurde, in den Datensatz übernehmen.
+
+Eine KI – oder jemand mit einem Texteditor – ändert manchmal nur, was man
+sieht: Aus „Stufe 3“ wird „Stufe 4“, der Datensatz am Ende der Datei
+bleibt, wie er war. Damit das nicht verloren geht, trägt jeder sichtbare
+Wert zwei Angaben (siehe lib/blatt/werkzeug.js, `marke`):
+
+```
+data-feld  wo er im Datensatz steht
+data-war   wie er bei der Ausfuhr dastand
+```
+
+Daraus folgt für jeden Wert eine einfache Regel:
+
+- Steht im Datensatz etwas anderes als `data-war`, wurde der Datensatz
+  bearbeitet. Er gilt – auch wenn die Seite etwas anderes zeigt.
+- Sonst: Steht sichtbar etwas anderes als `data-war`, wurde nur die
+  Seite bearbeitet. Dann gilt das Sichtbare.
+- Sonst hat sich nichts geändert.
+
+Gelesen wird ohne DOMParser, mit regulären Ausdrücken über die Form, die
+die Ausfuhr selbst schreibt – so läuft es auch in der Blattprobe (Node).
+
+**Ausfuhren**
+
+- `glatt` (function) – Ein Wert auf seine Form zum Vergleichen gebracht: Leerraum je Zeile gefaltet, „–“ als leer.
+- `markenLesen` (function) – Alle markierten Werte einer Datei.
+- `zurueck` (function) – Sichtbaren Text in einen Wert zurückverwandeln, nach der Art des Feldes. Eine Einheit im Text („12 m“, „40 Fuß“, „3 kg“) gilt vor dem Maßsystem des Blattes. Gibt `undefined` zurück, wenn sich nichts herauslesen lässt.
+- `sichtbaresUebernehmen` (function) – Die sichtbaren Änderungen in den Datensatz übernehmen.
+
+### frontend/src/lib/einfuhr/unterschiede.js
+
+*128 Zeilen*
+
+Was sich zwischen zwei Ständen eines Blattes unterscheidet – in Worten.
+
+Bevor eine eingelesene Datei ein vorhandenes Blatt ersetzt, zeigt die
+Vorschau (components/einlesen/Vorschau.jsx), was sich dadurch ändert:
+„Stufe: 3 → 4“, „Neu: Angriff „Kurzbogen““, „Entfernt: Zauber
+„Magisches Geschoss““. Wer einer KI eine Aufgabe gegeben hat, sieht so,
+ob sie getan hat, was sie sollte – und nichts darüber hinaus.
+
+**Ausfuhren**
+
+- `unterschiede` (function) – Die Unterschiede zwischen dem Blatt im Almanach und dem eingelesenen.
+
 ## frontend/src/lib/regeln/
 
 ### frontend/src/lib/regeln/blattfelder.js
@@ -3374,10 +3654,14 @@ Traglast        = Stärke × 15 Pfund
 
 ### frontend/src/pages/blatt/Blattkopf.jsx
 
-*103 Zeilen*
+*111 Zeilen*
 
 Der Kopf des Charakterblattes: Bildnis, Name, Volk · Klasse · Stufe, der
-Speicherstand – und rechts Trefferpunkte, Mitnehmen und Löschen.
+Speicherstand – und rechts Trefferpunkte, Mitnehmen, Einlesen und Löschen.
+
+„Mitnehmen“ und „Einlesen“ sind ein Paar: Die mitgenommene Datei lässt
+sich bearbeiten – auch von einer KI – und mit „Einlesen“ wieder in dieses
+Blatt übernehmen, nach einer Vorschau (components/BlattEinlesen.jsx).
 
 Fremde Blätter (`schreibbar === false`) zeigen statt des Speicherstands,
 wem sie gehören; Bildnis und Name lassen sich dann nicht ändern.
@@ -3420,7 +3704,7 @@ useBlatt.js): Wer tippt, soll sehen, dass es ankommt.
 
 ### frontend/src/pages/blatt/useBlatt.js
 
-*142 Zeilen*
+*147 Zeilen*
 
 Das Blatt laden, halten und von selbst speichern – der Zustand hinter der
 Seite des Charakterblattes (CharacterSheet.jsx).
@@ -3448,7 +3732,7 @@ Blattes dazwischenkommt.
 
 ### frontend/src/pages/CharacterSheet.jsx
 
-*135 Zeilen*
+*137 Zeilen*
 
 Das Charakterblatt – die Seite, an der die Runde am meisten sitzt.
 
@@ -3459,7 +3743,7 @@ und daraus entsteht ein neues Blatt (siehe lib/setPath.js).
 
 Laden, Speichern und der Live-Draht stecken in blatt/useBlatt.js – dort
 steht auch, warum es keinen Speichern-Knopf gibt. Diese Seite kümmert
-sich um die Handgriffe drumherum (Bildnis, Mitnehmen, Löschen) und
+sich um die Handgriffe drumherum (Bildnis, Mitnehmen, Einlesen, Löschen) und
 darum, welcher Reiter offen ist.
 
 ```
@@ -3524,7 +3808,7 @@ Gesucht wird örtlich in der schon geladenen Liste, ohne neue Anfrage.
 
 ### frontend/src/pages/Dashboard.jsx
 
-*210 Zeilen*
+*212 Zeilen*
 
 Die Startseite: alle Charaktere der Kampagne auf einen Blick.
 
@@ -3540,7 +3824,9 @@ Was hier mit einem Blatt geschehen kann:
                   Spielleitung (siehe components/Kopierziel.jsx)
 - Löschen    – das eigene Blatt, oder jedes, wenn man die Runde führt
 
-Und oben: ein neues Blatt anlegen oder ein mitgenommenes einlesen
+Und oben: ein neues Blatt anlegen oder ein mitgenommenes einlesen – auch
+eines, das jemand oder eine KI inzwischen bearbeitet hat; trägt es die
+Kennung eines Blattes hier, lässt es sich auch darauf übernehmen
 (components/BlattEinlesen.jsx).
 
 **Ausfuhren**
@@ -3806,10 +4092,11 @@ und ein „läuft“ an der offenen.
 
 ### frontend/src/pages/hilfe/Blatt.jsx
 
-*84 Zeilen*
+*102 Zeilen*
 
 Hilfe: rund ums eigene Blatt – das Charakterblatt, Zauber und Rasten,
-die Beutekiste und das Mitnehmen als eigenständige Datei.
+die Beutekiste und das Mitnehmen als eigenständige Datei – samt dem Rückweg,
+auch nach einer Bearbeitung durch eine KI.
 
 **Ausfuhren**
 

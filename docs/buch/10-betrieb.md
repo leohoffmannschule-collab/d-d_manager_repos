@@ -194,13 +194,14 @@ DATA_DIR=/tmp/alter-stand PORT=3002 npm start
 
 ### Ein Blatt aus der mitgenommenen Datei zurückholen
 
-Die Datei, die „Mitnehmen“ auf dem Charakterblatt erzeugt, trägt am Ende den vollständigen Datensatz des Blattes. Zurückgeholt wird sie mit einem Knopf:
+Die Datei, die „Mitnehmen“ auf dem Charakterblatt erzeugt, trägt am Ende den vollständigen Datensatz des Blattes und seine Kennung. Zurückgeholt wird sie mit einem Knopf:
 
 1. Im Almanach anmelden und die Kampagne wählen, in die das Blatt gehört.
-2. In der Übersicht **„Blatt einlesen“** und die Datei wählen (auch vom Telefon aus der Dateien-App).
-3. Das Blatt öffnet sich. Es gehört der Person, die angemeldet ist; die Spielleitung teilt es unter *Spielleitung → Runde* der richtigen Person zu.
+2. Auf dem Blatt **„Einlesen“** – oder in der Übersicht **„Blatt einlesen“** – und die Datei wählen (auch vom Telefon aus der Dateien-App).
+3. Die **Vorschau** prüfen: was sich ändert, was repariert wurde.
+4. **„… aktualisieren“**, wenn die Datei das vorhandene Blatt ersetzen soll, oder **„Als neues Blatt anlegen“**. Ein neues Blatt gehört der Person, die angemeldet ist; die Spielleitung teilt es unter *Spielleitung → Runde* der richtigen Person zu.
 
-Ein vorhandenes Blatt wird dabei nie überschrieben – wer zwei Stände hat, sieht danach beide und entscheidet selbst. In der Datei geänderte Werte kommen mit; die Datei ist ja nur Text. Auch Dateien aus älteren Fassungen des Almanachs lassen sich einlesen. Eine Datei, die kein mitgenommenes Blatt ist, lehnt der Knopf mit einem Satz ab, der sagt, warum.
+In der Datei geänderte Werte kommen mit – auch, wenn eine KI sie geändert hat, und auch, wenn nur die sichtbare Seite geändert wurde. Dateien aus älteren Fassungen des Almanachs lassen sich ebenso einlesen. Eine Datei, die kein mitgenommenes Blatt ist, lehnt der Knopf mit einem Satz ab, der sagt, warum; ist der Datensatz beschädigt oder gekürzt, nennt er Zeile und Spalte.
 
 ### Die Zertifikate für HTTPS
 

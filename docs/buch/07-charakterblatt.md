@@ -58,6 +58,8 @@ Fremde Blätter (geteilt, aber nicht die eigenen) stehen zum Lesen da: Alle Feld
 
 **Mitnehmen.** Speichert das Blatt als eigenständige HTML-Datei (siehe „Die Ausfuhr“ unten).
 
+**Einlesen.** Übernimmt eine mitgenommene Datei – auch eine, die eine KI bearbeitet hat – in dieses Blatt, nach einer Vorschau (siehe „Das Einlesen“ unten). Nur auf Blättern, die man ändern darf.
+
 **Löschen.** Nur für die Besitzerin und die Spielleitung, mit Rückfrage. Gelöscht ist gelöscht – ein Blatt hat keinen Papierkorb. Figuren auf dem Spieltisch, die an dem Blatt hingen, bleiben stehen und verlieren nur die Verknüpfung.
 
 ## Reiter „Übersicht“
@@ -400,10 +402,25 @@ Der Knopf **„Mitnehmen“** im Kopf des Blattes erzeugt eine einzige HTML-Date
 
 - Sie braucht **weder Netz noch Server**: Das Stilblatt steckt darin, das Bildnis ist als `data:`-Adresse eingebettet. Doppelklicken genügt, auf jedem Gerät. Ein Skript enthält sie nicht; gedruckt wird mit Strg+P (am iPad Teilen → Drucken), wie oben in der Datei steht.
 - Gedruckt sieht sie aus wie ein **Charakterbogen**: Kopf mit Bildnis, Übungsbonus und passiver Wahrnehmung, dann Attribute, Kampfwerte, Verteidigung und Zustand, Rettungswürfe, Sinne, Fertigkeiten, Angriffe, Aktionen, Ressourcen, Zauber samt ihren vollen Beschreibungen aus dem Kompendium, Ausrüstung, Merkmale, Aussehen und Hintergrund. Leere Abschnitte fallen weg.
-- Am Ende der Datei steckt der **vollständige Datensatz** (`<template id="almanach-daten">`). Die Datei ist damit zugleich eine Sicherung: **„Blatt einlesen“** in der Übersicht legt daraus wieder ein Blatt an – als neues Blatt der Person, die angemeldet ist; ein vorhandenes wird nie überschrieben.
+- Am Ende der Datei steckt der **vollständige Datensatz** (`<template id="almanach-daten">`, lesbares JSON samt Kennung des Blattes). Die Datei ist damit zugleich eine Sicherung.
+- Ganz oben steht – unsichtbar im Browser – eine **Anleitung für KI-Assistenten** mit einem Verzeichnis aller Felder, und jeder sichtbare Wert trägt den Pfad, unter dem er im Datensatz steht. So lässt sich die Datei einer KI zum Bearbeiten geben.
 - Der Dateiname ist der Name der Figur mit dem Datum, Umlaute umschrieben („Kapitaen Sturmhand-2026-09-30.html“) – ein Dateiname mit „ä“ überlebt nicht jeden Browser und nicht jeden USB-Stick.
 
-Änderungen in der mitgenommenen Datei wandern nicht zurück; am Spieltisch gilt das Blatt im Almanach. Wie die Datei im Einzelnen gebaut ist, steht im Kapitel „Das Blatt: Datenmodell und Ausfuhr“.
+Änderungen in der mitgenommenen Datei wandern nicht von selbst zurück; am Spieltisch gilt das Blatt im Almanach. Wie die Datei im Einzelnen gebaut ist, steht im Kapitel „Das Blatt: Datenmodell und Ausfuhr“.
+
+## Das Einlesen – auch nach einer KI
+
+Zurück kommt eine mitgenommene Datei über zwei Knöpfe: **„Einlesen“** im Kopf des Blattes übernimmt sie in dieses Blatt; **„Blatt einlesen“** in der Übersicht erkennt an der Kennung in der Datei, welches Blatt gemeint ist, und bietet an, es zu aktualisieren – sonst entsteht ein neues. Dazwischen darf die Datei bearbeitet worden sein, von Hand oder von einer KI.
+
+Gespeichert wird erst nach einer **Vorschau**. Sie nennt:
+
+- was sich am Blatt ändert – „Stufe: 3 → 4“, „Neu: Angriff ‚Wurfaxt‘“, „Bewegung: 9 m → 7,5 m“;
+- welche Werte nur auf der sichtbaren Seite geändert waren und übernommen wurden;
+- was das Einlesen unterwegs repariert oder angeglichen hat (Kommentare im JSON, Zahlen als Text, neue Einträge ohne Kennung, unbekannte Zustände, ein Bildnis von außerhalb).
+
+Dann **„… aktualisieren“** oder **„Als neues Blatt anlegen“**. Das Ergebnis ist ein gewöhnliches Blatt, das sich weiter bearbeiten lässt wie jedes andere; aktualisiert wird über denselben Weg wie jede Änderung am Blatt. Wer einer KI ein Blatt gibt, gibt ihrem Anbieter das ganze Blatt samt Bildnis – Kennwörter oder Zugangsdaten stehen nicht darin.
+
+Ein typischer Weg: *Mitnehmen* → die Datei einer KI geben, mit dem Auftrag „Steig ihn auf Stufe 4 auf und gib mir die ganze Datei zurück“ → die Antwort als `.html` sichern (ein Codeblock darum herum stört nicht) → *Einlesen* → Vorschau prüfen → *aktualisieren*. Was das Einlesen dabei im Einzelnen tut, steht im Kapitel „Das Blatt: Datenmodell und Ausfuhr“.
 
 ## Die Vorlagen
 
@@ -440,11 +457,11 @@ Für verschachtelte Felder reicht ein flaches `{ ...vorgabe, ...data }` nicht: E
 
 Wer mehrere Felder in einem Zug ändert, baut ein neues Blatt und ruft `replace` – nie zweimal `update` hintereinander, denn jedes `update` stößt ein eigenes Speichern an.
 
-**3. Die Ausfuhr.** Soll das Feld auch auf dem mitgenommenen Blatt stehen, bekommt der passende Abschnitt in `frontend/src/lib/blatt/abschnitte/` eine Zeile. Die Abschnitte bekommen das schon aufgefüllte Blatt und dürfen sich darauf verlassen, dass das Feld existiert.
+**3. Die Ausfuhr.** Soll das Feld auch auf dem mitgenommenen Blatt stehen, bekommt der passende Abschnitt in `frontend/src/lib/blatt/abschnitte/` eine Zeile. Die Abschnitte bekommen das schon aufgefüllte Blatt und dürfen sich darauf verlassen, dass das Feld existiert. Den Wert mit seinem Pfad ausgeben – `feld('Beschriftung', wert, 'combat.neuesFeld')` oder `marke(…)` –, und das Feld in `frontend/src/lib/blatt/glossar.js` eintragen: Dann kennt es die Anleitung für eine KI, und das Einlesen findet eine Änderung auch auf der sichtbaren Seite.
 
 **4. Die Vorlagen** (falls das Feld bei ihnen einen besonderen Wert haben soll). `backend/src/vorlagen/bauen.js` baut die zwölf Vorlagen aus knappen Steckbriefen; was dort nicht gesetzt wird, ergänzt `withDefaults` beim Öffnen ohnehin.
 
-**5. Die Probe.** `scripts/blattprobe.mjs` prüft die Rechnungen des Blattes (356 Prüfungen). Kommt eine Rechnung dazu, kommt dort eine Prüfung dazu; `npm run blattprobe` läuft in unter einer Sekunde.
+**5. Die Probe.** `scripts/blattprobe.mjs` prüft die Rechnungen des Blattes und den Weg hin und zurück (384 Prüfungen). Kommt eine Rechnung dazu, kommt dort eine Prüfung dazu; `npm run blattprobe` läuft in unter einer Sekunde.
 
 Soll der **Server** auf das neue Feld reagieren – so wie auf Trefferpunkte und Sinne –, ist das eine größere Änderung: Sie gehört in `PUT /api/characters/:id` und in den Vertrag (`scripts/vertrag/`), und sie macht aus dem JSON-Klumpen an dieser einen Stelle ein Feld, das der Server kennt. Das sollte die Ausnahme bleiben.
 
@@ -455,4 +472,4 @@ Zwei Felder stehen noch im Code, obwohl nichts sie mehr füllt:
 - `data.mini` reicht `withDefaults` durch. Es stammt aus der Zeit der Figurenschmiede, die entfernt wurde; ältere Blätter können es noch tragen, und es soll beim Speichern nicht verloren gehen.
 - `data.miniMediaId` liest „Runde holen“ als Figurenbild des Kämpfers. Neue Blätter setzen es nicht; es bleibt `null`.
 
-Beide dürfen bleiben, solange es Blätter aus jener Zeit gibt. Wer sie entfernt, muss vorher sicher sein, dass keines mehr im Umlauf ist – eine mitgenommene Ausfuhrdatei zählt dabei nicht, denn aus ihr wird nicht automatisch zurückgelesen.
+Beide dürfen bleiben, solange es Blätter aus jener Zeit gibt. Wer sie entfernt, muss vorher sicher sein, dass keines mehr im Umlauf ist – auch eine mitgenommene Ausfuhrdatei zählt dabei, denn sie lässt sich wieder einlesen (das Einlesen behält Felder, die es nicht kennt).

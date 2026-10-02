@@ -121,7 +121,11 @@ Das Blatt als eigenständige HTML-Datei sichern: alles, was darauf steht, samt B
 
 ### Einlesen
 
-Der Rückweg der Ausfuhr: „Blatt einlesen“ in der Übersicht nimmt eine mitgenommene Datei und legt daraus ein **neues** Blatt an – ein vorhandenes wird nie überschrieben. Code: `frontend/src/lib/blattEinfuhr.js`, `components/BlattEinlesen.jsx`.
+Der Rückweg der Ausfuhr: „Einlesen“ im Kopf eines Blattes oder „Blatt einlesen“ in der Übersicht nimmt eine mitgenommene Datei – auch eine, die jemand oder eine KI bearbeitet hat – und macht nach einer **Vorschau** daraus wieder ein Blatt: Es aktualisiert das vorhandene (erkannt an der Kennung in der Datei) oder legt ein neues an. Code: `frontend/src/lib/blattEinfuhr.js`, `lib/einfuhr/`, `components/BlattEinlesen.jsx`.
+
+### KI-Anleitung, Feldmarke
+
+Was eine mitgenommene Datei für die Bearbeitung durch eine KI mitbringt: oben eine **Anleitung für KI-Assistenten** samt Verzeichnis aller Felder (ein Kommentar, im Browser unsichtbar), und an jedem sichtbaren Wert eine **Feldmarke** – `data-feld` (der Pfad im Datensatz) und `data-war` (der Wert bei der Ausfuhr). An der Marke erkennt das Einlesen eine Änderung, die nur auf der sichtbaren Seite gemacht wurde. Code: `lib/blatt/datensatz.js`, `lib/blatt/glossar.js`, `marke` in `lib/blatt/werkzeug.js`.
 
 ### Pfad (im Blatt)
 
@@ -419,6 +423,7 @@ Die Werkzeuge, die vor jedem Commit laufen (`npm test`): die **Einfuhrprobe** (b
 | Initiative | Kampf |
 | Initiativebonus | Kampf |
 | Kämpfer | Kampf |
+| KI-Anleitung, Feldmarke | Blätter |
 | Kampagne | Kampagnen |
 | Kampfrunde | Kampf |
 | Karte | Der Spieltisch |

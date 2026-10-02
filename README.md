@@ -102,6 +102,12 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
   vollständigen Zaubertexten, ohne Verweis nach draußen. Sie öffnet sich mit einem Doppelklick auf jedem Gerät, auch wenn der Pi ausgeschaltet ist,
   und druckt sich als Charakterbogen. Der vollständige Datensatz reist am Ende der Datei mit, sie ist also zugleich
   eine Sicherung.
+- **Mit einer KI bearbeiten und wieder einlesen**: Die mitgenommene Datei lässt sich einer KI geben („steig ihn auf
+  Stufe 4 auf“, „trag die Beute ein“) und mit **Einlesen** zurückholen – ins selbe Blatt oder als neues. Oben in der
+  Datei steht eine Anleitung für die KI samt Verzeichnis aller Felder, jeder sichtbare Wert ist markiert, und vor dem
+  Speichern zeigt eine **Vorschau**, was sich ändert. Typische KI-Fehler (Codeblock drumherum, Kommentare im JSON,
+  Zahlen als Text, neue Einträge ohne Kennung) gleicht der Almanach aus; eine gekürzte Datei lehnt er mit Zeile und
+  Grund ab. Danach ist es ein ganz normales Blatt.
 - **Zwei Fassungen**: *Pergament* für helle Räume, *Kerzenlicht* für den abgedunkelten Spieltisch.
 - **Als App installierbar** (PWA), automatisches Speichern, keine Werbung, keine Cloud.
 
@@ -304,7 +310,8 @@ gewöhnliches `http://` lädt die App bei jedem Öffnen frisch – am Spieltisch
 Wer sich unabhängig davon machen will, nimmt sein Blatt einfach mit: Der Knopf **Mitnehmen** oben auf dem
 Charakterblatt sichert es als einzelne Datei, die ohne Server, ohne Netz und ohne App auskommt. Das ist der
 verlässliche Weg, sich auf eine Runde vorzubereiten, während der Pi aus ist – der Zwischenspeicher des Browsers
-ist immer nur so gut wie das, was zuletzt geöffnet war.
+ist immer nur so gut wie das, was zuletzt geöffnet war. Was man in der Datei geändert hat – selbst oder mit einer
+KI –, holt **Einlesen** danach wieder ins Blatt (siehe [Betriebsanleitung Runde, Abschnitt 11](docs/SPIELER.md#11-dein-blatt-mitnehmen)).
 
 ## Alles in VS Code
 

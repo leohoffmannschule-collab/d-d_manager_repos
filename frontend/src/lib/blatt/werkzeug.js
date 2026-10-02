@@ -10,6 +10,11 @@
  * `tafel`, `feld` und `zeilen` sind die drei Bausteine, aus denen jeder
  * Abschnitt des Blattes gebaut ist – eine Karte mit Überschrift, ein
  * beschriftetes Feld, eine Tabelle.
+ *
+ * Dazu `marke`: Sie umgibt einen sichtbaren Wert mit dem Pfad, unter dem er
+ * im Datensatz steht. Ändert jemand – oder eine KI – nur die sichtbare
+ * Seite, findet „Blatt einlesen“ die Änderung daran wieder
+ * (lib/einfuhr/sichtbar.js).
  */
 const ZEICHEN = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 /** Text für HTML entschärfen – alles, was vom Blatt kommt, läuft hier hindurch. */
@@ -72,15 +77,49 @@ export async function zaubertexte(spells) {
   return Object.fromEntries(paare);
 }
 
+/* --- Wiedererkennbare Werte ---------------------------------------------- */
+
+/**
+ * Ein sichtbarer Wert, den „Blatt einlesen“ wiedererkennt.
+ *
+ *   <span data-feld="combat.hp.max" data-war="24">24</span>
+ *
+ * `data-feld` ist der Pfad im Datensatz (Listeneinträge über ihre Kennung:
+ * `attacks.#<id>.name`), `data-war` der Wert so, wie er bei der Ausfuhr
+ * dastand. Steht beim Einlesen etwas anderes sichtbar da als in `data-war`,
+ * wurde die Seite geändert – und der Datensatz noch nicht.
+ *
+ * @param {string} pfad  wo der Wert im Datensatz steht
+ * @param {unknown} war  der Wert in seiner Anzeigeform (siehe glossar.js, `anzeige`)
+ * @param {string} [html] was sichtbar dasteht; ohne Angabe der entschärfte Wert, leer als „–“
+ */
+export function marke(pfad, war, html) {
+  const text = String(war ?? '');
+  return `<span data-feld="${esc(pfad)}" data-war="${esc(text)}">${html ?? esc(text || '–')}</span>`;
+}
+
+/** Eine Tabellenzelle aus einem Listeneintrag – markiert, wenn der Eintrag eine Kennung hat. */
+export const zelle = (listenPfad, eintrag, key, html = esc(eintrag[key])) =>
+  eintrag.id ? marke(`${listenPfad}.#${eintrag.id}.${key}`, eintrag[key], html) : html;
+
 /* --- Die drei Bausteine jedes Abschnitts -------------------------------- */
 
 /** Eine Karte mit Überschrift. Leerer Inhalt heißt: gar keine Karte. */
 export const tafel = (titel, inhalt) =>
   inhalt ? `<section class="tafel"><h2>${esc(titel)}</h2>${inhalt}</section>` : '';
 
-/** Ein beschriftetes Feld: kleine Beschriftung, Wert darunter; ein leerer Wert wird zu „–“. */
-export const feld = (label, wert) =>
-  `<div class="feld"><span class="label">${esc(label)}</span><span class="wert">${esc(wert || '–')}</span></div>`;
+/**
+ * Ein beschriftetes Feld: kleine Beschriftung, Wert darunter; ein leerer
+ * Wert wird zu „–“. Mit `pfad` ist der Wert markiert (siehe `marke`).
+ */
+export const feld = (label, wert, pfad) =>
+  `<div class="feld"><span class="label">${esc(label)}</span><span class="wert">${
+    pfad ? marke(pfad, wert) : esc(wert || '–')
+  }</span></div>`;
+
+/** Ein beschriftetes Feld, dessen Wert schon fertiges HTML ist (mit Marken darin). */
+export const feldHtml = (label, html) =>
+  `<div class="feld"><span class="label">${esc(label)}</span><span class="wert">${html}</span></div>`;
 
 /**
  * Eine Tabelle aus Kopf und Reihen – oder nichts, wenn es keine Reihen gibt.

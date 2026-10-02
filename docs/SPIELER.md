@@ -293,14 +293,62 @@ Rechner, Tablet oder Telefon. Gedruckt (Strg+P, am iPad *Teilen → Drucken*)
 sieht sie aus wie ein Charakterbogen.
 
 Gedacht ist sie für die Vorbereitung, wenn der Almanach gerade nicht läuft,
-oder für den Zug zur Runde. **Was du in der Datei änderst, wandert nicht
-von selbst zurück** – am Spieltisch gilt das Blatt im Almanach.
+oder für den Zug zur Runde. Was du in der Datei änderst, wandert nicht von
+selbst zurück – aber du kannst es **zurückholen**, und zwar auch, wenn eine
+KI die Datei für dich bearbeitet hat.
 
-**Zurückholen:** Die Datei ist zugleich eine Sicherung. In der Übersicht
-liegt neben *Neuer Charakter* der Knopf **Blatt einlesen**; damit wählst du
-die Datei, und der Almanach legt daraus ein neues Blatt an. Dein altes bleibt
-dabei unangetastet – du siehst danach beide und löschst, was du nicht mehr
-brauchst.
+**Zurückholen:** Die Datei ist zugleich eine Sicherung. Es gibt zwei Knöpfe
+dafür, beide heißen ähnlich:
+
+- **Einlesen** oben auf deinem Blatt, neben *Mitnehmen*: übernimmt die Datei
+  in **dieses** Blatt.
+- **Blatt einlesen** in der Übersicht, neben *Neuer Charakter*: erkennt, zu
+  welchem Blatt die Datei gehört, und bietet an, es zu aktualisieren – oder
+  legt ein neues an.
+
+Gespeichert wird nie sofort. Erst erscheint eine **Vorschau**: was sich an
+deinem Blatt ändern würde („Stufe: 3 → 4“, „Neu: Angriff ‚Wurfaxt‘“), was
+nur auf der sichtbaren Seite geändert war und übernommen wurde, und was der
+Almanach unterwegs repariert hat. Dann wählst du **„… aktualisieren“** oder
+**Als neues Blatt anlegen** – wer unsicher ist, nimmt das zweite; dann bleibt
+das alte Blatt unangetastet daneben stehen. Danach ist es ein ganz normales
+Blatt, das du im Almanach weiter bearbeitest wie jedes andere.
+
+### Mit einer KI bearbeiten
+
+Du kannst die Datei einer KI geben – ChatGPT, Claude, Gemini oder eine
+andere – und ihr sagen, was sie ändern soll: *„Steig meinen Zwergenkämpfer auf
+Stufe 4 auf“*, *„Trag diese Beute ein: …“*, *„Schreib mir eine
+Hintergrundgeschichte“*. So geht es:
+
+1. Auf deinem Blatt **Mitnehmen** – die Datei landet auf deinem Gerät.
+2. Die Datei der KI geben (hochladen oder ihren Inhalt einfügen) und sagen,
+   was sie ändern soll. Am besten dazu: *„Gib mir die ganze Datei geändert
+   zurück.“*
+3. Was die KI zurückgibt, als Datei sichern (Endung `.html`). Hat sie die
+   Datei im Chat angezeigt, kopierst du sie heraus – der Codeblock darf mit;
+   der Almanach findet die Datei darin.
+4. Im Almanach **Einlesen** (auf dem Blatt) oder **Blatt einlesen** (in der
+   Übersicht), Datei wählen, Vorschau ansehen, bestätigen.
+
+Die KI muss dafür nichts über den Almanach wissen: Ganz oben in der Datei
+steht eine Anleitung für sie – unsichtbar, wenn du die Datei im Browser
+öffnest. Sie sagt der KI, wo welcher Wert steht und was sie beachten muss.
+Und wenn sie trotzdem nur die sichtbare Seite ändert, übernimmt der Almanach
+die geänderten Werte auch von dort.
+
+**Gut zu wissen:**
+
+- **Schau dir die Vorschau an.** Sie zeigt genau, was die KI geändert hat –
+  auch das, worum du sie nicht gebeten hast.
+- **Rechnen tut der Almanach.** Modifikatoren, Übungsbonus, passive Werte und
+  Zauber-SG rechnet er selbst aus den Grundwerten. Wenn die KI dir „+3 auf
+  Athletik“ verspricht, zählt am Ende, was das Blatt daraus rechnet.
+- **Meldet das Einlesen „beschädigt“ oder „gekürzt“**, hat die KI ein Komma
+  vergessen oder die Datei abgekürzt (oft mit „…“). Die Meldung nennt Zeile
+  und Stelle – sag der KI genau das, und bitte um die vollständige Datei.
+- **Was du der KI gibst, liest der Anbieter der KI mit** – das ganze Blatt,
+  samt Bildnis. Kennwörter oder Zugangsdaten stehen nicht in der Datei.
 
 ---
 

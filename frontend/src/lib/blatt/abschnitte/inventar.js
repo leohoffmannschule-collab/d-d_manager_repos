@@ -9,7 +9,7 @@ import {
   gewichtMitEinheit,
   traglastStufen,
 } from '../../dnd5e.js';
-import { MUENZEN, esc, feld, zeilen } from '../werkzeug.js';
+import { MUENZEN, feld, feldHtml, marke, zeilen, zelle } from '../werkzeug.js';
 
 /** Die Tafel „Habe“: Münzen, Gegenstände mit Gewicht, getragene Last gegen die Traglast. */
 export function inventar(data) {
@@ -17,19 +17,25 @@ export function inventar(data) {
   const { ueberladen, schieben } = traglastStufen(data.abilities.str);
   const einheit = gewichtEinheit(data.units);
   const muenzen = MUENZEN.filter(([k]) => data.currency[k])
-    .map(([k, label]) => `${data.currency[k]} ${label}`)
+    .map(([k, label]) => `${marke(`currency.${k}`, data.currency[k])} ${label}`)
     .join(' · ');
-  const eingestimmt = (data.attunement ?? []).filter(Boolean);
+  // Die Stelle in der Liste bleibt erhalten – sie ist der Pfad (attunement.0 bis .2).
+  const eingestimmt = (data.attunement ?? [])
+    .map((name, i) => (name ? marke(`attunement.${i}`, name) : ''))
+    .filter(Boolean);
 
-  return `${muenzen ? feld('Münzen', muenzen) : ''}
+  return `${muenzen ? feldHtml('Münzen', muenzen) : ''}
     ${zeilen(
       ['Gegenstand', 'Anzahl', `Gewicht (${einheit})`, 'Anmerkungen'],
-      data.inventory.map((g) => [
-        esc(g.name),
-        esc(g.qty),
-        esc(g.weight ? gewichtAnzeigen(g.weight, data.units) : ''),
-        esc(g.notes),
-      ])
+      data.inventory.map((g) => {
+        const gewicht = g.weight ? String(gewichtAnzeigen(g.weight, data.units)) : '';
+        return [
+          zelle('inventory', g, 'name'),
+          zelle('inventory', g, 'qty'),
+          g.id ? marke(`inventory.#${g.id}.weight`, gewicht, gewicht) : gewicht,
+          zelle('inventory', g, 'notes'),
+        ];
+      })
     )}
     ${
       data.inventory.length
@@ -40,5 +46,5 @@ export function inventar(data) {
           </div>`
         : ''
     }
-    ${eingestimmt.length ? feld('Angelegte magische Gegenstände', eingestimmt.join(', ')) : ''}`;
+    ${eingestimmt.length ? feldHtml('Angelegte magische Gegenstände', eingestimmt.join(', ')) : ''}`;
 }

@@ -30,7 +30,7 @@ Ein Überblick; jedes Stück hat später sein eigenes Kapitel.
 
 | Bereich | Für wen | Was darin steckt |
 |---|---|---|
-| **Charaktere** | alle | vollständige Blätter für D&D 5e mit fünf Reitern, freie Blätter für andere Systeme, zwölf fertige Vorlagen, Mitnehmen als eigenständige Datei |
+| **Charaktere** | alle | vollständige Blätter für D&D 5e mit fünf Reitern, freie Blätter für andere Systeme, zwölf fertige Vorlagen, Mitnehmen als eigenständige Datei – die sich bearbeiten, auch von einer KI, und wieder einlesen lässt |
 | **Spieltisch** | alle | Karte mit Raster, Figuren, Nebel des Krieges, Sicht nach den Sinnen der Figuren, Licht, Lineal, Zeigefinger |
 | **Kampf** | alle | Initiativliste, Trefferpunkte, Zustände; Monster-TP für die Runde nur als Wort |
 | **Würfel** | alle | Würfelbecher mit freien Ausdrücken, Vor- und Nachteil; jeder Wert auf dem Blatt ist ein Würfelknopf |

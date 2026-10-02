@@ -14,7 +14,7 @@ import {
   passiverWert,
   weiteMitEinheit,
 } from '../../dnd5e.js';
-import { KURZ, esc, escAbsatz, feld } from '../werkzeug.js';
+import { KURZ, esc, escAbsatz, feld, marke } from '../werkzeug.js';
 
 /** Die sechs Attributkästen: Wert groß, Modifikator darunter. */
 export function attribute(data) {
@@ -22,7 +22,7 @@ export function attribute(data) {
     const wert = data.abilities[a.key];
     return `<div class="attribut">
       <span class="label">${esc(a.label)}</span>
-      <span class="zahl">${esc(wert)}</span>
+      <span class="zahl">${marke(`abilities.${a.key}`, wert)}</span>
       <span class="mod">${esc(formatModifier(abilityModifier(wert)))}</span>
     </div>`;
   }).join('');
@@ -37,7 +37,7 @@ export function rettungswuerfe(data, pb) {
     return `<li${geuebt ? ' class="geuebt"' : ''}><span>${esc(a.label)}</span><b>${esc(formatModifier(mod))}</b></li>`;
   }).join('');
   const vermerk = data.savingThrowNote
-    ? `<p class="hinweis"><i>Vermerk:</i> ${escAbsatz(data.savingThrowNote)}</p>`
+    ? `<p class="hinweis"><i>Vermerk:</i> ${marke('savingThrowNote', data.savingThrowNote, escAbsatz(data.savingThrowNote))}</p>`
     : '';
   return `<ul class="werteliste">${reihen}</ul>${vermerk}`;
 }
@@ -53,9 +53,9 @@ export function sinne(data) {
     ['Wahrer Blick', 'truesight'],
   ]
     .filter(([, key]) => Number(data.combat.senses?.[key]) > 0)
-    .map(([label, key]) => feld(label, weiteMitEinheit(data.combat.senses[key], data.units)))
+    .map(([label, key]) => feld(label, weiteMitEinheit(data.combat.senses[key], data.units), `combat.senses.${key}`))
     .join('');
-  const weitere = data.combat.senses?.notes ? feld('Weitere Sinne', data.combat.senses.notes) : '';
+  const weitere = data.combat.senses?.notes ? feld('Weitere Sinne', data.combat.senses.notes, 'combat.senses.notes') : '';
   return `<div class="raster">${passive}${weiten}${weitere}</div>`;
 }
 

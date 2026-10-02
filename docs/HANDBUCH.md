@@ -242,11 +242,56 @@ weder Netz noch Server; ein Doppelklick genügt, auf jedem Gerät. Gedruckt
 Ein Skript enthält sie nicht – sie zeigt nur an.
 
 Gedacht ist sie für die Vorbereitung, wenn der Almanach nicht läuft, und für
-den Zug zur Runde. **Änderungen darin wandern nicht von selbst zurück** – am
-Spieltisch gilt das Blatt im Almanach. Ganz hinten in der Datei steckt der
-vollständige Datensatz; sie ist damit zugleich eine Sicherung: **Blatt
-einlesen** in der Übersicht legt daraus wieder ein Blatt an (als neues –
-ein vorhandenes wird nie überschrieben).
+den Zug zur Runde. Änderungen darin wandern nicht von selbst zurück, lassen
+sich aber **zurückholen** – auch dann, wenn eine KI die Datei bearbeitet hat.
+Ganz hinten in der Datei steckt der vollständige Datensatz; sie ist damit
+zugleich eine Sicherung.
+
+### 3.10 Einlesen – auch nach einer KI
+
+Zwei Knöpfe holen eine mitgenommene Datei zurück:
+
+- **Einlesen** im Kopf eines Blattes übernimmt die Datei in **dieses** Blatt.
+- **Blatt einlesen** in der Übersicht erkennt an der Kennung in der Datei, zu
+  welchem Blatt sie gehört, und bietet an, es zu aktualisieren; sonst – oder
+  auf Wunsch – entsteht ein **neues** Blatt.
+
+Vor dem Speichern steht eine **Vorschau**: was sich am Blatt ändert, welche
+Werte nur auf der sichtbaren Seite geändert waren, was repariert wurde. Erst
+danach wählt man **„… aktualisieren“** oder **Als neues Blatt anlegen**. Das
+Ergebnis ist ein gewöhnliches Blatt im Almanach – es lässt sich weiter
+bearbeiten wie jedes andere, und gespeichert wird es über denselben Weg wie
+jede Änderung.
+
+**Mit einer KI bearbeiten.** Die Datei lässt sich einer KI geben – mit einem
+Auftrag wie „Stufe 4“, „trag diese Beute ein“, „schreib eine Vorgeschichte“.
+Damit das gelingt, ist die Datei dafür gebaut:
+
+- **Eine Anleitung für die KI** steht ganz oben, als Kommentar (im Browser
+  unsichtbar): wo der Datensatz liegt, dass er gültiges JSON bleiben muss,
+  dass Weiten in Fuß und Gewichte in Pfund stehen, was der Almanach selbst
+  rechnet – und ein Verzeichnis aller Felder mit ihrer Bedeutung.
+- **Der Datensatz ist lesbares JSON** und trägt die Kennung des Blattes.
+- **Jeder sichtbare Wert ist markiert** (`data-feld`, `data-war`). Ändert die
+  KI nur, was man sieht – aus „Stufe 3“ wird „Stufe 4“ –, übernimmt das
+  Einlesen den Wert trotzdem. Widersprechen sich Seite und Datensatz, gilt
+  der Datensatz.
+
+Beim Einlesen wird nachsichtig gelesen, aber nichts erraten:
+
+| Was die KI oft tut | Was der Almanach daraus macht |
+| --- | --- |
+| Die Datei in einem Codeblock zurückgeben, mit Text davor und danach | nimmt den Codeblock |
+| Kommentare oder ein Komma zu viel ins JSON schreiben | repariert und meldet es |
+| Zahlen als Text („16“), „ja“ statt true | bringt sie in die richtige Form |
+| Neue Einträge ohne `id` | vergibt Kennungen; ein gleichnamiger Eintrag des Blattes behält seine |
+| „vergiftet“ statt „Vergiftet“, erfundene Zustände | nimmt die Schreibweise des Almanachs, lässt Unbekanntes weg und sagt es |
+| Ein Bildnis aus dem Netz verlinken | lässt es weg – Bilder kommen nie von außen |
+| Den Datensatz weglassen | baut das Blatt aus den sichtbaren Werten und sagt, was dann fehlt |
+| Die Datei kürzen („…“, „Rest unverändert“) oder ein Komma vergessen | lehnt ab – mit Zeile, Spalte und dem Grund |
+
+Was man einer KI gibt, liest ihr Anbieter mit – das ganze Blatt samt
+Bildnis. Kennwörter und Zugangsdaten stehen nicht in der Datei.
 
 ---
 
@@ -647,6 +692,10 @@ Die Datenbank darf im Betrieb **nicht einfach kopiert** werden – der Almanach
 schreibt im WAL-Verfahren, und eine Kopie mitten im Spiel erwischt womöglich
 einen halben Schreibvorgang. Das Skript zieht mit `VACUUM INTO` einen in sich
 stimmigen Stand, während weitergespielt wird.
+
+Ein **einzelnes Blatt** sichert auch der Knopf *Mitnehmen*; zurück kommt es
+mit *Einlesen* (siehe 3.10) – in dasselbe Blatt oder als neues, auch in einem
+anderen Almanach.
 
 ### 14.3 Die eine Falle beim Zurückspielen
 

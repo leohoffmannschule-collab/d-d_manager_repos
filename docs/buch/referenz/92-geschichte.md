@@ -7,7 +7,7 @@ Der Almanach ist in kleinen Schritten gewachsen, und jeder Schritt hat eine Nach
 
 Die Nachrichten sind so abgedruckt, wie sie geschrieben wurden. Die ersten, vom 1. September, sind englisch; ab dem 3. September wurde der Almanach deutsch, im Code wie in seiner Geschichte.
 
-Insgesamt 94 Schritte an 13 Tagen.
+Insgesamt 95 Schritte an 14 Tagen.
 
 ## 1. September 2026
 
@@ -1374,3 +1374,17 @@ Die sechs .dc.html-Artboards trugen ihr Aussehen als style="…" an jedem Elemen
 - Stilprobe um design/*.html erweitert (Prüfung 7): kein style=, kein eingebettetes <style> oder <script> – wie im Rest des Projekts.
 - Dokumentation nachgezogen (13-architektur.md, design/README.md), Handbuch neu gebaut (542 Seiten).
 - .vscode/extensions.json: SQLite Viewer, Docker, GitLens ergänzt.
+
+## 1. Oktober 2026
+
+### Zeilenbuch: der ganze Code, jede Zeile erklärt, als PDF
+
+`1914a9b`
+
+Ein zweites Buch neben dem Handbuch: docs/Abenteuer-Almanach-Zeile-fuer-Zeile.pdf (1.609 Seiten). Jede Datei des Almanachs, die Code ist, steht darin als Tabelle – links der Code mit Zeilennummern, rechts die Erklärung jeder Zeile.
+
+- scripts/zeilenbuch.mjs und scripts/zeilenbuch/: der Generator (npm run zeilenbuch). Er zerlegt JavaScript/JSX mit @babel/parser (liegt mit Vite schon in frontend/node_modules), CSS, HTML/SVG, SQL, Tailwind, Shell, Stapeldateien, Dockerfile, Compose, JSON, Ignore-Listen und .env, und erklärt jede Zeile aus dem Code, den Kommentaren des Almanachs (über Dateigrenzen hinweg) und Wörterbüchern für das Eingebaute.
+- docs/zeilenbuch/: Vorwort und Lesehilfe, von Hand geschrieben.
+- Satz klein gehalten: keine gepunkteten Linien, Code-Tabellen aria-hidden (sonst 150 MB statt 39 MB); die Lesezeichen bleiben.
+- Einfuhrprobe kennt Klassenmethoden; Stilprobe prüft den neuen Generator mit; drucker.mjs nimmt eine längere Druckdauer an.
+- Doku: README, CODE.md, Kapitel „Das Handbuch bauen“; Handbuch neu gebaut.

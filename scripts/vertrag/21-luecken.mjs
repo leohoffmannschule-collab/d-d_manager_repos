@@ -9,7 +9,8 @@
  *   – eine Figur lässt sich von Hand an ein Blatt binden;
  *   – Kämpfer und Figur verbergen und zeigen sich gemeinsam;
  *   – Gegner würfeln ihre Initiative mit Geschicklichkeitsbonus;
- *   – ein mitgenommenes Blatt lässt sich wieder anlegen, und ein kaputtes
+ *   – ein mitgenommenes Blatt lässt sich wieder anlegen oder – bearbeitet,
+ *     etwa von einer KI – auf das vorhandene übernehmen, und ein kaputtes
  *     wird abgewiesen;
  *   – jede Antwort trägt eine Content-Security-Policy;
  *   – im Heimnetz gibt es HTTPS mit einem selbst ausgestellten, beschränkten
@@ -238,6 +239,28 @@ export default async function luecken(lage) {
     gleich(eingelesen.status, 201, 'Ein eingelesenes Blatt wird angelegt');
     const blatt = (await spieler.ruf(`/characters/${eingelesen.daten.id}`)).daten;
     gleich(blatt?.data?.backstory, 'Kam zurück aus einer Datei.', 'Mit dem Inhalt aus der Datei');
+
+    // Die Datei kam bearbeitet zurück (etwa von einer KI) und aktualisiert das
+    // vorhandene Blatt („Einlesen“ am Blatt) – über denselben Weg wie jede Änderung.
+    const kaputt = await spieler.ruf(`/characters/${eingelesen.daten.id}`, {
+      methode: 'PUT',
+      koerper: { name: 'Elara', data: ['kein', 'Blatt'] },
+    });
+    gleich(kaputt.status, 400, 'Auch beim Aktualisieren muss der Datensatz ein Objekt sein');
+    gleich(kaputt.daten?.code, 'blatt_ungueltig', 'Mit dem Schlüssel blatt_ungueltig');
+    gleich(
+      (await spieler.ruf(`/characters/${eingelesen.daten.id}`)).daten?.data?.level,
+      3,
+      'Und das Blatt bleibt dabei unberührt (erst prüfen, dann schreiben)'
+    );
+    const aktualisiert = await spieler.ruf(`/characters/${eingelesen.daten.id}`, {
+      methode: 'PUT',
+      koerper: { name: 'Elara Nachtwind', data: { level: 4, backstory: 'Kam zurück aus einer Datei.' } },
+    });
+    gleich(aktualisiert.status, 200, 'Ein bearbeiteter Stand aktualisiert das vorhandene Blatt');
+    const danach = (await spieler.ruf(`/characters/${eingelesen.daten.id}`)).daten;
+    gleich(danach?.name, 'Elara Nachtwind', 'Mit dem Namen aus der Datei');
+    gleich(danach?.data?.level, 4, 'Und ihren Daten');
     await spieler.ruf(`/characters/${eingelesen.daten.id}`, { methode: 'DELETE' });
   }
 

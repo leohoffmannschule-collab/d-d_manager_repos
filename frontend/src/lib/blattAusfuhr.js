@@ -9,13 +9,22 @@
  * Am Ende der Datei steckt außerdem der vollständige Datensatz, in einem
  * `<template>` – Daten, kein Skript. Die Datei ist damit zugleich eine
  * Sicherung: „Blatt einlesen“ in der Übersicht legt daraus wieder ein Blatt
- * an (blattEinfuhr.js).
+ * an oder bringt das vorhandene auf ihren Stand (blattEinfuhr.js).
+ *
+ * **Die Datei darf bearbeitet zurückkommen** – von Hand oder von einer KI.
+ * Dafür steht ganz oben eine Anleitung für KI-Assistenten (als Kommentar,
+ * im Browser unsichtbar), und jeder sichtbare Wert trägt den Pfad, unter
+ * dem er im Datensatz steht. Ändert jemand nur die sichtbare Seite, findet
+ * das Einlesen die Änderung daran wieder. Beides steht in blatt/datensatz.js
+ * und blatt/werkzeug.js (`marke`).
  *
  * Diese Datei setzt nur noch zusammen; gebaut wird nebenan:
  *
- *   blatt/werkzeug.js    entschärfen, einrahmen, Bilder einbetten
+ *   blatt/werkzeug.js    entschärfen, einrahmen, markieren, Bilder einbetten
  *   blatt/abschnitte.js  je eine Funktion für je eine Karte des Bogens
  *   blatt/koerper.js     welche Karte in welcher Reihenfolge
+ *   blatt/datensatz.js   der Datensatz und die Anleitung für eine KI
+ *   blatt/glossar.js     welcher Wert wo steht und wie er heißt
  *   blatt/stil/*.css     das Aussehen, als richtige Stilblätter
  *
  * **Skript enthält die Datei keines.** Früher trug sie einen Druckknopf mit
@@ -36,6 +45,7 @@
 import { withDefaults } from './dnd5e.js';
 import { alsDatenUrl, esc, zaubertexte } from './blatt/werkzeug.js';
 import { dnd5eKoerper, freiKoerper } from './blatt/koerper.js';
+import { datensatzBlock, kiAnleitung } from './blatt/datensatz.js';
 
 // Das Stilblatt liegt als echte .css-Dateien in blatt/stil/ und wird beim
 // Bauen als Text hereingeholt (`?raw` ist Vites Weg dafür). So hat es im
@@ -75,15 +85,8 @@ export async function blattAlsHtml(character) {
     ? dnd5eKoerper(character, data, { portrait }, texte)
     : freiKoerper(character, data, { portrait });
 
-  // Der Datensatz reist mit, damit die Datei zugleich eine Sicherung ist –
-  // als entschärfter Text in einem <template>: Der Browser zeigt ihn nicht
-  // an und führt nichts davon aus, und ein „</template>“ in einem Text des
-  // Blattes kann ihn nicht beenden.
-  const daten = esc(
-    JSON.stringify({ name: character.name, system: character.system, data, stand: new Date().toISOString() }, null, 2)
-  );
-
   return `<!doctype html>
+${kiAnleitung(character.system)}
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -99,11 +102,12 @@ export async function blattAlsHtml(character) {
 <div class="blatt">
 ${koerper}
 <p class="hinweis hinweis-fuss">
-  Abgeschrieben aus dem Abenteuer-Almanach. Änderungen in dieser Datei wandern nicht zurück –
-  am Spieltisch gilt das Blatt im Almanach.
+  Abgeschrieben aus dem Abenteuer-Almanach. Diese Datei lässt sich bearbeiten – von Hand oder von
+  einer KI – und mit „Blatt einlesen“ wieder in den Almanach holen. Bis dahin gilt am Spieltisch
+  das Blatt im Almanach.
 </p>
 </div>
-<template id="almanach-daten">${daten}</template>
+${datensatzBlock(character, data)}
 </body>
 </html>`;
 }

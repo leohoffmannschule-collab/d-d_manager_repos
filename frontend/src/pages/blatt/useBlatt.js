@@ -33,6 +33,7 @@ import { useLive } from '../../lib/live.jsx';
  *   updateName: (name: string) => void,
  *   updateData: (pfad: string, wert: unknown) => void,
  *   replaceData: (data: object) => void,
+ *   replaceCharacter: (name: string, data: object) => void,
  * }}
  */
 export function useBlatt(id) {
@@ -137,5 +138,9 @@ export function useBlatt(id) {
   // Für Vorgänge, die viele Felder auf einmal betreffen – etwa eine Rast.
   const replaceData = (data) => aendern((prev) => ({ ...prev, data }));
 
-  return { character, error, setError, saveStatus, updateName, updateData, replaceData };
+  // Name und Daten auf einmal – für eine eingelesene Blattdatei
+  // (components/BlattEinlesen.jsx). Gespeichert wird wie jede andere Änderung.
+  const replaceCharacter = (name, data) => aendern((prev) => ({ ...prev, name, data }));
+
+  return { character, error, setError, saveStatus, updateName, updateData, replaceData, replaceCharacter };
 }

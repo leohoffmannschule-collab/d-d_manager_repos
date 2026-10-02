@@ -119,6 +119,16 @@ holst“.
 Verknüpfst du später eine Figur auf der Karte damit, gelten die Sinne des
 NSC für ihre Sicht – praktisch für den Späher mit Dunkelsicht.
 
+**NSC mit einer KI ausarbeiten.** Ein NSC-Blatt lässt sich – wie jedes Blatt
+– *mitnehmen*, einer KI geben und wieder *einlesen*: „Mach aus dem Wirt einen
+ehemaligen Söldner, Stufe 5, mit Vorgeschichte und zwei Angriffen.“ Die
+Datei trägt oben eine Anleitung, die der KI sagt, wo welcher Wert steht.
+Zurück geht es mit **Einlesen** im Kopf des Blattes; die Vorschau zeigt vor
+dem Speichern genau, was die KI geändert hat. Ausführlich: *Betriebsanleitung
+Runde*, Abschnitt 11, und *Handbuch*, Abschnitt 3.10. Was du einer KI gibst,
+liest ihr Anbieter mit – Geheimnisse deiner Kampagne gehören dann nicht ins
+Blatt.
+
 ### 3.4 Die zwölf Vorlagen austeilen
 
 Hinter deinem Schirm liegen von Anfang an **zwölf fertige Charaktere** – je
@@ -332,7 +342,11 @@ Hand, bevor du das Fenster schließt. Näheres in
 - **Eine leere Szene „ohne Karte“** in der gewünschten Feldzahl ist schneller
   gebaut als jede gesuchte Battlemap, wenn es nur um Stellungen geht.
 - **NSC-Blätter für wiederkehrende Gestalten** lohnen sich: Der Wirt mit
-  eigenen Werten ist beim dritten Besuch derselbe.
+  eigenen Werten ist beim dritten Besuch derselbe. Ausarbeiten kann ihn auch
+  eine KI – mitnehmen, bearbeiten lassen, einlesen (siehe 3.3).
+- **Hilfe beim Stufenaufstieg:** Wer nicht weiß, was bei Stufe 5 dazukommt,
+  gibt das mitgenommene Blatt einer KI und liest das Ergebnis wieder ein.
+  Die Vorschau zeigt jede Änderung – du entscheidest, ob sie bleibt.
 - **Die Beute** darf jeder befüllen. Lass die Runde selbst eintragen, was sie
   findet – das spart dir Tipparbeit und stimmt am Ende häufiger.
 

@@ -458,13 +458,13 @@ PUT /api/characters/:id – full update (autosave from the sheet editor)
 
 ### PATCH /api/characters/:id
 
-*backend/src/routes/charaktere/schreiben.js, Zeile 105 · angemeldet, Kampagne gewählt*
+*backend/src/routes/charaktere/schreiben.js, Zeile 112 · angemeldet, Kampagne gewählt*
 
 PATCH /api/characters/:id – Besitz und Sichtbarkeit
 
 ### DELETE /api/characters/:id
 
-*backend/src/routes/charaktere/schreiben.js, Zeile 147 · angemeldet, Kampagne gewählt*
+*backend/src/routes/charaktere/schreiben.js, Zeile 154 · angemeldet, Kampagne gewählt*
 
 DELETE /api/characters/:id – ein Blatt löschen. Das darf, wem es gehört,
 und die Spielleitung; Figuren auf dem Tisch verlieren dabei nur ihren

@@ -31,6 +31,9 @@ import {
 } from '../frontend/src/lib/dnd5e.js';
 import { leseBlattdatei } from '../frontend/src/lib/blattEinfuhr.js';
 import { esc } from '../frontend/src/lib/blatt/werkzeug.js';
+import { dnd5eKoerper, freiKoerper } from '../frontend/src/lib/blatt/koerper.js';
+import { datensatzBlock, kiAnleitung } from '../frontend/src/lib/blatt/datensatz.js';
+import { unterschiede } from '../frontend/src/lib/einfuhr/unterschiede.js';
 import { HELDEN } from '../backend/src/vorlagen/helden.js';
 import { blattAus, ATTRIBUTE, FERTIGKEITEN } from '../backend/src/vorlagen/bauen.js';
 
@@ -273,8 +276,8 @@ gleich(withDefaults({ playerName: 'Leo' }).units, 'metrisch', 'Ein bloßer Name 
 
 /* --- Mitgenommene Blätter wieder einlesen ------------------------------- */
 {
-  // So, wie blattAusfuhr.js den Datensatz ans Ende der Datei schreibt: als
-  // entschärfter Text in einem <template> (esc aus lib/blatt/werkzeug.js).
+  // So, wie blattAusfuhr.js den Datensatz vor Fassung 2 ans Ende der Datei
+  // schrieb: als entschärfter Text in einem <template> (esc aus lib/blatt/werkzeug.js).
   const datensatz = {
     name: 'Elara Nachtwind',
     system: 'dnd5e',
@@ -286,11 +289,14 @@ gleich(withDefaults({ playerName: 'Leo' }).units, 'metrisch', 'Ein bloßer Name 
   const gelesen = leseBlattdatei(html);
   gleich(gelesen.name, 'Elara Nachtwind', 'Einlesen: der Name kommt an');
   gleich(gelesen.system, 'dnd5e', 'Einlesen: das Regelwerk kommt an');
-  gleich(gelesen.data, datensatz.data, 'Einlesen: der Datensatz kommt unverändert an, auch mit „</template>“ und „&“ im Text');
+  // Was im Datensatz stand, kommt an – aufgefüllt zu einem vollständigen Blatt.
+  const kern = (d) => [d.level, d.backstory];
+  gleich(kern(gelesen.data), kern(datensatz.data), 'Einlesen: der Datensatz kommt an, auch mit „</template>“ und „&“ im Text');
+  pruefe(gelesen.data.combat?.hp && Array.isArray(gelesen.data.attacks), 'Einlesen: und ist danach ein vollständiges Blatt');
 
-  // Ältere Dateien trugen den Datensatz roh in einem <script>, mit \u003c.
+  // Noch ältere Dateien trugen den Datensatz roh in einem <script>, mit \u003c.
   const alt = `<script type="application/json" id="almanach-daten">${JSON.stringify(datensatz).replace(/</g, '\\u003c')}</script>`;
-  gleich(leseBlattdatei(alt).data, datensatz.data, 'Einlesen: auch eine Datei aus einer älteren Fassung');
+  gleich(kern(leseBlattdatei(alt).data), kern(datensatz.data), 'Einlesen: auch eine Datei aus einer älteren Fassung');
 
   // Der nackte Datensatz geht auch – für alle, die ihn schon herauskopiert haben.
   gleich(leseBlattdatei(JSON.stringify(datensatz)).name, 'Elara Nachtwind', 'Einlesen: nackter JSON-Text geht auch');
@@ -311,6 +317,126 @@ gleich(withDefaults({ playerName: 'Leo' }).units, 'metrisch', 'Ein bloßer Name 
     wirft('<script type="application/json" id="almanach-daten">{ kaputt</script>'),
     'Einlesen: ein beschädigter Datensatz wird abgelehnt'
   );
+}
+
+/* --- Mit einer KI bearbeitet und wieder eingelesen ------------------------- */
+{
+  // Eine Datei, wie „Mitnehmen“ sie schreibt (Fassung 2): Anleitung oben,
+  // markierte Werte auf der Seite, Datensatz als JSON am Ende.
+  const daten = withDefaults({
+    units: 'metrisch',
+    level: 3,
+    race: 'Zwerg',
+    className: 'Kämpfer',
+    abilities: { str: 16, dex: 12 },
+    combat: { speed: 30, hp: { max: 28, current: 20, temp: 0 }, conditions: ['Vergiftet'] },
+    attacks: [{ id: 'a1', name: 'Langschwert', bonus: '+5', damage: '1W8+3 Hieb', notes: '' }],
+    inventory: [{ id: 'g1', name: 'Seil', qty: 1, weight: 10, notes: '' }],
+    traits: { backstory: 'Kam über die </template>-Brücke\n& sagte „<nein>“.' },
+  });
+  const blatt = { id: 'blatt-thorin-1', name: 'Thorin', system: 'dnd5e' };
+  const datei = `<!doctype html>\n${kiAnleitung('dnd5e')}\n<html><body>${dnd5eKoerper(blatt, daten, {}, {})}\n${datensatzBlock(blatt, daten)}\n</body></html>`;
+  const vergleich = (g) => unterschiede('dnd5e', { name: 'Thorin', data: daten }, g);
+
+  const unveraendert = leseBlattdatei(datei);
+  gleich([unveraendert.name, unveraendert.id], ['Thorin', 'blatt-thorin-1'], 'KI: Name und Kennung des Blattes reisen mit');
+  gleich(vergleich(unveraendert), [], 'KI: eine unveränderte Datei ändert nichts am Blatt');
+  gleich([unveraendert.hinweise, unveraendert.sichtbar], [[], []], 'KI: und meldet nichts');
+  gleich(unveraendert.data.traits.backstory, daten.traits.backstory, 'KI: „</template>“, „&“ und „<“ im Text überstehen die Reise');
+  pruefe(!/<template[^>]*>[^]*&quot;/.test(datei.split('<template id="almanach-daten">')[1] ?? ''), 'KI: der Datensatz ist lesbares JSON, ohne &quot;');
+  pruefe(/ANLEITUNG FÜR KI-ASSISTENTEN/.test(datei) && /combat\.hp\.max/.test(kiAnleitung('dnd5e')), 'KI: die Anleitung mit Feldverzeichnis steht in der Datei');
+
+  // Die KI ändert den Datensatz – mit den typischen Ungenauigkeiten.
+  const imJson = datei
+    .replace('"level": 3,', '"level": "5", // Stufe erhöht')
+    .replace('"attacks": [', '"attacks": [\n    { "name": "Kurzbogen", "bonus": "+4", "damage": "1W6+2 Stich", },')
+    .replace('"Vergiftet"', '"vergiftet", "Wütend"')
+    .replace('"portrait": ""', '"portrait": "https://example.com/bild.png"');
+  const ausChat = leseBlattdatei(`Hier ist dein Blatt:\n\n\`\`\`html\n${imJson}\n\`\`\`\n\nViel Spaß am Tisch!`);
+  gleich(ausChat.data.level, 5, 'KI: Stufe aus dem Datensatz, als Zahl – auch aus einer Chat-Antwort mit Codeblock');
+  pruefe(ausChat.hinweise.some((h) => /repariert/.test(h)), 'KI: Kommentar und überzähliges Komma werden repariert und gemeldet');
+  const kurzbogen = ausChat.data.attacks.find((a) => a.name === 'Kurzbogen');
+  pruefe(typeof kurzbogen?.id === 'string' && kurzbogen.id.length > 8 && kurzbogen.notes === '', 'KI: ein neuer Angriff bekommt Kennung und leere Felder');
+  gleich(ausChat.data.combat.conditions, ['Vergiftet'], 'KI: Zustände in der Schreibweise des Almanachs, Unbekanntes fällt weg');
+  pruefe(ausChat.hinweise.some((h) => /Wütend/.test(h)), 'KI: und der Hinweis nennt, was wegfiel');
+  gleich(ausChat.data.portrait, '', 'KI: ein Bildnis von außerhalb wird nicht übernommen');
+  gleich(vergleich(ausChat), ['Neu: Angriff „Kurzbogen“', 'Stufe: 3 → 5'], 'KI: die Vorschau nennt genau die Änderungen');
+
+  // Dieselbe Datei ein zweites Mal ins schon aktualisierte Blatt: Der Kurzbogen ist derselbe.
+  const zweitesMal = leseBlattdatei(imJson, { bekannt: ausChat.data });
+  gleich(
+    zweitesMal.data.attacks.find((a) => a.name === 'Kurzbogen')?.id,
+    kurzbogen?.id,
+    'KI: wer die Datei zweimal einliest, bekommt den neuen Angriff nicht zweimal'
+  );
+  gleich(
+    unterschiede('dnd5e', { name: 'Thorin', data: ausChat.data }, zweitesMal),
+    [],
+    'KI: und die Vorschau meldet dann keine Änderung'
+  );
+
+  // Die KI ändert nur die sichtbare Seite.
+  const nurSichtbar = datei
+    .replace('data-feld="level" data-war="3">3<', 'data-feld="level" data-war="3">4<')
+    .replace(/(data-feld="combat\.speed" data-war="9 m">)9 m</, '$112 m<')
+    .replace(/(data-feld="combat\.hp\.max" data-war="28">)28</, '$135<')
+    .replace(/(data-feld="attacks\.#a1\.damage" data-war="1W8\+3 Hieb">)1W8\+3 Hieb</, '$11W8+4 Hieb<');
+  const sichtbar = leseBlattdatei(nurSichtbar);
+  gleich(
+    [sichtbar.data.level, sichtbar.data.combat.speed, sichtbar.data.combat.hp.max, sichtbar.data.attacks[0].damage],
+    [4, 40, 35, '1W8+4 Hieb'],
+    'KI: nur sichtbar geänderte Werte werden übernommen – 12 m werden 40 Fuß'
+  );
+  gleich(sichtbar.sichtbar.length, 4, 'KI: und einzeln gemeldet');
+  pruefe(vergleich(sichtbar).includes('Bewegung: 9 m → 12 m'), 'KI: die Vorschau zeigt Weiten so, wie das Blatt sie zeigt');
+
+  // Beides geändert, verschieden: Der Datensatz gilt.
+  const beides = nurSichtbar.replace('"level": 3,', '"level": 6,');
+  gleich(leseBlattdatei(beides).data.level, 6, 'KI: widersprechen sich Seite und Datensatz, gilt der Datensatz');
+
+  // Der Datensatz ist weg – das Blatt entsteht aus der Seite.
+  const ohneDatensatz = datei.replace(/<template id="almanach-daten">[\s\S]*?<\/template>/, '');
+  const ausSeite = leseBlattdatei(ohneDatensatz);
+  gleich(
+    [ausSeite.name, ausSeite.data.level, ausSeite.data.abilities.str, ausSeite.data.attacks[0]?.name, ausSeite.data.traits.backstory],
+    ['Thorin', 3, 16, 'Langschwert', daten.traits.backstory],
+    'KI: ohne Datensatz wird das Blatt aus den sichtbaren Werten gebaut'
+  );
+  pruefe(ausSeite.hinweise.some((h) => /fehlte/.test(h)), 'KI: und der Hinweis sagt, dass der Datensatz fehlte');
+
+  // Gekürzt oder kaputt: eine Meldung mit Zeile und Grund.
+  const meldung = (text) => {
+    try {
+      leseBlattdatei(text);
+      return '';
+    } catch (fehler_) {
+      return fehler_.message;
+    }
+  };
+  pruefe(/Zeile \d+, Spalte \d+/.test(meldung(datei.replace('"level": 3,', '"level": 3'))), 'KI: ein fehlendes Komma wird mit Zeile und Spalte gemeldet');
+  pruefe(/gekürzt/.test(meldung(datei.replace(/"traits": \{[\s\S]*$/, '"traits": {\n    ...\n'))), 'KI: eine gekürzte Datei wird als gekürzt erkannt');
+  pruefe(
+    /gekürzt/.test(meldung(datei.replace(/"attacks": \[\n[\s\S]*?\n {4}\},/, '"attacks": [\n    // … wie bisher\n'))),
+    'KI: auch „// … wie bisher“ mitten im Datensatz'
+  );
+
+  // Typen, wie eine KI sie schreibt, werden zu dem, was das Blatt erwartet.
+  const typen = leseBlattdatei(
+    JSON.stringify({ name: 'Mira', system: 'dnd5e', data: { level: '7', inspiration: 'ja', skills: { stealth: true }, abilities: { dex: '+18' }, spellcasting: { ability: 'Weisheit', manualSaveDC: '' } } })
+  );
+  gleich(
+    [typen.data.level, typen.data.inspiration, typen.data.skills.stealth, typen.data.abilities.dex, typen.data.spellcasting.ability, typen.data.spellcasting.manualSaveDC],
+    [7, true, { proficient: true, expertise: false }, 18, 'wis', null],
+    'KI: Zahlen, Häkchen, Fertigkeiten und Zauberattribut in der Form des Blattes'
+  );
+  gleich(leseBlattdatei(JSON.stringify({ level: 2, abilities: { str: 10 } }), { ersatzName: 'Ohne Hülle' }).name, 'Ohne Hülle', 'KI: nur die Daten ohne Hülle gehen auch – mit dem Namen des Blattes');
+
+  // Ein freies Blatt geht denselben Weg.
+  const frei = { id: 'frei-1', name: 'Kapitänin Vey', system: 'freeform' };
+  const freiDaten = { portrait: '', summary: 'Piratin', sections: [{ id: 's1', title: 'Schiff', content: 'Die Möwe' }] };
+  const freiDatei = `<html><body>${freiKoerper(frei, freiDaten, {})}${datensatzBlock(frei, freiDaten)}</body></html>`
+    .replace(/(data-feld="sections\.#s1\.content" data-war="Die Möwe">)Die Möwe</, '$1Die Sturmmöwe<');
+  gleich(leseBlattdatei(freiDatei).data.sections[0].content, 'Die Sturmmöwe', 'KI: ein freies Blatt übernimmt eine sichtbare Änderung ebenso');
 }
 
 console.log('');

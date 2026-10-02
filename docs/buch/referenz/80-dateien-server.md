@@ -3,7 +3,7 @@
 > Dieses Kapitel schreibt `npm run handbuch` aus dem Code (scripts/handbuch/referenz/).
 > Änderungen gehören in den Code und seine Kommentare, nicht hierher.
 
-Alle Dateien unter backend/src und backend/scripts (117 Dateien, 12.127 Zeilen), nach Ordnern. Zu jeder Datei ihr Kopfkommentar – dort steht, wozu es sie gibt und warum sie so gebaut ist – und ihre Ausfuhren mit dem Kommentar darüber.
+Alle Dateien unter backend/src und backend/scripts (117 Dateien, 12.134 Zeilen), nach Ordnern. Zu jeder Datei ihr Kopfkommentar – dort steht, wozu es sie gibt und warum sie so gebaut ist – und ihre Ausfuhren mit dem Kommentar darüber.
 
 Einen Überblick, wie die Teile zusammenspielen, gibt das Kapitel über den Server im Teil „Wie es gebaut ist“.
 
@@ -1635,7 +1635,7 @@ es im Netzwerkfenster des Browsers gar nicht erst auftaucht.
 
 ### backend/src/routes/charaktere/schreiben.js
 
-*159 Zeilen*
+*166 Zeilen*
 
 Blätter anlegen, speichern, zuteilen, löschen.
 

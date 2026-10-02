@@ -48,9 +48,9 @@ Das Kampagnentor trägt einen Trick: `<div key={activeId}>`. Ändert sich der `k
 
 | Adresse | Seite | für |
 |---|---|---|
-| `/` | `Dashboard.jsx` – die Übersicht der Blätter; dort auch „Blatt einlesen“ (`components/BlattEinlesen.jsx`) | alle |
+| `/` | `Dashboard.jsx` – die Übersicht der Blätter; dort auch „Blatt einlesen“ (`components/BlattEinlesen.jsx`, mit Vorschau in `components/einlesen/`) | alle |
 | `/neu` | `NewCharacter.jsx` – ein Blatt anlegen | alle |
-| `/charaktere/:id` | `CharacterSheet.jsx` – das Blatt | alle |
+| `/charaktere/:id` | `CharacterSheet.jsx` – das Blatt; im Kopf „Mitnehmen“ und „Einlesen“ | alle |
 | `/tisch` | `Tabletop.jsx` – der Spieltisch | alle |
 | `/kompendium` | `Compendium.jsx` – Nachschlagen | alle |
 | `/chronik` | `Chronicle.jsx` – die Chronik | alle |

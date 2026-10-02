@@ -210,7 +210,7 @@ Der Vertrag spielt einen Abend in 21 Kapiteln, jedes baut auf dem vorigen auf (s
 | 18-review | 20 | Vertrag, Kapitel: Aus dem Code-Review: Grenzen, die leicht wieder verrutschen. |
 | 19-fehlerschluessel | 2 | Vertrag, Kapitel: Jeder Fehler trägt einen Schlüssel. |
 | 20-werkzeuge | 13 | Vertrag, Kapitel: Die Werkzeuge auf dem Rechner des Almanachs. |
-| 21-luecken | 56 | Vertrag, Kapitel: Die geschlossenen Lücken. |
+| 21-luecken | 62 | Vertrag, Kapitel: Die geschlossenen Lücken. |
 
 ### 01-konten
 
@@ -489,7 +489,8 @@ das sieht:
 - eine Figur lässt sich von Hand an ein Blatt binden;
 - Kämpfer und Figur verbergen und zeigen sich gemeinsam;
 - Gegner würfeln ihre Initiative mit Geschicklichkeitsbonus;
-- ein mitgenommenes Blatt lässt sich wieder anlegen, und ein kaputtes
+- ein mitgenommenes Blatt lässt sich wieder anlegen oder – bearbeitet,
+  etwa von einer KI – auf das vorhandene übernehmen, und ein kaputtes
   wird abgewiesen;
 - jede Antwort trägt eine Content-Security-Policy;
 - im Heimnetz gibt es HTTPS mit einem selbst ausgestellten, beschränkten

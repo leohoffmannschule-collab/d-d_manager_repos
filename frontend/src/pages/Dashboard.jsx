@@ -13,7 +13,9 @@
  *                     Spielleitung (siehe components/Kopierziel.jsx)
  *   – Löschen    – das eigene Blatt, oder jedes, wenn man die Runde führt
  *
- * Und oben: ein neues Blatt anlegen oder ein mitgenommenes einlesen
+ * Und oben: ein neues Blatt anlegen oder ein mitgenommenes einlesen – auch
+ * eines, das jemand oder eine KI inzwischen bearbeitet hat; trägt es die
+ * Kennung eines Blattes hier, lässt es sich auch darauf übernehmen
  * (components/BlattEinlesen.jsx).
  */
 import { Link, useNavigate } from 'react-router-dom';
@@ -141,7 +143,7 @@ export default function Dashboard() {
           <p className="mt-1 text-sepia italic">{subtitle(runde.length)}</p>
         </div>
         <div className="flex flex-wrap items-start gap-2.5">
-          <BlattEinlesen />
+          <BlattEinlesen charaktere={characters} />
           <Link to="/neu" className="btn btn-seal">
             <IconPlus size={17} />
             Neuer Charakter

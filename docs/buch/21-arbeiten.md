@@ -50,7 +50,7 @@ Steht ausführlich im Kapitel „Das Charakterblatt Feld für Feld“. Kurz:
 
 1. `defaultCharacterData()` **und** `withDefaults()` in `frontend/src/lib/regeln/leeresBlatt.js`.
 2. Ein Eingabefeld auf dem passenden Reiter, `update('pfad.zum.feld', wert)`.
-3. Falls es auf das mitgenommene Blatt soll: der Abschnitt in `lib/blatt/abschnitte/`.
+3. Falls es auf das mitgenommene Blatt soll: der Abschnitt in `lib/blatt/abschnitte/` – den Wert mit seinem Pfad ausgeben (`feld(…, pfad)` oder `marke`) und das Feld in `lib/blatt/glossar.js` eintragen, damit die Anleitung für eine KI es kennt und das Einlesen es zurücklesen kann.
 4. Eine Prüfung in `scripts/blattprobe.mjs`, wenn gerechnet wird.
 
 Keine Änderung am Server, keine an der Datenbank.

@@ -134,7 +134,7 @@ Die Regel für `units` verdient einen Satz mehr: Blätter aus der Zeit vor der U
 
 ### Die Pflicht für jedes neue Feld
 
-Ein neues Feld gehört in **beide** Funktionen: `defaultCharacterData()` für neue Blätter und `withDefaults()` für alte. Die Blattprobe (`npm run blattprobe`) nimmt Blätter in früheren Formen und prüft, dass sie `withDefaults` ohne Verlust überstehen. Wer das Datenmodell anfasst, sieht dort sofort, ob die alten Blätter mitkommen.
+Ein neues Feld gehört in **beide** Funktionen: `defaultCharacterData()` für neue Blätter und `withDefaults()` für alte. Und es gehört ins Feldverzeichnis `lib/blatt/glossar.js` – sonst kennt es die Anleitung für eine KI nicht, und das Einlesen kann es nicht von der sichtbaren Seite zurücklesen. Die Blattprobe (`npm run blattprobe`) nimmt Blätter in früheren Formen und prüft, dass sie `withDefaults` ohne Verlust überstehen. Wer das Datenmodell anfasst, sieht dort sofort, ob die alten Blätter mitkommen.
 
 ## Ändern ohne Anfassen
 
@@ -168,8 +168,8 @@ blattAlsHtml(charakter)
   1  withDefaults(data)                 ein vollständiges Blatt, gleich wie alt
   2  alsDatenUrl(portrait)              das Bildnis einbetten (ist es schon eine data:-Adresse, bleibt es)
   3  zaubertexte(spells)                für jeden übernommenen Zauber den Text aus dem Kompendium
-  4  dnd5eKoerper(…) / freiKoerper(…)   die Abschnitte als HTML, in der Reihenfolge des Bogens
-  5  STIL + DATEN                       Stilblatt und Datensatz einbetten
+  4  dnd5eKoerper(…) / freiKoerper(…)   die Abschnitte als HTML, jeder Wert markiert (data-feld)
+  5  kiAnleitung + STIL + datensatzBlock  Anleitung für eine KI, Stilblatt und Datensatz einbetten
   → eine Zeichenkette mit dem ganzen Dokument
 
 ladeBlattHerunter(charakter)
@@ -187,11 +187,15 @@ Schritt 8 hat eine Geschichte: Der Browser liest den Inhalt erst *nach* dem Klic
 | Datei | Aufgabe |
 |---|---|
 | `lib/blattAusfuhr.js` | setzt zusammen und lädt herunter |
-| `lib/blatt/werkzeug.js` | `esc`, `escAbsatz`, die drei Bausteine `tafel`, `feld`, `zeilen`; Bilder und Zaubertexte holen |
+| `lib/blatt/werkzeug.js` | `esc`, `escAbsatz`, die drei Bausteine `tafel`, `feld`, `zeilen`, die Marke `marke` (samt `zelle`, `feldHtml`); Bilder und Zaubertexte holen |
+| `lib/blatt/glossar.js` | das Feldverzeichnis: welcher Wert wo im Datensatz steht, wie er heißt, welche Art er hat – für Ausfuhr, Einlesen und Vorschau |
+| `lib/blatt/datensatz.js` | der Datensatz als JSON-Block und die Anleitung für KI-Assistenten |
 | `lib/blatt/koerper.js` | welche Tafel in welcher Reihenfolge – für das 5e-Blatt und das freie |
 | `lib/blatt/abschnitte.js` und `abschnitte/` | je eine Funktion je Tafel: Attribute, Kampf, Zustand, Rettungswürfe, Sinne, Fertigkeiten, Aktionen, Ressourcen, Zauber, Zauberblock, Inventar, Merkmale, Erscheinung, Hintergrund |
 | `lib/blatt/stil/*.css` | das Aussehen: Grund, Bogen, Listen, Zauberblock, Leiste (samt der Fassung für Papier) |
-| `lib/blattEinfuhr.js` | der Rückweg: den Datensatz aus einer mitgenommenen Datei lesen |
+| `lib/blattEinfuhr.js` | der Rückweg: aus einer mitgenommenen – auch bearbeiteten – Datei wieder ein Blatt machen |
+| `lib/einfuhr/` | seine Teile: `datei.js` (aufbereiten, Datensatz finden), `json.js` (nachsichtig lesen), `sichtbar.js` (sichtbare Änderungen), `angleichen.js` (in die Form des Blattes), `unterschiede.js` (für die Vorschau), `pfad.js` |
+| `components/BlattEinlesen.jsx`, `components/einlesen/Vorschau.jsx` | die Knöpfe „Blatt einlesen“ (Übersicht) und „Einlesen“ (Blatt) und die Vorschau vor dem Speichern |
 
 ### Entschärfen
 
@@ -221,17 +225,63 @@ Gedruckt sieht die Datei aus wie ein Charakterbogen und nicht wie ein Bildschirm
 
 ### Der Datensatz
 
-Am Ende der Datei steht der vollständige Datensatz – entschärft, in einem `<template>`:
+Am Ende der Datei steht der vollständige Datensatz (`lib/blatt/datensatz.js`) – als eingerücktes JSON in einem `<template>`:
 
 ```html
-<template id="almanach-daten">{
-  &quot;name&quot;: &quot;Seraphine Morgenlicht&quot;, &quot;system&quot;: &quot;dnd5e&quot;, &quot;data&quot;: { … }, …
-}</template>
+<template id="almanach-daten">
+{
+  "fassung": 2,
+  "id": "3f1c…",
+  "name": "Seraphine Morgenlicht",
+  "system": "dnd5e",
+  "stand": "2026-10-02T09:30:00.000Z",
+  "data": { … }
+}
+</template>
 ```
 
-Ein `<template>` zeigt der Browser nicht an und führt nichts davon aus; er ist nur ein Behälter für Text. Weil der Text mit `esc()` entschärft ist, kann kein Text im Blatt – `</template>` in den Notizen – den Behälter vorzeitig schließen. (Ältere Dateien trugen den Datensatz in einem `<script type="application/json">`, mit `\u003c` statt `<`; auch die liest der Almanach.)
+Ein `<template>` zeigt der Browser nicht an und führt nichts davon aus; er ist nur ein Behälter für Text. Die drei Zeichen, die in HTML etwas bedeuten (`<`, `>`, `&`), stehen darin als JSON-Escapes (`\u003c`, `\u003e`, `\u0026`): So kann kein Text im Blatt – `</template>` in den Notizen – den Behälter schließen, und der Block bleibt trotzdem gültiges JSON, das eine KI ohne Umweg lesen und ändern kann. `id` ist die Kennung des Blattes; an ihr erkennt das Einlesen, welches Blatt die Datei aktualisieren kann. (Dateien vor Fassung 2 trugen den Datensatz mit `&quot;` entschärft, noch ältere in einem `<script type="application/json">` – beide liest der Almanach weiter.)
 
-Mit diesem Datensatz ist die Datei zugleich eine Sicherung. **„Blatt einlesen“** in der Übersicht (`components/BlattEinlesen.jsx`) legt daraus wieder ein Blatt an: `lib/blattEinfuhr.js` liest den Datensatz mit einem regulären Ausdruck (ein DOMParser baute die ganze Seite samt Bildern auf, gebraucht wird nur der eine Block), prüft Name, Regelwerk und Form und schickt ihn als neues Blatt an den Server. Das Blatt gehört danach der Person, die angemeldet ist; ein vorhandenes wird nie überschrieben – wer zwei Stände hat, soll beide vor sich sehen. Der Server prüft dasselbe noch einmal (`POST /api/characters`: unbekanntes Regelwerk oder ein Datensatz, der kein Objekt ist, ergibt `blatt_ungueltig`). Die Blattprobe spielt Hin- und Rückweg durch, auch mit `</template>` und `&` in einem Text.
+### Die Anleitung für eine KI
+
+Ganz oben in der Datei, noch vor `<html>`, steht ein Kommentar: die **Anleitung für KI-Assistenten** (`kiAnleitung` in `lib/blatt/datensatz.js`). Im Browser ist er unsichtbar, eine KI liest ihn als Erstes. Er sagt in acht Punkten, worauf es ankommt – der Datensatz ist maßgeblich; die ganze Datei zurückgeben, nichts kürzen; gültiges JSON; Kennungen behalten, neue Einträge ohne; Weiten in Fuß, Gewichte in Pfund; Abgeleitetes rechnet der Almanach; die Marken auf der Seite nicht anfassen; Regelwerk 2024 – und hängt ein **Verzeichnis aller Felder** an: Pfad, Bedeutung, Art, Grenzen, bei einer Wahl die erlaubten Schlüssel. Das Verzeichnis wird aus `lib/blatt/glossar.js` geschrieben und steht deshalb nie neben dem echten Datenmodell.
+
+### Die Marken auf der Seite
+
+Jeder sichtbare Wert, der für sich in einem Feld des Datensatzes steht, trägt zwei Attribute (`marke` in `lib/blatt/werkzeug.js`):
+
+```html
+<span data-feld="combat.hp.max" data-war="24">24</span>
+<span data-feld="attacks.#7b2e….damage" data-war="1W8+3 Hieb">1W8+3 Hieb</span>
+```
+
+`data-feld` ist der Pfad im Datensatz – Listeneinträge über ihre Kennung, nicht ihre Stelle, damit eine umsortierte Liste nichts verwechselt. `data-war` ist der Wert so, wie er bei der Ausfuhr dastand, in seiner Anzeigeform (Weiten also „9 m“, nicht 30). Gerechnetes – Modifikatoren, Übungsbonus, passive Werte, Initiative – trägt keine Marke; es lässt sich nicht zurückrechnen.
+
+### Der Rückweg: Einlesen
+
+Mit dem Datensatz ist die Datei zugleich eine Sicherung, und sie darf bearbeitet zurückkommen – von Hand oder von einer KI. Zwei Knöpfe holen sie herein: **„Blatt einlesen“** in der Übersicht und **„Einlesen“** im Kopf eines Blattes (`components/BlattEinlesen.jsx`). Gelesen wird im Browser, in `lib/blattEinfuhr.js`, ohne DOMParser (er baute die ganze Seite samt Bildern auf) – und deshalb auch in Node, in der Blattprobe:
+
+```
+leseBlattdatei(text, { ersatzName, bekannt })
+  1  aufbereiten          aus einer Chat-Antwort den Codeblock holen, Zeilenenden vereinheitlichen
+  2  datensatzFinden      das Element mit id="almanach-daten" – Kommentare zählen nicht mit
+     jsonLesen            JSON.parse; sonst repariert: Kommentare, Komma vor } oder ],
+                          echte Zeilenumbrüche in Texten – sonst Fehler mit Zeile und Spalte
+  3  angleichen           jeder Wert in die Form des leeren Blattes; Listeneinträge mit Kennung
+  4  sichtbaresUebernehmen  markierte Werte, die nur auf der Seite geändert wurden
+  5  angleichen           noch einmal, für das, was in 4 hereinkam
+  → { name, system, data, id, stand, hinweise, sichtbar }
+```
+
+**Die Regel für Seite und Datensatz** (Schritt 4) ist für jeden markierten Wert dieselbe: Steht im Datensatz etwas anderes als `data-war`, wurde der Datensatz bearbeitet – er gilt. Sonst: Steht sichtbar etwas anderes als `data-war`, wurde nur die Seite bearbeitet – dann gilt das Sichtbare, zurückgerechnet nach seiner Art („12 m“ werden 40 Fuß). Sonst hat sich nichts geändert. So kommt eine Änderung an, ganz gleich, wo die KI sie hingeschrieben hat, und widersprechen sich beide, gewinnt der Datensatz, für den die Anleitung gilt.
+
+**Angleichen** (Schritt 3 und 5, `lib/einfuhr/angleichen.js`) bringt alles in die Form, die die Oberfläche erwartet: Zahlen aus „16“ oder „+3“, Häkchen aus „ja“, Wahlfelder auch über ihren Namen („Bonusaktion“ → `bonus`), Grenzen aus dem Feldverzeichnis (Stufe 1–20, Attribute 1–30), Zustände in der Schreibweise des Regelwerks. Ein Listeneintrag ohne Kennung bekommt eine – oder, wenn das Blatt, das aktualisiert werden soll (`bekannt`), einen gleichnamigen Eintrag hat, den die Datei sonst nicht nennt, dessen Kennung: Wer dieselbe Datei zweimal einliest, bekommt den neuen Angriff nicht zweimal. Ein Bildnis, das nicht in der Datei steckt oder vom eigenen Server kommt, fällt weg – Bilder kommen nie von außen. Erraten wird nichts; was sich nicht lesen lässt, steht wieder auf dem Ausgangswert, und ein Hinweis sagt es.
+
+**Fehlt der Datensatz** ganz, baut das Einlesen das Blatt aus den Marken der Seite (samt Listeneinträgen, deren Kennung ja im Pfad steht) und sagt dazu, dass Häkchen, Zustände und Leeres dann auf dem Ausgangswert stehen. **Bricht er mittendrin ab** – die KI hat gekürzt –, lehnt es ab und sagt es so.
+
+**Die Vorschau** (`components/einlesen/Vorschau.jsx`) zeigt vor dem Speichern, was nur sichtbar geändert war, was repariert wurde und – wenn es ein passendes Blatt gibt – was sich daran ändert (`lib/einfuhr/unterschiede.js`: „Stufe: 3 → 4“, „Neu: Angriff ‚Wurfaxt‘“, Weiten in der Einheit des Blattes). Passend ist im Blatt selbst dieses Blatt, in der Übersicht das Blatt mit der Kennung aus der Datei, wenn man es ändern darf und das Regelwerk stimmt. Dann gibt es zwei Wege: **„… aktualisieren“** – im Blatt über `replaceCharacter` aus `useBlatt`, also gespeichert wie jede Änderung; in der Übersicht als `PUT` – oder **„Als neues Blatt anlegen“** (`POST`), das immer möglich ist und das vorhandene unberührt lässt.
+
+Der Server prüft dasselbe noch einmal: Ein unbekanntes Regelwerk oder ein Datensatz, der kein Objekt ist, ergibt `blatt_ungueltig` – bei `POST` wie bei `PUT`, und dort, bevor etwas geschrieben wird. Die Blattprobe spielt den ganzen Weg durch: eine echte Datei, unverändert, im Datensatz geändert mit Kommentar und Komma zu viel, aus einem Chat-Codeblock, nur sichtbar geändert, beides widersprüchlich, ohne Datensatz, gekürzt, mit Zahlen als Text – und ein freies Blatt.
 
 ### Der Dateiname
 
@@ -253,11 +303,12 @@ Die zwölf Vorlagen (`backend/src/vorlagen/`) sind auf dem Server gebaut, nicht 
 
 ## Was die Blattprobe prüft
 
-`npm run blattprobe` (`scripts/blattprobe.mjs`) prüft rund 340 Aussagen über das Blatt, ohne Server und ohne Browser:
+`npm run blattprobe` (`scripts/blattprobe.mjs`) prüft rund 380 Aussagen über das Blatt, ohne Server und ohne Browser:
 
 - die Rechnungen: Modifikatoren, Übungsbonus, Fertigkeiten mit Übung und Expertise, passive Werte, Rettungswürfe, Traglast;
 - die Umrechnung zwischen Fuß und Meter, Pfund und Kilogramm – in beide Richtungen, ohne dass ein Wert beim Hin- und Herrechnen wandert;
 - `withDefaults` an Blättern in früheren Formen: dass nichts verlorengeht und alles Neue dasteht, und die Entscheidung zwischen metrisch und imperial;
-- die zwölf Vorlagen: vollständig, jede Klasse und Spezies einmal, Werte nach den Regeln.
+- die zwölf Vorlagen: vollständig, jede Klasse und Spezies einmal, Werte nach den Regeln;
+- Ausfuhr und Einlesen: eine echte Datei hin und zurück – unverändert, von einer KI im Datensatz oder nur auf der Seite bearbeitet, aus einem Chat-Codeblock, ohne Datensatz, gekürzt, mit Zahlen als Text, zweimal eingelesen, als freies Blatt.
 
 Sie läuft in unter einer Sekunde und gehört zu `npm test`.

@@ -1,11 +1,16 @@
 /**
  * Der Kopf des Charakterblattes: Bildnis, Name, Volk · Klasse · Stufe, der
- * Speicherstand – und rechts Trefferpunkte, Mitnehmen und Löschen.
+ * Speicherstand – und rechts Trefferpunkte, Mitnehmen, Einlesen und Löschen.
+ *
+ * „Mitnehmen“ und „Einlesen“ sind ein Paar: Die mitgenommene Datei lässt
+ * sich bearbeiten – auch von einer KI – und mit „Einlesen“ wieder in dieses
+ * Blatt übernehmen, nach einer Vorschau (components/BlattEinlesen.jsx).
  *
  * Fremde Blätter (`schreibbar === false`) zeigen statt des Speicherstands,
  * wem sie gehören; Bildnis und Name lassen sich dann nicht ändern.
  */
 import { IconCheck, IconDownload, IconEye } from '../../components/icons.jsx';
+import BlattEinlesen from '../../components/BlattEinlesen.jsx';
 import Speicherstand from './Speicherstand.jsx';
 
 export default function Blattkopf({
@@ -18,6 +23,7 @@ export default function Blattkopf({
   onName,
   onPortrait,
   onMitnehmen,
+  onErsetzen,
   onLoeschen,
 }) {
   return (
@@ -90,6 +96,8 @@ export default function Blattkopf({
           {mitnehmen === 'fertig' ? <IconCheck size={15} /> : <IconDownload size={15} />}
           {mitnehmen === 'laeuft' ? 'wird abgeschrieben …' : mitnehmen === 'fertig' ? 'gesichert' : 'Mitnehmen'}
         </button>
+
+        {schreibbar && <BlattEinlesen ziel={character} onErsetzen={onErsetzen} />}
 
         {schreibbar && (
           <button onClick={onLoeschen} className="min-h-11 px-2 text-[15px] text-rubric hover:underline">

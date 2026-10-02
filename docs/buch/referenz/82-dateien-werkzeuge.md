@@ -3,7 +3,7 @@
 > Dieses Kapitel schreibt `npm run handbuch` aus dem Code (scripts/handbuch/referenz/).
 > Änderungen gehören in den Code und seine Kommentare, nicht hierher.
 
-Alles unter scripts/ (98 Dateien, 14.884 Zeilen): Start und Tunnel, die Proben und der Vertrag, Drucksatz und dieses Handbuch.
+Alles unter scripts/ (98 Dateien, 15.033 Zeilen): Start und Tunnel, die Proben und der Vertrag, Drucksatz und dieses Handbuch.
 
 ## scripts/
 
@@ -38,7 +38,7 @@ noch eine geliehene Adresse von früher – und die führte die Runde ins Leere.
 
 ### scripts/blattprobe.mjs
 
-*324 Zeilen*
+*450 Zeilen*
 
 Die Rechenprobe des Charakterblattes.
 
@@ -1393,7 +1393,7 @@ Kapitel angelegt haben – und trägt ein, was spätere brauchen.
 
 ### scripts/vertrag/21-luecken.mjs
 
-*328 Zeilen*
+*351 Zeilen*
 
 Vertrag, Kapitel: Die geschlossenen Lücken.
 
@@ -1405,7 +1405,8 @@ das sieht:
 - eine Figur lässt sich von Hand an ein Blatt binden;
 - Kämpfer und Figur verbergen und zeigen sich gemeinsam;
 - Gegner würfeln ihre Initiative mit Geschicklichkeitsbonus;
-- ein mitgenommenes Blatt lässt sich wieder anlegen, und ein kaputtes
+- ein mitgenommenes Blatt lässt sich wieder anlegen oder – bearbeitet,
+  etwa von einer KI – auf das vorhandene übernehmen, und ein kaputtes
   wird abgewiesen;
 - jede Antwort trägt eine Content-Security-Policy;
 - im Heimnetz gibt es HTTPS mit einem selbst ausgestellten, beschränkten

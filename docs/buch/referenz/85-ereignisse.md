@@ -61,7 +61,7 @@ Jedes Ereignis wird geschickt *und* gehört – keines läuft ins Leere.
 ### charakter:entfernt
 
 - geschickt: backend/src/blattmeldung.js, Zeile 77 – nur Rolle „spieler“, einzelne Konten (je eigene Sicht), in dieser Kampagne
-- geschickt: backend/src/routes/charaktere/schreiben.js, Zeile 154 – in dieser Kampagne
+- geschickt: backend/src/routes/charaktere/schreiben.js, Zeile 161 – in dieser Kampagne
 - gehört: frontend/src/lib/daten/kampagne.js
 
 ### chat

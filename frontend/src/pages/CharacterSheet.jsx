@@ -8,7 +8,7 @@
  *
  * Laden, Speichern und der Live-Draht stecken in blatt/useBlatt.js – dort
  * steht auch, warum es keinen Speichern-Knopf gibt. Diese Seite kümmert
- * sich um die Handgriffe drumherum (Bildnis, Mitnehmen, Löschen) und
+ * sich um die Handgriffe drumherum (Bildnis, Mitnehmen, Einlesen, Löschen) und
  * darum, welcher Reiter offen ist.
  *
  *   blatt/Blattkopf.jsx      – Bildnis, Name, Speicherstand, Knöpfe
@@ -28,7 +28,8 @@ import { useBlatt } from './blatt/useBlatt.js';
 export default function CharacterSheet() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { character, error, setError, saveStatus, updateName, updateData, replaceData } = useBlatt(id);
+  const { character, error, setError, saveStatus, updateName, updateData, replaceData, replaceCharacter } =
+    useBlatt(id);
   const [tab, setTab] = useState('overview');
   const [mitnehmen, setMitnehmen] = useState('bereit');
 
@@ -94,6 +95,7 @@ export default function CharacterSheet() {
         onName={updateName}
         onPortrait={handlePortrait}
         onMitnehmen={handleMitnehmen}
+        onErsetzen={replaceCharacter}
         onLoeschen={handleDelete}
       />
 

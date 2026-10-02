@@ -82,7 +82,11 @@ frontend/src/
     api.js, api/     die Wege des Servers, nach Sachgebieten
     live.jsx         der Live-Draht und useLive
     daten.js, daten/ die Haken, die laden und mithorchen
-    blatt/, regeln/  was das Charakterblatt rechnet
+    regeln/          was das Charakterblatt rechnet
+    blatt/           das Blatt zum Mitnehmen: Abschnitte, Feldmarken,
+                     Datensatz und Anleitung für eine KI (blattAusfuhr.js)
+    einfuhr/         der Rückweg: eine bearbeitete Datei wieder einlesen
+                     (blattEinfuhr.js, mit Vorschau in components/einlesen/)
   pages/             je eine Datei für eine Seite; große Seiten haben
                      einen gleichnamigen Ordner (blatt/, tisch/, chronik/, hilfe/)
   components/        Bauteile; dm/ nur für die Spielleitung, sheet/, tabletop/

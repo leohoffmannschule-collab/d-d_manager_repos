@@ -1,6 +1,7 @@
 /**
  * Hilfe: rund ums eigene Blatt – das Charakterblatt, Zauber und Rasten,
- * die Beutekiste und das Mitnehmen als eigenständige Datei.
+ * die Beutekiste und das Mitnehmen als eigenständige Datei – samt dem Rückweg,
+ * auch nach einer Bearbeitung durch eine KI.
  */
 import { Card } from '../../components/ui.jsx';
 
@@ -72,10 +73,27 @@ export default function Blatt() {
         </p>
         <p className="mt-3 leading-relaxed text-ink">
           Das ist gedacht für die Vorbereitung, wenn der Almanach gerade nicht läuft – oder für den Zug zur Runde.
-          Was du in der Datei änderst, wandert nicht von selbst zurück: Am Spieltisch gilt das Blatt im Almanach.
-          Ganz hinten in der Datei steckt aber der vollständige Datensatz, sie ist also zugleich eine Sicherung: In
-          der Übersicht liest <span className="font-display">Blatt einlesen</span> sie wieder ein – als neues Blatt,
-          dein altes bleibt unangetastet.
+          Was du in der Datei änderst, wandert nicht von selbst zurück, aber du kannst es zurückholen: Ganz hinten
+          in der Datei steckt der vollständige Datensatz, sie ist also zugleich eine Sicherung.
+        </p>
+      </Card>
+
+      <Card title="Wieder einlesen – auch nach einer KI">
+        <p className="leading-relaxed text-ink">
+          <span className="font-display">Einlesen</span> oben auf deinem Blatt übernimmt eine mitgenommene Datei in
+          dieses Blatt. <span className="font-display">Blatt einlesen</span> in der Übersicht erkennt, zu welchem Blatt
+          die Datei gehört, und bietet an, es zu aktualisieren – oder legt ein neues an. Vorher zeigt dir eine
+          Vorschau genau, was sich ändert. Danach ist es ein ganz normales Blatt.
+        </p>
+        <p className="mt-3 leading-relaxed text-ink">
+          Die Datei darf dazwischen bearbeitet werden – auch von einer KI: Gib sie ihr mit einem Auftrag wie
+          „Steig ihn auf Stufe 4 auf und gib mir die ganze Datei zurück“, sichere die Antwort als .html und lies sie
+          ein. Oben in der Datei steht eine Anleitung für die KI, und was sie nur auf der sichtbaren Seite ändert,
+          findet der Almanach trotzdem. Meldet das Einlesen „beschädigt“ oder „gekürzt“, sag der KI genau das und
+          bitte um die vollständige Datei.
+        </p>
+        <p className="mt-3 leading-relaxed text-sepia italic">
+          Was du einer KI gibst, liest ihr Anbieter mit – das ganze Blatt samt Bildnis. Kennwörter stehen nicht darin.
         </p>
       </Card>
     </>

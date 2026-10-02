@@ -13,7 +13,7 @@ Sagt der Server nein, antwortet er mit einem HTTP-Status und einem kleinen JSON-
 
 Eine Absage hat nichts geändert: Jeder Weg prüft erst alles und schreibt dann. Wer mit 400, 403 oder 409 abgewiesen wird, findet den Almanach so vor wie vorher.
 
-Insgesamt 76 Schlüssel an 146 Stellen.
+Insgesamt 76 Schlüssel an 147 Stellen.
 
 ## Nach Status
 

@@ -10,7 +10,7 @@
  * Die Reihenfolge folgt dem gedruckten Bogen: oben, was man im Kampf
  * braucht, unten, was man zwischen den Abenden liest.
  */
-import { esc, escAbsatz, tafel, zeilen } from './werkzeug.js';
+import { esc, escAbsatz, marke, tafel, zeilen, zelle } from './werkzeug.js';
 import {
   aktionen,
   attribute,
@@ -41,24 +41,33 @@ import { formatModifier, passiverWert, proficiencyBonus } from '../dnd5e.js';
 export function dnd5eKoerper(character, data, bilder, texte) {
   const pb = proficiencyBonus(data.level);
   const erfahrung =
-    data.experienceMode === 'meilenstein' ? 'Meilensteine' : data.experience ? String(data.experience) : '';
+    data.experienceMode === 'meilenstein' ? esc('Meilensteine') : data.experience ? marke('experience', data.experience) : '';
+  // Kopfzeilen aus einzelnen, markierten Teilen: So findet „Blatt einlesen“
+  // eine geänderte Stufe wieder, auch wenn sie mitten im Satz steht.
+  const herkunft = [
+    data.race && marke('race', data.race),
+    data.subrace && `(${marke('subrace', data.subrace)})`,
+    data.className && marke('className', data.className),
+    data.subclass && `– ${marke('subclass', data.subclass)}`,
+    `Stufe ${marke('level', data.level)}`,
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const umfeld = [
+    data.background && marke('background', data.background),
+    data.alignment && marke('alignment', data.alignment),
+    data.playerName && `geführt von ${marke('playerName', data.playerName)}`,
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   return `
     <header class="kopf">
       ${bilder.portrait ? `<img class="bildnis" src="${bilder.portrait}" alt="">` : ''}
       <div>
-        <h1>${esc(character.name)}</h1>
-        <p class="unterzeile">${esc(
-          [data.race, data.subrace && `(${data.subrace})`, data.className, data.subclass && `– ${data.subclass}`,
-            `Stufe ${data.level}`]
-            .filter(Boolean)
-            .join(' ')
-        )}</p>
-        <p class="unterzeile klein">${esc(
-          [data.background, data.alignment, data.playerName && `geführt von ${data.playerName}`]
-            .filter(Boolean)
-            .join(' · ')
-        )}</p>
+        <h1>${marke('name', character.name)}</h1>
+        <p class="unterzeile">${herkunft}</p>
+        <p class="unterzeile klein">${umfeld}</p>
       </div>
       <div class="kopfwerte">
         <div class="feld"><span class="label">Übungsbonus</span><span class="wert gross">${esc(formatModifier(pb))}</span></div>
@@ -66,7 +75,7 @@ export function dnd5eKoerper(character, data, bilder, texte) {
           data,
           'perception'
         )}</span></div>
-        ${erfahrung ? `<div class="feld"><span class="label">Erfahrung</span><span class="wert">${esc(erfahrung)}</span></div>` : ''}
+        ${erfahrung ? `<div class="feld"><span class="label">Erfahrung</span><span class="wert">${erfahrung}</span></div>` : ''}
       </div>
     </header>
 
@@ -80,7 +89,7 @@ export function dnd5eKoerper(character, data, bilder, texte) {
       'Angriffe',
       zeilen(
         ['Angriff', 'Bonus', 'Schaden', 'Anmerkungen'],
-        data.attacks.map((a) => [esc(a.name), esc(a.bonus), esc(a.damage), esc(a.notes)])
+        data.attacks.map((a) => ['name', 'bonus', 'damage', 'notes'].map((key) => zelle('attacks', a, key)))
       )
     )}
     ${tafel('Aktionen', aktionen(data))}
@@ -107,13 +116,19 @@ export function freiKoerper(character, data, bilder) {
     <header class="kopf">
       ${bilder.portrait ? `<img class="bildnis" src="${bilder.portrait}" alt="">` : ''}
       <div>
-        <h1>${esc(character.name)}</h1>
-        <p class="unterzeile">${escAbsatz(data.summary)}</p>
+        <h1>${marke('name', character.name)}</h1>
+        <p class="unterzeile">${marke('summary', data.summary ?? '', escAbsatz(data.summary))}</p>
       </div>
     </header>
     ${(data.sections ?? [])
       .filter((a) => a.title || a.content)
-      .map((a) => tafel(a.title || 'Ohne Titel', `<p class="fliesstext">${escAbsatz(a.content)}</p>`))
+      .map(
+        (a) =>
+          // Ein leerer Titel steht als „Ohne Titel“ da – unmarkiert, sonst
+          // läse das Einlesen den Platzhalter als neuen Titel.
+          `<section class="tafel"><h2>${a.title ? zelle('sections', a, 'title') : 'Ohne Titel'}</h2>` +
+          `<p class="fliesstext">${zelle('sections', a, 'content', escAbsatz(a.content))}</p></section>`
+      )
       .join('')}
   `;
 }

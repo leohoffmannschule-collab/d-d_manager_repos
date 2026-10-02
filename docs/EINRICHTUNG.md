@@ -913,6 +913,21 @@ startet: Melde dich an und sieh nach, ob etwas fehlt, das *nach* dem
 Sicherungszeitpunkt entstanden war. Ist es noch da, hat das Zurückspielen
 nicht gewirkt.
 
+### 8.4 Einzelne Blätter: Mitnehmen und Einlesen
+
+Für ein **einzelnes Charakterblatt** gibt es einen Weg ohne Kommandozeile, den
+jede und jeder aus der Runde selbst gehen kann: Der Knopf **Mitnehmen** auf
+dem Blatt sichert es als eine HTML-Datei, und **Einlesen** (auf dem Blatt)
+oder **Blatt einlesen** (in der Übersicht) holt es zurück – in dasselbe Blatt
+oder als neues, auch in einem anderen Almanach. Die Datei darf dazwischen
+bearbeitet werden, auch von einer KI; vor dem Speichern zeigt eine Vorschau,
+was sich ändert. Für die Einrichtung ist dabei nichts zu tun: Gelesen wird
+im Browser, der Server bekommt nur das fertige Blatt über denselben Weg wie
+jede Änderung.
+
+Eine Sicherung der Datenbank ersetzt das nicht – Karten, Chronik, Kampf und
+alles Übrige stehen nicht in der Blattdatei.
+
 ---
 
 ## 9. Die Runde einladen

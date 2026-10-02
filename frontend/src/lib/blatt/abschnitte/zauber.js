@@ -5,7 +5,7 @@
  * vollständig ist.
  */
 import { ABILITIES, SPELL_LEVELS, formatModifier, zauberwerte } from '../../dnd5e.js';
-import { esc, escAbsatz, feld, zeilen } from '../werkzeug.js';
+import { esc, escAbsatz, feld, marke, zeilen, zelle } from '../werkzeug.js';
 
 /**
  * Der volle Text eines Zaubers aus dem Kompendium – Kopfzeile, Werte,
@@ -61,7 +61,7 @@ export function zauber(data) {
       const s = z.slots[lvl];
       return `<div class="feld"><span class="label">Grad ${lvl}</span><span class="wert">${
         Math.max(0, s.max - s.used)
-      } von ${s.max} frei</span></div>`;
+      } von ${marke(`spellcasting.slots.${lvl}.max`, s.max)} frei</span></div>`;
     })
     .join('');
 
@@ -80,17 +80,20 @@ export function zauber(data) {
       const reihen = nachGrad
         .get(grad)
         .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '', 'de'))
-        .map((s) => [
-          s.prepared ? '●' : '○',
-          `<b>${esc(s.name)}</b>${s.notes ? `<br><i class="klein">${escAbsatz(s.notes)}</i>` : ''}`,
-          esc(s.source),
-          esc(s.save),
-          esc(s.time),
-          esc(s.range),
-          esc(s.components),
-          esc(s.duration),
-          esc(s.page),
-        ]);
+        .map((s) => {
+          const z = (key, html) => zelle('spellcasting.spells', s, key, html);
+          return [
+            s.prepared ? '●' : '○',
+            `<b>${z('name')}</b>${s.notes ? `<br><i class="klein">${z('notes', escAbsatz(s.notes))}</i>` : ''}`,
+            z('source'),
+            z('save'),
+            z('time'),
+            z('range'),
+            z('components'),
+            z('duration'),
+            z('page'),
+          ];
+        });
       return `<div class="zaubergrad"><span class="label">${
         grad === 0 ? 'Zaubertricks (nach Belieben)' : `Zauber vom ${grad}. Grad`
       }</span>${zeilen(

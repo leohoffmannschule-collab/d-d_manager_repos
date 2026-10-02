@@ -58,6 +58,13 @@ router.put('/:id', (req, res) => {
   }
 
   const { name, data } = req.body ?? {};
+  // Auch hier kann der Rumpf aus einer Datei stammen: „Einlesen“ am Blatt
+  // übernimmt eine bearbeitete Blattdatei (etwa nach einer KI) in dieses
+  // Blatt. Ein Datensatz, der kein Objekt ist, ergäbe ein Blatt, das keine
+  // Seite mehr öffnen kann – erst prüfen, dann schreiben.
+  if (data !== undefined && (data === null || typeof data !== 'object' || Array.isArray(data))) {
+    return res.status(400).json({ code: 'blatt_ungueltig', error: 'Dieses Blatt kann der Almanach nicht lesen.' });
+  }
   const nextName = typeof name === 'string' && name.trim() ? name.trim() : existing.name;
   const nextData = data !== undefined ? JSON.stringify(data) : existing.data;
   const now = new Date().toISOString();

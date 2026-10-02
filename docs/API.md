@@ -248,7 +248,7 @@ Dabei gilt:
     GET    /api/characters               eigene und geteilte, als Kurzfassung
     GET    /api/characters/:id           samt `editable`
     POST   /api/characters               { name, system?, data, npc? }   npc nur [SL]; auch zum Einlesen einer mitgenommenen Datei
-    PUT    /api/characters/:id           { name?, data? }
+    PUT    /api/characters/:id           { name?, data? }   auch „Einlesen“ einer Datei in dieses Blatt
     PATCH  /api/characters/:id           { ownerId?, shared?, npc? }   ownerId und npc nur [SL]
     DELETE /api/characters/:id
     POST   /api/characters/:id/duplicate
@@ -260,8 +260,16 @@ Die Kurzfassung enthält vorgerechnet `hp`, `ac` und `initiative`, damit eine
 
 `system` ist `dnd5e` (Vorgabe) oder `freeform`, `data` ein Objekt. Ein
 unbekanntes Regelwerk oder ein Datensatz, der kein Objekt ist, gibt 400
-`blatt_ungueltig` – seit sich mitgenommene Blätter wieder einlesen lassen,
-kommt der Rumpf auch aus Dateien, die jemand in der Hand hatte.
+`blatt_ungueltig` – bei `POST` wie bei `PUT`, und beim `PUT` *bevor* etwas
+geschrieben wird. Seit sich mitgenommene Blätter wieder einlesen lassen,
+kommt der Rumpf auch aus Dateien, die jemand in der Hand hatte – oder eine KI.
+
+**Einlesen geschieht im Browser.** Die Schnittstelle kennt keine Blattdatei:
+Die Oberfläche liest die Datei selbst (`frontend/src/lib/blattEinfuhr.js`),
+bringt jeden Wert in die Form des Blattes, zeigt eine Vorschau und schickt
+dann ein gewöhnliches `POST` (neues Blatt) oder `PUT` (vorhandenes
+aktualisieren). Wer eine andere Oberfläche baut, kann den Leser übernehmen –
+er braucht keinen Browser und läuft auch in Node.
 
 **NSC-Blätter** (`npc: true`) sind der Zettel der Spielleitung hinter dem
 Schirm. Sie liefern einer Spielerin `403`, tauchen in ihrer Übersicht nicht auf
