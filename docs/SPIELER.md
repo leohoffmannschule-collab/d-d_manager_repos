@@ -156,9 +156,18 @@ Handauflegen als Bonusaktion, Zweiter Wind, eine Reaktion.
   Rasterlinien beim Herauszoomen – das ist Absicht.
 - **Deine Figur ziehen:** Beim Loslassen schnappt sie aufs Raster. Fremde
   Figuren bewegt nur die Spielleitung.
-- **Alt+Klick** lässt eine Stelle für alle kurz aufleuchten – gut, um auf
-  etwas zu zeigen.
-- **Lineal** und **Zeigefinger** stehen dir zur Verfügung.
+- **Über der Karte liegt deine Werkzeugleiste** mit drei Knöpfen. Darunter
+  steht jeweils, was das gewählte Werkzeug tut:
+  - **Bewegen** – schieben, zoomen, deine Figur ziehen (wie oben).
+  - **Messen** – von einem Punkt zum anderen ziehen; das Lineal zeigt die
+    Entfernung in Feldern und in Fuß oder Metern, je nach Karte. Schräg zählt
+    wie geradeaus, wie bei der Bewegung im Regelwerk. Es steht nur bei dir und
+    verschwindet beim Loslassen – auch über dunklem, unerkundetem Gelände.
+  - **Zeigen** – antippen, und die Stelle leuchtet bei allen kurz auf, mit
+    deiner Farbe und deinem Namen. Am Rechner geht das auch ohne
+    Werkzeugwechsel mit **Alt+Klick**.
+- Zum Figurenziehen wieder auf **Bewegen** zurückschalten – im Messen und
+  Zeigen gehört ein Ziehen dem Lineal bzw. ein Tippen dem Zeigefinger.
 - **Initiative** würfelst du bei Kampfbeginn selbst; sie steht sofort in der
   Liste der Spielleitung.
 

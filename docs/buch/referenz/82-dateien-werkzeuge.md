@@ -3,7 +3,7 @@
 > Dieses Kapitel schreibt `npm run handbuch` aus dem Code (scripts/handbuch/referenz/).
 > Änderungen gehören in den Code und seine Kommentare, nicht hierher.
 
-Alles unter scripts/ (98 Dateien, 15.033 Zeilen): Start und Tunnel, die Proben und der Vertrag, Drucksatz und dieses Handbuch.
+Alles unter scripts/ (98 Dateien, 15.056 Zeilen): Start und Tunnel, die Proben und der Vertrag, Drucksatz und dieses Handbuch.
 
 ## scripts/
 
@@ -1145,7 +1145,7 @@ Kapitel angelegt haben – und trägt ein, was spätere brauchen.
 
 ### scripts/vertrag/08-spieltisch.mjs
 
-*96 Zeilen*
+*107 Zeilen*
 
 Vertrag, Kapitel: Spieltisch und Kartenbibliothek.
 
@@ -1198,7 +1198,7 @@ Kapitel angelegt haben – und trägt ein, was spätere brauchen.
 
 ### scripts/vertrag/11-vorhang.mjs
 
-*119 Zeilen*
+*131 Zeilen*
 
 Vertrag, Kapitel: Der Vorhang.
 

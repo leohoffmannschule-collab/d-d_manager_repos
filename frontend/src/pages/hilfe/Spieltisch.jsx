@@ -14,7 +14,14 @@ export default function Spieltisch() {
           dann verschwinden die Rasterlinien, weil sie bei der Größe nur noch ein Grauschleier wären.
         </li>
         <li>Die eigene Figur lässt sich ziehen; beim Loslassen schnappt sie auf das Raster ein. Fremde Figuren bewegt nur die Spielleitung.</li>
-        <li>Ein <span className="font-display">Alt+Klick</span> lässt eine Stelle für alle kurz aufleuchten – praktisch statt „da vorne links, nein, weiter unten“.</li>
+        <li>
+          Über der Karte liegt deine Werkzeugleiste: <span className="font-display">Bewegen</span>,{' '}
+          <span className="font-display">Messen</span> und <span className="font-display">Zeigen</span>. Mit Messen
+          ziehst du ein Lineal, das die Entfernung in Feldern und in Fuß oder Metern zeigt – nur bei dir, und auch
+          über dunklem Gelände. Mit Zeigen tippst du eine Stelle an, und sie leuchtet bei allen kurz auf, mit
+          deinem Namen. Am Rechner geht Zeigen auch mit <span className="font-display">Alt+Klick</span>. Zum
+          Figurenziehen zurück auf Bewegen.
+        </li>
         <li>Jede Bewegung, jeder Wurf und jede Änderung der Trefferpunkte steht sofort bei allen anderen auf dem Schirm.</li>
         <li>
           Trägst du unter <span className="font-display">Kampf → Widerstand und Sinne</span> eine{' '}

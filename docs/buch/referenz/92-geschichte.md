@@ -7,7 +7,7 @@ Der Almanach ist in kleinen Schritten gewachsen, und jeder Schritt hat eine Nach
 
 Die Nachrichten sind so abgedruckt, wie sie geschrieben wurden. Die ersten, vom 1. September, sind englisch; ab dem 3. September wurde der Almanach deutsch, im Code wie in seiner Geschichte.
 
-Insgesamt 95 Schritte an 14 Tagen.
+Insgesamt 96 Schritte an 15 Tagen.
 
 ## 1. September 2026
 
@@ -1388,3 +1388,27 @@ Ein zweites Buch neben dem Handbuch: docs/Abenteuer-Almanach-Zeile-fuer-Zeile.pd
 - Satz klein gehalten: keine gepunkteten Linien, Code-Tabellen aria-hidden (sonst 150 MB statt 39 MB); die Lesezeichen bleiben.
 - Einfuhrprobe kennt Klassenmethoden; Stilprobe prüft den neuen Generator mit; drucker.mjs nimmt eine längere Druckdauer an.
 - Doku: README, CODE.md, Kapitel „Das Handbuch bauen“; Handbuch neu gebaut.
+
+## 2. Oktober 2026
+
+### Blätter, die eine KI bearbeitet hat, wieder einlesen
+
+`3da88dd`
+
+Das mitgenommene Charakterblatt (HTML) darf bearbeitet zurückkommen – von Hand oder von einer KI – und ist nach dem Einlesen wieder ein ganz normales Blatt im Almanach.
+
+- Ausfuhr (lib/blatt/):
+- Oben in der Datei eine Anleitung für KI-Assistenten samt Verzeichnis aller Felder, geschrieben aus dem neuen Feldverzeichnis glossar.js.
+- Der Datensatz ist lesbares JSON (<, >, & als \u-Escapes) mit der Kennung des Blattes (datensatz.js).
+- Jeder sichtbare Wert trägt eine Feldmarke (data-feld, data-war).
+
+- Einlesen (lib/blattEinfuhr.js, lib/einfuhr/):
+- Codeblock aus einer Chat-Antwort, Kommentare, überzählige Kommas und Zeilenumbrüche im JSON werden repariert und gemeldet; kaputte oder gekürzte Dateien mit Zeile, Spalte und Grund abgelehnt.
+- Nur sichtbar geänderte Werte werden übernommen; widersprechen sich Seite und Datensatz, gilt der Datensatz. Ohne Datensatz entsteht das Blatt aus den Feldmarken.
+- Jeder Wert in die Form des Blattes: Zahlen, Häkchen, Wahlfelder, Grenzen, Zustände; neue Listeneinträge bekommen Kennungen (gleichnamige behalten die des Blattes); Bildnisse von außen fallen weg.
+
+Oberfläche: „Einlesen“ im Kopf des Blattes und „Blatt einlesen“ in der Übersicht zeigen eine Vorschau mit allen Änderungen und bieten „… aktualisieren“ oder „Als neues Blatt anlegen“.
+
+Server: PUT /api/characters/:id weist einen Datensatz, der kein Objekt ist, mit blatt_ungueltig ab – bevor etwas geschrieben wird.
+
+Proben: Blattprobe 384 (echte Datei hin und zurück in allen KI-Fällen), Vertrag 362. Doku: README, Handbuch, Anleitungen für Runde und Spielleitung, Einrichtung, API, CODE.md, Buchkapitel, Hilfe im Almanach; Handbuch (568 Seiten) und Zeilenbuch (1.666 Seiten) neu gebaut.

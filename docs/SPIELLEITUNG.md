@@ -189,8 +189,14 @@ vorigen steht, und ihn dann in einem Zug aufziehen.
 
 ### 4.3 Zeigen und Reden
 
-**Alt+Klick** lässt eine Stelle für alle kurz aufleuchten. Spart das „da
-vorne links – nein, weiter unten“.
+**Alt+Klick** (oder das Werkzeug *Zeigen*) lässt eine Stelle für alle kurz
+aufleuchten. Spart das „da vorne links – nein, weiter unten“.
+
+Die Runde hat dieselben Griffe: Über ihrer Karte liegt eine kleine Leiste mit
+**Bewegen**, **Messen** und **Zeigen**. Zeigt jemand auf eine Stelle, siehst du
+den Ring mit Namen und Farbe; das Lineal einer Spielerin steht dagegen nur in
+ihrem Fenster. Hinter geschlossenem Vorhang erreicht ein Zeigefinger der Runde
+nur dich – sie hat dort ja keine Karte.
 
 ### 4.4 Handzettel austeilen
 

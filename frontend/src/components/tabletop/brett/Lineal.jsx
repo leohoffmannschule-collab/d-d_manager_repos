@@ -8,6 +8,12 @@
  * Alle Strichstärken und die Schriftgröße werden durch den Maßstab geteilt.
  * Sonst wäre die Linie bei 400 % vier Mal so dick wie bei 100 % – sie soll
  * aber immer gleich aussehen.
+ *
+ * Das Lineal liegt über dem Nebel (`z-30`, wie der Zeigefinger). Bei der
+ * Runde liegt der Nebel über den Figuren (z-index 25, siehe
+ * stile/spieltisch/schichten.css); ohne das verschwände ein Lineal, das ins
+ * Unerkundete misst, genau dort, wo man es braucht. Es verrät nichts: Es
+ * steht nur im eigenen Fenster und zeigt nur, wohin man selbst zieht.
  */
 import { weiteText } from '../../../lib/rasterkarte.js';
 import { px } from '../../../lib/stilwerte.js';
@@ -22,7 +28,7 @@ export default function Lineal({ lineal, scene, feld, massstab }) {
   );
 
   return (
-    <svg className="pointer-events-none absolute inset-0 overflow-visible">
+    <svg className="pointer-events-none absolute inset-0 z-30 overflow-visible">
       {/* Farben, Strichstärken und das Strichmuster stehen im Stilblatt
           (stile/spieltisch/schichten.css); hier nur, wo die Linie liegt und
           wie groß die Karte gerade gezeigt wird. */}

@@ -55,6 +55,7 @@ export {
   IconEyeOff,
   IconFog,
   IconTarget,
+  IconLineal,
   IconTrash,
   IconLogout,
   IconUpload,

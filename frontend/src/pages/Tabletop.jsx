@@ -4,7 +4,8 @@
  *
  * Diese Seite ist der *Dirigent*, nicht der Zeichner. Gezeichnet wird in
  * components/tabletop/Board.jsx; die Werkzeugleiste der Spielleitung steckt
- * in SceneBar.jsx. Hier liegen nur der Zustand, der beide angeht (welches
+ * in SceneBar.jsx, die der Runde (Bewegen, Messen, Zeigen) in
+ * Spielerleiste.jsx. Hier liegen nur der Zustand, der beide angeht (welches
  * Werkzeug, welche Figur gewählt, wie breit der Pinsel), und die Handgriffe,
  * die zum Server führen.
  *
@@ -21,6 +22,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import Board from '../components/tabletop/Board.jsx';
 import SceneBar from '../components/tabletop/SceneBar.jsx';
+import Spielerleiste from '../components/tabletop/Spielerleiste.jsx';
 import { scenesApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
 import { useCharaktere, useKampf, usePings, useSzene } from '../lib/daten.js';
@@ -97,6 +99,10 @@ export default function Tabletop() {
   return (
     <div className="-mx-4 -mt-5 flex flex-col lg:h-[calc(100vh-4.6rem)] lg:flex-row">
       <div className="flex min-w-0 flex-1 flex-col">
+        {/* Die Runde bekommt ihre Leiste nur, wenn eine Karte aufliegt – ohne
+            gibt es nichts zu messen und nichts zu zeigen. */}
+        {!isDm && scene && <Spielerleiste mode={mode} onMode={setMode} />}
+
         {isDm && (
           <SceneBar
             scene={scene}

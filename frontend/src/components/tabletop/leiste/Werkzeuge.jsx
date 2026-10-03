@@ -10,20 +10,10 @@
  * die das Rasterfeld und die Szenenlade auf- und zuklappen.
  */
 import { scenesApi } from '../../../lib/api.js';
-import { IconEye, IconFog, IconMap, IconSwords, IconTarget } from '../../icons.jsx';
+import { IconEye, IconFog, IconMap, IconSwords } from '../../icons.jsx';
 import Knopf from './Knopf.jsx';
-
-
-// Die Werkzeuge des Tisches. `id` ist zugleich der Wert von `mode` in
-// pages/Tabletop.jsx und wird in Board.jsx abgefragt – wer eines ergänzt,
-// muss es also an drei Stellen kennen.
-const WERKZEUGE = [
-  { id: 'bewegen', label: 'Bewegen', Icon: IconMap, hinweis: 'Karte schieben, Figuren ziehen' },
-  { id: 'nebel-auf', label: 'Aufdecken', Icon: IconEye, hinweis: 'Nebel wegwischen' },
-  { id: 'nebel-zu', label: 'Verhüllen', Icon: IconFog, hinweis: 'Nebel zurückholen' },
-  { id: 'messen', label: 'Messen', Icon: IconTarget, hinweis: 'Entfernung in Feldern' },
-  { id: 'zeigen', label: 'Zeigen', Icon: IconTarget, hinweis: 'kurz aufleuchten lassen (auch Alt+Klick)' },
-];
+// Die Werkzeuge stehen in einer Liste, die auch die Leiste der Runde liest.
+import { WERKZEUGE } from './werkzeugliste.js';
 
 /**
  * Wie breit der Nebelpinsel streicht.

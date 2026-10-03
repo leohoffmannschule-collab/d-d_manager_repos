@@ -56,8 +56,10 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
   will, ohne vorher eine Stunde zu bauen, bekommt von der Spielleitung eine **Abschrift** – die gehört dann ihm.
 - **Eigene Blätter bearbeiten, fremde lesen** – wer in der Runde ist, sieht die Werte der Gefährten,
   schreiben darf nur die Besitzerin (und die Spielleitung).
-- **Spieltisch**: Karte schieben und zoomen, die eigene Figur ziehen (sie schnappt aufs Raster ein),
-  mit `Alt`+Klick eine Stelle für alle aufleuchten lassen, Entfernungen messen.
+- **Spieltisch**: eine eigene Werkzeugleiste mit **Bewegen**, **Messen** und **Zeigen** – Karte schieben
+  und zoomen, die eigene Figur ziehen (sie schnappt aufs Raster ein), Entfernungen mit dem Lineal messen
+  (auch über dem Nebel), eine Stelle antippen, die dann bei allen mit deinem Namen aufleuchtet. Am
+  Telefon genauso wie am Rechner; dort geht Zeigen auch mit `Alt`+Klick.
 - **Große Karten**: bis zu **200 × 200 Meter** am Stück, scrollbar und zoombar. Der Maßstab ist frei –
   ein Feld sind 5 Fuß nach Regelwerk oder ein Meter, wie du magst; Lineal, Größenangaben und
   Sichtweiten rechnen damit. Nebel und Sicht wandern dabei als Bitkarte über den Draht: 6,5 KB statt

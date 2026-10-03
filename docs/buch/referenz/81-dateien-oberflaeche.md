@@ -3,7 +3,7 @@
 > Dieses Kapitel schreibt `npm run handbuch` aus dem Code (scripts/handbuch/referenz/).
 > Änderungen gehören in den Code und seine Kommentare, nicht hierher.
 
-Alle Dateien der Oberfläche (213 Dateien, 19.331 Zeilen): Seiten, Bauteile, die Datenschicht in lib/, die Stilblätter und der Bau. Zu jeder Datei ihr Kopfkommentar und ihre Ausfuhren.
+Alle Dateien der Oberfläche (215 Dateien, 19.437 Zeilen): Seiten, Bauteile, die Datenschicht in lib/, die Stilblätter und der Bau. Zu jeder Datei ihr Kopfkommentar und ihre Ausfuhren.
 
 Sammelstellen wie icons.jsx oder lib/api.js führen nichts Eigenes aus, sondern reichen weiter – bei ihnen steht, woher.
 
@@ -215,7 +215,7 @@ Warnseite, ohne zu wissen, warum.
 
 ### frontend/src/components/icons.jsx
 
-*68 Zeilen*
+*69 Zeilen*
 
 Alle Symbole des Almanachs, als SVG von Hand gezeichnet.
 
@@ -273,6 +273,7 @@ Symbol braucht, soll nicht wissen müssen, in welcher Schublade es liegt.
 - `IconEyeOff` (aus ./icons/runde.jsx)
 - `IconFog` (aus ./icons/runde.jsx)
 - `IconTarget` (aus ./icons/runde.jsx)
+- `IconLineal` (aus ./icons/runde.jsx)
 - `IconTrash` (aus ./icons/runde.jsx)
 - `IconLogout` (aus ./icons/runde.jsx)
 - `IconUpload` (aus ./icons/runde.jsx)
@@ -1165,12 +1166,12 @@ es allein auf einem Knopf, trägt der Knopf das `aria-label`.
 
 ### frontend/src/components/icons/runde.jsx
 
-*162 Zeilen*
+*172 Zeilen*
 
 Symbole für Runde, Spieltisch und Spielleitung.
 
 Konten und Rollen (Schlüssel, Krone, Runde), der Kampf (Schwerter, Herz),
-die Sicht am Tisch (Auge, Nebel, Zielscheibe) und die Handgriffe drumherum
+die Sicht am Tisch (Auge, Nebel, Zielscheibe, Lineal) und die Handgriffe drumherum
 (Hochladen, Mitnehmen, Löschen, Abmelden, Gespräch).
 
 Gezeichnet wird auf dem Rahmen aus rahmen.jsx – siehe dort, wie ein
@@ -1186,6 +1187,7 @@ neues Symbol entsteht.
 - `IconEyeOff` (function) – Durchgestrichenes Auge: verborgen, nur für die Spielleitung.
 - `IconFog` (function) – Nebelschwaden: Nebel des Krieges und der Vorhang.
 - `IconTarget` (function) – Zielscheibe: auf eine Stelle der Karte zeigen.
+- `IconLineal` (function) – Lineal: Entfernungen auf der Karte messen.
 - `IconTrash` (function) – Papierkorb: löschen und entfernen.
 - `IconLogout` (function) – Tür mit Pfeil: abmelden.
 - `IconUpload` (function) – Pfeil nach oben: Bild oder Datei hochladen.
@@ -2008,6 +2010,33 @@ Ebene höher, die Regeln liegen im Server.
 
 - `SceneBar` (default function) – Werkzeugleiste und Szenenverwaltung – nur für die Spielleitung.
 
+### frontend/src/components/tabletop/Spielerleiste.jsx
+
+*46 Zeilen*
+
+Die Werkzeugleiste über dem Spieltisch für die Runde: Bewegen, Messen,
+Zeigen.
+
+Die Spielleitung hat ihre eigene, größere Leiste (SceneBar.jsx). Die
+Runde bekommt daraus, was niemandem etwas wegnimmt (siehe
+leiste/werkzeugliste.js, `fuerAlle`):
+
+```
+Bewegen  die eigene Figur ziehen, die Karte schieben – wie bisher
+Messen   ziehen, und das Lineal zeigt die Entfernung; es steht nur im
+         eigenen Fenster und verschwindet beim Loslassen
+Zeigen   antippen, und die Stelle leuchtet bei allen kurz auf – mit der
+         eigenen Farbe und dem eigenen Namen
+```
+
+Unter den Knöpfen steht, was das gewählte Werkzeug tut. Am Telefon gibt
+es kein Überfahren mit der Maus, das einen `title` zeigte – und kein
+Alt+Klick, mit dem man am Rechner schon immer zeigen konnte.
+
+**Ausfuhren**
+
+- `Spielerleiste` (default function) – 
+
 ### frontend/src/components/tabletop/TokenPanel.jsx
 
 *226 Zeilen*
@@ -2147,7 +2176,7 @@ stile/spieltisch/figuren.css.
 
 ### frontend/src/components/tabletop/brett/Lineal.jsx
 
-*58 Zeilen*
+*64 Zeilen*
 
 Das Lineal: eine gestrichelte Linie mit der Entfernung daran.
 
@@ -2158,6 +2187,12 @@ in D&D 5e nicht mehr als geradeaus, und genau so soll es dastehen.
 Alle Strichstärken und die Schriftgröße werden durch den Maßstab geteilt.
 Sonst wäre die Linie bei 400 % vier Mal so dick wie bei 100 % – sie soll
 aber immer gleich aussehen.
+
+Das Lineal liegt über dem Nebel (`z-30`, wie der Zeigefinger). Bei der
+Runde liegt der Nebel über den Figuren (z-index 25, siehe
+stile/spieltisch/schichten.css); ohne das verschwände ein Lineal, das ins
+Unerkundete misst, genau dort, wo man es braucht. Es verrät nichts: Es
+steht nur im eigenen Fenster und zeigt nur, wohin man selbst zieht.
 
 **Ausfuhren**
 
@@ -2325,7 +2360,7 @@ ist zugleich der Knopf, der ihn wieder öffnet.
 
 ### frontend/src/components/tabletop/leiste/Werkzeuge.jsx
 
-*153 Zeilen*
+*143 Zeilen*
 
 Die eigentliche Werkzeugleiste: Was tut ein Klick auf die Karte?
 
@@ -2340,6 +2375,28 @@ die das Rasterfeld und die Szenenlade auf- und zuklappen.
 **Ausfuhren**
 
 - `Werkzeuge` (default function)
+
+### frontend/src/components/tabletop/leiste/werkzeugliste.js
+
+*40 Zeilen*
+
+Die Werkzeuge des Spieltisches: Was tut ein Klick auf die Karte?
+
+Eine Liste für beide Leisten – die der Spielleitung (Werkzeuge.jsx) und
+die der Runde (../Spielerleiste.jsx). `id` ist zugleich der Wert von
+`mode` in pages/Tabletop.jsx und wird in useZeiger.js abgefragt; wer ein
+Werkzeug ergänzt, muss es also dort auch kennen.
+
+`fuerAlle` heißt: Auch die Runde bekommt es. Bewegen, Messen und Zeigen
+ändern nichts am Tisch, das nicht ohnehin jedem gehört – die eigene
+Figur, ein Lineal, das nur im eigenen Fenster steht, ein kurzes
+Aufleuchten. Den Nebel malt nur die Spielleitung; das prüft auch der
+Server.
+
+**Ausfuhren**
+
+- `WERKZEUGE` (const) – Die Werkzeuge in der Reihenfolge der Leiste.
+- `WERKZEUGE_FUER_ALLE` (const) – Die Werkzeuge, die auch die Runde bekommt.
 
 ## frontend/src/lib/
 
@@ -3957,14 +4014,15 @@ die Kopfleiste stehen bleibt und man mit einem Klick zurückfindet.
 
 ### frontend/src/pages/Tabletop.jsx
 
-*190 Zeilen*
+*196 Zeilen*
 
 Der Spieltisch: Karte, Figuren, Nebel – und rechts die Leiste mit Kampf,
 Beute und Handzetteln.
 
 Diese Seite ist der *Dirigent*, nicht der Zeichner. Gezeichnet wird in
 components/tabletop/Board.jsx; die Werkzeugleiste der Spielleitung steckt
-in SceneBar.jsx. Hier liegen nur der Zustand, der beide angeht (welches
+in SceneBar.jsx, die der Runde (Bewegen, Messen, Zeigen) in
+Spielerleiste.jsx. Hier liegen nur der Zustand, der beide angeht (welches
 Werkzeug, welche Figur gewählt, wie breit der Pinsel), und die Handgriffe,
 die zum Server führen.
 
@@ -4176,7 +4234,7 @@ entscheidet das, nicht dieser Abschnitt.
 
 ### frontend/src/pages/hilfe/Spieltisch.jsx
 
-*37 Zeilen*
+*44 Zeilen*
 
 Hilfe: der Spieltisch – Karte, Figuren, Nebel, Messen und Zeigen aus der
 Sicht der Runde.

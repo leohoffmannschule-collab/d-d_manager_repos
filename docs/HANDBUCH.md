@@ -305,9 +305,15 @@ Bildnis. Kennwörter und Zugangsdaten stehen nicht in der Datei.
   der Größe nur noch ein Grauschleier wären.
 - **Die eigene Figur ziehen**; beim Loslassen schnappt sie aufs Raster.
   Fremde Figuren bewegt nur die Spielleitung.
-- **Alt+Klick** lässt eine Stelle für alle kurz aufleuchten – praktisch statt
-  „da vorne links, nein, weiter unten“.
-- **Lineal** und **Zeigefinger** stehen allen zur Verfügung.
+- **Messen und Zeigen für alle.** Über der Karte liegt auch bei der Runde eine
+  kleine Werkzeugleiste: **Bewegen**, **Messen**, **Zeigen**. *Messen* zieht ein
+  Lineal mit der Entfernung in Feldern und in der Einheit der Karte – es steht
+  nur im eigenen Fenster und liegt über dem Nebel, man kann also auch ins
+  Unerkundete messen, ohne dass es etwas verrät. *Zeigen* lässt eine Stelle
+  bei allen kurz aufleuchten, in der Farbe und mit dem Namen dessen, der zeigt
+  – praktisch statt „da vorne links, nein, weiter unten“. Am Rechner zeigt
+  **Alt+Klick** in jedem Werkzeug. Die Spielleitung hat dieselben drei Werkzeuge
+  in ihrer größeren Leiste.
 
 ### 4.2 Maßstab
 

@@ -2,7 +2,7 @@
  * Symbole für Runde, Spieltisch und Spielleitung.
  *
  * Konten und Rollen (Schlüssel, Krone, Runde), der Kampf (Schwerter, Herz),
- * die Sicht am Tisch (Auge, Nebel, Zielscheibe) und die Handgriffe drumherum
+ * die Sicht am Tisch (Auge, Nebel, Zielscheibe, Lineal) und die Handgriffe drumherum
  * (Hochladen, Mitnehmen, Löschen, Abmelden, Gespräch).
  *
  * Gezeichnet wird auf dem Rahmen aus rahmen.jsx – siehe dort, wie ein
@@ -87,6 +87,16 @@ export function IconTarget(props) {
       <circle cx="12" cy="12" r="8.2" />
       <circle cx="12" cy="12" r="3.4" />
       <path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3" />
+    </Icon>
+  );
+}
+
+/** Lineal: Entfernungen auf der Karte messen. */
+export function IconLineal(props) {
+  return (
+    <Icon {...props}>
+      <path d="M3.5 15.5 15.5 3.5l5 5-12 12z" />
+      <path d="M6 13l2.2 2.2M8.5 10.5l1.4 1.4M11 8l2.2 2.2M13.5 5.5l1.4 1.4" />
     </Icon>
   );
 }

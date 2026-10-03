@@ -203,11 +203,11 @@ Eine Auswahl für die Spielleitung: Sie schaut durch die Augen einer einzelnen F
 
 ### Lineal
 
-Messen auf der Karte: ziehen, und der Almanach zeigt die Entfernung in Feldern und in der Einheit des Maßstabs. Ein Werkzeug der Spielleitung, und nur in ihrem Fenster; niemand sonst sieht es. Diagonalen zählen dabei einfach, wie bei der Bewegung.
+Messen auf der Karte: ziehen, und der Almanach zeigt die Entfernung in Feldern und in der Einheit des Maßstabs. Ein Werkzeug für alle – die Spielleitung hat es in ihrer Werkzeugleiste, die Runde in ihrer kleinen Leiste über der Karte –, und es steht nur im eigenen Fenster; niemand sonst sieht es. Es liegt über dem Nebel, damit man auch ins Unerkundete messen kann. Diagonalen zählen dabei einfach, wie bei der Bewegung.
 
 ### Zeigefinger (Ping)
 
-„Schaut mal hierhin“: ein kurzes Aufleuchten an einer Stelle der Karte, bei allen, in der Farbe des Kontos. Nichts davon wird gespeichert. Weg `POST /api/scenes/ping`, Ereignis `ping`.
+„Schaut mal hierhin“: ein kurzes Aufleuchten an einer Stelle der Karte, bei allen, in der Farbe und mit dem Namen des Kontos. Zeigen darf jede und jeder – mit dem Werkzeug „Zeigen“ oder am Rechner mit Alt+Klick. Nichts davon wird gespeichert. Hinter geschlossenem Vorhang geht ein Zeigefinger nur an die Spielleitung. Weg `POST /api/scenes/ping`, Ereignis `ping`.
 
 ## Kampf
 

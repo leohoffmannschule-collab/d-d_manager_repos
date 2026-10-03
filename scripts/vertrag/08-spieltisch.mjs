@@ -8,7 +8,7 @@
  * gemeinsamen Stand `lage` – die angemeldeten Klienten und was frühere
  * Kapitel angelegt haben – und trägt ein, was spätere brauchen.
  */
-import { gleich, pruefe } from './werkzeug.mjs';
+import { gleich, mitschreiben, pruefe } from './werkzeug.mjs';
 
 export default async function spieltisch(lage) {
   const { sl, spieler, held } = lage;
@@ -48,6 +48,17 @@ export default async function spieltisch(lage) {
       koerper: { cells: ['0,0'], revealed: true },
     });
     gleich(nebel.status, 403, 'Nebel lichtet nur die Spielleitung');
+
+    // Zeigen darf jede und jeder (die Leiste der Runde hat Bewegen, Messen
+    // und Zeigen) – und alle anderen sehen die Stelle aufleuchten, mit dem
+    // Namen dessen, der zeigt. Messen braucht den Server nicht: Das Lineal
+    // steht nur im eigenen Fenster.
+    const ohrSl = await mitschreiben(sl);
+    await ohrSl.warteAuf('event: willkommen');
+    const gezeigt = await spieler.ruf('/scenes/ping', { methode: 'POST', koerper: { x: 333, y: 444 } });
+    gleich(gezeigt.status, 204, 'Auch die Runde darf auf die Karte zeigen');
+    pruefe(await ohrSl.warteAuf('"x":333,"y":444'), 'Und die Spielleitung sieht die Stelle aufleuchten');
+    await ohrSl.zu();
   }
 
   // --- Kartenbibliothek --------------------------------------------------

@@ -74,6 +74,17 @@ export default async function vorhang(lage) {
     const ohr = await mitschreiben(spieler);
     await ohr.warteAuf('event: willkommen');
     await sl.ruf(`/scenes/${zweite.id}/nebel`, { methode: 'POST', koerper: { cells: ['2,3', '2,4'], revealed: true } });
+    // Ein Zeigefinger hinter dem Vorhang ebenso – auch der eigene einer
+    // Spielerin geht dann nur an die Spielleitung (die Runde hat ja keine Karte).
+    const ohrSl = await mitschreiben(sl);
+    await ohrSl.warteAuf('event: willkommen');
+    gleich(
+      (await spieler.ruf('/scenes/ping', { methode: 'POST', koerper: { x: 717, y: 818 } })).status,
+      204,
+      'Zeigen geht auch hinter dem Vorhang'
+    );
+    pruefe(await ohrSl.warteAuf('"x":717,"y":818'), 'Die Spielleitung sieht es');
+    await ohrSl.zu();
 
     // Und jetzt Bühne frei.
     await sl.ruf('/scenes/vorhang', { methode: 'POST', koerper: { zu: false } });
@@ -87,6 +98,7 @@ export default async function vorhang(lage) {
     await sl.ruf(`/scenes/${zweite.id}/nebel`, { methode: 'POST', koerper: { cells: ['5,6'], revealed: true } });
     pruefe(await ohr.warteAuf('"cells":["5,6"]'), 'Bei offenem Vorhang erreicht ein Pinselstrich die Runde sofort');
     pruefe(!ohr.text().includes('"2,3"'), 'Ein Pinselstrich hinter dem Vorhang erreicht die Runde nicht');
+    pruefe(!ohr.text().includes('"x":717'), 'Ein Zeigefinger hinter dem Vorhang erreicht die Runde nicht');
     await ohr.zu();
 
     // Die Chronik führt den Ort erst, wenn die Runde ihn erreicht hat.
