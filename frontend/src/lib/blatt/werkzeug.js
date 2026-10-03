@@ -13,7 +13,7 @@
  *
  * Dazu `marke`: Sie umgibt einen sichtbaren Wert mit dem Pfad, unter dem er
  * im Datensatz steht. Ändert jemand – oder eine KI – nur die sichtbare
- * Seite, findet „Blatt einlesen“ die Änderung daran wieder
+ * Seite, findet „Blätter einlesen“ die Änderung daran wieder
  * (lib/einfuhr/sichtbar.js).
  */
 const ZEICHEN = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
@@ -80,7 +80,7 @@ export async function zaubertexte(spells) {
 /* --- Wiedererkennbare Werte ---------------------------------------------- */
 
 /**
- * Ein sichtbarer Wert, den „Blatt einlesen“ wiedererkennt.
+ * Ein sichtbarer Wert, den „Blätter einlesen“ wiedererkennt.
  *
  *   <span data-feld="combat.hp.max" data-war="24">24</span>
  *

@@ -3,7 +3,7 @@
 > Dieses Kapitel schreibt `npm run handbuch` aus dem Code (scripts/handbuch/referenz/).
 > Änderungen gehören in den Code und seine Kommentare, nicht hierher.
 
-Alles unter scripts/ (98 Dateien, 15.056 Zeilen): Start und Tunnel, die Proben und der Vertrag, Drucksatz und dieses Handbuch.
+Alles unter scripts/ (98 Dateien, 15.215 Zeilen): Start und Tunnel, die Proben und der Vertrag, Drucksatz und dieses Handbuch.
 
 ## scripts/
 
@@ -38,7 +38,7 @@ noch eine geliehene Adresse von früher – und die führte die Runde ins Leere.
 
 ### scripts/blattprobe.mjs
 
-*450 Zeilen*
+*510 Zeilen*
 
 Die Rechenprobe des Charakterblattes.
 
@@ -209,7 +209,7 @@ daran, ob jemand auf „Mithören“ getippt hat.
 
 ### scripts/kommentarprobe.mjs
 
-*158 Zeilen*
+*167 Zeilen*
 
 Die Kommentarprobe: Ist der Code so erklärt, wie es sich der Almanach
 vorgenommen hat?
@@ -1252,7 +1252,7 @@ Kapitel angelegt haben – und trägt ein, was spätere brauchen.
 
 ### scripts/vertrag/14-nsc.mjs
 
-*91 Zeilen*
+*181 Zeilen*
 
 Vertrag, Kapitel: NSC-Blätter.
 

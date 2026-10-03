@@ -27,6 +27,10 @@
  * entschärft im `<template>` oder roh im `<script>`) und der nackte
  * JSON-Text. Alles läuft ohne Browser-Schnittstellen – die Blattprobe
  * prüft es in Node (scripts/blattprobe.mjs).
+ *
+ * Diese Datei liest *eine* Datei. Mehrere auf einmal – samt Vorschlag, was
+ * mit jeder geschehen soll – liest einfuhr/stapel.js, Datei für Datei mit
+ * `leseBlattdatei`.
  */
 import { aufbereiten, datensatzFinden, entitaeten } from './einfuhr/datei.js';
 import { jsonLesen } from './einfuhr/json.js';

@@ -42,7 +42,7 @@ export function dnd5eKoerper(character, data, bilder, texte) {
   const pb = proficiencyBonus(data.level);
   const erfahrung =
     data.experienceMode === 'meilenstein' ? esc('Meilensteine') : data.experience ? marke('experience', data.experience) : '';
-  // Kopfzeilen aus einzelnen, markierten Teilen: So findet „Blatt einlesen“
+  // Kopfzeilen aus einzelnen, markierten Teilen: So findet „Blätter einlesen“
   // eine geänderte Stufe wieder, auch wenn sie mitten im Satz steht.
   const herkunft = [
     data.race && marke('race', data.race),

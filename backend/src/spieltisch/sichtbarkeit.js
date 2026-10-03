@@ -122,10 +122,15 @@ export function szenenSicht(user, campaignId) {
   };
 }
 
-/** Die Figuren, die dieser Person gehören. */
+/**
+ * Die Figuren, die dieser Person gehören. Ein Blatt hinter dem Schirm zählt
+ * nicht mit, auch wenn es ihr gehört (siehe `fuehrtSelbst` in
+ * routes/charaktere/blatt.js): Durch die Augen eines NSC sieht nur die
+ * Spielleitung.
+ */
 export function meineFiguren(user, alle, campaignId) {
   const meine = db
-    .prepare('SELECT id FROM characters WHERE owner_id = ? AND campaign_id = ?')
+    .prepare('SELECT id FROM characters WHERE owner_id = ? AND campaign_id = ? AND npc = 0')
     .all(user.id, campaignId)
     .map((c) => c.id);
   if (meine.length === 0) return [];

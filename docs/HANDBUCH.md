@@ -98,14 +98,25 @@ vorhanden“.
 ### 2.3 Charakterblätter
 
 Jeder Charakter hat einen Besitzer. Das eigene Blatt lässt sich bearbeiten,
-die Blätter der Mitspieler nur lesen. Unter *Spielleitung → Runde* steht zu
-jedem Blatt ein Schalter: **Sehen die anderen am Tisch dieses Blatt?** – wer
-sein Blatt für sich behalten will, kann das.
+die Blätter der Mitspieler nur lesen. Unter *Spielleitung → Runde* wählt die
+Spielleitung zu jedem Blatt, **wer es sieht**: *in der Runde* (alle lesen
+mit), *privat* (nur die Besitzerin) oder *NSC – hinter dem Schirm*.
 
 **NSC-Blätter** sind vollständige Charakterblätter, die nur die Spielleitung
 sieht: für den Wirt, den Räuberhauptmann, den Drachen. Sie stehen bei ihr
 unter *Hinter dem Schirm*, tauchen bei der Runde nirgends auf und werden
 übergangen, wenn die Spielleitung „die Runde in den Kampf holt“.
+
+**Umstellen geht jederzeit, in beide Richtungen.** In der Übersicht hat
+jedes Blatt bei der Spielleitung den Knopf **Zum NSC** bzw. **In die Runde**.
+Ein Held, der hinter den Schirm wandert, verschwindet sofort bei allen; die
+Besitzerin behält ihn auf dem Papier, aber solange er dort liegt, führt ihn
+die Spielleitung: Die Besitzerin ändert ihn nicht, zieht seine Figur nicht,
+sieht nicht durch seine Augen. In der Kampfliste wird seine Zeile zur
+NSC-Zeile (die Runde sieht nur noch „verwundet“). Kommt er zurück, gehört er
+wieder ihr – mit allem, was die Spielleitung inzwischen darauf geändert hat.
+Ein NSC, der in die Runde kommt, steht dort geteilt und lässt sich unter
+*Spielleitung → Runde* jemandem zuteilen.
 
 ### 2.4 Anmeldung
 
@@ -252,9 +263,22 @@ zugleich eine Sicherung.
 Zwei Knöpfe holen eine mitgenommene Datei zurück:
 
 - **Einlesen** im Kopf eines Blattes übernimmt die Datei in **dieses** Blatt.
-- **Blatt einlesen** in der Übersicht erkennt an der Kennung in der Datei, zu
+- **Blätter einlesen** in der Übersicht erkennt an der Kennung in der Datei, zu
   welchem Blatt sie gehört, und bietet an, es zu aktualisieren; sonst – oder
-  auf Wunsch – entsteht ein **neues** Blatt.
+  auf Wunsch – entsteht ein **neues** Blatt. Hier lassen sich auch **mehrere
+  Dateien auf einmal** wählen.
+
+**Mehrere auf einmal.** Bei mehr als einer Datei zeigt die Vorschau eine
+Liste: je Datei der Name des Blattes, zu welchem Blatt im Almanach sie gehört
+und wie viele Änderungen sie bringt – die Einzelheiten aufklappbar. Je Datei
+wählt man *„…“ aktualisieren*, *als neues Blatt anlegen* oder *auslassen*;
+vorgeschlagen ist, was passt. Eine Datei mit demselben Stand wie das Blatt
+im Almanach ist zum Auslassen vorgeschlagen, eine kaputte steht mit ihrem
+Grund da und hält die anderen nicht auf. Tragen zwei Dateien dieselbe
+Kennung, darf nur eine das Blatt aktualisieren – die zweite überschriebe
+sonst still die erste. Die Spielleitung kann neue Blätter dabei gleich **als
+NSC** anlegen, einzeln oder alle auf einmal. „Übernehmen“ speichert der
+Reihe nach und schreibt zu jeder Datei, wie es ausging.
 
 Vor dem Speichern steht eine **Vorschau**: was sich am Blatt ändert, welche
 Werte nur auf der sichtbaren Seite geändert waren, was repariert wurde. Erst

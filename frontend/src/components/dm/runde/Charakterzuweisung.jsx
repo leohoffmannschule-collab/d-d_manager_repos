@@ -4,11 +4,30 @@
  * Gebraucht, wenn jemand neu dazukommt und ein vorbereitetes Blatt
  * übernimmt, oder wenn ein Blatt aus der Zeit vor den Konten noch niemandem
  * gehört.
+ *
+ * Je Blatt zwei Wahlen: wem es gehört, und wer es sieht. Die zweite fasst
+ * `shared` und `npc` zusammen, weil sie zusammen *eine* Frage beantworten:
+ *
+ *   in der Runde          geteilt – alle am Tisch lesen mit
+ *   privat                nur die Besitzerin (und die Spielleitung)
+ *   NSC hinter dem Schirm nur die Spielleitung; der Besitz ruht, bis das
+ *                         Blatt zurückkommt (siehe `fuehrtSelbst` in
+ *                         backend/src/routes/charaktere/blatt.js)
  */
 import { useCallback, useEffect, useState } from 'react';
 import { charactersApi } from '../../../lib/api.js';
 import { useLive } from '../../../lib/live.jsx';
 import { Rubric } from '../../ui.jsx';
+
+/** Die drei Stufen der Sichtbarkeit und was der Server dafür bekommt. */
+const SICHTBARKEIT = {
+  runde: { label: 'in der Runde', rumpf: { npc: false, shared: true } },
+  privat: { label: 'privat', rumpf: { npc: false, shared: false } },
+  nsc: { label: 'NSC – hinter dem Schirm', rumpf: { npc: true } },
+};
+
+/** In welcher Stufe ein Blatt gerade steht. */
+const stufe = (c) => (c.npc ? 'nsc' : c.shared ? 'runde' : 'privat');
 
 export default function Charakterzuweisung({ users, onChanged }) {
   const [charaktere, setCharaktere] = useState([]);
@@ -52,18 +71,23 @@ export default function Charakterzuweisung({ users, onChanged }) {
                   </option>
                 ))}
               </select>
-              <button
-                onClick={async () => {
-                  await charactersApi.patch(c.id, { shared: !c.shared });
+              <select
+                value={stufe(c)}
+                onChange={async (e) => {
+                  await charactersApi.patch(c.id, SICHTBARKEIT[e.target.value].rumpf);
                   laden();
+                  onChanged?.();
                 }}
-                className={`min-h-11 border px-3 font-display text-[12px] tracking-[0.10em] uppercase ${
-                  c.shared ? 'border-gold bg-gold/20 text-ink' : 'border-rule text-sepia'
-                }`}
-                title="Sehen die anderen am Tisch dieses Blatt?"
+                className={`field-box w-60 ${c.npc ? 'text-gold' : ''}`}
+                title="Wer sieht dieses Blatt? Hinter dem Schirm sieht und führt es nur die Spielleitung."
+                aria-label={`Wer sieht „${c.name}“?`}
               >
-                {c.shared ? 'in der Runde' : 'privat'}
-              </button>
+                {Object.entries(SICHTBARKEIT).map(([wert, { label }]) => (
+                  <option key={wert} value={wert}>
+                    {label}
+                  </option>
+                ))}
+              </select>
             </li>
           ))}
         </ul>

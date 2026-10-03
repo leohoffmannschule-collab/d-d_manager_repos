@@ -91,13 +91,17 @@ export function sendeFigurenWennGeaendert(campaignId) {
   }
 }
 
-/** Darf diese Person die Figur bewegen? */
+/**
+ * Darf diese Person die Figur bewegen? Die Runde nur die eigene – und die
+ * nicht, solange ihr Blatt hinter dem Schirm liegt (siehe `fuehrtSelbst` in
+ * routes/charaktere/blatt.js).
+ */
 export function darfBewegen(user, tokenRow) {
   if (isDm(user)) return true;
   if (tokenRow.hidden) return false;
   if (!tokenRow.character_id) return false;
-  const character = db.prepare('SELECT owner_id FROM characters WHERE id = ?').get(tokenRow.character_id);
-  return character?.owner_id === user.id;
+  const character = db.prepare('SELECT owner_id, npc FROM characters WHERE id = ?').get(tokenRow.character_id);
+  return Boolean(character) && !character.npc && character.owner_id === user.id;
 }
 
 /**

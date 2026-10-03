@@ -13,31 +13,15 @@
  *     Angeboten nur, wenn es eines gibt, das man ändern darf, und das
  *     Regelwerk passt.
  *   – „Als neues Blatt anlegen“: Das vorhandene bleibt, wie es ist. Das ist
- *     immer möglich, und wer unsicher ist, nimmt diesen Weg.
+ *     immer möglich, und wer unsicher ist, nimmt diesen Weg. Die
+ *     Spielleitung kann das neue Blatt dabei gleich hinter den Schirm
+ *     stellen („als NSC“).
+ *
+ * Für mehrere Dateien auf einmal gibt es die Sammelvorschau
+ * (Sammelvorschau.jsx).
  */
 import { useState } from 'react';
-
-/** Wie viele Unterschiede höchstens einzeln dastehen. */
-const HOECHSTENS = 40;
-
-/** Eine Liste unter einer Überschrift – oder nichts, wenn sie leer ist. */
-function Abschnitt({ titel, eintraege, klasse = 'text-ink' }) {
-  if (!eintraege.length) return null;
-  const sichtbar = eintraege.slice(0, HOECHSTENS);
-  return (
-    <div className="mb-4">
-      <h3 className="mb-1.5 font-display text-[12px] tracking-[0.14em] text-sepia uppercase">{titel}</h3>
-      <ul className={`list-disc space-y-1 pl-5 text-[15px] ${klasse}`}>
-        {sichtbar.map((e, i) => (
-          <li key={`${i}-${e}`}>{e}</li>
-        ))}
-      </ul>
-      {eintraege.length > HOECHSTENS && (
-        <p className="mt-1 text-[14px] text-faint italic">… und {eintraege.length - HOECHSTENS} weitere.</p>
-      )}
-    </div>
-  );
-}
+import Abschnitt from './Abschnitt.jsx';
 
 /**
  * @param {object} props
@@ -45,12 +29,14 @@ function Abschnitt({ titel, eintraege, klasse = 'text-ink' }) {
  * @param {object|null} props.passend  das vorhandene Blatt, das aktualisiert werden kann
  * @param {string[]|null} props.aenderungen  Unterschiede zum vorhandenen Blatt
  * @param {boolean} props.fremd      die Datei stammt von einem anderen Blatt als dem geöffneten
- * @param {() => Promise<void>} props.onNeu
+ * @param {boolean} [props.nscMoeglich]  ein neues Blatt darf als NSC angelegt werden (Spielleitung)
+ * @param {(wie: { npc: boolean }) => Promise<void>} props.onNeu
  * @param {() => Promise<void>} props.onAktualisieren
  * @param {() => void} props.onAbbrechen
  */
-export default function Vorschau({ gelesen, passend, aenderungen, fremd, onNeu, onAktualisieren, onAbbrechen }) {
+export default function Vorschau({ gelesen, passend, aenderungen, fremd, nscMoeglich, onNeu, onAktualisieren, onAbbrechen }) {
   const [laeuft, setLaeuft] = useState(false);
+  const [alsNsc, setAlsNsc] = useState(false);
   const [fehler, setFehler] = useState('');
   const stand = gelesen.stand ? new Date(gelesen.stand).toLocaleString('de-DE') : null;
 
@@ -105,6 +91,12 @@ export default function Vorschau({ gelesen, passend, aenderungen, fremd, onNeu, 
           )}
         </div>
 
+        {nscMoeglich && (
+          <label className="mb-3 flex items-center gap-2 text-sepia">
+            <input type="checkbox" checked={alsNsc} onChange={(e) => setAlsNsc(e.target.checked)} />
+            Ein neues Blatt hinter den Schirm stellen (als NSC)
+          </label>
+        )}
         {fehler && <p className="mb-3 text-rubric">{fehler}</p>}
         <div className="flex flex-wrap gap-2.5">
           {passend && (
@@ -115,7 +107,7 @@ export default function Vorschau({ gelesen, passend, aenderungen, fremd, onNeu, 
           <button
             type="button"
             disabled={laeuft}
-            onClick={() => tun(onNeu)}
+            onClick={() => tun(() => onNeu({ npc: alsNsc }))}
             className={`btn ${passend ? 'btn-plate' : 'btn-seal'} disabled:opacity-60`}
           >
             Als neues Blatt anlegen

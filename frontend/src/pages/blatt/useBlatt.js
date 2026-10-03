@@ -76,6 +76,17 @@ export function useBlatt(id) {
     );
   });
 
+  // Das offene Blatt ist nicht mehr für dieses Fenster da: gelöscht, oder die
+  // Spielleitung hat es hinter den Schirm geholt. Dann wird nichts mehr
+  // gespeichert – jeder Versuch ginge ohnehin mit 403 zurück.
+  useLive('charakter:entfernt', (nachricht) => {
+    if (nachricht.id !== id) return;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = null;
+    setCharacter(null);
+    setError('Dieses Blatt ist nicht mehr für dich da – es wurde gelöscht oder liegt jetzt hinter dem Schirm der Spielleitung.');
+  });
+
   /**
    * Speichern mit Verzögerung („debounce“).
    *

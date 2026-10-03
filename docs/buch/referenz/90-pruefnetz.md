@@ -203,7 +203,7 @@ Der Vertrag spielt einen Abend in 21 Kapiteln, jedes baut auf dem vorigen auf (s
 | 11-vorhang | 21 | Vertrag, Kapitel: Der Vorhang. |
 | 12-sichtweite | 12 | Vertrag, Kapitel: Sichtweite: das Nebelfenster hängt an der Figur. |
 | 13-massstab | 9 | Vertrag, Kapitel: Maßstab und große Karten. |
-| 14-nsc | 11 | Vertrag, Kapitel: NSC-Blätter. |
+| 14-nsc | 31 | Vertrag, Kapitel: NSC-Blätter. |
 | 15-live-kanal | 4 | Vertrag, Kapitel: Der Live-Kanal. |
 | 16-umbenennen | 11 | Vertrag, Kapitel: Umbenennen. |
 | 17-uebernehmen | 32 | Vertrag, Kapitel: Daten in eine andere Kampagne kopieren. |

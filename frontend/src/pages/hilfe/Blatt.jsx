@@ -81,9 +81,14 @@ export default function Blatt() {
       <Card title="Wieder einlesen – auch nach einer KI">
         <p className="leading-relaxed text-ink">
           <span className="font-display">Einlesen</span> oben auf deinem Blatt übernimmt eine mitgenommene Datei in
-          dieses Blatt. <span className="font-display">Blatt einlesen</span> in der Übersicht erkennt, zu welchem Blatt
+          dieses Blatt. <span className="font-display">Blätter einlesen</span> in der Übersicht erkennt, zu welchem Blatt
           die Datei gehört, und bietet an, es zu aktualisieren – oder legt ein neues an. Vorher zeigt dir eine
           Vorschau genau, was sich ändert. Danach ist es ein ganz normales Blatt.
+        </p>
+        <p className="mt-3 leading-relaxed text-ink">
+          In der Übersicht kannst du auch <b>mehrere Dateien auf einmal</b> wählen. Dann zeigt eine Liste je Datei,
+          zu welchem Blatt sie gehört und was sich ändert, und du wählst je Datei: aktualisieren, als neues Blatt
+          anlegen oder auslassen. Eine kaputte Datei steht mit ihrem Grund dabei und hält die anderen nicht auf.
         </p>
         <p className="mt-3 leading-relaxed text-ink">
           Die Datei darf dazwischen bearbeitet werden – auch von einer KI: Gib sie ihr mit einem Auftrag wie

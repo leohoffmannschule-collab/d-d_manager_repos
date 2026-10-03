@@ -109,7 +109,9 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
   Datei steht eine Anleitung für die KI samt Verzeichnis aller Felder, jeder sichtbare Wert ist markiert, und vor dem
   Speichern zeigt eine **Vorschau**, was sich ändert. Typische KI-Fehler (Codeblock drumherum, Kommentare im JSON,
   Zahlen als Text, neue Einträge ohne Kennung) gleicht der Almanach aus; eine gekürzte Datei lehnt er mit Zeile und
-  Grund ab. Danach ist es ein ganz normales Blatt.
+  Grund ab. Danach ist es ein ganz normales Blatt. **Mehrere Dateien auf einmal** gehen auch: „Blätter einlesen“
+  in der Übersicht zeigt dann eine Liste mit einer Wahl je Datei (aktualisieren, neu anlegen, auslassen) – die
+  Spielleitung legt neue dabei auf Wunsch gleich als NSC an.
 - **Zwei Fassungen**: *Pergament* für helle Räume, *Kerzenlicht* für den abgedunkelten Spieltisch.
 - **Als App installierbar** (PWA), automatisches Speichern, keine Werbung, keine Cloud.
 
@@ -129,7 +131,10 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
   und die Chronik führt den neuen Ort erst, wenn der Vorhang aufgeht.
 - **NSC-Blätter**: vollständige Charakterblätter, die nur die Spielleitung sieht – der Wirt, der
   Räuberhauptmann, der Drache. Sie stehen in einem eigenen Abschnitt „Hinter dem Schirm“, tauchen bei
-  der Runde nirgends auf und werden beim Holen der Runde in den Kampf übergangen.
+  der Runde nirgends auf und werden beim Holen der Runde in den Kampf übergangen. **Umstellen geht
+  jederzeit, in beide Richtungen**: „Zum NSC“ holt einen Helden hinter den Schirm (seine Besitzerin
+  verliert ihn sofort aus der Übersicht, ihre Rechte ruhen, im Kampf zeigt er nur noch „verwundet“),
+  „In die Runde“ bringt ihn zurück – und er gehört wieder derselben Person.
 - **NSC-Steuerung**: Die Spielleitung sieht das Brett standardmäßig ganz. Mit einem Griff schaut sie
   durch die Augen einer ihrer Figuren und sieht genau das, was diese sieht – gerechnet auf dem Server,
   mit derselben Rechnung wie für die Runde. Praktisch, bevor man den Späher losschickt.

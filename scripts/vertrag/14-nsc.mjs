@@ -87,4 +87,94 @@ export default async function nsc(lage) {
     );
   }
 
+  // Nachträglich umstellen, in beide Richtungen: Ein Held der Runde wandert
+  // hinter den Schirm und kommt wieder hervor. Der Besitz bleibt stehen, aber
+  // solange das Blatt dort liegt, ruhen alle Rechte, die er sonst gibt.
+  {
+    const wandel = (
+      await spieler.ruf('/characters', {
+        methode: 'POST',
+        koerper: { name: 'Wandelheld', system: 'dnd5e', data: { combat: { hp: { current: 9, max: 12 } } } },
+      })
+    ).daten;
+    await sl.ruf('/encounter/party', { methode: 'POST' });
+    const zeile = async (wer) => (await wer.ruf('/encounter')).daten.combatants.find((c) => c.characterId === wandel.id);
+    gleich((await zeile(sl))?.type, 'pc', 'Im Kampf steht der Held zunächst als Held');
+    const szene = (await sl.ruf('/scenes/aktiv')).daten;
+    const figur = szene?.id
+      ? (
+          await sl.ruf(`/scenes/${szene.id}/figuren`, {
+            methode: 'POST',
+            koerper: { name: 'Wandelheld', x: 70, y: 70, characterId: wandel.id },
+          })
+        ).daten
+      : null;
+
+    const ohr = await mitschreiben(spieler);
+    await ohr.warteAuf('event: willkommen');
+    const hinter = (await sl.ruf(`/characters/${wandel.id}`, { methode: 'PATCH', koerper: { npc: true } })).daten;
+    gleich(hinter.npc, true, 'Die Spielleitung stellt einen Helden nachträglich hinter den Schirm');
+    gleich(hinter.shared, false, 'Dort ist er nicht mehr geteilt');
+    gleich(hinter.ownerId, wandel.ownerId, 'Der Besitz bleibt stehen – für den Weg zurück');
+    pruefe(
+      await ohr.warteAuf(`event: charakter:entfernt\ndata: {"id":"${wandel.id}"}`),
+      'Die Runde – auch der Besitzer – verliert das Blatt live aus der Übersicht'
+    );
+    gleich((await spieler.ruf(`/characters/${wandel.id}`)).status, 403, 'Der Besitzer kommt nicht mehr an das Blatt');
+    gleich(
+      (await spieler.ruf(`/characters/${wandel.id}`, { methode: 'PUT', koerper: { name: 'Doch noch', data: {} } })).status,
+      403,
+      'Und ändert es nicht'
+    );
+    gleich((await zeile(sl))?.type, 'npc', 'Im Kampf wird seine Zeile zur NSC-Zeile');
+    const sichtDerRunde = await zeile(spieler);
+    pruefe(sichtDerRunde && sichtDerRunde.hp === null, 'Die Runde sieht seine Trefferpunkte nicht mehr genau');
+    gleich(
+      (
+        await spieler.ruf(`/encounter/combatants/${(await zeile(sl)).id}/initiative`, {
+          methode: 'POST',
+          koerper: { value: 17 },
+        })
+      ).status,
+      403,
+      'Die Initiative trägt der Besitzer nicht mehr ein'
+    );
+    if (figur) {
+      gleich(
+        (await spieler.ruf(`/scenes/figuren/${figur.id}`, { methode: 'PATCH', koerper: { x: 140, y: 140 } })).status,
+        403,
+        'Seine Figur zieht der Besitzer nicht mehr'
+      );
+    }
+
+    const vor = (await sl.ruf(`/characters/${wandel.id}`, { methode: 'PATCH', koerper: { npc: false } })).daten;
+    gleich(vor.npc, false, 'Und holt ihn wieder hervor');
+    gleich(vor.shared, true, 'Zurück steht er in der Runde');
+    gleich(vor.ownerId, wandel.ownerId, 'Und gehört wieder derselben Person');
+    pruefe(
+      await ohr.warteAuf(`"id":"${wandel.id}","name":"Wandelheld","system":"dnd5e"`),
+      'Die Runde bekommt ihn live mit der vollen Kurzfassung zurück'
+    );
+    gleich((await spieler.ruf(`/characters/${wandel.id}`)).status, 200, 'Der Besitzer kommt wieder an sein Blatt');
+    gleich((await zeile(sl))?.type, 'pc', 'Und im Kampf ist er wieder ein Held');
+    gleich((await zeile(spieler))?.hp, 9, 'Mit Trefferpunkten, die die Runde sieht');
+    if (figur) {
+      gleich(
+        (await spieler.ruf(`/scenes/figuren/${figur.id}`, { methode: 'PATCH', koerper: { x: 140, y: 140 } })).status,
+        200,
+        'Seine Figur zieht er wieder selbst'
+      );
+    }
+    await ohr.zu();
+
+    // Hervorholen, aber privat: `shared: false` im selben Rumpf gilt.
+    await sl.ruf(`/characters/${wandel.id}`, { methode: 'PATCH', koerper: { npc: true } });
+    const privat = (await sl.ruf(`/characters/${wandel.id}`, { methode: 'PATCH', koerper: { npc: false, shared: false } }))
+      .daten;
+    pruefe(!privat.npc && !privat.shared, 'Mit shared: false kommt ein NSC als privates Blatt hervor');
+
+    if (figur) await sl.ruf(`/scenes/figuren/${figur.id}`, { methode: 'DELETE' });
+    await sl.ruf(`/encounter/combatants/${(await zeile(sl)).id}`, { methode: 'DELETE' });
+    await sl.ruf(`/characters/${wandel.id}`, { methode: 'DELETE' });
+  }
 }

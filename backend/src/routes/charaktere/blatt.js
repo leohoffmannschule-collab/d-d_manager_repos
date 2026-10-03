@@ -5,7 +5,8 @@
  * Hier stehen die Regeln, die jeder Weg der Charaktere braucht:
  *
  *   darfSehen       NSC-Blätter nur die Spielleitung; sonst eigene und geteilte
- *   darfBearbeiten  die Spielleitung und wem das Blatt gehört
+ *   fuehrtSelbst    wem das Blatt gehört – solange es nicht hinter dem Schirm liegt
+ *   darfBearbeiten  die Spielleitung und wer das Blatt selbst führt
  *
  * Und die zwei Formen, in denen ein Blatt hinausgeht: vollständig
  * (`rowToCharacter`) und als Kurzfassung für Listen (`summary`).
@@ -63,9 +64,23 @@ export const SELECT = `SELECT c.*, u.name AS owner_name FROM characters c LEFT J
 /** Ein Blatt dieser Kampagne – eines aus einer fremden gibt es für diesen Weg nicht. */
 export const holen = (id, campaignId) => db.prepare(`${SELECT} WHERE c.id = ? AND c.campaign_id = ?`).get(id, campaignId);
 
+/**
+ * Führt diese Person das Blatt als ihren Helden? Nur, wenn es ihr gehört –
+ * und nicht hinter dem Schirm liegt.
+ *
+ * Holt die Spielleitung ein Blatt hinter den Schirm (PATCH `{ npc: true }`),
+ * bleibt `owner_id` stehen, damit es beim Zurückholen wieder derselben
+ * Person gehört. Solange es dort liegt, ruht aber alles, was der Besitz
+ * sonst erlaubt: ändern, die Figur ziehen, durch ihre Augen sehen, für sie
+ * die Initiative eintragen. Dieselbe Regel steht deshalb auch in
+ * spieltisch/sichtbarkeit.js (`meineFiguren`), spieltisch/melden.js
+ * (`darfBewegen`) und routes/kampf/kaempfer.js (Initiative).
+ */
+export const fuehrtSelbst = (user, row) => !row.npc && row.owner_id === user.id;
+
 // Charaktere ohne Besitzer stammen aus der Zeit vor den Konten – sie gehören
 // der Spielleitung, bis sie jemandem zugewiesen werden.
-export const darfBearbeiten = (user, row) => isDm(user) || row.owner_id === user.id;
+export const darfBearbeiten = (user, row) => isDm(user) || fuehrtSelbst(user, row);
 
 /**
  * NSC-Blätter sind der Zettel der Spielleitung hinter dem Schirm: die Werte

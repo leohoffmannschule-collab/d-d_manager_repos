@@ -410,7 +410,7 @@ Der Knopf **„Mitnehmen“** im Kopf des Blattes erzeugt eine einzige HTML-Date
 
 ## Das Einlesen – auch nach einer KI
 
-Zurück kommt eine mitgenommene Datei über zwei Knöpfe: **„Einlesen“** im Kopf des Blattes übernimmt sie in dieses Blatt; **„Blatt einlesen“** in der Übersicht erkennt an der Kennung in der Datei, welches Blatt gemeint ist, und bietet an, es zu aktualisieren – sonst entsteht ein neues. Dazwischen darf die Datei bearbeitet worden sein, von Hand oder von einer KI.
+Zurück kommt eine mitgenommene Datei über zwei Knöpfe: **„Einlesen“** im Kopf des Blattes übernimmt sie in dieses Blatt; **„Blätter einlesen“** in der Übersicht erkennt an der Kennung in der Datei, welches Blatt gemeint ist, und bietet an, es zu aktualisieren – sonst entsteht ein neues. Dazwischen darf die Datei bearbeitet worden sein, von Hand oder von einer KI.
 
 Gespeichert wird erst nach einer **Vorschau**. Sie nennt:
 
@@ -421,6 +421,32 @@ Gespeichert wird erst nach einer **Vorschau**. Sie nennt:
 Dann **„… aktualisieren“** oder **„Als neues Blatt anlegen“**. Das Ergebnis ist ein gewöhnliches Blatt, das sich weiter bearbeiten lässt wie jedes andere; aktualisiert wird über denselben Weg wie jede Änderung am Blatt. Wer einer KI ein Blatt gibt, gibt ihrem Anbieter das ganze Blatt samt Bildnis – Kennwörter oder Zugangsdaten stehen nicht darin.
 
 Ein typischer Weg: *Mitnehmen* → die Datei einer KI geben, mit dem Auftrag „Steig ihn auf Stufe 4 auf und gib mir die ganze Datei zurück“ → die Antwort als `.html` sichern (ein Codeblock darum herum stört nicht) → *Einlesen* → Vorschau prüfen → *aktualisieren*. Was das Einlesen dabei im Einzelnen tut, steht im Kapitel „Das Blatt: Datenmodell und Ausfuhr“.
+
+### Mehrere Dateien auf einmal
+
+„Blätter einlesen“ in der Übersicht nimmt auch mehrere Dateien in einem Zug – die ganze Runde nach einem Abend, an dem eine KI allen eine Stufe gegeben hat, oder ein Stapel NSC, den die Spielleitung vorbereitet hat. Statt der ausführlichen Vorschau erscheint dann eine **Sammelvorschau**, eine Zeile je Datei:
+
+- der Name des Blattes, das Regelwerk und der Dateiname;
+- in einem Satz, was los ist: „Gehört zu ‚Brannoc‘ – eine Änderung.“, „Im Almanach gibt es dazu kein Blatt … – es wird neu angelegt.“, „Derselbe Stand wie ‚Brannoc‘ im Almanach.“ oder „Nicht lesbar: …“ mit Zeile, Spalte und Grund;
+- eine Wahl: *„…“ aktualisieren*, *als neues Blatt anlegen* oder *auslassen* – vorgeschlagen ist, was passt;
+- aufklappbar die **Einzelheiten**: dieselben drei Listen wie in der Vorschau für eine Datei.
+
+Eine kaputte Datei hält die anderen nicht auf. Tragen zwei Dateien dieselbe Kennung, darf nur die erste, die etwas ändert, das Blatt aktualisieren; die zweite ist zum Auslassen vorgeschlagen (als neues Blatt geht sie trotzdem) – sonst überschriebe sie still, was die erste gerade geschrieben hat. Die Spielleitung kann neue Blätter **als NSC** anlegen, je Zeile oder mit *Alle neuen Blätter hinter den Schirm stellen*.
+
+„Übernehmen“ speichert der Reihe nach und schreibt zu jeder Zeile, wie es ausging: *aktualisiert*, *angelegt*, *ausgelassen* oder *nicht gespeichert* samt Grund. Was gelang, bleibt gespeichert, auch wenn eine andere Datei scheitert. Danach lädt die Übersicht neu.
+
+## Ein Blatt hinter den Schirm – und zurück
+
+Die Spielleitung kann jedes Blatt nachträglich zum NSC-Blatt machen und jedes NSC-Blatt in die Runde holen: mit **„Zum NSC“** bzw. **„In die Runde“** unten auf der Karte in der Übersicht, oder unter *Spielleitung → Runde* bei „Wem gehört welches Blatt?“ (Wahl *in der Runde*, *privat*, *NSC – hinter dem Schirm*). Beides fragt einmal nach.
+
+| | Zum NSC | In die Runde |
+| --- | --- | --- |
+| Wer sieht das Blatt | nur die Spielleitung; bei allen anderen verschwindet es sofort, auch ein offenes | alle am Tisch (geteilt); es taucht bei ihnen von selbst auf |
+| Besitz | bleibt eingetragen, **ruht** aber: kein Ändern, kein Figurziehen, keine Sicht durch ihre Augen, keine Initiative | gilt wieder – der Held gehört derselben Person wie vorher |
+| Kampfliste | die Zeile wird zur NSC-Zeile: die Runde sieht nur „verwundet“ | die Zeile wird wieder zur Heldenzeile |
+| Auf der Karte in der Übersicht | „nur für die Spielleitung · Blatt von …“ | „Blatt von …“ |
+
+Was die Spielleitung am Blatt ändert, solange es hinter dem Schirm liegt, kommt mit zurück. Ein NSC, den die Spielleitung selbst angelegt hat, gehört ihr auch in der Runde; zuteilen geht unter *Spielleitung → Runde*.
 
 ## Die Vorlagen
 

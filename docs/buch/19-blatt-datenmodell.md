@@ -194,8 +194,8 @@ Schritt 8 hat eine Geschichte: Der Browser liest den Inhalt erst *nach* dem Klic
 | `lib/blatt/abschnitte.js` und `abschnitte/` | je eine Funktion je Tafel: Attribute, Kampf, Zustand, Rettungswürfe, Sinne, Fertigkeiten, Aktionen, Ressourcen, Zauber, Zauberblock, Inventar, Merkmale, Erscheinung, Hintergrund |
 | `lib/blatt/stil/*.css` | das Aussehen: Grund, Bogen, Listen, Zauberblock, Leiste (samt der Fassung für Papier) |
 | `lib/blattEinfuhr.js` | der Rückweg: aus einer mitgenommenen – auch bearbeiteten – Datei wieder ein Blatt machen |
-| `lib/einfuhr/` | seine Teile: `datei.js` (aufbereiten, Datensatz finden), `json.js` (nachsichtig lesen), `sichtbar.js` (sichtbare Änderungen), `angleichen.js` (in die Form des Blattes), `unterschiede.js` (für die Vorschau), `pfad.js` |
-| `components/BlattEinlesen.jsx`, `components/einlesen/Vorschau.jsx` | die Knöpfe „Blatt einlesen“ (Übersicht) und „Einlesen“ (Blatt) und die Vorschau vor dem Speichern |
+| `lib/einfuhr/` | seine Teile: `datei.js` (aufbereiten, Datensatz finden), `json.js` (nachsichtig lesen), `sichtbar.js` (sichtbare Änderungen), `angleichen.js` (in die Form des Blattes), `unterschiede.js` (für die Vorschau), `pfad.js`, und `stapel.js` (mehrere Dateien auf einmal: lesen, vorschlagen, speichern) |
+| `components/BlattEinlesen.jsx`, `components/einlesen/` | die Knöpfe „Blätter einlesen“ (Übersicht) und „Einlesen“ (Blatt); die Vorschau für eine Datei (`Vorschau.jsx`), die Sammelvorschau für mehrere (`Sammelvorschau.jsx`) und die Listen darin (`Abschnitt.jsx`) |
 
 ### Entschärfen
 
@@ -259,7 +259,7 @@ Jeder sichtbare Wert, der für sich in einem Feld des Datensatzes steht, trägt 
 
 ### Der Rückweg: Einlesen
 
-Mit dem Datensatz ist die Datei zugleich eine Sicherung, und sie darf bearbeitet zurückkommen – von Hand oder von einer KI. Zwei Knöpfe holen sie herein: **„Blatt einlesen“** in der Übersicht und **„Einlesen“** im Kopf eines Blattes (`components/BlattEinlesen.jsx`). Gelesen wird im Browser, in `lib/blattEinfuhr.js`, ohne DOMParser (er baute die ganze Seite samt Bildern auf) – und deshalb auch in Node, in der Blattprobe:
+Mit dem Datensatz ist die Datei zugleich eine Sicherung, und sie darf bearbeitet zurückkommen – von Hand oder von einer KI. Zwei Knöpfe holen sie herein: **„Blätter einlesen“** in der Übersicht und **„Einlesen“** im Kopf eines Blattes (`components/BlattEinlesen.jsx`). Gelesen wird im Browser, in `lib/blattEinfuhr.js`, ohne DOMParser (er baute die ganze Seite samt Bildern auf) – und deshalb auch in Node, in der Blattprobe:
 
 ```
 leseBlattdatei(text, { ersatzName, bekannt })
@@ -279,9 +279,11 @@ leseBlattdatei(text, { ersatzName, bekannt })
 
 **Fehlt der Datensatz** ganz, baut das Einlesen das Blatt aus den Marken der Seite (samt Listeneinträgen, deren Kennung ja im Pfad steht) und sagt dazu, dass Häkchen, Zustände und Leeres dann auf dem Ausgangswert stehen. **Bricht er mittendrin ab** – die KI hat gekürzt –, lehnt es ab und sagt es so.
 
-**Die Vorschau** (`components/einlesen/Vorschau.jsx`) zeigt vor dem Speichern, was nur sichtbar geändert war, was repariert wurde und – wenn es ein passendes Blatt gibt – was sich daran ändert (`lib/einfuhr/unterschiede.js`: „Stufe: 3 → 4“, „Neu: Angriff ‚Wurfaxt‘“, Weiten in der Einheit des Blattes). Passend ist im Blatt selbst dieses Blatt, in der Übersicht das Blatt mit der Kennung aus der Datei, wenn man es ändern darf und das Regelwerk stimmt. Dann gibt es zwei Wege: **„… aktualisieren“** – im Blatt über `replaceCharacter` aus `useBlatt`, also gespeichert wie jede Änderung; in der Übersicht als `PUT` – oder **„Als neues Blatt anlegen“** (`POST`), das immer möglich ist und das vorhandene unberührt lässt.
+**Die Vorschau** (`components/einlesen/Vorschau.jsx`) zeigt vor dem Speichern, was nur sichtbar geändert war, was repariert wurde und – wenn es ein passendes Blatt gibt – was sich daran ändert (`lib/einfuhr/unterschiede.js`: „Stufe: 3 → 4“, „Neu: Angriff ‚Wurfaxt‘“, Weiten in der Einheit des Blattes). Passend ist im Blatt selbst dieses Blatt, in der Übersicht das Blatt mit der Kennung aus der Datei, wenn man es ändern darf und das Regelwerk stimmt. Dann gibt es zwei Wege: **„… aktualisieren“** – im Blatt über `replaceCharacter` aus `useBlatt`, also gespeichert wie jede Änderung; in der Übersicht als `PUT` – oder **„Als neues Blatt anlegen“** (`POST`), das immer möglich ist und das vorhandene unberührt lässt. Die Spielleitung kann das neue Blatt dabei gleich als NSC anlegen (`npc: true`).
 
-Der Server prüft dasselbe noch einmal: Ein unbekanntes Regelwerk oder ein Datensatz, der kein Objekt ist, ergibt `blatt_ungueltig` – bei `POST` wie bei `PUT`, und dort, bevor etwas geschrieben wird. Die Blattprobe spielt den ganzen Weg durch: eine echte Datei, unverändert, im Datensatz geändert mit Kommentar und Komma zu viel, aus einem Chat-Codeblock, nur sichtbar geändert, beides widersprüchlich, ohne Datensatz, gekürzt, mit Zahlen als Text – und ein freies Blatt.
+**Mehrere Dateien** liest `lib/einfuhr/stapel.js`. `dateiLesen` ist der Weg einer einzelnen Datei – lesen, das passende Blatt holen, mit ihm daneben ein zweites Mal lesen (damit bekannte Einträge ihre Kennung behalten), die Unterschiede bilden –, und die Vorschau für eine Datei nimmt ihn genauso. `stapelLesen` geht ihn für jede Datei der Reihe nach und macht je Datei einen Vorschlag: *aktualisieren*, wenn es ein passendes Blatt gibt; *auslassen*, wenn die Datei denselben Stand hat, wenn sie sich nicht lesen lässt (der Grund steht dabei) oder wenn schon eine frühere Datei der Liste dasselbe Blatt aktualisiert; sonst *neu*. Die letzte Regel verhindert, dass zwei Fassungen desselben Blattes einander still überschreiben – und eine unveränderte Kopie davor sperrt die bearbeitete nicht aus, denn festgehalten wird ein Blatt erst von einer Datei, die etwas ändert. `stapelUebernehmen` speichert danach Datei für Datei; ein Fehler bei einer hält die übrigen nicht auf und steht im Ergebnis dieser Datei. Gespeichert wird über Rückrufe (`anlegen`, `aktualisieren`) statt über die API, damit dieselbe Datei in der Blattprobe läuft. Die Sammelvorschau (`components/einlesen/Sammelvorschau.jsx`) zeigt die Vorschläge, lässt sie je Datei ändern und schreibt nach dem Speichern zu jeder Zeile, wie es ausging.
+
+Der Server prüft dasselbe noch einmal: Ein unbekanntes Regelwerk oder ein Datensatz, der kein Objekt ist, ergibt `blatt_ungueltig` – bei `POST` wie bei `PUT`, und dort, bevor etwas geschrieben wird. Die Blattprobe spielt den ganzen Weg durch: eine echte Datei, unverändert, im Datensatz geändert mit Kommentar und Komma zu viel, aus einem Chat-Codeblock, nur sichtbar geändert, beides widersprüchlich, ohne Datensatz, gekürzt, mit Zahlen als Text – und ein freies Blatt. Dazu ein Stapel aus fünf Dateien: unverändert, bearbeitet, kaputt, eine zweite Fassung desselben Blattes und ein neues – mit den richtigen Vorschlägen, und beim Speichern einem Fehler, der die übrigen nicht aufhält.
 
 ### Der Dateiname
 
@@ -309,6 +311,7 @@ Die zwölf Vorlagen (`backend/src/vorlagen/`) sind auf dem Server gebaut, nicht 
 - die Umrechnung zwischen Fuß und Meter, Pfund und Kilogramm – in beide Richtungen, ohne dass ein Wert beim Hin- und Herrechnen wandert;
 - `withDefaults` an Blättern in früheren Formen: dass nichts verlorengeht und alles Neue dasteht, und die Entscheidung zwischen metrisch und imperial;
 - die zwölf Vorlagen: vollständig, jede Klasse und Spezies einmal, Werte nach den Regeln;
-- Ausfuhr und Einlesen: eine echte Datei hin und zurück – unverändert, von einer KI im Datensatz oder nur auf der Seite bearbeitet, aus einem Chat-Codeblock, ohne Datensatz, gekürzt, mit Zahlen als Text, zweimal eingelesen, als freies Blatt.
+- Ausfuhr und Einlesen: eine echte Datei hin und zurück – unverändert, von einer KI im Datensatz oder nur auf der Seite bearbeitet, aus einem Chat-Codeblock, ohne Datensatz, gekürzt, mit Zahlen als Text, zweimal eingelesen, als freies Blatt;
+- mehrere Dateien auf einmal: die Vorschläge je Datei und das Speichern der Reihe nach, bei dem ein Fehler die übrigen nicht aufhält.
 
 Sie läuft in unter einer Sekunde und gehört zu `npm test`.

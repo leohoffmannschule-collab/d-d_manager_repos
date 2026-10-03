@@ -247,9 +247,9 @@ so weit, wie dein eigener Blick ohnehin hinreicht.
 
 ### Was du grundsätzlich nicht siehst
 
-Verborgene Gegner, die Trefferpunkte von Monstern (du siehst nur „verwundet“),
-verdeckte Würfe der Spielleitung, ihre Notizen und alles, was im
-ungelüfteten Nebel steht. Das wird deinem Browser gar nicht erst geschickt –
+Verborgene Gegner, die Trefferpunkte von Monstern und NSC (du siehst nur
+„verwundet“), die Blätter hinter dem Schirm, verdeckte Würfe der
+Spielleitung, ihre Notizen und alles, was im ungelüfteten Nebel steht. Das wird deinem Browser gar nicht erst geschickt –
 suchen lohnt sich nicht.
 
 ---
@@ -311,9 +311,14 @@ dafür, beide heißen ähnlich:
 
 - **Einlesen** oben auf deinem Blatt, neben *Mitnehmen*: übernimmt die Datei
   in **dieses** Blatt.
-- **Blatt einlesen** in der Übersicht, neben *Neuer Charakter*: erkennt, zu
+- **Blätter einlesen** in der Übersicht, neben *Neuer Charakter*: erkennt, zu
   welchem Blatt die Datei gehört, und bietet an, es zu aktualisieren – oder
-  legt ein neues an.
+  legt ein neues an. Hier darfst du auch **mehrere Dateien auf einmal**
+  wählen (im Dateifenster mit gedrückter `Strg`- bzw. `⌘`-Taste, am Telefon
+  mit „Auswählen“). Dann zeigt die Vorschau eine Liste: je Datei, zu welchem
+  Blatt sie gehört und was sich ändert, und du wählst je Datei
+  *aktualisieren*, *als neues Blatt anlegen* oder *auslassen*. Eine kaputte
+  Datei steht mit ihrem Grund dabei und hält die anderen nicht auf.
 
 Gespeichert wird nie sofort. Erst erscheint eine **Vorschau**: was sich an
 deinem Blatt ändern würde („Stufe: 3 → 4“, „Neu: Angriff ‚Wurfaxt‘“), was
@@ -337,7 +342,7 @@ Hintergrundgeschichte“*. So geht es:
 3. Was die KI zurückgibt, als Datei sichern (Endung `.html`). Hat sie die
    Datei im Chat angezeigt, kopierst du sie heraus – der Codeblock darf mit;
    der Almanach findet die Datei darin.
-4. Im Almanach **Einlesen** (auf dem Blatt) oder **Blatt einlesen** (in der
+4. Im Almanach **Einlesen** (auf dem Blatt) oder **Blätter einlesen** (in der
    Übersicht), Datei wählen, Vorschau ansehen, bestätigen.
 
 Die KI muss dafür nichts über den Almanach wissen: Ganz oben in der Datei
@@ -372,6 +377,7 @@ die geänderten Werte auch von dort.
 | **„Zu viele Versuche“** | Acht Fehlversuche, dann zehn Minuten Ruhe. Kurz warten. |
 | **Deine Figur lässt sich nicht bewegen** | Du kannst nur deine eigene ziehen. Alle anderen bewegt die Spielleitung. |
 | **Dein Bildnis lädt nicht hoch** | Über 12 MB. Ein kleineres Bild nehmen. |
+| **Dein Blatt ist verschwunden** („nicht mehr für dich da“) | Die Spielleitung hat es hinter ihren Schirm gestellt – etwa, weil dein Held für eine Weile als NSC weiterlebt. Holt sie es zurück, gehört es wieder dir und taucht von selbst wieder auf, mit allem, was darauf stand. |
 
 Bleibt etwas offen: Unter **Hilfe** im Almanach steht dasselbe noch einmal
 kurz, an der Stelle, wo du gerade bist.

@@ -3,7 +3,7 @@
 > Dieses Kapitel schreibt `npm run handbuch` aus dem Code (scripts/handbuch/referenz/).
 > Änderungen gehören in den Code und seine Kommentare, nicht hierher.
 
-Alle Dateien der Oberfläche (215 Dateien, 19.437 Zeilen): Seiten, Bauteile, die Datenschicht in lib/, die Stilblätter und der Bau. Zu jeder Datei ihr Kopfkommentar und ihre Ausfuhren.
+Alle Dateien der Oberfläche (218 Dateien, 19.959 Zeilen): Seiten, Bauteile, die Datenschicht in lib/, die Stilblätter und der Bau. Zu jeder Datei ihr Kopfkommentar und ihre Ausfuhren.
 
 Sammelstellen wie icons.jsx oder lib/api.js führen nichts Eigenes aus, sondern reichen weiter – bei ihnen steht, woher.
 
@@ -103,7 +103,7 @@ NeuerFund; die Münzsorten in beute/muenzen.js.
 
 ### frontend/src/components/BlattEinlesen.jsx
 
-*149 Zeilen*
+*179 Zeilen*
 
 Ein mitgenommenes Blatt wieder einlesen – der Gegenknopf zu „Mitnehmen“.
 
@@ -112,17 +112,20 @@ Gedacht für den Weg hin und zurück: Blatt mitnehmen, die Datei bearbeiten
 hereinholen. Danach ist es ein ganz gewöhnliches Blatt im Almanach.
 
 Steht an zwei Stellen:
-- in der Übersicht („Blatt einlesen“): Trägt die Datei die Kennung eines
-  Blattes, das man ändern darf, wird angeboten, dieses zu aktualisieren;
-  sonst entsteht ein neues.
-- im Kopf eines Blattes („Einlesen“, mit `ziel`): Die Datei aktualisiert
-  dieses Blatt – über denselben Weg wie jede Änderung am Blatt
-  (`onErsetzen`, gespeichert von pages/blatt/useBlatt.js).
+- in der Übersicht („Blätter einlesen“): eine Datei oder mehrere auf
+  einmal. Trägt eine die Kennung eines Blattes, das man ändern darf,
+  wird angeboten, dieses zu aktualisieren; sonst entsteht ein neues –
+  bei der Spielleitung auf Wunsch gleich als NSC.
+- im Kopf eines Blattes („Einlesen“, mit `ziel`): genau eine Datei, die
+  dieses Blatt aktualisiert – über denselben Weg wie jede Änderung am
+  Blatt (`onErsetzen`, gespeichert von pages/blatt/useBlatt.js).
 
-Gespeichert wird nie sofort: Erst zeigt die Vorschau
-(einlesen/Vorschau.jsx), was die Datei enthält und was sich ändern würde.
-Gelesen wird im Browser (lib/blattEinfuhr.js) – die Datei geht nicht als
-Ganzes an den Server, nur das fertige Blatt.
+Gespeichert wird nie sofort: Erst zeigt die Vorschau, was die Dateien
+enthalten und was sich ändern würde – für eine Datei ausführlich
+(einlesen/Vorschau.jsx), für mehrere als Liste mit einer Wahl je Datei
+(einlesen/Sammelvorschau.jsx). Gelesen wird im Browser
+(lib/blattEinfuhr.js, lib/einfuhr/stapel.js) – die Dateien gehen nicht
+als Ganzes an den Server, nur die fertigen Blätter.
 
 **Ausfuhren**
 
@@ -894,13 +897,24 @@ Runde sieht dabei nichts von der Karte, die als Nächstes dran ist.
 
 ### frontend/src/components/dm/runde/Charakterzuweisung.jsx
 
-*74 Zeilen*
+*98 Zeilen*
 
 Welches Blatt gehört wem – und wer darf es lesen.
 
 Gebraucht, wenn jemand neu dazukommt und ein vorbereitetes Blatt
 übernimmt, oder wenn ein Blatt aus der Zeit vor den Konten noch niemandem
 gehört.
+
+Je Blatt zwei Wahlen: wem es gehört, und wer es sieht. Die zweite fasst
+`shared` und `npc` zusammen, weil sie zusammen *eine* Frage beantworten:
+
+```
+in der Runde          geteilt – alle am Tisch lesen mit
+privat                nur die Besitzerin (und die Spielleitung)
+NSC hinter dem Schirm nur die Spielleitung; der Besitz ruht, bis das
+                      Blatt zurückkommt (siehe `fuehrtSelbst` in
+                      backend/src/routes/charaktere/blatt.js)
+```
 
 **Ausfuhren**
 
@@ -1051,9 +1065,52 @@ Ein leerer Fleck ist schlimmer als eine Absage, die sagt, woran es liegt.
 
 ## frontend/src/components/einlesen/
 
+### frontend/src/components/einlesen/Abschnitt.jsx
+
+*37 Zeilen*
+
+Eine Liste unter einer Überschrift – in den Vorschauen beim Einlesen:
+„Auf der Seite geändert und übernommen“, „Hinweise“, „Was sich ändert“.
+
+Gebraucht von der Vorschau für eine Datei (Vorschau.jsx) und von der
+Sammelvorschau für mehrere (Sammelvorschau.jsx).
+
+**Ausfuhren**
+
+- `Abschnitt` (default function) – Die Liste – oder nichts, wenn sie leer ist.
+
+### frontend/src/components/einlesen/Sammelvorschau.jsx
+
+*206 Zeilen*
+
+Die Vorschau, wenn mehrere Blattdateien auf einmal eingelesen werden –
+bevor irgendetwas gespeichert wird.
+
+Je Datei eine Zeile: welches Blatt darin steht, was mit ihm geschehen
+soll, und – aufklappbar – was das Einlesen bemerkt hat und was sich am
+vorhandenen Blatt ändern würde. Den Vorschlag macht lib/einfuhr/stapel.js;
+hier lässt er sich je Datei ändern:
+
+```
+„X“ aktualisieren   nur, wenn die Datei zu einem Blatt gehört, das man
+                    ändern darf
+als neues Blatt     immer möglich; die Spielleitung kann es gleich
+                    hinter den Schirm stellen („als NSC“), einzeln oder
+                    für alle neuen auf einmal
+auslassen           die Datei bleibt draußen
+```
+
+„Übernehmen“ speichert der Reihe nach und schreibt zu jeder Zeile, wie es
+ausging. Was gelang, bleibt gespeichert, auch wenn eine andere Datei
+scheitert.
+
+**Ausfuhren**
+
+- `Sammelvorschau` (default function) – 
+
 ### frontend/src/components/einlesen/Vorschau.jsx
 
-*131 Zeilen*
+*123 Zeilen*
 
 Die Vorschau beim Einlesen einer Blattdatei – bevor irgendetwas
 gespeichert wird.
@@ -1069,7 +1126,12 @@ Zwei Wege hinaus:
   Angeboten nur, wenn es eines gibt, das man ändern darf, und das
   Regelwerk passt.
 - „Als neues Blatt anlegen“: Das vorhandene bleibt, wie es ist. Das ist
-  immer möglich, und wer unsicher ist, nimmt diesen Weg.
+  immer möglich, und wer unsicher ist, nimmt diesen Weg. Die
+  Spielleitung kann das neue Blatt dabei gleich hinter den Schirm
+  stellen („als NSC“).
+
+Für mehrere Dateien auf einmal gibt es die Sammelvorschau
+(Sammelvorschau.jsx).
 
 **Ausfuhren**
 
@@ -2525,7 +2587,7 @@ oder Telefon. Gedruckt sieht sie aus wie ein Charakterbogen.
 
 Am Ende der Datei steckt außerdem der vollständige Datensatz, in einem
 `<template>` – Daten, kein Skript. Die Datei ist damit zugleich eine
-Sicherung: „Blatt einlesen“ in der Übersicht legt daraus wieder ein Blatt
+Sicherung: „Blätter einlesen“ in der Übersicht legt daraus wieder ein Blatt
 an oder bringt das vorhandene auf ihren Stand (blattEinfuhr.js).
 
 **Die Datei darf bearbeitet zurückkommen** – von Hand oder von einer KI.
@@ -2568,7 +2630,7 @@ Stelle zu und keine andere.
 
 ### frontend/src/lib/blattEinfuhr.js
 
-*158 Zeilen*
+*162 Zeilen*
 
 Das mitgenommene Blatt wieder hereinholen – auch nachdem eine KI es
 bearbeitet hat.
@@ -2598,6 +2660,10 @@ Angenommen werden auch Dateien aus älteren Fassungen (Datensatz
 entschärft im `<template>` oder roh im `<script>`) und der nackte
 JSON-Text. Alles läuft ohne Browser-Schnittstellen – die Blattprobe
 prüft es in Node (scripts/blattprobe.mjs).
+
+Diese Datei liest *eine* Datei. Mehrere auf einmal – samt Vorschlag, was
+mit jeder geschehen soll – liest einfuhr/stapel.js, Datei für Datei mit
+`leseBlattdatei`.
 
 **Ausfuhren**
 
@@ -3069,7 +3135,7 @@ eine KI, die das Blatt bearbeiten soll.
 
 Wer sein Blatt einer KI gibt („mach ihn Stufe 5“, „trag die Beute von
 gestern ein“), bekommt eine geänderte Datei zurück und liest sie mit
-„Blatt einlesen“ wieder in den Almanach. Damit das gelingt, muss die KI
+„Blätter einlesen“ wieder in den Almanach. Damit das gelingt, muss die KI
 wissen, wo die Werte stehen und was sie dort darf. Das sagt ihr ein
 Kommentar im Kopf der Datei – unsichtbar im Browser, aber das Erste, was
 eine KI im Quelltext liest. Das Feldverzeichnis darin wird aus
@@ -3176,7 +3242,7 @@ beschriftetes Feld, eine Tabelle.
 
 Dazu `marke`: Sie umgibt einen sichtbaren Wert mit dem Pfad, unter dem er
 im Datensatz steht. Ändert jemand – oder eine KI – nur die sichtbare
-Seite, findet „Blatt einlesen“ die Änderung daran wieder
+Seite, findet „Blätter einlesen“ die Änderung daran wieder
 (lib/einfuhr/sichtbar.js).
 
 **Ausfuhren**
@@ -3187,7 +3253,7 @@ Seite, findet „Blatt einlesen“ die Änderung daran wieder
 - `MUENZEN` (const) – Die Münzsorten als [Schlüssel, Name], von der wertvollsten zur kleinsten.
 - `alsDatenUrl` (async function) – Bilder müssen mit in die Datei – ein Verweis auf den Server nützt nichts, wenn der Server gerade aus ist.
 - `zaubertexte` (async function) – Die Zaubertexte aus dem Kompendium holen. Genau dafür nimmt man das Blatt ja mit: Wer den ganzen Abend nachschlagen muss, hat vom Ausdruck nichts. Schlägt der Abruf fehl, bleibt es beim Namen.
-- `marke` (function) – Ein sichtbarer Wert, den „Blatt einlesen“ wiedererkennt.
+- `marke` (function) – Ein sichtbarer Wert, den „Blätter einlesen“ wiedererkennt.
 - `zelle` (const) – Eine Tabellenzelle aus einem Listeneintrag – markiert, wenn der Eintrag eine Kennung hat.
 - `tafel` (const) – Eine Karte mit Überschrift. Leerer Inhalt heißt: gar keine Karte.
 - `feld` (const) – Ein beschriftetes Feld: kleine Beschriftung, Wert darunter; ein leerer Wert wird zu „–“. Mit `pfad` ist der Wert markiert (siehe `marke`).
@@ -3346,7 +3412,7 @@ und gibt die Daten samt Nachlade-Handgriff zurück.
 
 ### frontend/src/lib/daten/kampagne.js
 
-*106 Zeilen*
+*109 Zeilen*
 
 Was einer Kampagne gehört: Charaktere, Beute, Notizen, Chronik.
 
@@ -3540,6 +3606,42 @@ die Ausfuhr selbst schreibt – so läuft es auch in der Blattprobe (Node).
 - `markenLesen` (function) – Alle markierten Werte einer Datei.
 - `zurueck` (function) – Sichtbaren Text in einen Wert zurückverwandeln, nach der Art des Feldes. Eine Einheit im Text („12 m“, „40 Fuß“, „3 kg“) gilt vor dem Maßsystem des Blattes. Gibt `undefined` zurück, wenn sich nichts herauslesen lässt.
 - `sichtbaresUebernehmen` (function) – Die sichtbaren Änderungen in den Datensatz übernehmen.
+
+### frontend/src/lib/einfuhr/stapel.js
+
+*158 Zeilen*
+
+Mehrere Blattdateien auf einmal einlesen – etwa die ganze Runde nach einem
+Abend, an dem eine KI allen eine Stufe gegeben hat, oder ein Stapel NSC,
+den die Spielleitung vorbereitet hat.
+
+Jede Datei wird für sich gelesen, genau wie eine einzelne
+(lib/blattEinfuhr.js). Eine Datei, die sich nicht lesen lässt, hält die
+anderen nicht auf: Sie steht mit ihrem Grund in der Liste und wird
+ausgelassen. Für jede lesbare schlägt `stapelLesen` vor, was mit ihr
+geschehen soll – die Sammelvorschau (components/einlesen/Sammelvorschau.jsx)
+lässt das ändern, bevor etwas gespeichert wird:
+
+```
+aktualisieren  die Datei trägt die Kennung eines Blattes, das man ändern darf
+neu            sonst – ein neues Blatt
+auslassen      unlesbar, oder derselbe Stand wie das Blatt im Almanach
+```
+
+Tragen zwei Dateien dieselbe Kennung, darf nur die erste, die etwas
+ändert, das Blatt aktualisieren; die anderen werden ausgelassen (als neues
+Blatt lassen sie sich trotzdem wählen). Sonst überschriebe die zweite
+still, was die erste gerade geschrieben hat.
+
+Gespeichert wird über Rückrufe (`anlegen`, `aktualisieren`), nicht über
+die API selbst – so läuft dieselbe Datei auch in der Blattprobe (Node).
+
+**Ausfuhren**
+
+- `zumVergleich` (const) – Ein Blatt so, wie es zum Vergleichen gebraucht wird – ältere 5e-Blätter aufgefüllt.
+- `dateiLesen` (async function) – Eine Datei lesen und dem Blatt gegenüberstellen, das sie aktualisieren könnte.
+- `stapelLesen` (async function) – Alle Dateien lesen, der Reihe nach, und für jede einen Vorschlag machen.
+- `stapelUebernehmen` (async function) – Den Stapel speichern, eine Datei nach der anderen. Ein Fehler bei einer hält die übrigen nicht auf; er steht im Ergebnis dieser Datei.
 
 ### frontend/src/lib/einfuhr/unterschiede.js
 
@@ -3761,7 +3863,7 @@ useBlatt.js): Wer tippt, soll sehen, dass es ankommt.
 
 ### frontend/src/pages/blatt/useBlatt.js
 
-*147 Zeilen*
+*158 Zeilen*
 
 Das Blatt laden, halten und von selbst speichern – der Zustand hinter der
 Seite des Charakterblattes (CharacterSheet.jsx).
@@ -3865,7 +3967,7 @@ Gesucht wird örtlich in der schon geladenen Liste, ohne neue Anfrage.
 
 ### frontend/src/pages/Dashboard.jsx
 
-*212 Zeilen*
+*253 Zeilen*
 
 Die Startseite: alle Charaktere der Kampagne auf einen Blick.
 
@@ -3879,12 +3981,16 @@ Was hier mit einem Blatt geschehen kann:
 - Abschrift  – eine Kopie *in dieser* Kampagne (etwa aus einer Vorlage)
 - In Kampagne … – eine Kopie in einer *anderen* Kampagne, nur für die
                   Spielleitung (siehe components/Kopierziel.jsx)
+- Zum NSC / In die Runde – nur die Spielleitung: ein Blatt nachträglich
+                  hinter den Schirm stellen oder von dort zurückholen.
+                  Der Besitz bleibt; ein zurückgeholter Held gehört
+                  wieder derselben Person.
 - Löschen    – das eigene Blatt, oder jedes, wenn man die Runde führt
 
-Und oben: ein neues Blatt anlegen oder ein mitgenommenes einlesen – auch
-eines, das jemand oder eine KI inzwischen bearbeitet hat; trägt es die
-Kennung eines Blattes hier, lässt es sich auch darauf übernehmen
-(components/BlattEinlesen.jsx).
+Und oben: ein neues Blatt anlegen oder mitgenommene einlesen – eines oder
+mehrere auf einmal, auch solche, die jemand oder eine KI inzwischen
+bearbeitet hat; trägt eines die Kennung eines Blattes hier, lässt es sich
+auch darauf übernehmen (components/BlattEinlesen.jsx).
 
 **Ausfuhren**
 
@@ -4150,7 +4256,7 @@ und ein „läuft“ an der offenen.
 
 ### frontend/src/pages/hilfe/Blatt.jsx
 
-*102 Zeilen*
+*107 Zeilen*
 
 Hilfe: rund ums eigene Blatt – das Charakterblatt, Zauber und Rasten,
 die Beutekiste und das Mitnehmen als eigenständige Datei – samt dem Rückweg,
@@ -4220,7 +4326,7 @@ Hilfe: woher die Regeltexte stammen, mit Verweisen auf die Quellen.
 
 ### frontend/src/pages/hilfe/Spielleitung.jsx
 
-*114 Zeilen*
+*125 Zeilen*
 
 Hilfe: der Abschnitt „Für die Spielleitung“ – was hinter dem Schirm
 liegt und wie man es benutzt.

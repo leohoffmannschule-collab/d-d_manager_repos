@@ -416,7 +416,7 @@ abgetippt werden, und liegen muss sie ohnehin schon im Papierkorb.
 | GET | `/api/characters/verwaltung/alle` | Spielleitung, Kampagne gewählt | alle Blätter der Kampagne für die Verwaltung, NSC eingeschlossen. |
 | POST | `/api/characters` | angemeldet, Kampagne gewählt | ein neues Blatt anlegen: aus „Neuer Charakter“ oder aus einer mitgenommenen Datei. |
 | PUT | `/api/characters/:id` | angemeldet, Kampagne gewählt | full update (autosave from the sheet editor) |
-| PATCH | `/api/characters/:id` | angemeldet, Kampagne gewählt | Besitz und Sichtbarkeit |
+| PATCH | `/api/characters/:id` | angemeldet, Kampagne gewählt | Besitz und Sichtbarkeit. |
 | DELETE | `/api/characters/:id` | angemeldet, Kampagne gewählt | ein Blatt löschen. |
 | POST | `/api/characters/:id/duplicate` | angemeldet, Kampagne gewählt | eine Abschrift in derselben Kampagne, die dem Fragenden gehört. |
 | POST | `/api/characters/:id/kopieren` | Spielleitung, Kampagne gewählt | Dasselbe Blatt in einer anderen Kampagne – etwa, wenn die Runde dieselben Helden in einer neuen Geschichte weiterspielt oder ein NSC ein zweites Mal gebraucht wird. |
@@ -458,13 +458,15 @@ PUT /api/characters/:id – full update (autosave from the sheet editor)
 
 ### PATCH /api/characters/:id
 
-*backend/src/routes/charaktere/schreiben.js, Zeile 112 · angemeldet, Kampagne gewählt*
+*backend/src/routes/charaktere/schreiben.js, Zeile 114 · angemeldet, Kampagne gewählt*
 
-PATCH /api/characters/:id – Besitz und Sichtbarkeit
+PATCH /api/characters/:id  { ownerId?, shared?, npc? } – Besitz und
+Sichtbarkeit. `npc` stellt ein Blatt hinter den Schirm (true) oder holt es
+in die Runde zurück (false); beides nur die Spielleitung.
 
 ### DELETE /api/characters/:id
 
-*backend/src/routes/charaktere/schreiben.js, Zeile 154 · angemeldet, Kampagne gewählt*
+*backend/src/routes/charaktere/schreiben.js, Zeile 177 · angemeldet, Kampagne gewählt*
 
 DELETE /api/characters/:id – ein Blatt löschen. Das darf, wem es gehört,
 und die Spielleitung; Figuren auf dem Tisch verlieren dabei nur ihren
@@ -717,7 +719,7 @@ Wurf selbst ein. Fremde Zeilen bleiben tabu.
 
 ### DELETE /api/encounter/combatants/:id
 
-*backend/src/routes/kampf/kaempfer.js, Zeile 207 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/kampf/kaempfer.js, Zeile 209 · Spielleitung, Kampagne gewählt*
 
 DELETE /api/encounter/combatants/:id – einen Kämpfer aus dem Kampf nehmen.
 War er gerade dran, ist es danach der, der in der Reihenfolge an seine

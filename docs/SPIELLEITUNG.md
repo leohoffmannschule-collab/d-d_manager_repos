@@ -119,6 +119,38 @@ holst“.
 Verknüpfst du später eine Figur auf der Karte damit, gelten die Sinne des
 NSC für ihre Sicht – praktisch für den Späher mit Dunkelsicht.
 
+**Nachträglich umstellen – in beide Richtungen.** Jedes Blatt in der
+Übersicht hat bei dir einen Knopf **Zum NSC** (bei den Blättern der Runde)
+bzw. **In die Runde** (hinter dem Schirm). Nach einer Rückfrage wandert es:
+
+- **Zum NSC:** Die Spielerin verliert ihren Helden sofort aus der Übersicht,
+  auch ein offenes Blatt schließt sich bei ihr. Ihr Besitz *ruht*: Sie
+  ändert das Blatt nicht, zieht die Figur nicht, sieht nicht mehr durch ihre
+  Augen und trägt keine Initiative für sie ein. Steht der Held schon in der
+  Kampfliste, wird seine Zeile zur NSC-Zeile – die Runde sieht nur noch
+  „verwundet“ statt der Trefferpunkte. Auf der Karte unter dem Schirm steht
+  „Blatt von …“, damit du weißt, wem er gehört.
+- **In die Runde:** Das Blatt steht wieder geteilt bei allen, und es gehört
+  wieder derselben Person wie vorher – mit allem, was du inzwischen darauf
+  geändert hast. In der Kampfliste wird die Zeile wieder zur Heldenzeile.
+  Ein NSC, den du selbst angelegt hast, gehört danach dir; unter
+  *Spielleitung → Runde* teilst du ihn jemandem zu.
+
+Gedacht ist das für die Fälle, die jede Kampagne kennt: Eine Spielerin hört
+auf, ihr Held bleibt als Gefährte in der Geschichte. Ein NSC schließt sich
+der Gruppe an und bekommt jemanden, der ihn spielt. Ein Held ist verflucht,
+gefangen oder besessen und gehört eine Weile dir.
+
+Dasselbe geht unter *Spielleitung → Runde* bei **Wem gehört welches Blatt?**:
+Dort wählst du je Blatt *in der Runde*, *privat* oder *NSC – hinter dem
+Schirm*.
+
+**Viele NSC auf einmal.** **Blätter einlesen** in der Übersicht nimmt mehrere
+Dateien auf einmal. In der Liste, die dann erscheint, hakst du bei neuen
+Blättern **als NSC** an – oder gleich *Alle neuen Blätter hinter den Schirm
+stellen*. So kommt eine ganze Räuberbande, die du mit einer KI vorbereitet
+hast, in einem Zug hinter den Schirm.
+
 **NSC mit einer KI ausarbeiten.** Ein NSC-Blatt lässt sich – wie jedes Blatt
 – *mitnehmen*, einer KI geben und wieder *einlesen*: „Mach aus dem Wirt einen
 ehemaligen Söldner, Stufe 5, mit Vorgeschichte und zwei Angriffen.“ Die

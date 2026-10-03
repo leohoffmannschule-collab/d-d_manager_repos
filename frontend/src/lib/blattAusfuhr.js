@@ -8,7 +8,7 @@
  *
  * Am Ende der Datei steckt außerdem der vollständige Datensatz, in einem
  * `<template>` – Daten, kein Skript. Die Datei ist damit zugleich eine
- * Sicherung: „Blatt einlesen“ in der Übersicht legt daraus wieder ein Blatt
+ * Sicherung: „Blätter einlesen“ in der Übersicht legt daraus wieder ein Blatt
  * an oder bringt das vorhandene auf ihren Stand (blattEinfuhr.js).
  *
  * **Die Datei darf bearbeitet zurückkommen** – von Hand oder von einer KI.
@@ -103,7 +103,7 @@ ${kiAnleitung(character.system)}
 ${koerper}
 <p class="hinweis hinweis-fuss">
   Abgeschrieben aus dem Abenteuer-Almanach. Diese Datei lässt sich bearbeiten – von Hand oder von
-  einer KI – und mit „Blatt einlesen“ wieder in den Almanach holen. Bis dahin gilt am Spieltisch
+  einer KI – und mit „Blätter einlesen“ wieder in den Almanach holen. Bis dahin gilt am Spieltisch
   das Blatt im Almanach.
 </p>
 </div>

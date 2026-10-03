@@ -103,6 +103,8 @@ Nach einem Nebelstrich geht nicht die ganze Szene hinaus, sondern nur der Strich
 
 Beim **Kampf** genügen zwei Fassungen: eine für die Spielleitung, eine für die Runde (`kampf/sicht.js`). Beim **Blatt** entscheidet `blattmeldung.js`, wer es sehen darf – Spielleitung immer, die Runde nur bei geteilten, die Besitzerin bei ihrem eigenen, niemand aus der Runde bei einem NSC-Blatt.
 
+Ändert sich, *wer* ein Blatt sieht, gehen zwei verschiedene Nachrichten hinaus. Wer es nicht mehr sehen darf – weil es hinter den Schirm wanderte oder nicht mehr geteilt ist –, bekommt `charakter:entfernt` (`meldeEntzug`); die Übersicht nimmt es heraus, ein offenes Blatt sagt „nicht mehr für dich da“ und speichert nicht weiter. Wer es neu sehen darf – etwa, wenn die Spielleitung einen NSC in die Runde holt –, bekommt `charakter:aktualisiert` mit der **vollen Kurzfassung**. Die Übersicht (`useCharaktere` in `lib/daten/kampagne.js`) nimmt ein Blatt, das sie noch nicht kennt, nur dann auf, wenn die Nachricht diese volle Kurzfassung ist (sie trägt `system`); eine Meldung nur mit Trefferpunkten aus dem Kampf oder der Beute ändert nur Einträge, die schon dastehen. Was ein Fenster sehen darf, hat der Server schon entschieden – die Oberfläche muss nicht noch einmal filtern.
+
 ### Trennen
 
 ```js

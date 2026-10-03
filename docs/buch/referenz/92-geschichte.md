@@ -7,7 +7,7 @@ Der Almanach ist in kleinen Schritten gewachsen, und jeder Schritt hat eine Nach
 
 Die Nachrichten sind so abgedruckt, wie sie geschrieben wurden. Die ersten, vom 1. September, sind englisch; ab dem 3. September wurde der Almanach deutsch, im Code wie in seiner Geschichte.
 
-Insgesamt 96 Schritte an 15 Tagen.
+Insgesamt 97 Schritte an 16 Tagen.
 
 ## 1. September 2026
 
@@ -1412,3 +1412,18 @@ Oberfläche: „Einlesen“ im Kopf des Blattes und „Blatt einlesen“ in der 
 Server: PUT /api/characters/:id weist einen Datensatz, der kein Objekt ist, mit blatt_ungueltig ab – bevor etwas geschrieben wird.
 
 Proben: Blattprobe 384 (echte Datei hin und zurück in allen KI-Fällen), Vertrag 362. Doku: README, Handbuch, Anleitungen für Runde und Spielleitung, Einrichtung, API, CODE.md, Buchkapitel, Hilfe im Almanach; Handbuch (568 Seiten) und Zeilenbuch (1.666 Seiten) neu gebaut.
+
+## 3. Oktober 2026
+
+### Messen und Zeigen für die ganze Runde
+
+`5634483`
+
+Lineal und Zeigefinger hatten bisher nur Knöpfe in der Leiste der Spielleitung; wer mitspielte, konnte am Rechner mit Alt+Klick zeigen und am Telefon gar nichts. Jetzt hat die Runde eine eigene Werkzeugleiste.
+
+- Spielerleiste.jsx: Bewegen, Messen, Zeigen über dem Spieltisch, daneben in einem Satz, was das gewählte Werkzeug tut (am Telefon gibt es kein Überfahren mit der Maus).
+- leiste/werkzeugliste.js: die Werkzeuge an einer Stelle; `fuerAlle` markiert, was die Runde bekommt. Werkzeuge.jsx liest dieselbe Liste.
+- Neues Zeichen IconLineal.
+- Fehler behoben: Bei der Runde liegt der Nebel über den Figuren (Ebene 25), das Lineal lag darunter und war im Nebel unsichtbar. Es liegt jetzt wie der Zeigefinger auf Ebene 30.
+
+Vertrag 367: Ein Zeigefinger aus der Runde erreicht die Spielleitung, hinter dem Vorhang aber nur sie. Im Browser mit Maus und als Telefon mit dem Finger durchgespielt. Doku: README, Handbuch, Anleitungen für Runde und Spielleitung, Buchkapitel, Hilfe im Almanach; Handbuch (571 Seiten) und Zeilenbuch (1.670 Seiten) neu gedruckt.

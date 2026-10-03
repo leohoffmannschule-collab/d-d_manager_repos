@@ -4,7 +4,7 @@
  *
  * Wer sein Blatt einer KI gibt („mach ihn Stufe 5“, „trag die Beute von
  * gestern ein“), bekommt eine geänderte Datei zurück und liest sie mit
- * „Blatt einlesen“ wieder in den Almanach. Damit das gelingt, muss die KI
+ * „Blätter einlesen“ wieder in den Almanach. Damit das gelingt, muss die KI
  * wissen, wo die Werte stehen und was sie dort darf. Das sagt ihr ein
  * Kommentar im Kopf der Datei – unsichtbar im Browser, aber das Erste, was
  * eine KI im Quelltext liest. Das Feldverzeichnis darin wird aus
@@ -97,7 +97,7 @@ export function kiAnleitung(system) {
   file as .html.
 
   Diese Datei ist ein Charakterblatt aus dem Abenteuer-Almanach. Wer sie dir gibt, will
-  sie geändert zurück und liest sie danach mit „Blatt einlesen“ wieder in den Almanach.
+  sie geändert zurück und liest sie danach mit „Blätter einlesen“ wieder in den Almanach.
   Damit das gelingt:
 
   1. Maßgeblich ist der DATENSATZ am Ende der Datei: das JSON im <template>-Element

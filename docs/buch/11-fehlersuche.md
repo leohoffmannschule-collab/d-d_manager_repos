@@ -81,9 +81,9 @@ Der **Status** sagt die Art, der **Schlüssel** die Sache, der **Satz** ist für
 
 **`nur_spielleitung` (403).** Ein Weg, den nur die Spielleitung gehen darf. In der Oberfläche sieht man solche Knöpfe als Spielerin gar nicht; wer die Meldung trotzdem sieht, hat meist gerade die Rolle verloren und ein altes Fenster offen. Neu laden.
 
-**`blatt_nicht_sichtbar` (403), `blatt_fremd` (403).** Das erste: ein Blatt, das man nicht sehen darf (ein NSC-Blatt, ein nicht geteiltes fremdes). Das zweite: eines, das man sehen, aber nicht ändern darf. Beides passiert, wenn die Spielleitung ein Blatt hinter den Schirm legt oder das Teilen abschaltet, während es jemand offen hat.
+**`blatt_nicht_sichtbar` (403), `blatt_fremd` (403).** Das erste: ein Blatt, das man nicht sehen darf (ein NSC-Blatt, ein nicht geteiltes fremdes). Das zweite: eines, das man sehen, aber nicht ändern darf. Beides passiert, wenn die Spielleitung ein Blatt hinter den Schirm legt oder das Teilen abschaltet, während es jemand offen hat. Liegt das *eigene* Blatt hinter dem Schirm, gilt `blatt_fremd` auch für die Besitzerin: Ihr Besitz ruht, bis die Spielleitung es zurückholt. Ein offenes Blatt sagt das inzwischen selbst („nicht mehr für dich da“) und speichert nicht weiter.
 
-**`figur_fremd` (403).** Die Figur hängt nicht an einem eigenen Blatt. Mitspielende dürfen nur Figuren ziehen, die an ihrem eigenen Charakterblatt hängen; alle anderen zieht die Spielleitung.
+**`figur_fremd` (403).** Die Figur hängt nicht an einem eigenen Blatt. Mitspielende dürfen nur Figuren ziehen, die an ihrem eigenen Charakterblatt hängen – und nicht, solange dieses Blatt hinter dem Schirm liegt; alle anderen zieht die Spielleitung.
 
 **`verweis_unbekannt` (400).** Etwas verweist auf ein Blatt oder einen Kämpfer, den es in dieser Kampagne nicht gibt – meist ein Fenster mit altem Stand, in dem etwas längst gelöscht ist.
 
@@ -141,7 +141,8 @@ Der **Status** sagt die Art, der **Schlüssel** die Sache, der **Satz** ist für
 | Bild | Wahrscheinliche Ursache | Was tun |
 |---|---|---|
 | Die Runde sieht bei Monstern keine Trefferpunkte | Absicht: nur ein Wort wie „verwundet“. | – |
-| Eine Heldin fehlt in der Kampfliste nach „Runde holen“ | Ihr Blatt ist nicht geteilt, oder es ist ein NSC-Blatt. | Blatt teilen (unter *Spielleitung → Runde*). |
+| Eine Heldin fehlt in der Kampfliste nach „Runde holen“ | Ihr Blatt ist nicht geteilt, oder es ist ein NSC-Blatt. | Blatt teilen (unter *Spielleitung → Runde*) bzw. mit „In die Runde“ hervorholen. |
+| Die Runde sieht bei einem Helden nur noch „verwundet“ | Sein Blatt wurde hinter den Schirm gestellt; seine Zeile ist jetzt eine NSC-Zeile. | „In die Runde“ in der Übersicht – die Zeile wird wieder zur Heldenzeile. |
 | „Eigene Initiative würfeln“ fehlt | Die eigene Heldin steht nicht in der Liste. | „Runde holen“. |
 | Schaden steht in der Liste, aber nicht auf dem Blatt | Der Kämpfer ist nicht mit dem Blatt verknüpft (von Hand angelegt), oder die Spielerin tippt gerade selbst auf ihrem Blatt. | Über „Runde holen“ verknüpfen. Im zweiten Fall gleicht es sich beim nächsten Speichern an. |
 | Die Initiative eines Monsters wirkt zu niedrig | Sein Statblock hat keine Geschicklichkeit eingetragen – dann ist der Bonus 0. | Im Bestiarium GE nachtragen; bei einem Kämpfer von Hand den „Bonus“ beim Eintragen setzen. |
@@ -159,6 +160,8 @@ Der **Status** sagt die Art, der **Schlüssel** die Sache, der **Satz** ist für
 | Einlesen: „Der Datensatz … ist beschädigt – Zeile …, Spalte …“ | Die Datei wurde bearbeitet (oft von einer KI), und dabei fehlt ein Komma oder Anführungszeichen. | Der KI genau diese Meldung geben und um die reparierte, vollständige Datei bitten. |
 | Einlesen: „… gekürzt“ | Die KI hat die Datei abgekürzt („…“, „Rest unverändert“) oder sie endet mittendrin. | Um die **vollständige** Datei bitten; notfalls die Änderung in kleineren Schritten verlangen. |
 | Einlesen: „kein mitgenommenes Blatt“ | Eine andere Datei – oder die KI hat Datensatz und Seite ganz neu geschrieben. | Die Datei aus „Mitnehmen“ nehmen und der KI sagen, dass sie die Datei nur ändern, nicht neu bauen soll. |
+| Mehrere Dateien eingelesen, eine steht auf „auslassen“ | Sie hat denselben Stand wie das Blatt im Almanach, oder eine andere Datei derselben Liste trägt dieselbe Kennung und aktualisiert das Blatt schon. | Der Satz in der Zeile sagt, welches von beiden. Soll die zweite Fassung trotzdem hinein, „als neues Blatt anlegen“ wählen. |
+| Das eigene Blatt ist aus der Übersicht verschwunden | Die Spielleitung hat es hinter den Schirm gestellt („Zum NSC“). | Nichts geht verloren: Holt sie es mit „In die Runde“ zurück, gehört es wieder dir. |
 | Die KI hat etwas geändert, das nach dem Einlesen fehlt | Sie hat nur die sichtbare Seite geändert, und zwar an einer Stelle ohne Feldmarke – etwas Gerechnetes (Initiative, Modifikator) oder ein neuer Eintrag. | Die Vorschau zeigt, was ankommt. Die KI bitten, die Änderung im Datensatz am Ende der Datei vorzunehmen – das sagt ihr auch die Anleitung oben in der Datei. |
 | Einlesen bietet kein „… aktualisieren“ an | Die Datei trägt keine Kennung (ältere Fassung), das Blatt gehört jemand anderem, liegt in einer anderen Kampagne, oder das Regelwerk passt nicht. | Auf dem Blatt selbst **Einlesen** nehmen, oder als neues Blatt anlegen und das alte löschen. |
 
@@ -217,7 +220,7 @@ Manches, was nach einem Fehler aussieht, ist eine bewusste Grenze. Sie steht hie
 - Eine Figur lässt sich im Figurenfeld von Hand an ein Blatt binden (Auswahl „Blatt“).
 - Kämpfer und Figur verbergen und zeigen sich gemeinsam – wer eine Seite umlegt, legt beide um.
 - Gegner aus Bestiarium und Begegnungen würfeln ihre Initiative mit dem Geschicklichkeitsbonus des Statblocks, auch bei „Initiative würfeln“.
-- Mitgenommene Blattdateien liest der Knopf „Blatt einlesen“ in der Übersicht wieder ein.
+- Mitgenommene Blattdateien liest der Knopf „Blätter einlesen“ in der Übersicht wieder ein.
 - Zauber-SG und -Angriffsbonus lassen sich auf dem Reiter „Zauber“ von Hand überschreiben.
 
 ## Einen Fehler melden

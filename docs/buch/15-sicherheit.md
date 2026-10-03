@@ -137,10 +137,14 @@ Innerhalb der Wege kommen feinere Regeln dazu, die an einer Zeile hängen:
 | Regel | Wo | Wer darf |
 |---|---|---|
 | `darfSehen` | `routes/charaktere/blatt.js` | ein Blatt sehen: Spielleitung alle; sonst kein NSC-Blatt, und nur eigene und geteilte |
-| `darfBearbeiten` | ebenda | ein Blatt ändern: Spielleitung und Besitzerin |
-| `darfBewegen` | `spieltisch/melden.js` | eine Figur ziehen: Spielleitung alle; sonst nur eine sichtbare Figur an einem eigenen Blatt |
+| `fuehrtSelbst` | ebenda | ein Blatt als eigenen Helden führen: wem es gehört, solange es nicht hinter dem Schirm liegt |
+| `darfBearbeiten` | ebenda | ein Blatt ändern: Spielleitung und wer es selbst führt (`fuehrtSelbst`) |
+| `darfBewegen` | `spieltisch/melden.js` | eine Figur ziehen: Spielleitung alle; sonst nur eine sichtbare Figur an einem eigenen Blatt, das nicht hinter dem Schirm liegt |
 | `darfVerwalten` | `routes/kampagnen/regeln.js` | eine Kampagne umbenennen, löschen, wiederherstellen: wer sie angelegt hat |
-| eigene Initiative | `routes/kampf/kaempfer.js` | die Initiative der Zeile, die am eigenen Blatt hängt |
+| eigene Initiative | `routes/kampf/kaempfer.js` | die Initiative der Zeile, die am eigenen Blatt hängt – nicht, solange es hinter dem Schirm liegt |
+| eigene Sicht | `spieltisch/sichtbarkeit.js` (`meineFiguren`) | durch die Augen der Figuren an eigenen Blättern sehen – ohne die Blätter hinter dem Schirm |
+
+**Ein Blatt hinter dem Schirm behält seine Besitzerin, aber nicht ihre Rechte.** Holt die Spielleitung einen Helden nachträglich hinter den Schirm (`PATCH { npc: true }`), bleibt `owner_id` stehen – sonst wüsste niemand mehr, wem er beim Zurückholen gehört. Damit daraus keine Hintertür wird, fragt jede Regel, die am Besitz hängt, zugleich nach `npc`: Ändern, Figurziehen, Initiative, Sicht. Die Prüfungen dafür stehen im Vertrag (`scripts/vertrag/14-nsc.mjs`): Die Besitzerin bekommt 403 beim Lesen, Speichern, Ziehen und Würfeln, und die Kampfliste zeigt der Runde den Helden nur noch als „verwundet“.
 
 **Die Oberfläche versteckt Knöpfe – das ist Höflichkeit, kein Schutz.** Die Seite „Spielleitung“ leitet eine Spielerin zur Übersicht um (`NurSpielleitung` in `App.jsx`); aber wer den Weg von Hand aufruft, trifft auf den Wächter des Servers. Was dort nicht geprüft wird, ist nicht geschützt.
 

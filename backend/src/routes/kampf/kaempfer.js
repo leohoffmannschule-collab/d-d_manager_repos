@@ -191,8 +191,10 @@ router.post('/combatants/:id/initiative', (req, res) => {
 
   if (!isDm(req.user)) {
     if (!row.character_id) return res.status(403).json({ code: 'kaempfer_fremd', error: 'Diese Zeile gehört nicht dir.' });
-    const charakter = db.prepare('SELECT owner_id FROM characters WHERE id = ?').get(row.character_id);
-    if (charakter?.owner_id !== req.user.id) {
+    // Ein Blatt hinter dem Schirm führt die Spielleitung, auch wenn es noch
+    // jemandem gehört (siehe `fuehrtSelbst` in routes/charaktere/blatt.js).
+    const charakter = db.prepare('SELECT owner_id, npc FROM characters WHERE id = ?').get(row.character_id);
+    if (!charakter || charakter.npc || charakter.owner_id !== req.user.id) {
       return res.status(403).json({ code: 'kaempfer_fremd', error: 'Diese Zeile gehört jemand anderem.' });
     }
   }

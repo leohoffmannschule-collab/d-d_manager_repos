@@ -48,7 +48,7 @@ Das Kampagnentor trägt einen Trick: `<div key={activeId}>`. Ändert sich der `k
 
 | Adresse | Seite | für |
 |---|---|---|
-| `/` | `Dashboard.jsx` – die Übersicht der Blätter; dort auch „Blatt einlesen“ (`components/BlattEinlesen.jsx`, mit Vorschau in `components/einlesen/`) | alle |
+| `/` | `Dashboard.jsx` – die Übersicht der Blätter; dort auch „Blätter einlesen“, eine oder mehrere Dateien (`components/BlattEinlesen.jsx`, mit Vorschau und Sammelvorschau in `components/einlesen/`), und für die Spielleitung „Zum NSC“ / „In die Runde“ an jeder Karte | alle |
 | `/neu` | `NewCharacter.jsx` – ein Blatt anlegen | alle |
 | `/charaktere/:id` | `CharacterSheet.jsx` – das Blatt; im Kopf „Mitnehmen“ und „Einlesen“ | alle |
 | `/tisch` | `Tabletop.jsx` – der Spieltisch | alle |

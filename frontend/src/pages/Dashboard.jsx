@@ -11,12 +11,16 @@
  *   – Abschrift  – eine Kopie *in dieser* Kampagne (etwa aus einer Vorlage)
  *   – In Kampagne … – eine Kopie in einer *anderen* Kampagne, nur für die
  *                     Spielleitung (siehe components/Kopierziel.jsx)
+ *   – Zum NSC / In die Runde – nur die Spielleitung: ein Blatt nachträglich
+ *                     hinter den Schirm stellen oder von dort zurückholen.
+ *                     Der Besitz bleibt; ein zurückgeholter Held gehört
+ *                     wieder derselben Person.
  *   – Löschen    – das eigene Blatt, oder jedes, wenn man die Runde führt
  *
- * Und oben: ein neues Blatt anlegen oder ein mitgenommenes einlesen – auch
- * eines, das jemand oder eine KI inzwischen bearbeitet hat; trägt es die
- * Kennung eines Blattes hier, lässt es sich auch darauf übernehmen
- * (components/BlattEinlesen.jsx).
+ * Und oben: ein neues Blatt anlegen oder mitgenommene einlesen – eines oder
+ * mehrere auf einmal, auch solche, die jemand oder eine KI inzwischen
+ * bearbeitet hat; trägt eines die Kennung eines Blattes hier, lässt es sich
+ * auch darauf übernehmen (components/BlattEinlesen.jsx).
  */
 import { Link, useNavigate } from 'react-router-dom';
 import { charactersApi } from '../lib/api.js';
@@ -43,7 +47,7 @@ function subtitle(count) {
  * Zierrat: Die ganze Karte ist anklickbar (sie öffnet das Blatt). Ohne das
  * Anhalten würde jeder Klick auf „Löschen“ zusätzlich das Blatt aufschlagen.
  */
-function Blatt({ c, user, isDm, onOeffnen, onAbschrift, onLoeschen }) {
+function Blatt({ c, user, isDm, onOeffnen, onAbschrift, onUmstellen, onLoeschen }) {
   const hp = c.hp;
   const eigenes = c.ownerId === user.id;
   const ratio = hp?.max ? Math.max(0, Math.min(1, (hp.current ?? 0) / hp.max)) : null;
@@ -71,6 +75,8 @@ function Blatt({ c, user, isDm, onOeffnen, onAbschrift, onLoeschen }) {
           {c.npc ? (
             <p className="flex items-center gap-1.5 text-[14px] text-gold">
               <IconEyeOff size={12} /> nur für die Spielleitung
+              {/* Wem der Held gehört, wenn er zurück in die Runde kommt. */}
+              {!eigenes && c.ownerName && <span className="text-faint"> · Blatt von {c.ownerName}</span>}
             </p>
           ) : (
             !eigenes && (
@@ -95,11 +101,24 @@ function Blatt({ c, user, isDm, onOeffnen, onAbschrift, onLoeschen }) {
         </div>
       )}
 
-      <div className="flex justify-end gap-4 border-t border-dashed border-rule pt-3">
+      <div className="flex flex-wrap justify-end gap-x-4 gap-y-1 border-t border-dashed border-rule pt-3">
         {isDm && <Kopierziel kopieren={(ziel) => charactersApi.kopieren(c.id, ziel)} nachOben />}
         <button onClick={onAbschrift} className="min-h-9 text-sepia hover:text-ink">
           Abschrift
         </button>
+        {isDm && (
+          <button
+            onClick={onUmstellen}
+            className="min-h-9 text-sepia hover:text-ink"
+            title={
+              c.npc
+                ? 'Das Blatt in die Runde holen: Alle am Tisch sehen es wieder'
+                : 'Das Blatt hinter den Schirm stellen: Nur du siehst und führst es'
+            }
+          >
+            {c.npc ? 'In die Runde' : 'Zum NSC'}
+          </button>
+        )}
         {(eigenes || isDm) && (
           <button onClick={onLoeschen} className="min-h-9 text-rubric hover:underline">
             Löschen
@@ -125,6 +144,26 @@ export default function Dashboard() {
     laden();
   }
 
+  /**
+   * Hinter den Schirm oder zurück in die Runde – mit einer Rückfrage, denn
+   * beides ändert, wer das Blatt sieht. Der Server holt es dabei aus den
+   * Übersichten der Runde oder stellt es hinein (live).
+   */
+  async function handleUmstellen(c, e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const fremdesBlatt = c.ownerName && c.ownerId !== user.id;
+    const frage = c.npc
+      ? `„${c.name}“ in die Runde holen? Alle am Tisch sehen das Blatt dann` +
+        (fremdesBlatt ? `, und ${c.ownerName} führt es wieder selbst.` : '.')
+      : `„${c.name}“ hinter den Schirm stellen? Die Runde sieht das Blatt dann nicht mehr` +
+        (fremdesBlatt ? ` – auch ${c.ownerName} nicht, bis du es zurückholst.` : '.') +
+        ' Steht es im Kampf, zeigt seine Zeile der Runde keine Trefferpunkte mehr.';
+    if (!confirm(frage)) return;
+    await charactersApi.patch(c.id, { npc: !c.npc });
+    laden();
+  }
+
   async function handleDelete(id, name, e) {
     e.preventDefault();
     e.stopPropagation();
@@ -143,7 +182,7 @@ export default function Dashboard() {
           <p className="mt-1 text-sepia italic">{subtitle(runde.length)}</p>
         </div>
         <div className="flex flex-wrap items-start gap-2.5">
-          <BlattEinlesen charaktere={characters} />
+          <BlattEinlesen charaktere={characters} onEingelesen={laden} />
           <Link to="/neu" className="btn btn-seal">
             <IconPlus size={17} />
             Neuer Charakter
@@ -164,6 +203,7 @@ export default function Dashboard() {
             isDm={isDm}
             onOeffnen={() => navigate(`/charaktere/${c.id}`)}
             onAbschrift={(e) => handleDuplicate(c.id, e)}
+            onUmstellen={(e) => handleUmstellen(c, e)}
             onLoeschen={(e) => handleDelete(c.id, c.name, e)}
           />
         ))}
@@ -189,6 +229,7 @@ export default function Dashboard() {
                 isDm={isDm}
                 onOeffnen={() => navigate(`/charaktere/${c.id}`)}
                 onAbschrift={(e) => handleDuplicate(c.id, e)}
+                onUmstellen={(e) => handleUmstellen(c, e)}
                 onLoeschen={(e) => handleDelete(c.id, c.name, e)}
               />
             ))}

@@ -29,13 +29,16 @@ export function useCharaktere() {
   const { daten, setDaten, laden, fehler, laedt } = useDaten(holen, null);
 
   // Trefferpunkte und Namen laufen live ein, statt neu geladen zu werden.
-  // Beachte: Das Ereignis *ändert* nur vorhandene Einträge. Ein ganz neues
-  // Blatt taucht hier nicht von selbst auf – dafür gibt es `laden()`.
+  // Ein Blatt, das hier noch fehlt, kommt nur dazu, wenn die Nachricht die
+  // volle Kurzfassung ist (sie trägt `system`) – etwa, wenn die Spielleitung
+  // einen NSC in die Runde holt. Eine Meldung nur mit Trefferpunkten (aus dem
+  // Kampf, aus der Beute) ändert nur, was schon da ist. Was dieses Fenster
+  // sehen darf, hat der Server entschieden (backend/src/blattmeldung.js).
   useLive('charakter:aktualisiert', (nachricht) => {
     setDaten((liste) => {
       if (!liste) return liste;
       const index = liste.findIndex((c) => c.id === nachricht.id);
-      if (index === -1) return liste;
+      if (index === -1) return nachricht.system ? [nachricht, ...liste] : liste;
       const kopie = [...liste];
       kopie[index] = { ...kopie[index], ...nachricht };
       return kopie;

@@ -3,7 +3,7 @@
 > Dieses Kapitel schreibt `npm run handbuch` aus dem Code (scripts/handbuch/referenz/).
 > Änderungen gehören in den Code und seine Kommentare, nicht hierher.
 
-Alle Dateien unter backend/src und backend/scripts (117 Dateien, 12.134 Zeilen), nach Ordnern. Zu jeder Datei ihr Kopfkommentar – dort steht, wozu es sie gibt und warum sie so gebaut ist – und ihre Ausfuhren mit dem Kommentar darüber.
+Alle Dateien unter backend/src und backend/scripts (117 Dateien, 12.183 Zeilen), nach Ordnern. Zu jeder Datei ihr Kopfkommentar – dort steht, wozu es sie gibt und warum sie so gebaut ist – und ihre Ausfuhren mit dem Kommentar darüber.
 
 Einen Überblick, wie die Teile zusammenspielen, gibt das Kapitel über den Server im Teil „Wie es gebaut ist“.
 
@@ -1597,7 +1597,7 @@ beide gehen fortan getrennte Wege.
 
 ### backend/src/routes/charaktere/blatt.js
 
-*102 Zeilen*
+*117 Zeilen*
 
 Ein Charakterblatt zwischen Datenbank und Antwort – und wer es sehen oder
 ändern darf.
@@ -1606,7 +1606,8 @@ Hier stehen die Regeln, die jeder Weg der Charaktere braucht:
 
 ```
 darfSehen       NSC-Blätter nur die Spielleitung; sonst eigene und geteilte
-darfBearbeiten  die Spielleitung und wem das Blatt gehört
+fuehrtSelbst    wem das Blatt gehört – solange es nicht hinter dem Schirm liegt
+darfBearbeiten  die Spielleitung und wer das Blatt selbst führt
 ```
 
 Und die zwei Formen, in denen ein Blatt hinausgeht: vollständig
@@ -1618,6 +1619,7 @@ Und die zwei Formen, in denen ein Blatt hinausgeht: vollständig
 - `summary` (function) – Kurzfassung für Übersichten, Spieltisch und Kampfliste.
 - `SELECT` (const) – Jede Abfrage holt den Namen des Besitzers gleich mit.
 - `holen` (const) – Ein Blatt dieser Kampagne – eines aus einer fremden gibt es für diesen Weg nicht.
+- `fuehrtSelbst` (const) – Führt diese Person das Blatt als ihren Helden? Nur, wenn es ihr gehört – und nicht hinter dem Schirm liegt.
 - `darfBearbeiten` (const) – Charaktere ohne Besitzer stammen aus der Zeit vor den Konten – sie gehören der Spielleitung, bis sie jemandem zugewiesen werden.
 - `darfSehen` (const) – NSC-Blätter sind der Zettel der Spielleitung hinter dem Schirm: die Werte des Wirts, des Räuberhauptmanns, des Drachen. Sie bleiben dort, auch wenn das Blatt versehentlich als „geteilt“ markiert ist – deshalb wird das hier *vor* allen anderen Regeln geprüft, nicht danach.
 - `sinneAus` (function) – Die Sinne aus einem gespeicherten Blatt, ohne dass ein Fehler alles reißt.
@@ -1635,7 +1637,7 @@ es im Netzwerkfenster des Browsers gar nicht erst auftaucht.
 
 ### backend/src/routes/charaktere/schreiben.js
 
-*166 Zeilen*
+*189 Zeilen*
 
 Blätter anlegen, speichern, zuteilen, löschen.
 
@@ -1772,7 +1774,7 @@ wird für beide Richtungen benutzt.
 
 ### backend/src/routes/kampf/kaempfer.js
 
-*224 Zeilen*
+*226 Zeilen*
 
 Die Kämpfer selbst: eintragen, ändern, Schaden geben, Initiative setzen,
 wieder herausnehmen.
@@ -1974,7 +1976,7 @@ In Felder umgerechnet wird erst mit dem Maßstab der Karte (raster.js).
 
 ### backend/src/spieltisch/melden.js
 
-*151 Zeilen*
+*155 Zeilen*
 
 Den Tisch verkünden: wer erfährt wann, dass sich etwas geändert hat.
 
@@ -2005,13 +2007,13 @@ Mal in der Sekunde.
 
 - `sendeSzene` (function) – Die ganze Szene an alle – jede Person in ihrer eigenen Fassung.
 - `sendeFigurenWennGeaendert` (function) – Nach einem Nebelstrich wandert nur die Änderung übers Netz – aber wenn dabei eine Figur auftaucht oder verschwindet, muss auch das ankommen. Gesendet wird nur, wenn sich wirklich etwas geändert hat; ein Pinselstrich über schon aufgedecktes Land soll nicht fünf Figurenlisten auslösen.
-- `darfBewegen` (function) – Darf diese Person die Figur bewegen?
+- `darfBewegen` (function) – Darf diese Person die Figur bewegen? Die Runde nur die eigene – und die nicht, solange ihr Blatt hinter dem Schirm liegt (siehe `fuehrtSelbst` in routes/charaktere/blatt.js).
 - `meldeFigur` (function) – Eine Figur hat sich geändert.
 - `aktiviereSzene` (function) – Eine Szene auf den Tisch legen – aus der Szenenliste wie aus der Kartenbibliothek. Mit `verdeckt` geht vorher der Vorhang zu: Dann baut die Spielleitung dahinter auf, und die Runde merkt nichts davon.
 
 ### backend/src/spieltisch/sichtbarkeit.js
 
-*142 Zeilen*
+*147 Zeilen*
 
 Wer sieht was? – die Kernfrage des Spieltisches.
 
@@ -2048,7 +2050,7 @@ base64 verpackt. Als Liste von `"x,y"` wären es bei einer großen Karte
 - `sinneJeFigur` (function) – Die Sinne hinter den Figuren. Eine Figur sieht, was ihr Charakterblatt hergibt – Dunkelsicht, Blindsicht und was sonst noch eingetragen ist.
 - `figurSichtbar` (function) – Steht diese Figur auf einem Feld, das der Betrachter sehen kann?
 - `szenenSicht` (function) – Was von dieser Szene geht an diese Person?
-- `meineFiguren` (function) – Die Figuren, die dieser Person gehören.
+- `meineFiguren` (function) – Die Figuren, die dieser Person gehören. Ein Blatt hinter dem Schirm zählt nicht mit, auch wenn es ihr gehört (siehe `fuehrtSelbst` in routes/charaktere/blatt.js): Durch die Augen eines NSC sieht nur die Spielleitung.
 - `durchAugenVon` (function) – Schaut die Spielleitung gerade durch die Augen einer Figur?
 
 ### backend/src/spieltisch/umwandlung.js

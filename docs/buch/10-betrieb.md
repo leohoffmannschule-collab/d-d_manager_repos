@@ -197,7 +197,7 @@ DATA_DIR=/tmp/alter-stand PORT=3002 npm start
 Die Datei, die „Mitnehmen“ auf dem Charakterblatt erzeugt, trägt am Ende den vollständigen Datensatz des Blattes und seine Kennung. Zurückgeholt wird sie mit einem Knopf:
 
 1. Im Almanach anmelden und die Kampagne wählen, in die das Blatt gehört.
-2. Auf dem Blatt **„Einlesen“** – oder in der Übersicht **„Blatt einlesen“** – und die Datei wählen (auch vom Telefon aus der Dateien-App).
+2. Auf dem Blatt **„Einlesen“** – oder in der Übersicht **„Blätter einlesen“** – und die Datei wählen (auch vom Telefon aus der Dateien-App). In der Übersicht dürfen es auch mehrere auf einmal sein; dann zeigt eine Liste je Datei, was mit ihr geschehen soll.
 3. Die **Vorschau** prüfen: was sich ändert, was repariert wurde.
 4. **„… aktualisieren“**, wenn die Datei das vorhandene Blatt ersetzen soll, oder **„Als neues Blatt anlegen“**. Ein neues Blatt gehört der Person, die angemeldet ist; die Spielleitung teilt es unter *Spielleitung → Runde* der richtigen Person zu.
 

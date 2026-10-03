@@ -6,47 +6,45 @@
  * hereinholen. Danach ist es ein ganz gewöhnliches Blatt im Almanach.
  *
  * Steht an zwei Stellen:
- *   – in der Übersicht („Blatt einlesen“): Trägt die Datei die Kennung eines
- *     Blattes, das man ändern darf, wird angeboten, dieses zu aktualisieren;
- *     sonst entsteht ein neues.
- *   – im Kopf eines Blattes („Einlesen“, mit `ziel`): Die Datei aktualisiert
- *     dieses Blatt – über denselben Weg wie jede Änderung am Blatt
- *     (`onErsetzen`, gespeichert von pages/blatt/useBlatt.js).
+ *   – in der Übersicht („Blätter einlesen“): eine Datei oder mehrere auf
+ *     einmal. Trägt eine die Kennung eines Blattes, das man ändern darf,
+ *     wird angeboten, dieses zu aktualisieren; sonst entsteht ein neues –
+ *     bei der Spielleitung auf Wunsch gleich als NSC.
+ *   – im Kopf eines Blattes („Einlesen“, mit `ziel`): genau eine Datei, die
+ *     dieses Blatt aktualisiert – über denselben Weg wie jede Änderung am
+ *     Blatt (`onErsetzen`, gespeichert von pages/blatt/useBlatt.js).
  *
- * Gespeichert wird nie sofort: Erst zeigt die Vorschau
- * (einlesen/Vorschau.jsx), was die Datei enthält und was sich ändern würde.
- * Gelesen wird im Browser (lib/blattEinfuhr.js) – die Datei geht nicht als
- * Ganzes an den Server, nur das fertige Blatt.
+ * Gespeichert wird nie sofort: Erst zeigt die Vorschau, was die Dateien
+ * enthalten und was sich ändern würde – für eine Datei ausführlich
+ * (einlesen/Vorschau.jsx), für mehrere als Liste mit einer Wahl je Datei
+ * (einlesen/Sammelvorschau.jsx). Gelesen wird im Browser
+ * (lib/blattEinfuhr.js, lib/einfuhr/stapel.js) – die Dateien gehen nicht
+ * als Ganzes an den Server, nur die fertigen Blätter.
  */
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { charactersApi } from '../lib/api.js';
 import { useAuth } from '../lib/auth.jsx';
-import { leseBlattdatei } from '../lib/blattEinfuhr.js';
-import { withDefaults } from '../lib/dnd5e.js';
-import { unterschiede } from '../lib/einfuhr/unterschiede.js';
+import { dateiLesen, stapelLesen, stapelUebernehmen } from '../lib/einfuhr/stapel.js';
 import { IconUpload } from './icons.jsx';
 import Vorschau from './einlesen/Vorschau.jsx';
-
-/** Ein Blatt so, wie es zum Vergleichen gebraucht wird – ältere 5e-Blätter aufgefüllt. */
-const zumVergleich = (blatt) => ({
-  name: blatt.name,
-  data: blatt.system === 'dnd5e' ? withDefaults(blatt.data) : blatt.data,
-});
+import Sammelvorschau from './einlesen/Sammelvorschau.jsx';
 
 /**
  * @param {object} props
  * @param {object[]} [props.charaktere]  die Blätter der Übersicht – um das passende zu finden
  * @param {object} [props.ziel]          das geöffnete Blatt (im Kopf eines Blattes)
  * @param {(name: string, data: object) => void} [props.onErsetzen]  übernimmt den Stand ins geöffnete Blatt
+ * @param {() => void} [props.onEingelesen]  nach mehreren Dateien: die Übersicht neu laden
  */
-export default function BlattEinlesen({ charaktere, ziel, onErsetzen }) {
+export default function BlattEinlesen({ charaktere, ziel, onErsetzen, onEingelesen }) {
   const navigate = useNavigate();
   const { user, isDm } = useAuth();
   const datei = useRef(null);
   const [laedt, setLaedt] = useState(false);
   const [fehler, setFehler] = useState('');
   const [vorschau, setVorschau] = useState(null);
+  const [stapel, setStapel] = useState(null);
 
   /** Das vorhandene Blatt, das die Datei aktualisieren darf – vollständig geladen – oder null. */
   async function passendesBlatt(gelesen) {
@@ -57,20 +55,17 @@ export default function BlattEinlesen({ charaktere, ziel, onErsetzen }) {
     return blatt.system === gelesen.system && blatt.editable !== false ? blatt : null;
   }
 
+  /** Eine Datei: die ausführliche Vorschau. */
   async function einlesen(file) {
     setLaedt(true);
     setFehler('');
     try {
       const text = await file.text();
-      const ersterBlick = leseBlattdatei(text, { ersatzName: ziel?.name });
-      const passend = await passendesBlatt(ersterBlick);
-      // Noch einmal, jetzt mit dem vorhandenen Blatt daneben: So behalten neue
-      // Einträge, die es dort schon gibt, ihre Kennung (lib/einfuhr/angleichen.js).
-      const gelesen = passend ? leseBlattdatei(text, { ersatzName: ziel?.name, bekannt: passend.data }) : ersterBlick;
+      const { gelesen, passend, aenderungen } = await dateiLesen(text, { passendesBlatt, ersatzName: ziel?.name });
       setVorschau({
         gelesen,
         passend,
-        aenderungen: passend ? unterschiede(gelesen.system, zumVergleich(passend), gelesen) : null,
+        aenderungen,
         fremd: Boolean(ziel && gelesen.id && gelesen.id !== ziel.id && passend),
       });
     } catch (err) {
@@ -80,9 +75,33 @@ export default function BlattEinlesen({ charaktere, ziel, onErsetzen }) {
     }
   }
 
-  async function neu() {
+  /** Mehrere Dateien: lesen, was sich lesen lässt, und die Sammelvorschau zeigen. */
+  async function mehrereEinlesen(files) {
+    setLaedt(true);
+    setFehler('');
+    try {
+      const dateien = await Promise.all(files.map(async (f) => ({ name: f.name, text: await f.text() })));
+      setStapel(await stapelLesen(dateien, { passendesBlatt }));
+    } catch (err) {
+      setFehler(err.message);
+    } finally {
+      setLaedt(false);
+    }
+  }
+
+  /** Den Stapel speichern; die Sammelvorschau zeigt den Ausgang je Datei. */
+  async function stapelSpeichern(posten, fortschritt) {
+    await stapelUebernehmen(posten, {
+      anlegen: (blatt) => charactersApi.create(isDm ? blatt : { ...blatt, npc: false }),
+      aktualisieren: (id, blatt) => charactersApi.update(id, blatt),
+      fortschritt,
+    });
+    onEingelesen?.();
+  }
+
+  async function neu({ npc = false } = {}) {
     const { name, system, data } = vorschau.gelesen;
-    const blatt = await charactersApi.create({ name, system, data });
+    const blatt = await charactersApi.create({ name, system, data, npc: isDm && npc });
     setVorschau(null);
     navigate(`/charaktere/${blatt.id}`);
   }
@@ -105,12 +124,14 @@ export default function BlattEinlesen({ charaktere, ziel, onErsetzen }) {
         ref={datei}
         type="file"
         accept=".html,.htm,.json,.txt,.md,text/html,application/json,text/plain,text/markdown"
+        multiple={!ziel}
         className="hidden"
         onChange={(e) => {
-          const file = e.target.files?.[0];
+          const files = [...(e.target.files ?? [])];
           // Zurücksetzen, damit dieselbe Datei ein zweites Mal gewählt werden kann.
           e.target.value = '';
-          if (file) einlesen(file);
+          if (files.length === 1) einlesen(files[0]);
+          else if (files.length > 1) mehrereEinlesen(files);
         }}
       />
       <button
@@ -125,11 +146,11 @@ export default function BlattEinlesen({ charaktere, ziel, onErsetzen }) {
         title={
           ziel
             ? 'Eine bearbeitete Blattdatei (von Hand oder von einer KI) in dieses Blatt übernehmen – mit Vorschau'
-            : 'Eine mitgenommene Blattdatei einlesen – auch nach Bearbeitung durch eine KI'
+            : 'Mitgenommene Blattdateien einlesen – eine oder mehrere auf einmal, auch nach Bearbeitung durch eine KI'
         }
       >
         <IconUpload size={ziel ? 15 : 16} />
-        {laedt ? 'liest …' : ziel ? 'Einlesen' : 'Blatt einlesen'}
+        {laedt ? 'liest …' : ziel ? 'Einlesen' : 'Blätter einlesen'}
       </button>
       {fehler && <p className="max-w-sm text-right text-[14px] text-rubric">{fehler}</p>}
       {vorschau && (
@@ -138,9 +159,18 @@ export default function BlattEinlesen({ charaktere, ziel, onErsetzen }) {
           passend={vorschau.passend}
           aenderungen={vorschau.aenderungen}
           fremd={vorschau.fremd}
+          nscMoeglich={isDm && !ziel}
           onNeu={neu}
           onAktualisieren={aktualisieren}
           onAbbrechen={() => setVorschau(null)}
+        />
+      )}
+      {stapel && (
+        <Sammelvorschau
+          posten={stapel}
+          nscMoeglich={isDm}
+          onUebernehmen={stapelSpeichern}
+          onSchliessen={() => setStapel(null)}
         />
       )}
     </div>

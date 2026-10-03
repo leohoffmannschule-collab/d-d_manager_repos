@@ -249,7 +249,7 @@ Dabei gilt:
     GET    /api/characters/:id           samt `editable`
     POST   /api/characters               { name, system?, data, npc? }   npc nur [SL]; auch zum Einlesen einer mitgenommenen Datei
     PUT    /api/characters/:id           { name?, data? }   auch „Einlesen“ einer Datei in dieses Blatt
-    PATCH  /api/characters/:id           { ownerId?, shared?, npc? }   ownerId und npc nur [SL]
+    PATCH  /api/characters/:id           { ownerId?, shared?, npc? }   ownerId und npc nur [SL]; npc in beide Richtungen
     DELETE /api/characters/:id
     POST   /api/characters/:id/duplicate
     POST   /api/characters/:id/kopieren      [SL]  { campaignId } – in eine andere Kampagne
@@ -268,7 +268,9 @@ kommt der Rumpf auch aus Dateien, die jemand in der Hand hatte – oder eine KI.
 Die Oberfläche liest die Datei selbst (`frontend/src/lib/blattEinfuhr.js`),
 bringt jeden Wert in die Form des Blattes, zeigt eine Vorschau und schickt
 dann ein gewöhnliches `POST` (neues Blatt) oder `PUT` (vorhandenes
-aktualisieren). Wer eine andere Oberfläche baut, kann den Leser übernehmen –
+aktualisieren). Mehrere Dateien auf einmal sind für den Server nichts
+anderes: je Datei ein `POST` oder `PUT`, der Reihe nach
+(`frontend/src/lib/einfuhr/stapel.js`). Wer eine andere Oberfläche baut, kann den Leser übernehmen –
 er braucht keinen Browser und läuft auch in Node.
 
 **NSC-Blätter** (`npc: true`) sind der Zettel der Spielleitung hinter dem
@@ -277,6 +279,20 @@ und werden beim Holen der Runde in den Kampf übergangen. Geprüft wird das
 *vor* allen anderen Regeln – auch ein versehentlich als „geteilt“ markiertes
 NSC-Blatt bleibt hinter dem Schirm. Ein NSC-Blatt lässt sich mit einer Figur
 auf dem Spieltisch verknüpfen; dann gelten dessen Sinne für ihre Sicht.
+
+**Umstellen, in beide Richtungen.** `PATCH { npc: true }` holt jedes Blatt
+nachträglich hinter den Schirm, `PATCH { npc: false }` holt es zurück in die
+Runde (geteilt, außer `shared: false` steht mit im Rumpf). Der Besitz bleibt
+dabei stehen, damit ein zurückgeholter Held wieder derselben Person gehört –
+aber solange das Blatt hinter dem Schirm liegt, ruhen die Rechte des
+Besitzers: Er sieht es nicht, ändert es nicht (`403 blatt_fremd`), zieht
+die Figur nicht (`403 figur_fremd`), sieht nicht durch ihre Augen und
+trägt keine Initiative für sie ein (`403 kaempfer_fremd`). Steht das Blatt
+schon im Kampf, wechselt seine Zeile mit: aus `pc` wird `npc` (die Runde
+sieht nur noch „verwundet“) und zurück; ein `monster` bleibt eines. Die
+Runde erfährt beides live: `charakter:entfernt` beim Verschwinden,
+`charakter:aktualisiert` mit der vollen Kurzfassung beim Auftauchen, dazu
+eine neue Szene, weil sich die Sicht ändert.
 
 ### /api/encounter   (Standard: angemeldet)
 

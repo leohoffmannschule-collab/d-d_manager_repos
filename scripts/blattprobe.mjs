@@ -34,6 +34,7 @@ import { esc } from '../frontend/src/lib/blatt/werkzeug.js';
 import { dnd5eKoerper, freiKoerper } from '../frontend/src/lib/blatt/koerper.js';
 import { datensatzBlock, kiAnleitung } from '../frontend/src/lib/blatt/datensatz.js';
 import { unterschiede } from '../frontend/src/lib/einfuhr/unterschiede.js';
+import { stapelLesen, stapelUebernehmen } from '../frontend/src/lib/einfuhr/stapel.js';
 import { HELDEN } from '../backend/src/vorlagen/helden.js';
 import { blattAus, ATTRIBUTE, FERTIGKEITEN } from '../backend/src/vorlagen/bauen.js';
 
@@ -437,6 +438,65 @@ gleich(withDefaults({ playerName: 'Leo' }).units, 'metrisch', 'Ein bloßer Name 
   const freiDatei = `<html><body>${freiKoerper(frei, freiDaten, {})}${datensatzBlock(frei, freiDaten)}</body></html>`
     .replace(/(data-feld="sections\.#s1\.content" data-war="Die Möwe">)Die Möwe</, '$1Die Sturmmöwe<');
   gleich(leseBlattdatei(freiDatei).data.sections[0].content, 'Die Sturmmöwe', 'KI: ein freies Blatt übernimmt eine sichtbare Änderung ebenso');
+
+  /* --- Mehrere Dateien auf einmal (lib/einfuhr/stapel.js) --- */
+  const vorhanden = { id: 'blatt-thorin-1', name: 'Thorin', system: 'dnd5e', data: daten };
+  const passendesBlatt = async (g) => (g.id === vorhanden.id ? vorhanden : null);
+  const stufe5 = datei.replace('"level": 3,', '"level": 5,');
+  const stufe6 = datei.replace('"level": 3,', '"level": 6,');
+  const posten = await stapelLesen(
+    [
+      { name: 'thorin-unveraendert.html', text: datei },
+      { name: 'thorin-stufe5.html', text: stufe5 },
+      { name: 'kaputt.html', text: '<script type="application/json" id="almanach-daten">{ kaputt</script>' },
+      { name: 'thorin-stufe6.html', text: stufe6 },
+      { name: 'mara.json', text: JSON.stringify({ name: 'Mara', system: 'dnd5e', data: { level: 1 } }) },
+    ],
+    { passendesBlatt }
+  );
+  gleich(
+    posten.map((p) => p.wahl),
+    ['auslassen', 'aktualisieren', 'auslassen', 'auslassen', 'neu'],
+    'Stapel: je Datei der richtige Vorschlag'
+  );
+  pruefe(/Derselbe Stand/.test(posten[0].hinweis), 'Stapel: eine unveränderte Datei wird ausgelassen – und sperrt die bearbeitete nicht aus');
+  gleich(posten[1].aenderungen, ['Stufe: 3 → 5'], 'Stapel: die bearbeitete aktualisiert ihr Blatt, mit den Änderungen daneben');
+  pruefe(Boolean(posten[2].fehler) && !posten[2].gelesen, 'Stapel: eine kaputte Datei steht mit ihrem Grund da und hält die übrigen nicht auf');
+  pruefe(
+    posten[3].passend === null && /dieselbe Kennung wie „thorin-stufe5\.html“/.test(posten[3].hinweis),
+    'Stapel: eine zweite Fassung desselben Blattes überschreibt die erste nicht'
+  );
+  gleich([posten[4].gelesen.name, posten[4].passend], ['Mara', null], 'Stapel: ein Blatt ohne Gegenstück wird neu');
+
+  // Übernehmen: der Reihe nach, ein Fehler hält die übrigen nicht auf.
+  const gerufen = [];
+  const auswahl = posten.map((p, i) => (i === 3 ? { ...p, wahl: 'neu', npc: true } : p));
+  const ergebnisse = await stapelUebernehmen(auswahl, {
+    anlegen: async (blatt) => {
+      gerufen.push(['anlegen', blatt.name, blatt.npc, blatt.data.level]);
+      if (blatt.name === 'Mara') throw new Error('Server weg');
+      return { id: `neu-${gerufen.length}` };
+    },
+    aktualisieren: async (id, blatt) => {
+      gerufen.push(['aktualisieren', id, blatt.data.level]);
+      return {};
+    },
+  });
+  gleich(
+    gerufen,
+    [
+      ['aktualisieren', 'blatt-thorin-1', 5],
+      ['anlegen', 'Thorin', true, 6],
+      ['anlegen', 'Mara', false, 1],
+    ],
+    'Stapel: gespeichert wird nur, was gewählt ist – auch eine zweite Fassung als neues NSC-Blatt'
+  );
+  gleich(
+    ergebnisse.map((e) => e.status),
+    ['ausgelassen', 'aktualisiert', 'ausgelassen', 'angelegt', 'fehler'],
+    'Stapel: zu jeder Datei steht, wie es ausging'
+  );
+  gleich(ergebnisse[4].meldung, 'Server weg', 'Stapel: mit dem Grund, wenn das Speichern scheitert');
 }
 
 console.log('');

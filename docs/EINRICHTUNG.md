@@ -918,8 +918,9 @@ nicht gewirkt.
 Für ein **einzelnes Charakterblatt** gibt es einen Weg ohne Kommandozeile, den
 jede und jeder aus der Runde selbst gehen kann: Der Knopf **Mitnehmen** auf
 dem Blatt sichert es als eine HTML-Datei, und **Einlesen** (auf dem Blatt)
-oder **Blatt einlesen** (in der Übersicht) holt es zurück – in dasselbe Blatt
-oder als neues, auch in einem anderen Almanach. Die Datei darf dazwischen
+oder **Blätter einlesen** (in der Übersicht, auch mehrere Dateien auf einmal)
+holt es zurück – in dasselbe Blatt oder als neues, auch in einem anderen
+Almanach. Die Datei darf dazwischen
 bearbeitet werden, auch von einer KI; vor dem Speichern zeigt eine Vorschau,
 was sich ändert. Für die Einrichtung ist dabei nichts zu tun: Gelesen wird
 im Browser, der Server bekommt nur das fertige Blatt über denselben Weg wie

@@ -86,7 +86,8 @@ frontend/src/
     blatt/           das Blatt zum Mitnehmen: Abschnitte, Feldmarken,
                      Datensatz und Anleitung für eine KI (blattAusfuhr.js)
     einfuhr/         der Rückweg: eine bearbeitete Datei wieder einlesen
-                     (blattEinfuhr.js, mit Vorschau in components/einlesen/)
+                     (blattEinfuhr.js, mehrere auf einmal: stapel.js;
+                     Vorschau und Sammelvorschau in components/einlesen/)
   pages/             je eine Datei für eine Seite; große Seiten haben
                      einen gleichnamigen Ordner (blatt/, tisch/, chronik/, hilfe/)
   components/        Bauteile; dm/ nur für die Spielleitung, sheet/, tabletop/

@@ -108,7 +108,9 @@ router.put('/:id', (req, res) => {
   res.json(rowToCharacter(row));
 });
 
-// PATCH /api/characters/:id – Besitz und Sichtbarkeit
+// PATCH /api/characters/:id  { ownerId?, shared?, npc? } – Besitz und
+// Sichtbarkeit. `npc` stellt ein Blatt hinter den Schirm (true) oder holt es
+// in die Runde zurück (false); beides nur die Spielleitung.
 router.patch('/:id', (req, res) => {
   const existing = holen(req.params.id, req.campaignId);
   if (!existing) return res.status(404).json({ code: 'charakter_nicht_gefunden', error: 'Charakter nicht gefunden' });
@@ -129,13 +131,29 @@ router.patch('/:id', (req, res) => {
     return res.status(400).json({ code: 'konto_nicht_gefunden', error: 'Konto nicht gefunden.' });
   }
 
+  // Hinter den Schirm und wieder zurück – in beide Richtungen, jederzeit.
+  const npcWechsel = npc !== undefined && Boolean(npc) !== Boolean(existing.npc);
+  let kaempferUmgestellt = 0;
+
   transaktion(() => {
     if (ownerId !== undefined) db.prepare('UPDATE characters SET owner_id = ? WHERE id = ?').run(ownerId, existing.id);
     if (shared !== undefined) db.prepare('UPDATE characters SET shared = ? WHERE id = ?').run(shared ? 1 : 0, existing.id);
-    // Wer hinter dem Schirm liegt, ist nicht mehr geteilt – steht npc mit im
-    // Rumpf, gewinnt es deshalb gegen ein gleichzeitiges `shared`.
     if (npc !== undefined) {
-      db.prepare('UPDATE characters SET npc = ?, shared = ? WHERE id = ?').run(npc ? 1 : 0, npc ? 0 : 1, existing.id);
+      // Wer hinter dem Schirm liegt, ist nicht mehr geteilt – steht npc mit
+      // im Rumpf, gewinnt es deshalb gegen ein gleichzeitiges `shared`. Wer
+      // wieder hervorkommt, steht in der Runde, außer `shared: false` sagt
+      // ausdrücklich anderes. Der Besitz bleibt stehen: So gehört ein Held,
+      // den die Spielleitung zurückholt, wieder derselben Person.
+      const geteilt = npc ? 0 : shared === undefined || shared ? 1 : 0;
+      db.prepare('UPDATE characters SET npc = ?, shared = ? WHERE id = ?').run(npc ? 1 : 0, geteilt, existing.id);
+    }
+    // Steht das Blatt schon im Kampf, wechselt seine Zeile die Art mit: Ein
+    // NSC zeigt der Runde keine Trefferpunkte, ein Held schon (kampf/sicht.js).
+    // Monster bleiben Monster.
+    if (npcWechsel) {
+      kaempferUmgestellt = db
+        .prepare('UPDATE combatants SET type = ? WHERE character_id = ? AND campaign_id = ? AND type = ?')
+        .run(npc ? 'npc' : 'pc', existing.id, req.campaignId, npc ? 'pc' : 'npc').changes;
     }
   });
 
@@ -145,6 +163,11 @@ router.patch('/:id', (req, res) => {
   // sehen darf – weil es hinter den Schirm wanderte oder nicht mehr geteilt
   // ist –, soll es dort auch nicht weiter stehen haben.
   meldeEntzug(existing, row, req.campaignId);
+  if (kaempferUmgestellt) sendeKampf(req.campaignId);
+  // Wem eine Figur gehört, bestimmt, wer durch ihre Augen sieht und was
+  // jemand im Nebel noch erkennt (spieltisch/sichtbarkeit.js) – also bekommt
+  // jede Person ihre Sicht neu.
+  if (ownerId !== undefined || npcWechsel) sendeSzene(req.campaignId);
   res.json(rowToCharacter(row));
 });
 

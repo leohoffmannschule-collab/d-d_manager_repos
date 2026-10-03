@@ -62,6 +62,7 @@ Dieses Kapitel ist für alle, die eine Änderung am Almanach begutachten – die
 
 - Ändert die Änderung Rolle, Kennwort, Mitgliedschaft, das Bestehen eines Kontos oder einer Kampagne? Dann gehört ein `trenne()` dazu.
 - Ändert sie die Sichtbarkeit eines Dings für jemanden, der es gerade offen hat? Dann braucht diese Person eine Nachricht (`charakter:entfernt`), sonst steht es bei ihr bis zum Neuladen.
+- Bleibt ein Besitz stehen, während er nicht gelten soll (ein Blatt hinter dem Schirm)? Dann muss *jede* Regel, die am Besitz hängt, das mitfragen – nicht nur die, an die man gerade denkt. Beim NSC-Umstellen waren es vier: ändern (`fuehrtSelbst`), Figur ziehen, Initiative, Sicht.
 
 **Fehler, die es gab:**
 

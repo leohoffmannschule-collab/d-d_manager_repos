@@ -95,7 +95,7 @@ Welche Regeln ein Blatt hat. `dnd5e` bekommt die fünf Reiter mit allen Rechnung
 
 ### Besitzer
 
-Wem ein Blatt gehört (`characters.owner_id`). Die Besitzerin und die Spielleitung dürfen es ändern; nur die Spielleitung darf es jemand anderem zuteilen.
+Wem ein Blatt gehört (`characters.owner_id`). Die Besitzerin und die Spielleitung dürfen es ändern; nur die Spielleitung darf es jemand anderem zuteilen. Liegt das Blatt hinter dem Schirm (siehe *NSC-Blatt*), ruht der Besitz, bis es zurückkommt.
 
 ### Geteilt
 
@@ -104,6 +104,8 @@ Ein geteiltes Blatt (`shared = 1`) dürfen alle Mitspielenden der Kampagne lesen
 ### NSC-Blatt
 
 Ein Blatt hinter dem Schirm (`npc = 1`): der Wirt, der Räuberhauptmann, der Drache, und die zwölf Vorlagen. Die Runde bekommt NSC-Blätter nie – nicht in Listen, nicht einzeln, nicht beim Holen der Runde in den Kampf. Diese Regel wird *vor* allen anderen geprüft: Auch ein versehentlich als geteilt markiertes NSC-Blatt bleibt verborgen.
+
+Die Spielleitung stellt jedes Blatt jederzeit um, in beide Richtungen („Zum NSC“, „In die Runde“; Weg `PATCH /api/characters/:id` mit `npc`). Der Besitz (`owner_id`) bleibt dabei stehen, damit ein zurückgeholter Held wieder derselben Person gehört – aber solange das Blatt hinter dem Schirm liegt, **ruht** er: Die Besitzerin sieht es nicht, ändert es nicht, zieht die Figur nicht, sieht nicht durch ihre Augen und trägt keine Initiative für sie ein. Die Regel heißt `fuehrtSelbst` (`backend/src/routes/charaktere/blatt.js`). Steht das Blatt im Kampf, wechselt seine Zeile mit (`pc` ↔ `npc`).
 
 > Nicht zu verwechseln mit einem **NSC im Kampf** (Kämpfer mit `type = 'npc'`) oder einem **NSC im Bestiarium** (Statblock mit `category = 'npc'`). Ein NSC-Blatt ist ein vollständiger Charakterbogen; die anderen beiden sind Einträge in Listen.
 
@@ -121,7 +123,7 @@ Das Blatt als eigenständige HTML-Datei sichern: alles, was darauf steht, samt B
 
 ### Einlesen
 
-Der Rückweg der Ausfuhr: „Einlesen“ im Kopf eines Blattes oder „Blatt einlesen“ in der Übersicht nimmt eine mitgenommene Datei – auch eine, die jemand oder eine KI bearbeitet hat – und macht nach einer **Vorschau** daraus wieder ein Blatt: Es aktualisiert das vorhandene (erkannt an der Kennung in der Datei) oder legt ein neues an. Code: `frontend/src/lib/blattEinfuhr.js`, `lib/einfuhr/`, `components/BlattEinlesen.jsx`.
+Der Rückweg der Ausfuhr: „Einlesen“ im Kopf eines Blattes oder „Blätter einlesen“ in der Übersicht nimmt eine mitgenommene Datei – auch eine, die jemand oder eine KI bearbeitet hat – und macht nach einer **Vorschau** daraus wieder ein Blatt: Es aktualisiert das vorhandene (erkannt an der Kennung in der Datei) oder legt ein neues an. In der Übersicht gehen auch **mehrere Dateien auf einmal**; dann zeigt eine **Sammelvorschau** je Datei einen Vorschlag – aktualisieren, neu anlegen oder auslassen –, den man ändern kann, und die Spielleitung legt neue auf Wunsch gleich als NSC-Blatt an. Code: `frontend/src/lib/blattEinfuhr.js`, `lib/einfuhr/` (mehrere: `lib/einfuhr/stapel.js`), `components/BlattEinlesen.jsx`, `components/einlesen/`.
 
 ### KI-Anleitung, Feldmarke
 

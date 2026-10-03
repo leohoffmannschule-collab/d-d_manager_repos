@@ -102,6 +102,17 @@ export default function Spielleitung() {
           steht bei dir unter „Hinter dem Schirm“, taucht bei der Runde nirgends auf und wird beim Holen der
           Runde in den Kampf übergangen. Verknüpfst du eine Figur damit, gelten dessen Sinne für ihre Sicht.
         </li>
+        <li>
+          Jedes Blatt lässt sich nachträglich umstellen: <span className="font-display">Zum NSC</span> bzw.{' '}
+          <span className="font-display">In die Runde</span> unten auf seiner Karte in der Übersicht. Ein Held
+          hinter dem Schirm verschwindet sofort bei allen; seine Besitzerin kann ihn so lange weder ändern noch
+          ziehen. Holst du ihn zurück, gehört er wieder ihr. In der Kampfliste wechselt seine Zeile mit.
+        </li>
+        <li>
+          <span className="font-display">Blätter einlesen</span> nimmt mehrere Dateien auf einmal. Neue Blätter
+          kannst du dabei gleich <span className="font-display">als NSC</span> anlegen – einzeln oder alle auf
+          einmal.
+        </li>
         <li>Notizen lassen sich als Handzettel austeilen; die Runde sieht sie dann am Spieltisch.</li>
         <li>
           In der Chronik trägst du nach, was der Almanach nicht sehen konnte, und schließt am Ende die Sitzung.

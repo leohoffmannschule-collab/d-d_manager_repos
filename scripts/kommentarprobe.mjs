@@ -99,11 +99,20 @@ function unerklaerteAusfuhren(text) {
  */
 const PFAD = /(?<![\w/.:'"-])((?:\.\.?\/)*(?:[\w.-]+\/)+[\w.-]+\.(?:jsx|js|mjs|css|md|json|sh|yml|html))(?!\w)/g;
 
+/**
+ * Ordner, deren Dateien erst ein Werkzeug erzeugt und die nicht im Git
+ * stehen (siehe .gitignore): Der Satz der Bücher entsteht beim Drucken
+ * (`npm run handbuch`, `npm run zeilenbuch`). Ein Kommentar darf sie nennen,
+ * auch wenn sie in einem frisch geholten Stand noch fehlen.
+ */
+const ERZEUGT = ['docs/druck/'];
+
 function falschePfade(datei, text) {
   const funde = [];
   for (const kommentar of text.matchAll(/\/\*[\s\S]*?\*\/|(?<![:'"\\])\/\/[^\n]*/g)) {
     for (const treffer of kommentar[0].matchAll(PFAD)) {
       const pfad = treffer[1];
+      if (ERZEUGT.some((ordner) => pfad.startsWith(ordner))) continue;
       const moeglich = [
         path.resolve(path.dirname(datei), pfad),
         ...WURZELN.map((basis) => path.resolve(wurzel, basis, pfad)),

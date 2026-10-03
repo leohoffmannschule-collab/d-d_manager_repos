@@ -14,7 +14,7 @@ Wie der Kanal gebaut ist, steht im Kapitel über den Live-Kanal im Teil „Wie e
 | `anwesenheit` | events.js | in dieser Kampagne | lib/live.jsx |
 | `beute` | routes/stash.js, uebernehmen/alles.js | ohne das auslösende Fenster, in dieser Kampagne; in dieser Kampagne | lib/daten/kampagne.js |
 | `charakter:aktualisiert` | blattmeldung.js | nur die Spielleitung, ohne das auslösende Fenster, in dieser Kampagne; nur Rolle „spieler“, einzelne Konten (je eigene Sicht), ohne das auslösende Fenster, in dieser Kampagne | components/dm/runde/Charakterzuweisung.jsx, lib/daten/kampagne.js, pages/blatt/useBlatt.js |
-| `charakter:entfernt` | blattmeldung.js, routes/charaktere/schreiben.js | nur Rolle „spieler“, einzelne Konten (je eigene Sicht), in dieser Kampagne; in dieser Kampagne | lib/daten/kampagne.js |
+| `charakter:entfernt` | blattmeldung.js, routes/charaktere/schreiben.js | nur Rolle „spieler“, einzelne Konten (je eigene Sicht), in dieser Kampagne; in dieser Kampagne | lib/daten/kampagne.js, pages/blatt/useBlatt.js |
 | `chat` | routes/chat.js | einzelne Konten (je eigene Sicht), ohne das auslösende Fenster, in dieser Kampagne | lib/daten/gespraech.js |
 | `chat:geleert` | routes/chat.js | in dieser Kampagne | lib/daten/gespraech.js |
 | `chronik` | chronicle.js | Verdecktes nur an die Spielleitung, in dieser Kampagne | lib/daten/kampagne.js |
@@ -61,8 +61,9 @@ Jedes Ereignis wird geschickt *und* gehört – keines läuft ins Leere.
 ### charakter:entfernt
 
 - geschickt: backend/src/blattmeldung.js, Zeile 77 – nur Rolle „spieler“, einzelne Konten (je eigene Sicht), in dieser Kampagne
-- geschickt: backend/src/routes/charaktere/schreiben.js, Zeile 161 – in dieser Kampagne
+- geschickt: backend/src/routes/charaktere/schreiben.js, Zeile 184 – in dieser Kampagne
 - gehört: frontend/src/lib/daten/kampagne.js
+- gehört: frontend/src/pages/blatt/useBlatt.js
 
 ### chat
 
@@ -94,7 +95,7 @@ Jedes Ereignis wird geschickt *und* gehört – keines läuft ins Leere.
 
 ### figur
 
-- geschickt: backend/src/spieltisch/melden.js, Zeile 127 – nur die Spielleitung, ohne das auslösende Fenster, in dieser Kampagne
+- geschickt: backend/src/spieltisch/melden.js, Zeile 131 – nur die Spielleitung, ohne das auslösende Fenster, in dieser Kampagne
 - gehört: frontend/src/lib/daten/spieltisch.js
 
 ### figur:entfernt
@@ -149,7 +150,7 @@ Jedes Ereignis wird geschickt *und* gehört – keines läuft ins Leere.
 
 - geschickt: backend/src/routes/spieltisch/szenen.js, Zeile 217 – nur die Spielleitung, in dieser Kampagne
 - geschickt: backend/src/spieltisch/melden.js, Zeile 74 – einzelne Konten (je eigene Sicht), in dieser Kampagne
-- geschickt: backend/src/spieltisch/melden.js, Zeile 123 – einzelne Konten (je eigene Sicht), in dieser Kampagne
+- geschickt: backend/src/spieltisch/melden.js, Zeile 127 – einzelne Konten (je eigene Sicht), in dieser Kampagne
 - gehört: frontend/src/lib/daten/spieltisch.js
 - gehört: frontend/src/lib/daten/spieltisch.js
 
