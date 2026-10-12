@@ -3,8 +3,8 @@
  *
  * Das Speichern (`PUT /:id`) ist der häufigste Weg des ganzen Almanachs:
  * Das Blatt speichert sich 600 ms nach jedem Tastendruck von selbst. Es
- * zieht zwei Dinge nach sich, die man leicht übersieht – Trefferpunkte
- * wandern zum verknüpften Kämpfer, und geänderte Sinne verschieben die Sicht
+ * zieht zwei Dinge nach sich, die man leicht übersieht – Trefferpunkte und
+ * Zustände wandern zum verknüpften Kämpfer, und geänderte Sinne verschieben die Sicht
  * am Spieltisch.
  */
 import { Router } from 'express';
@@ -14,6 +14,7 @@ import { isDm } from '../../auth.js';
 import { broadcast } from '../../events.js';
 import { sendeSzene } from '../../spieltisch/melden.js';
 import { sendeKampf } from '../../kampf/sicht.js';
+import { blattInKampf } from '../../kampf/blatt.js';
 import { meldeEntzug } from '../../blattmeldung.js';
 import { darfBearbeiten, holen, meldeAenderung, rowToCharacter, sinneAus } from './blatt.js';
 
@@ -84,23 +85,10 @@ router.put('/:id', (req, res) => {
   );
   const row = holen(req.params.id, req.campaignId);
 
-  // Trefferpunkte im Kampf mitziehen, damit die Spielleitung sofort sieht,
-  // wenn jemand Schaden einträgt. Nur was sich wirklich ändert, wird
-  // geschrieben und verkündet: Das Blatt speichert bei jedem Tastendruck,
-  // und nicht jeder davon betrifft die Trefferpunkte.
-  const hp = JSON.parse(row.data)?.combat?.hp;
-  if (hp && Number.isFinite(Number(hp.current))) {
-    const aktuell = Number(hp.current) || 0;
-    const hoechst = Number(hp.max) || 0;
-    const veraltet = db
-      .prepare('SELECT id FROM combatants WHERE character_id = ? AND campaign_id = ? AND (hp != ? OR max_hp != ?)')
-      .all(row.id, req.campaignId, aktuell, hoechst);
-    if (veraltet.length) {
-      const setzen = db.prepare('UPDATE combatants SET hp = ?, max_hp = ? WHERE id = ?');
-      for (const { id } of veraltet) setzen.run(aktuell, hoechst, id);
-      sendeKampf(req.campaignId);
-    }
-  }
+  // Trefferpunkte und Zustände im Kampf mitziehen, damit die Spielleitung
+  // sofort sieht, wenn jemand Schaden oder „Vergiftet“ einträgt. Nur was sich
+  // wirklich ändert, wird geschrieben und verkündet (kampf/blatt.js).
+  if (blattInKampf(row, req.campaignId)) sendeKampf(req.campaignId);
 
   if (sinneVorher !== sinneNachher) sendeSzene(req.campaignId);
 

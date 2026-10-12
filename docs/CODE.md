@@ -56,7 +56,8 @@ backend/src/
   asynchron.js       async-Wege für Express 4
   sicht.js, sicht/   was eine Figur sieht – Felder, Sinne, Licht, Bitkarte
   spieltisch/        Szenen umwandeln, Sichtbarkeit je Person, verschicken
-  kampf/             Kämpfer umwandeln, die zwei Sichten, TP aufs Blatt,
+  kampf/             Kämpfer umwandeln, die zwei Sichten, TP und Zustände
+                     zwischen Kampf und Blatt,
                      Initiativebonus, gemeinsam verbergen
   blattmeldung.js    Blattänderungen nur denen melden, die das Blatt sehen
   beute.js           die Beutekiste: Inhalt und Teilen

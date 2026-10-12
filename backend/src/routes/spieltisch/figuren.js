@@ -15,6 +15,7 @@ import { holeFigur, holeSzene, rowToToken } from '../../spieltisch/umwandlung.js
 import { darfBewegen, meldeFigur, sendeSzene } from '../../spieltisch/melden.js';
 import { sendeKampf } from '../../kampf/sicht.js';
 import { verbergeGemeinsam } from '../../kampf/verbergen.js';
+import { kaempferVerknuepfen } from '../../kampf/blatt.js';
 import { clamp, istFarbe, toNumber } from '../../werte.js';
 
 const router = Router();
@@ -71,6 +72,8 @@ router.post('/:id/figuren', requireDm, (req, res) => {
   );
   const row = holeFigur(id, req.campaignId);
   meldeFigur(row, req);
+  // Figur mit Kämpfer *und* Blatt: Der Kämpfer hängt danach am Blatt.
+  if (kaempferVerknuepfen(body.combatantId ?? null, null, body.characterId ?? null, req.campaignId)) sendeKampf(req.campaignId);
   res.status(201).json(rowToToken(row));
 });
 
@@ -119,7 +122,13 @@ router.patch('/figuren/:id', (req, res) => {
       mitBlatt ? (body.characterId ?? null) : row.character_id,
       row.id
     );
-    return mitKaempfer ? verbergeGemeinsam(row.combatant_id, verborgen, req.campaignId) : null;
+    // Hängt die Figur an einem Kämpfer und wird an ein Blatt gebunden, folgt
+    // der Kämpfer: Schaden, Heilung und Zustände laufen dann zwischen
+    // Kampfliste und Blatt hin und her (kampf/blatt.js).
+    const verknuepft =
+      mitBlatt && kaempferVerknuepfen(row.combatant_id, row.character_id, body.characterId ?? null, req.campaignId);
+    const versteckt = mitKaempfer ? verbergeGemeinsam(row.combatant_id, verborgen, req.campaignId) : null;
+    return versteckt || verknuepft ? { figuren: versteckt?.figuren ?? 0, kampf: true } : null;
   });
 
   const next = holeFigur(row.id, req.campaignId);

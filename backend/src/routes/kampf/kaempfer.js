@@ -13,7 +13,7 @@ import { isDm, requireDm } from '../../auth.js';
 import * as chronik from '../../chronicle.js';
 import { TYPEN, alleKaempfer, holen, meta } from '../../kampf/umwandlung.js';
 import { antwort } from '../../kampf/sicht.js';
-import { syncCharakter } from '../../kampf/blatt.js';
+import { schadenAufBlatt, syncCharakter } from '../../kampf/blatt.js';
 import { verbergeGemeinsam } from '../../kampf/verbergen.js';
 import { saubererBonus } from '../../kampf/initiative.js';
 import { sendeSzene } from '../../spieltisch/melden.js';
@@ -110,7 +110,10 @@ router.put('/combatants/:id', requireDm, (req, res) => {
   });
   if (gespiegelt?.figuren > 0) sendeSzene(req.campaignId);
 
-  if (felder.hp !== row.hp || felder.max_hp !== row.max_hp) syncCharakter(holen(row.id, req.campaignId), req.campaignId);
+  // Trefferpunkte und Zustände stehen auch auf dem verknüpften Blatt (kampf/blatt.js).
+  if (felder.hp !== row.hp || felder.max_hp !== row.max_hp || felder.conditions !== row.conditions) {
+    syncCharakter(holen(row.id, req.campaignId), req.campaignId);
+  }
 
   // Zustände landen als Satz in der Chronik – bei verborgenen Kämpfern
   // verdeckt, sonst erführe die Runde dort, wer hinter dem Schirm steht.
@@ -144,11 +147,14 @@ router.post('/combatants/:id/damage', requireDm, (req, res) => {
   const row = holen(req.params.id, req.campaignId);
   if (!row) return res.status(404).json({ code: 'kaempfer_nicht_gefunden', error: 'Kämpfer nicht gefunden.' });
   const amount = toNumber(req.body?.amount, 0);
+  // Hängt der Kämpfer an einem Blatt mit temporären Trefferpunkten, zehrt
+  // der Schaden zuerst diese auf – erst der Rest trifft die echten.
+  const { rest, temp } = schadenAufBlatt(row, amount, req.campaignId);
   // Nie unter null, und Heilung nie über das Maximum – es sei denn, es ist
   // keins eingetragen (0), dann darf es beliebig hoch gehen.
-  const hp = Math.max(0, Math.min(row.max_hp || Number.MAX_SAFE_INTEGER, row.hp - amount));
+  const hp = Math.max(0, Math.min(row.max_hp || Number.MAX_SAFE_INTEGER, row.hp - rest));
   db.prepare('UPDATE combatants SET hp = ? WHERE id = ?').run(hp, row.id);
-  syncCharakter(holen(row.id, req.campaignId), req.campaignId);
+  syncCharakter(holen(row.id, req.campaignId), req.campaignId, { temp });
 
   if (amount !== 0) {
     chronik.log({
@@ -159,7 +165,7 @@ router.post('/combatants/:id/damage', requireDm, (req, res) => {
         amount > 0
           ? `${row.name} nimmt ${amount} Schaden.`
           : `${row.name} wird um ${-amount} Trefferpunkte geheilt.`,
-      meta: { target: row.name, amount, hp, maxHp: row.max_hp },
+      meta: { target: row.name, amount, hp, maxHp: row.max_hp, ...(temp !== undefined ? { temp } : {}) },
       // Von verborgenen Kämpfern soll die Runde nichts mitbekommen.
       secret: !!row.hidden,
     }, req.campaignId);

@@ -40,6 +40,7 @@ import review from './vertrag/18-review.mjs';
 import fehlerschluessel from './vertrag/19-fehlerschluessel.mjs';
 import werkzeuge from './vertrag/20-werkzeuge.mjs';
 import luecken from './vertrag/21-luecken.mjs';
+import kampfUndBlatt from './vertrag/22-kampf-und-blatt.mjs';
 
 const KAPITEL = [
   konten,
@@ -63,6 +64,7 @@ const KAPITEL = [
   fehlerschluessel,
   werkzeuge,
   luecken,
+  kampfUndBlatt,
 ];
 
 try {

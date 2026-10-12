@@ -186,7 +186,7 @@ die Kampagne, den Helden) – das reichen sie über `lage` weiter.
 
 ## Die Kapitel des Vertrags
 
-Der Vertrag spielt einen Abend in 21 Kapiteln, jedes baut auf dem vorigen auf (scripts/vertrag/).
+Der Vertrag spielt einen Abend in 22 Kapiteln, jedes baut auf dem vorigen auf (scripts/vertrag/).
 
 | Kapitel | Prüfstellen | worum es geht |
 |---|---|---|
@@ -211,6 +211,7 @@ Der Vertrag spielt einen Abend in 21 Kapiteln, jedes baut auf dem vorigen auf (s
 | 19-fehlerschluessel | 2 | Vertrag, Kapitel: Jeder Fehler trägt einen Schlüssel. |
 | 20-werkzeuge | 13 | Vertrag, Kapitel: Die Werkzeuge auf dem Rechner des Almanachs. |
 | 21-luecken | 62 | Vertrag, Kapitel: Die geschlossenen Lücken. |
+| 22-kampf-und-blatt | 13 | Vertrag, Kapitel: Kampf und Charakterblatt führen dieselben Werte. |
 
 ### 01-konten
 
@@ -499,3 +500,17 @@ das sieht:
 Ein Kapitel des Prüfdurchgangs (siehe ../vertrag.mjs). Es bekommt den
 gemeinsamen Stand `lage` – die angemeldeten Klienten und was frühere
 Kapitel angelegt haben – und trägt ein, was spätere brauchen.
+
+### 22-kampf-und-blatt
+
+Vertrag, Kapitel: Kampf und Charakterblatt führen dieselben Werte.
+
+Schaden, Heilung und Zustände aus der Kampfliste stehen sofort auf dem
+verknüpften Blatt – und umgekehrt. Verknüpft wird nicht nur über „Runde
+holen“, sondern auch, wenn die Spielleitung eine Figur, die an einem
+Kämpfer hängt, im Figurenfeld an ein Blatt bindet. Temporäre
+Trefferpunkte des Blattes fangen Schaden zuerst ab.
+
+Ein Kapitel des Prüfdurchgangs (siehe ../vertrag.mjs). Es bekommt den
+gemeinsamen Stand `lage` – die angemeldeten Klienten und was frühere
+Kapitel angelegt haben – und räumt hinter sich auf.

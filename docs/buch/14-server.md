@@ -210,7 +210,7 @@ Jeder Weg mit `await` trägt diese Hülle. Mit Express 5 kann die Datei weg.
 |---|---|
 | `kampf/umwandlung.js` | Zeilen in Kämpfer, Reihenfolge, Wundenstufe aus Trefferpunkten |
 | `kampf/sicht.js` | die zwei Fassungen des Kampfes (Spielleitung, Runde) und ihr Versand |
-| `kampf/blatt.js` | Trefferpunkte vom Kämpfer zurück aufs Blatt |
+| `kampf/blatt.js` | Trefferpunkte und Zustände zwischen Kämpfer und Blatt, in beide Richtungen; temporäre TP; Kämpfer folgt der Figur ans Blatt |
 | `kampf/initiative.js` | der Initiativebonus aus der Geschicklichkeit; W20 plus Bonus |
 | `kampf/verbergen.js` | Kämpfer und seine Figuren gemeinsam verbergen oder zeigen |
 | `spieltisch/umwandlung.js` | Zeilen in Szenen und Figuren, aufliegende Szene, Vorhang |

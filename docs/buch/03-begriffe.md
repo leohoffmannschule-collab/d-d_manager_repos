@@ -219,7 +219,7 @@ Die Liste aller **Kämpfer** einer Kampagne, nach Initiative absteigend geordnet
 
 ### Kämpfer
 
-Eine Zeile der Kampfliste (Tabelle `combatants`): Name, Art, Initiative, Initiativebonus, Trefferpunkte, Rüstungsklasse, Zustände, Notizen der Spielleitung, verborgen oder nicht. Ein Kämpfer kann an einem Charakterblatt hängen (`character_id`) – dann sind seine Trefferpunkte die des Blattes, in beide Richtungen.
+Eine Zeile der Kampfliste (Tabelle `combatants`): Name, Art, Initiative, Initiativebonus, Trefferpunkte, Rüstungsklasse, Zustände, Notizen der Spielleitung, verborgen oder nicht. Ein Kämpfer kann an einem Charakterblatt hängen (`character_id`) – dann sind seine Trefferpunkte und Zustände die des Blattes, in beide Richtungen („Erschöpft“ entspricht der Erschöpfungsstufe), und Schaden zehrt zuerst die temporären TP des Blattes auf. Verknüpft wird über „Runde holen“ oder indem man seine Figur im Figurenfeld an ein Blatt bindet.
 
 ### Initiativebonus
 

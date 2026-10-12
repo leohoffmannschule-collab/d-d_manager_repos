@@ -445,20 +445,20 @@ Verwaltung, NSC eingeschlossen. Zwei Pfadteile, damit es sich nie mit
 
 ### POST /api/characters
 
-*backend/src/routes/charaktere/schreiben.js, Zeile 27 · angemeldet, Kampagne gewählt*
+*backend/src/routes/charaktere/schreiben.js, Zeile 28 · angemeldet, Kampagne gewählt*
 
 POST /api/characters  { name, system?, data?, npc? } – ein neues Blatt
 anlegen: aus „Neuer Charakter“ oder aus einer mitgenommenen Datei.
 
 ### PUT /api/characters/:id
 
-*backend/src/routes/charaktere/schreiben.js, Zeile 53 · angemeldet, Kampagne gewählt*
+*backend/src/routes/charaktere/schreiben.js, Zeile 54 · angemeldet, Kampagne gewählt*
 
 PUT /api/characters/:id – full update (autosave from the sheet editor)
 
 ### PATCH /api/characters/:id
 
-*backend/src/routes/charaktere/schreiben.js, Zeile 114 · angemeldet, Kampagne gewählt*
+*backend/src/routes/charaktere/schreiben.js, Zeile 102 · angemeldet, Kampagne gewählt*
 
 PATCH /api/characters/:id  { ownerId?, shared?, npc? } – Besitz und
 Sichtbarkeit. `npc` stellt ein Blatt hinter den Schirm (true) oder holt es
@@ -466,7 +466,7 @@ in die Runde zurück (false); beides nur die Spielleitung.
 
 ### DELETE /api/characters/:id
 
-*backend/src/routes/charaktere/schreiben.js, Zeile 177 · angemeldet, Kampagne gewählt*
+*backend/src/routes/charaktere/schreiben.js, Zeile 165 · angemeldet, Kampagne gewählt*
 
 DELETE /api/characters/:id – ein Blatt löschen. Das darf, wem es gehört,
 und die Spielleitung; Figuren auf dem Tisch verlieren dabei nur ihren
@@ -703,13 +703,13 @@ das mit temporären TP und der Null richtig umgeht.
 
 ### POST /api/encounter/combatants/:id/damage
 
-*backend/src/routes/kampf/kaempfer.js, Zeile 143 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/kampf/kaempfer.js, Zeile 146 · Spielleitung, Kampagne gewählt*
 
 POST /api/encounter/combatants/:id/damage – negative Werte heilen
 
 ### POST /api/encounter/combatants/:id/initiative
 
-*backend/src/routes/kampf/kaempfer.js, Zeile 188 · angemeldet, Kampagne gewählt*
+*backend/src/routes/kampf/kaempfer.js, Zeile 194 · angemeldet, Kampagne gewählt*
 
 POST /api/encounter/combatants/:id/initiative  { value }
 
@@ -719,7 +719,7 @@ Wurf selbst ein. Fremde Zeilen bleiben tabu.
 
 ### DELETE /api/encounter/combatants/:id
 
-*backend/src/routes/kampf/kaempfer.js, Zeile 209 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/kampf/kaempfer.js, Zeile 215 · Spielleitung, Kampagne gewählt*
 
 DELETE /api/encounter/combatants/:id – einen Kämpfer aus dem Kampf nehmen.
 War er gerade dran, ist es danach der, der in der Reihenfolge an seine
@@ -1095,7 +1095,7 @@ auf einmal aufdecken oder zudecken.
 
 ### POST /api/scenes/:id/figuren
 
-*backend/src/routes/spieltisch/figuren.js, Zeile 43 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/spieltisch/figuren.js, Zeile 44 · Spielleitung, Kampagne gewählt*
 
 POST /api/scenes/:id/figuren  { name, x, y, size?, color?, mediaId?,
 characterId?, combatantId?, hidden? } – eine Figur auslegen. Ein Blatt oder
@@ -1103,7 +1103,7 @@ Kämpfer, an den sie gebunden wird, muss zu dieser Kampagne gehören.
 
 ### PATCH /api/scenes/figuren/:id
 
-*backend/src/routes/spieltisch/figuren.js, Zeile 80 · angemeldet, Kampagne gewählt*
+*backend/src/routes/spieltisch/figuren.js, Zeile 83 · angemeldet, Kampagne gewählt*
 
 PATCH /api/scenes/figuren/:id  { x?, y?, name?, size?, color?, mediaId?,
 hidden?, lightBright?, lightDim?, characterId? } – Bewegen darf auch, wem
@@ -1111,13 +1111,13 @@ die Figur gehört; alles andere nur die Spielleitung.
 
 ### DELETE /api/scenes/figuren/:id
 
-*backend/src/routes/spieltisch/figuren.js, Zeile 136 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/spieltisch/figuren.js, Zeile 145 · Spielleitung, Kampagne gewählt*
 
 DELETE /api/scenes/figuren/:id – eine Figur vom Tisch nehmen.
 
 ### POST /api/scenes/:id/figuren/aus-kampf
 
-*backend/src/routes/spieltisch/figuren.js, Zeile 148 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/spieltisch/figuren.js, Zeile 157 · Spielleitung, Kampagne gewählt*
 
 POST /api/scenes/:id/figuren/aus-kampf – alle Kämpfer als Figuren auslegen
 

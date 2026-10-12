@@ -308,7 +308,21 @@ eine neue Szene, weil sich die Sicht ändert.
     POST   /api/encounter/roll-initiative        [SL]  { onlyEmpty? }  W20 + initiativeBonus
     POST   /api/encounter/party                  [SL]  holt die Runde in den Kampf
 
-Trefferpunkte wandern in beide Richtungen zwischen Kampf und Charakterblatt.
+**Kampf und Blatt führen dieselben Werte**, in beide Richtungen
+(`backend/src/kampf/blatt.js`): aktuelle und höchste Trefferpunkte und die
+Zustände. „Erschöpft“ in der Kampfliste ist auf dem Blatt
+`combat.exhaustion` – an heißt mindestens Stufe 1, aus heißt 0. Schaden über
+`/damage` zehrt zuerst die temporären Trefferpunkte des Blattes
+(`combat.hp.temp`) auf; nur der Rest trifft die echten. Jede Änderung geht
+als `kampf` an alle und als `charakter:aktualisiert` (mit `hp`,
+`conditions`, `exhaustion`) an die, die das Blatt sehen dürfen.
+
+Verknüpft ist ein Kämpfer über `characterId`. Das setzen „Runde holen“
+(`/party`), `POST /combatants` mit `characterId` – und das Binden einer
+Figur: Hängt eine Figur an einem Kämpfer (`combatantId`) und bekommt per
+`POST /api/scenes/:id/figuren` oder `PATCH /api/scenes/figuren/:id` ein
+`characterId`, hängt danach auch der Kämpfer an diesem Blatt und übernimmt
+dessen Trefferpunkte und Zustände. `characterId: null` löst beide wieder.
 
 **Initiativebonus.** Jeder Kämpfer trägt `initiativeBonus` (−5 bis +20). Aus
 dem Bestiarium (`/library/:id/add-to-encounter`) kommt er aus der
@@ -594,8 +608,8 @@ Einige Eigenheiten davon, die man beim Bauen kennen sollte:
   gehen nicht an das Sprachmodell, denn der fertige Text steht bei allen.
 - **Kampf:** `POST /api/encounter/combatants` mit `characterId` braucht ein
   Blatt dieser Kampagne (400 `charakter_nicht_gefunden`). Ändert jemand die
-  Trefferpunkte auf dem Blatt, zieht der Server verknüpfte Kämpfer nach und
-  verschickt `kampf` – ein eigenes Nachladen braucht es nicht.
+  Trefferpunkte oder Zustände auf dem Blatt, zieht der Server verknüpfte
+  Kämpfer nach und verschickt `kampf` – ein eigenes Nachladen braucht es nicht.
 - **Würfel:** Zwischen zwei Gliedern steht immer `+` oder `-`; `d6d8` oder
   `1W20 5` sind 400 `wurfausdruck_ungueltig`.
 - **Kompendium:** Pfade, die aus der API hinausführen (auch als `%2e%2e`),

@@ -135,6 +135,11 @@ Handauflegen als Bonusaktion, Zweiter Wind, eine Reaktion.
   Inspiration – trägst du unter *Kampf* ein.
 - **Rettungswurf gegen den Tod.** Trägt sich selbst ein: Eine 20 richtet dich
   mit einem Trefferpunkt wieder auf, eine 1 zählt doppelt.
+- **Schaden, Heilung und Zustände aus dem Kampf.** Trägt die Spielleitung in
+  der Kampfliste Schaden ein, heilt dich oder setzt einen Zustand
+  („Vergiftet“, „Liegend“), steht das im selben Augenblick auf deinem Blatt –
+  und was du auf dem Blatt änderst, sieht sie sofort in ihrer Liste.
+  Temporäre Trefferpunkte fangen den Schaden zuerst ab.
 - **Konzentration.** Wirst du getroffen, während eine läuft, trag den Schaden
   ein – der Schwierigkeitsgrad ergibt sich daraus, und der Wurf sagt dir, ob
   der Zauber hält.

@@ -36,7 +36,7 @@ Jeder Wert mit einem kleinen Würfel davor ist ein Würfelknopf: Antippen würfe
 
 ![Reiter „Kampf“: Kampfwerte, Trefferpunkte, Trefferwürfel, Rettungswürfe gegen den Tod, Rasten, Zustände, Sinne, Ressourcen und Angriffe.](bilder/blatt-kampf.jpg)
 
-Der Kampf-Reiter ist der, an dem am Abend am meisten passiert. Die Trefferpunkte hier sind dieselben, die die Spielleitung in der Kampfliste sieht: Wer Schaden nimmt, sieht ihn auf dem eigenen Blatt im selben Moment.
+Der Kampf-Reiter ist der, an dem am Abend am meisten passiert. Die Trefferpunkte hier sind dieselben, die die Spielleitung in der Kampfliste sieht: Wer Schaden nimmt, geheilt wird oder einen Zustand bekommt, sieht es auf dem eigenen Blatt im selben Moment.
 
 ![Reiter „Inventar“: Münzen, Ausrüstung mit Gewicht und die Traglast.](bilder/blatt-inventar.jpg)
 

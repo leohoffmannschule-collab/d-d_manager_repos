@@ -352,15 +352,22 @@ zweihundertfünfzig Meter im Quadrat.
 Beginnt ein Kampf, würfelt jede Spielerin ihre Initiative **selbst** am
 Spieltisch; sie steht sofort in der Liste der Spielleitung. Gegner würfeln
 W20 plus ihren Geschicklichkeitsbonus aus dem Statblock – den Bonus sieht nur
-die Spielleitung. Trefferpunkte wandern zwischen Kampfliste und
-Charakterblatt **in beide Richtungen**.
+die Spielleitung. Schaden, Heilung und Zustände wandern zwischen Kampfliste
+und Charakterblatt **in beide Richtungen**: Wer in der Kampfliste 7 Schaden
+einträgt oder „Vergiftet“ setzt, sieht es im selben Augenblick auf dem
+Blatt, und was die Spielerin auf dem Blatt ändert, steht sofort in der
+Liste. Temporäre Trefferpunkte auf dem Blatt fangen Schaden aus dem Kampf
+zuerst ab. „Erschöpft“ in der Kampfliste ist auf dem Blatt die
+Erschöpfungsstufe (an = mindestens Stufe 1, aus = 0).
 
 ### 4.4 Figuren und Blätter
 
 Eine Figur, die an einem Charakterblatt hängt, zieht dessen Besitzerin
 selbst, und ihre Sinne bestimmen, was sie sieht. Verknüpft wird über „Runde
 holen“ und „Figuren aus dem Kampf“ – oder von Hand im Figurenfeld unter
-*Blatt*. Eine Figur, die an einem Kämpfer hängt, verbirgt und zeigt sich
+*Blatt*. Hängt die Figur an einem Kämpfer, hängt danach auch dieser Kämpfer
+am Blatt – so laufen Schaden und Zustände auch bei einem Kämpfer, der von
+Hand oder aus dem Bestiarium kam. Eine Figur, die an einem Kämpfer hängt, verbirgt und zeigt sich
 mit ihm: Wer den Hinterhalt aufdeckt, tut es einmal, und der Gegner steht in
 der Kampfliste und auf der Karte zugleich da.
 

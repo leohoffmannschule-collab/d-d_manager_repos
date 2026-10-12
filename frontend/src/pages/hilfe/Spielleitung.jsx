@@ -77,7 +77,9 @@ export default function Spielleitung() {
         </li>
         <li>
           <span className="font-display">Figuren aus dem Kampf</span> legt für jeden Kämpfer eine Figur auf die
-          Karte. Schaden, den du in der Kampfliste einträgst, steht sofort auf dem Charakterblatt – und umgekehrt.
+          Karte. Schaden, Heilung und Zustände, die du in der Kampfliste einträgst, stehen sofort auf dem
+          Charakterblatt – und umgekehrt. Bindest du eine Figur im Figurenfeld an ein Blatt, folgt ihr Kämpfer mit.
+          Temporäre Trefferpunkte fangen Schaden zuerst ab.
           Einen Gegner deckst du einmal auf – mit dem Auge in der Kampfliste oder im Figurenfeld –, und er erscheint
           in der Liste und auf der Karte zugleich.
         </li>

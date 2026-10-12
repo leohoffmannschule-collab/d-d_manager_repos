@@ -7,7 +7,7 @@ Der Almanach ist in kleinen Schritten gewachsen, und jeder Schritt hat eine Nach
 
 Die Nachrichten sind so abgedruckt, wie sie geschrieben wurden. Die ersten, vom 1. September, sind englisch; ab dem 3. September wurde der Almanach deutsch, im Code wie in seiner Geschichte.
 
-Insgesamt 97 Schritte an 16 Tagen.
+Insgesamt 98 Schritte an 16 Tagen.
 
 ## 1. September 2026
 
@@ -1427,3 +1427,21 @@ Lineal und Zeigefinger hatten bisher nur Knöpfe in der Leiste der Spielleitung;
 - Fehler behoben: Bei der Runde liegt der Nebel über den Figuren (Ebene 25), das Lineal lag darunter und war im Nebel unsichtbar. Es liegt jetzt wie der Zeigefinger auf Ebene 30.
 
 Vertrag 367: Ein Zeigefinger aus der Runde erreicht die Spielleitung, hinter dem Vorhang aber nur sie. Im Browser mit Maus und als Telefon mit dem Finger durchgespielt. Doku: README, Handbuch, Anleitungen für Runde und Spielleitung, Buchkapitel, Hilfe im Almanach; Handbuch (571 Seiten) und Zeilenbuch (1.670 Seiten) neu gedruckt.
+
+### Mehrere Blätter auf einmal einlesen; Blätter nachträglich zum NSC und zurück
+
+`55666e0`
+
+- Mehrere Dateien einlesen:
+- „Blätter einlesen“ in der Übersicht nimmt mehrere Dateien auf einmal. Eine Sammelvorschau (components/einlesen/Sammelvorschau.jsx) zeigt je Datei, zu welchem Blatt sie gehört und was sich ändert, und schlägt vor: aktualisieren, neu anlegen oder auslassen (derselbe Stand, unlesbar oder eine zweite Fassung desselben Blattes). Die Wahl lässt sich je Datei ändern; die Spielleitung legt neue Blätter auf Wunsch gleich als NSC an, einzeln oder alle. Gespeichert wird der Reihe nach, ein Fehler hält die übrigen nicht auf, und jede Zeile sagt, wie es ausging.
+- lib/einfuhr/stapel.js: dateiLesen, stapelLesen, stapelUebernehmen – ohne API, damit die Blattprobe sie prüft. Die Vorschau für eine Datei bietet der Spielleitung ebenfalls „als NSC“ an.
+
+- Zum NSC und zurück:
+- Die Spielleitung stellt jedes Blatt jederzeit um: „Zum NSC“ / „In die Runde“ an der Karte in der Übersicht, oder unter Spielleitung → Runde mit der Wahl in der Runde / privat / NSC.
+- Der Besitz bleibt stehen, damit ein zurückgeholter Held wieder derselben Person gehört – ruht aber hinter dem Schirm (fuehrtSelbst): kein Ändern, kein Figurziehen, keine Sicht durch ihre Augen, keine Initiative.
+- Die Kampfzeile wechselt mit (pc ↔ npc), die Szene wird neu verschickt. PATCH { npc: false, shared: false } holt ein Blatt privat hervor.
+- Die Übersicht der Runde nimmt ein Blatt, das live neu sichtbar wird, von selbst auf; ein offenes Blatt, das entzogen wird, sagt es und speichert nicht weiter.
+
+Nebenbei: Die Kommentarprobe lässt Pfade unter docs/druck/ gelten – der Satz der Bücher ist erzeugt und nicht im Git, ein frisch geholter Stand fiel sonst durch.
+
+Proben: Vertrag 387 (+20), Blattprobe 393 (+9). Im Browser durchgespielt mit Spielleitung und Spielerin in getrennten Browsern und am Telefon. Doku: README, Handbuch, Anleitungen für Runde und Spielleitung, Einrichtung, API, CODE.md, Buchkapitel, Hilfe im Almanach; Handbuch (581 Seiten) und Zeilenbuch (1.698 Seiten) neu gedruckt.

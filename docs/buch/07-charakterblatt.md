@@ -24,7 +24,7 @@ Alles, was auf den fünf Reitern steht, liegt in `data`. Der Server kennt diesen
 
 Nur an zwei Stellen schaut der Server doch hinein, und beide sind am Tisch wichtig:
 
-1. **Trefferpunkte.** Wer auf dem Blatt `combat.hp` ändert, ändert damit auch die Trefferpunkte des verknüpften Kämpfers in der Kampfliste – und umgekehrt schreibt die Spielleitung Schaden aus der Kampfliste zurück aufs Blatt.
+1. **Trefferpunkte und Zustände.** Wer auf dem Blatt `combat.hp`, `combat.conditions` oder `combat.exhaustion` ändert, ändert damit auch den verknüpften Kämpfer in der Kampfliste – und umgekehrt schreibt die Spielleitung Schaden, Heilung und Zustände aus der Kampfliste zurück aufs Blatt. Schaden aus dem Kampf zehrt dabei zuerst `combat.hp.temp` auf. „Erschöpft“ in der Kampfliste entspricht `exhaustion` ≥ 1. Verknüpft ist ein Kämpfer über „Runde holen“ oder weil seine Figur im Figurenfeld an das Blatt gebunden wurde (`backend/src/kampf/blatt.js`).
 2. **Sinne.** Wer `combat.senses` ändert – Dunkelsicht einträgt, die Sichtweite verkürzt –, verschiebt damit die Sicht am Spieltisch. Der Server schickt die Szene neu, sobald sich die Sinne tatsächlich geändert haben (nicht bei jedem Tastendruck am Namen).
 
 Beides steht in `backend/src/routes/charaktere/schreiben.js`, im Weg `PUT /api/characters/:id`.

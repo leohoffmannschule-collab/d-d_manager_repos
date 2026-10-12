@@ -119,7 +119,9 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
 
 - **Initiative-Tracker**: Kämpfer eintragen oder die ganze Runde mit einem Klick holen, Initiative
   würfeln lassen, Schaden und Heilung austeilen, Zustände vergeben, Runde und Zug verfolgen.
-  Trefferpunkte wandern automatisch zwischen Kampfliste und Charakterblatt hin und her.
+  Schaden, Heilung und Zustände wandern automatisch zwischen Kampfliste und Charakterblatt hin und her –
+  auch für Kämpfer von Hand, sobald ihre Figur im Figurenfeld an ein Blatt gebunden ist. Temporäre
+  Trefferpunkte auf dem Blatt fangen Schaden aus dem Kampf zuerst ab.
 - **Bestiarium**: eigene Statblöcke anlegen oder Monster aus dem Kompendium übernehmen, durchsuchen und
   mit einem Klick mehrfach in den Kampf stellen („3 Goblins“) – wahlweise **verborgen**, bis der
   Hinterhalt zuschnappt.

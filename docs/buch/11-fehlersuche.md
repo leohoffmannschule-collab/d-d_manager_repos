@@ -144,7 +144,8 @@ Der **Status** sagt die Art, der **Schlüssel** die Sache, der **Satz** ist für
 | Eine Heldin fehlt in der Kampfliste nach „Runde holen“ | Ihr Blatt ist nicht geteilt, oder es ist ein NSC-Blatt. | Blatt teilen (unter *Spielleitung → Runde*) bzw. mit „In die Runde“ hervorholen. |
 | Die Runde sieht bei einem Helden nur noch „verwundet“ | Sein Blatt wurde hinter den Schirm gestellt; seine Zeile ist jetzt eine NSC-Zeile. | „In die Runde“ in der Übersicht – die Zeile wird wieder zur Heldenzeile. |
 | „Eigene Initiative würfeln“ fehlt | Die eigene Heldin steht nicht in der Liste. | „Runde holen“. |
-| Schaden steht in der Liste, aber nicht auf dem Blatt | Der Kämpfer ist nicht mit dem Blatt verknüpft (von Hand angelegt), oder die Spielerin tippt gerade selbst auf ihrem Blatt. | Über „Runde holen“ verknüpfen. Im zweiten Fall gleicht es sich beim nächsten Speichern an. |
+| Schaden oder Zustand steht in der Liste, aber nicht auf dem Blatt | Der Kämpfer ist nicht mit dem Blatt verknüpft (von Hand angelegt), oder die Spielerin tippt gerade selbst auf ihrem Blatt. | Über „Runde holen“ verknüpfen – oder seine Figur im Figurenfeld unter *Blatt* an das Blatt binden; der Kämpfer folgt. Im zweiten Fall gleicht es sich beim nächsten Speichern an. |
+| Schaden kam nur zum Teil an | Das Blatt hatte temporäre Trefferpunkte; die fangen Schaden aus dem Kampf zuerst ab. | – (so wollen es die Regeln) |
 | Die Initiative eines Monsters wirkt zu niedrig | Sein Statblock hat keine Geschicklichkeit eingetragen – dann ist der Bonus 0. | Im Bestiarium GE nachtragen; bei einem Kämpfer von Hand den „Bonus“ beim Eintragen setzen. |
 | Ein aufgedeckter Gegner steht noch unsichtbar auf der Karte | Seine Figur hängt an keinem Kämpfer (von Hand ausgelegt statt über „Figuren aus dem Kampf“). | Die Figur im Figurenfeld selbst zeigen – nur verbundene Figuren gehen mit. |
 

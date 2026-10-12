@@ -3,7 +3,7 @@
 > Dieses Kapitel schreibt `npm run handbuch` aus dem Code (scripts/handbuch/referenz/).
 > Änderungen gehören in den Code und seine Kommentare, nicht hierher.
 
-Alle Dateien unter backend/src und backend/scripts (117 Dateien, 12.183 Zeilen), nach Ordnern. Zu jeder Datei ihr Kopfkommentar – dort steht, wozu es sie gibt und warum sie so gebaut ist – und ihre Ausfuhren mit dem Kommentar darüber.
+Alle Dateien unter backend/src und backend/scripts (117 Dateien, 12.307 Zeilen), nach Ordnern. Zu jeder Datei ihr Kopfkommentar – dort steht, wozu es sie gibt und warum sie so gebaut ist – und ihre Ausfuhren mit dem Kommentar darüber.
 
 Einen Überblick, wie die Teile zusammenspielen, gibt das Kapitel über den Server im Teil „Wie es gebaut ist“.
 
@@ -1061,20 +1061,38 @@ Stammzertifikat zehn Jahre.
 
 ### backend/src/kampf/blatt.js
 
-*33 Zeilen*
+*154 Zeilen*
 
-Trefferpunkte laufen in beide Richtungen.
+Kampf und Charakterblatt führen dieselben Werte – in beide Richtungen.
 
-Schaden, den die Spielleitung im Kampf einträgt, steht sofort auf dem
-Charakterblatt – und umgekehrt. Ohne das führte jede Runde zwei Zahlen
-für dasselbe, und am Ende des Abends stimmte keine davon.
+Schaden und Heilung, die die Spielleitung im Kampf einträgt, stehen sofort
+auf dem Charakterblatt, Zustände ebenso; und was jemand auf dem Blatt
+ändert, steht sofort in der Kampfliste. Ohne das führte jede Runde zwei
+Zahlen für dasselbe, und am Ende des Abends stimmte keine davon.
 
-Es geht nur, wenn der Kämpfer mit einem Blatt verknüpft ist; ein Monster
-hat keines, und dann tut diese Funktion nichts.
+Geteilt werden:
+
+```
+Trefferpunkte  aktuell und Maximum
+Zustände       die Liste aus dem Regelwerk; „Erschöpft“ in der
+               Kampfliste ist auf dem Blatt die Erschöpfungsstufe
+               (an = mindestens Stufe 1, aus = Stufe 0)
+temporäre TP   nur in eine Richtung: Schaden im Kampf zehrt zuerst sie
+               auf, wie es die Regeln wollen (siehe `schadenAufBlatt`)
+```
+
+Verknüpft ist ein Kämpfer mit einem Blatt über `combatants.character_id`.
+Das setzt „Runde holen“, und das setzt auch, wer eine Figur, die an einem
+Kämpfer hängt, im Figurenfeld an ein Blatt bindet
+(`kaempferVerknuepfen`). Ein Monster ohne Blatt bleibt unberührt.
 
 **Ausfuhren**
 
-- `syncCharakter` (function) – Trefferpunkte auf das verknüpfte Charakterblatt zurückschreiben.
+- `zustaendeFuerKampf` (function) – Die Zustände eines Blattes so, wie die Kampfliste sie führt.
+- `syncCharakter` (function) – Trefferpunkte und Zustände eines Kämpfers aufs verknüpfte Blatt schreiben und den Fenstern melden, die das Blatt sehen dürfen.
+- `schadenAufBlatt` (function) – Schaden, der zuerst die temporären Trefferpunkte des verknüpften Blattes aufzehrt. Gibt zurück, was davon an den echten Trefferpunkten ankommt, und die neuen temporären TP (oder `undefined`, wenn keine berührt wurden).
+- `blattInKampf` (function) – Den Stand eines Blattes in alle Kämpfer übernehmen, die daran hängen. Geschrieben wird nur, was sich wirklich unterscheidet – das Blatt speichert bei jedem Tastendruck.
+- `kaempferVerknuepfen` (function) – Eine Figur, die an einem Kämpfer hängt, wurde an ein Blatt gebunden (oder davon gelöst): Der Kämpfer folgt. Beim Binden gilt danach der Stand des Blattes – es ist das Dauerhafte, die Kampfzeile nur für diesen Kampf.
 
 ### backend/src/kampf/initiative.js
 
@@ -1637,14 +1655,14 @@ es im Netzwerkfenster des Browsers gar nicht erst auftaucht.
 
 ### backend/src/routes/charaktere/schreiben.js
 
-*189 Zeilen*
+*177 Zeilen*
 
 Blätter anlegen, speichern, zuteilen, löschen.
 
 Das Speichern (`PUT /:id`) ist der häufigste Weg des ganzen Almanachs:
 Das Blatt speichert sich 600 ms nach jedem Tastendruck von selbst. Es
-zieht zwei Dinge nach sich, die man leicht übersieht – Trefferpunkte
-wandern zum verknüpften Kämpfer, und geänderte Sinne verschieben die Sicht
+zieht zwei Dinge nach sich, die man leicht übersieht – Trefferpunkte und
+Zustände wandern zum verknüpften Kämpfer, und geänderte Sinne verschieben die Sicht
 am Spieltisch.
 
 ## backend/src/routes/chronik/
@@ -1774,7 +1792,7 @@ wird für beide Richtungen benutzt.
 
 ### backend/src/routes/kampf/kaempfer.js
 
-*226 Zeilen*
+*232 Zeilen*
 
 Die Kämpfer selbst: eintragen, ändern, Schaden geben, Initiative setzen,
 wieder herausnehmen.
@@ -1855,7 +1873,7 @@ hält die Rolle vom Moment des Verbindens fest (siehe events.js).
 
 ### backend/src/routes/spieltisch/figuren.js
 
-*201 Zeilen*
+*210 Zeilen*
 
 Die Figuren auf dem Tisch: auslegen, schieben, wegnehmen, aus dem Kampf
 holen.

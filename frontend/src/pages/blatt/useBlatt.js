@@ -67,13 +67,20 @@ export function useBlatt(id) {
       .catch((err) => setError(err.message));
   }, [id]);
 
-  // Teilt die Spielleitung im Kampf Schaden aus, wandern die Trefferpunkte
-  // von selbst aufs Blatt.
+  // Teilt die Spielleitung im Kampf Schaden oder Heilung aus oder setzt einen
+  // Zustand, wandert das von selbst aufs Blatt (backend/src/kampf/blatt.js):
+  // Trefferpunkte samt temporären, Zustände und die Erschöpfungsstufe.
   useLive('charakter:aktualisiert', (nachricht) => {
-    if (nachricht.id !== id || offeneAenderung.current || !nachricht.hp) return;
-    setCharacter((prev) =>
-      prev ? { ...prev, data: setPath(prev.data, 'combat.hp', { ...prev.data?.combat?.hp, ...nachricht.hp }) } : prev
-    );
+    if (nachricht.id !== id || offeneAenderung.current) return;
+    if (!nachricht.hp && !Array.isArray(nachricht.conditions)) return;
+    setCharacter((prev) => {
+      if (!prev) return prev;
+      let data = prev.data;
+      if (nachricht.hp) data = setPath(data, 'combat.hp', { ...data?.combat?.hp, ...nachricht.hp });
+      if (Array.isArray(nachricht.conditions)) data = setPath(data, 'combat.conditions', nachricht.conditions);
+      if (typeof nachricht.exhaustion === 'number') data = setPath(data, 'combat.exhaustion', nachricht.exhaustion);
+      return { ...prev, data };
+    });
   });
 
   // Das offene Blatt ist nicht mehr für dieses Fenster da: gelöscht, oder die

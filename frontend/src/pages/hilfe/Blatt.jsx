@@ -51,6 +51,10 @@ export default function Blatt() {
             Beginnt ein Kampf, würfelst du deine <span className="font-display">Initiative</span> am Spieltisch
             selbst; sie steht sofort in der Liste der Spielleitung.
           </li>
+          <li>
+            Schaden, Heilung und Zustände, die die Spielleitung im Kampf einträgt, stehen sofort auf deinem Blatt –
+            und was du hier änderst, sieht sie in ihrer Liste. Temporäre Trefferpunkte fangen Schaden zuerst ab.
+          </li>
         </ul>
       </Card>
 

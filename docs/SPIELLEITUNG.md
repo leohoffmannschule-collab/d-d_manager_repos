@@ -281,12 +281,25 @@ sofort in deiner Liste. NSC-Blätter werden dabei übergangen.
 unter *Blatt* das Blatt wählen. Danach zieht die Besitzerin des Blattes die
 Figur selbst, und ihre Sinne (Dunkelsicht) bestimmen, was sie sieht. Das
 geht auch ohne Kampf – etwa für die Heldinnen beim Erkunden – und mit einem
-NSC-Blatt, durch dessen Augen du dann schauen kannst.
+NSC-Blatt, durch dessen Augen du dann schauen kannst. Hängt die Figur an
+einem Kämpfer, hängt danach auch er am Blatt und übernimmt dessen
+Trefferpunkte und Zustände – ab dann läuft alles wie bei „Runde holen“.
 
-### 5.3 Trefferpunkte
+### 5.3 Trefferpunkte und Zustände
 
-Schaden, den du in der Kampfliste einträgst, steht **sofort auf dem
-Charakterblatt** – und umgekehrt. Von Monstern sieht die Runde **keine
+Schaden, Heilung und Zustände, die du in der Kampfliste einträgst, stehen
+**sofort auf dem Charakterblatt** – und umgekehrt. Das gilt für jeden
+Kämpfer, der an einem Blatt hängt: über „Runde holen“ oder weil seine Figur
+im Figurenfeld an ein Blatt gebunden ist.
+
+- **Temporäre Trefferpunkte** auf dem Blatt fangen Schaden zuerst ab: Hat
+  Brann 3 temporäre und nimmt 5 Schaden, verliert er die 3 und 2 echte.
+- **„Erschöpft“** in der Kampfliste ist auf dem Blatt die
+  Erschöpfungsstufe. Setzt du es, steht dort mindestens Stufe 1; nimmst du
+  es weg, Stufe 0. Höhere Stufen stellt die Spielerin auf dem Blatt ein.
+- Tippt die Spielerin gerade selbst auf ihrem Blatt, hat ihre Eingabe
+  Vorrang; der Stand gleicht sich beim nächsten Speichern an.
+ Von Monstern sieht die Runde **keine
 Zahlen**, nur einen Zustand („verwundet“, „schwer verwundet“).
 
 ### 5.4 Verdeckt würfeln

@@ -3,7 +3,7 @@
 > Dieses Kapitel schreibt `npm run handbuch` aus dem Code (scripts/handbuch/referenz/).
 > Änderungen gehören in den Code und seine Kommentare, nicht hierher.
 
-Alles unter scripts/ (98 Dateien, 15.215 Zeilen): Start und Tunnel, die Proben und der Vertrag, Drucksatz und dieses Handbuch.
+Alles unter scripts/ (99 Dateien, 15.316 Zeilen): Start und Tunnel, die Proben und der Vertrag, Drucksatz und dieses Handbuch.
 
 ## scripts/
 
@@ -363,7 +363,7 @@ der Weg von außen ist dann wieder zu.
 
 ### scripts/vertrag.mjs
 
-*81 Zeilen*
+*83 Zeilen*
 
 Der Vertrag zwischen Server und Oberfläche.
 
@@ -1419,6 +1419,26 @@ Kapitel angelegt haben – und trägt ein, was spätere brauchen.
 **Ausfuhren**
 
 - `luecken` (default async function)
+
+### scripts/vertrag/22-kampf-und-blatt.mjs
+
+*99 Zeilen*
+
+Vertrag, Kapitel: Kampf und Charakterblatt führen dieselben Werte.
+
+Schaden, Heilung und Zustände aus der Kampfliste stehen sofort auf dem
+verknüpften Blatt – und umgekehrt. Verknüpft wird nicht nur über „Runde
+holen“, sondern auch, wenn die Spielleitung eine Figur, die an einem
+Kämpfer hängt, im Figurenfeld an ein Blatt bindet. Temporäre
+Trefferpunkte des Blattes fangen Schaden zuerst ab.
+
+Ein Kapitel des Prüfdurchgangs (siehe ../vertrag.mjs). Es bekommt den
+gemeinsamen Stand `lage` – die angemeldeten Klienten und was frühere
+Kapitel angelegt haben – und räumt hinter sich auf.
+
+**Ausfuhren**
+
+- `kampfUndBlatt` (default async function)
 
 ### scripts/vertrag/werkzeug.mjs
 

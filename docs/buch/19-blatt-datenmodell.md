@@ -88,7 +88,7 @@ Ein **freies Blatt** (System nicht `dnd5e`) ist viel kleiner:
 
 Für den Server ist `data` ein Text. `POST` und `PUT` nehmen ihn als JSON entgegen, `GET` gibt ihn zurück. Es gibt keine Prüfung der Felder – mit zwei Ausnahmen, die das Kapitel „Das Charakterblatt Feld für Feld“ beschreibt:
 
-- **`combat.hp`** wird beim Speichern mit den verknüpften Kämpfern abgeglichen (nur wenn sich `current` oder `max` wirklich unterscheiden), und Schaden aus der Kampfliste wird umgekehrt ins Blatt geschrieben (`kampf/blatt.js`).
+- **`combat.hp`, `combat.conditions` und `combat.exhaustion`** werden beim Speichern mit den verknüpften Kämpfern abgeglichen (nur wenn sich etwas wirklich unterscheidet; `exhaustion` ≥ 1 wird dort zum Zustand „Erschöpft“), und Schaden, Heilung und Zustände aus der Kampfliste werden umgekehrt ins Blatt geschrieben – Schaden zuerst von `combat.hp.temp` (`kampf/blatt.js`).
 - **`combat.senses`** wird vor und nach dem Speichern verglichen; weicht es ab, geht die Szene neu an alle.
 
 Und an einer dritten Stelle liest der Server das Blatt, ohne zu schreiben: Die Kurzfassung für Listen (`summary()` in `routes/charaktere/blatt.js`) nimmt Klasse, Stufe, Volk, Bildnis, Trefferpunkte, Rüstungsklasse und die Initiative (GES-Modifikator plus Bonus) heraus. Beim Auszahlen der Beute schreibt er in `currency`.

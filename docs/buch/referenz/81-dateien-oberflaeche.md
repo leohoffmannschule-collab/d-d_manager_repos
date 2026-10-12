@@ -3,7 +3,7 @@
 > Dieses Kapitel schreibt `npm run handbuch` aus dem Code (scripts/handbuch/referenz/).
 > Änderungen gehören in den Code und seine Kommentare, nicht hierher.
 
-Alle Dateien der Oberfläche (218 Dateien, 19.959 Zeilen): Seiten, Bauteile, die Datenschicht in lib/, die Stilblätter und der Bau. Zu jeder Datei ihr Kopfkommentar und ihre Ausfuhren.
+Alle Dateien der Oberfläche (218 Dateien, 19.972 Zeilen): Seiten, Bauteile, die Datenschicht in lib/, die Stilblätter und der Bau. Zu jeder Datei ihr Kopfkommentar und ihre Ausfuhren.
 
 Sammelstellen wie icons.jsx oder lib/api.js führen nichts Eigenes aus, sondern reichen weiter – bei ihnen steht, woher.
 
@@ -3863,7 +3863,7 @@ useBlatt.js): Wer tippt, soll sehen, dass es ankommt.
 
 ### frontend/src/pages/blatt/useBlatt.js
 
-*158 Zeilen*
+*165 Zeilen*
 
 Das Blatt laden, halten und von selbst speichern – der Zustand hinter der
 Seite des Charakterblattes (CharacterSheet.jsx).
@@ -4256,7 +4256,7 @@ und ein „läuft“ an der offenen.
 
 ### frontend/src/pages/hilfe/Blatt.jsx
 
-*107 Zeilen*
+*111 Zeilen*
 
 Hilfe: rund ums eigene Blatt – das Charakterblatt, Zauber und Rasten,
 die Beutekiste und das Mitnehmen als eigenständige Datei – samt dem Rückweg,
@@ -4326,7 +4326,7 @@ Hilfe: woher die Regeltexte stammen, mit Verweisen auf die Quellen.
 
 ### frontend/src/pages/hilfe/Spielleitung.jsx
 
-*125 Zeilen*
+*127 Zeilen*
 
 Hilfe: der Abschnitt „Für die Spielleitung“ – was hinter dem Schirm
 liegt und wie man es benutzt.
