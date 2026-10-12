@@ -100,7 +100,7 @@ Jedes Ereignis wird geschickt *und* gehört – keines läuft ins Leere.
 
 ### figur:entfernt
 
-- geschickt: backend/src/routes/spieltisch/figuren.js, Zeile 151 – nur die Spielleitung, in dieser Kampagne
+- geschickt: backend/src/routes/spieltisch/figuren.js, Zeile 159 – nur die Spielleitung, in dieser Kampagne
 - gehört: frontend/src/lib/daten/spieltisch.js
 - gehört: frontend/src/pages/Tabletop.jsx
 

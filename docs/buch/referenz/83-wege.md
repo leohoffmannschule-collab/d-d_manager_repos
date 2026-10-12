@@ -17,18 +17,18 @@ Die Beschreibung jedes Weges ist der Kommentar, der im Code über ihm steht. Bei
 
 ### POST /api/media
 
-*backend/src/routes/media.js, Zeile 50 · angemeldet*
+*backend/src/routes/media.js, Zeile 42 · angemeldet*
 
 POST /api/media  { dataUrl, filename }
 
 Ein Bild ablegen – eine Karte, ein Bildnis, das Bild einer Figur. Es kommt
 als data:-URL, wird als Datei neben die Datenbank gelegt (data/medien/) und
 bekommt eine Kennung, unter der GET es wieder ausliefert. Erlaubt sind nur
-die Bildformate oben, und höchstens MAX_BYTES.
+die Bildformate aus ../bilder.js, und höchstens MAX_BYTES.
 
 ### GET /api/media/:id
 
-*backend/src/routes/media.js, Zeile 90 · angemeldet*
+*backend/src/routes/media.js, Zeile 64 · angemeldet*
 
 GET /api/media/:id
 
@@ -39,7 +39,7 @@ kennt – und die steht nur in einer Szene, die die Spielleitung aufgelegt hat.
 
 ### DELETE /api/media/:id
 
-*backend/src/routes/media.js, Zeile 130 · Spielleitung*
+*backend/src/routes/media.js, Zeile 104 · Spielleitung*
 
 DELETE /api/media/:id – ein Bild samt Datei löschen. Wer es noch zeigt (eine
 Szene, eine Figur), zeigt danach ins Leere; die Kartenbibliothek räumt
@@ -1095,7 +1095,7 @@ auf einmal aufdecken oder zudecken.
 
 ### POST /api/scenes/:id/figuren
 
-*backend/src/routes/spieltisch/figuren.js, Zeile 44 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/spieltisch/figuren.js, Zeile 45 · Spielleitung, Kampagne gewählt*
 
 POST /api/scenes/:id/figuren  { name, x, y, size?, color?, mediaId?,
 characterId?, combatantId?, hidden? } – eine Figur auslegen. Ein Blatt oder
@@ -1103,7 +1103,7 @@ Kämpfer, an den sie gebunden wird, muss zu dieser Kampagne gehören.
 
 ### PATCH /api/scenes/figuren/:id
 
-*backend/src/routes/spieltisch/figuren.js, Zeile 83 · angemeldet, Kampagne gewählt*
+*backend/src/routes/spieltisch/figuren.js, Zeile 85 · angemeldet, Kampagne gewählt*
 
 PATCH /api/scenes/figuren/:id  { x?, y?, name?, size?, color?, mediaId?,
 hidden?, lightBright?, lightDim?, characterId? } – Bewegen darf auch, wem
@@ -1111,13 +1111,13 @@ die Figur gehört; alles andere nur die Spielleitung.
 
 ### DELETE /api/scenes/figuren/:id
 
-*backend/src/routes/spieltisch/figuren.js, Zeile 145 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/spieltisch/figuren.js, Zeile 153 · Spielleitung, Kampagne gewählt*
 
 DELETE /api/scenes/figuren/:id – eine Figur vom Tisch nehmen.
 
 ### POST /api/scenes/:id/figuren/aus-kampf
 
-*backend/src/routes/spieltisch/figuren.js, Zeile 157 · Spielleitung, Kampagne gewählt*
+*backend/src/routes/spieltisch/figuren.js, Zeile 165 · Spielleitung, Kampagne gewählt*
 
 POST /api/scenes/:id/figuren/aus-kampf – alle Kämpfer als Figuren auslegen
 

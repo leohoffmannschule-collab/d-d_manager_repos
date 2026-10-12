@@ -21,24 +21,16 @@ import { Router } from 'express';
 import express from 'express';
 import fs from 'node:fs';
 import path from 'node:path';
-import { randomUUID } from 'node:crypto';
 import { db, mediaDir } from '../db.js';
 import { requireAuth, requireDm } from '../auth.js';
+import { bildAblegen, bildLesen } from '../bilder.js';
 
 const router = Router();
 
-// Karten sind groß – deshalb hier ein eigener, großzügigerer Rahmen als für
-// den Rest der API. Ankommen darf eine data:-URL, wie sie der Browser aus
-// einer ausgewählten Datei erzeugt; so braucht es kein multipart-Paket.
-const MAX_BYTES = 12 * 1024 * 1024;
-const ERLAUBT = {
-  'image/png': 'png',
-  'image/jpeg': 'jpg',
-  'image/webp': 'webp',
-  'image/gif': 'gif',
-  'image/avif': 'avif',
-};
-
+// Karten sind groß – deshalb hat dieser Weg einen eigenen, großzügigeren
+// Rahmen als der Rest der API. Was erlaubt ist (Formate, höchstens 12 MB),
+// steht in ../bilder.js; dort legt auch das Bildnis eines Blattes ab, das
+// eine Figur tragen soll.
 router.use(requireAuth);
 
 // POST /api/media  { dataUrl, filename }
@@ -46,36 +38,18 @@ router.use(requireAuth);
 // Ein Bild ablegen – eine Karte, ein Bildnis, das Bild einer Figur. Es kommt
 // als data:-URL, wird als Datei neben die Datenbank gelegt (data/medien/) und
 // bekommt eine Kennung, unter der GET es wieder ausliefert. Erlaubt sind nur
-// die Bildformate oben, und höchstens MAX_BYTES.
+// die Bildformate aus ../bilder.js, und höchstens MAX_BYTES.
 router.post('/', express.json({ limit: '20mb' }), (req, res) => {
-  const { dataUrl } = req.body ?? {};
-  const treffer = /^data:([\w./+-]+);base64,(.+)$/s.exec(String(dataUrl ?? ''));
-  if (!treffer) return res.status(400).json({ code: 'bild_fehlt', error: 'Es wurde kein Bild übergeben.' });
-
-  const mime = treffer[1];
-  const endung = ERLAUBT[mime];
-  if (!endung) {
-    return res.status(415).json({ code: 'bildformat_nicht_erlaubt', error: 'Nur PNG, JPEG, WebP, GIF oder AVIF können abgelegt werden.' });
-  }
-
-  const bytes = Buffer.from(treffer[2], 'base64');
-  if (bytes.length === 0) return res.status(400).json({ code: 'bild_leer', error: 'Die Bilddatei ist leer.' });
-  if (bytes.length > MAX_BYTES) {
-    return res.status(413).json({ code: 'bild_zu_gross', error: `Das Bild ist größer als ${Math.round(MAX_BYTES / 1024 / 1024)} MB.` });
+  const bild = bildLesen(req.body?.dataUrl);
+  if (bild.fehler) {
+    const { status, ...rest } = bild.fehler;
+    return res.status(status).json(rest);
   }
 
   if (!req.campaignId) return res.status(409).json({ code: 'keine_kampagne', error: 'Bitte zuerst eine Kampagne wählen.' });
 
-  const id = randomUUID();
-  fs.writeFileSync(path.join(mediaDir, `${id}.${endung}`), bytes);
-  db.prepare('INSERT INTO media (id, filename, mime, bytes, campaign_id, created_at) VALUES (?, ?, ?, ?, ?, ?)').run(
-    id,
-    `${id}.${endung}`,
-    mime,
-    bytes.length,
-    req.campaignId,
-    new Date().toISOString()
-  );
+  const id = bildAblegen(bild, req.campaignId);
+  const { bytes } = bild;
   res.status(201).json({ id, url: `/api/media/${id}`, bytes: bytes.length });
 });
 

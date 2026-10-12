@@ -354,6 +354,14 @@ danach gehen `kampf` und `szene` an alle.
     POST   /api/scenes/ping                  { x, y }
     POST   /api/scenes/nsc-sicht             [SL] { tokenId | null }
 
+**Bildnis als Figurenbild.** Bekommt eine Figur ein Blatt, aber kein eigenes
+Bild – bei `aus-kampf` für jeden Kämpfer mit `characterId`, bei
+`POST …/figuren` mit `characterId` ohne `mediaId`, beim `PATCH` mit
+`characterId` an einer Figur ohne Bild –, setzt der Server `mediaId` auf das
+Bildnis des Blattes (`data.portrait`). Er legt es dafür einmal unter
+`/api/media` ab, benannt nach seinem Inhalt: Dasselbe Bildnis ergibt immer
+dieselbe `mediaId`, keine zweite Datei (`backend/src/bilder.js`).
+
 Eine Szene, die aus einer Karte der Bibliothek entstanden ist, trägt deren
 `mapId` und erbt ihren Maßstab.
 

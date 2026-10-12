@@ -60,6 +60,7 @@ backend/src/
                      zwischen Kampf und Blatt,
                      Initiativebonus, gemeinsam verbergen
   blattmeldung.js    Blattänderungen nur denen melden, die das Blatt sehen
+  bilder.js          Bilder ablegen; das Bildnis eines Blattes als Figurenbild
   beute.js           die Beutekiste: Inhalt und Teilen
   klang.js           der Klangteppich: was aufliegt, wo es steht
   chronicle.js       die Chronik mitschreiben

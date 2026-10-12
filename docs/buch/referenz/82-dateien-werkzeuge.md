@@ -3,7 +3,7 @@
 > Dieses Kapitel schreibt `npm run handbuch` aus dem Code (scripts/handbuch/referenz/).
 > Änderungen gehören in den Code und seine Kommentare, nicht hierher.
 
-Alles unter scripts/ (99 Dateien, 15.316 Zeilen): Start und Tunnel, die Proben und der Vertrag, Drucksatz und dieses Handbuch.
+Alles unter scripts/ (99 Dateien, 15.356 Zeilen): Start und Tunnel, die Proben und der Vertrag, Drucksatz und dieses Handbuch.
 
 ## scripts/
 
@@ -1422,7 +1422,7 @@ Kapitel angelegt haben – und trägt ein, was spätere brauchen.
 
 ### scripts/vertrag/22-kampf-und-blatt.mjs
 
-*99 Zeilen*
+*139 Zeilen*
 
 Vertrag, Kapitel: Kampf und Charakterblatt führen dieselben Werte.
 
@@ -1430,7 +1430,8 @@ Schaden, Heilung und Zustände aus der Kampfliste stehen sofort auf dem
 verknüpften Blatt – und umgekehrt. Verknüpft wird nicht nur über „Runde
 holen“, sondern auch, wenn die Spielleitung eine Figur, die an einem
 Kämpfer hängt, im Figurenfeld an ein Blatt bindet. Temporäre
-Trefferpunkte des Blattes fangen Schaden zuerst ab.
+Trefferpunkte des Blattes fangen Schaden zuerst ab. Und eine Figur, die
+zu einem Blatt auf den Tisch kommt, trägt dessen Bildnis.
 
 Ein Kapitel des Prüfdurchgangs (siehe ../vertrag.mjs). Es bekommt den
 gemeinsamen Stand `lage` – die angemeldeten Klienten und was frühere

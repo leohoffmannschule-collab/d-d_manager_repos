@@ -502,6 +502,11 @@ Sicht.
   Abend mit einem Klick gestellt – samt gewürfelter Initiative. Was
   improvisiert wurde, sichert **Laufenden Kampf sichern** für das nächste Mal.
 - **Figuren aus dem Kampf** legt für jeden Kämpfer eine Figur auf die Karte.
+  Hängt der Kämpfer an einem Charakterblatt, trägt seine Figur dessen
+  **Bildnis**. Dasselbe gilt für eine Figur, die mit Blatt ausgelegt oder
+  ohne eigenes Bild an ein Blatt gebunden wird; ein Bild, das sie schon hat,
+  bleibt. Ein später geändertes Bildnis wandert nicht von selbst auf schon
+  liegende Figuren – neu auslegen oder im Figurenfeld setzen.
 
 ### 6.6 Notizen und Handzettel
 

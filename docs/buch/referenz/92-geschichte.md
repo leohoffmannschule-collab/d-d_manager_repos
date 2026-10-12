@@ -7,7 +7,7 @@ Der Almanach ist in kleinen Schritten gewachsen, und jeder Schritt hat eine Nach
 
 Die Nachrichten sind so abgedruckt, wie sie geschrieben wurden. Die ersten, vom 1. September, sind englisch; ab dem 3. September wurde der Almanach deutsch, im Code wie in seiner Geschichte.
 
-Insgesamt 98 Schritte an 16 Tagen.
+Insgesamt 100 Schritte an 18 Tagen.
 
 ## 1. September 2026
 
@@ -1445,3 +1445,23 @@ Vertrag 367: Ein Zeigefinger aus der Runde erreicht die Spielleitung, hinter dem
 Nebenbei: Die Kommentarprobe lässt Pfade unter docs/druck/ gelten – der Satz der Bücher ist erzeugt und nicht im Git, ein frisch geholter Stand fiel sonst durch.
 
 Proben: Vertrag 387 (+20), Blattprobe 393 (+9). Im Browser durchgespielt mit Spielleitung und Spielerin in getrennten Browsern und am Telefon. Doku: README, Handbuch, Anleitungen für Runde und Spielleitung, Einrichtung, API, CODE.md, Buchkapitel, Hilfe im Almanach; Handbuch (581 Seiten) und Zeilenbuch (1.698 Seiten) neu gedruckt.
+
+## 9. Oktober 2026
+
+### updated version in package.json
+
+`90bfd0e`
+
+## 12. Oktober 2026
+
+### Kampf und Charakterblatt: Schaden, Heilung und Zustände in beide Richtungen
+
+`97ee46f`
+
+Bisher liefen nur die Trefferpunkte zwischen Kampfliste und Blatt hin und her – und nur bei Kämpfern aus „Runde holen“. Wer eine Figur im Figurenfeld an ein Blatt band, bekam einen Kämpfer ohne Verknüpfung.
+
+- kampf/blatt.js: Trefferpunkte und Zustände in beide Richtungen. „Erschöpft“ in der Kampfliste ist auf dem Blatt die Erschöpfungsstufe (an = mindestens 1, aus = 0). Schaden aus dem Kampf zehrt zuerst die temporären TP des Blattes auf.
+- Eine Figur, die an einem Kämpfer hängt und an ein Blatt gebunden wird (POST/PATCH Figur mit characterId), verknüpft auch den Kämpfer; er übernimmt den Stand des Blattes. Lösen löst beide.
+- Speichern des Blattes zieht Trefferpunkte und Zustände aller verknüpften Kämpfer nach; das offene Blatt übernimmt Trefferpunkte, Zustände und Erschöpfung live.
+
+Vertrag 400 (+13, neues Kapitel 22-kampf-und-blatt). Doku: README, Handbuch, Anleitungen für Spielleitung und Runde, API, CODE.md, Buchkapitel, Hilfe im Almanach; Handbuch und Zeilenbuch neu gedruckt.

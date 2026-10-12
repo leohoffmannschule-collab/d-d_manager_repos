@@ -40,12 +40,12 @@ Insgesamt 76 Schlüssel an 147 Stellen.
 | `anmeldung_falsch` | 401 | Name oder Passwort stimmt nicht. | routes/konten/anmeldung.js |
 | `begegnung_nicht_gefunden` | 404 | Begegnung nicht gefunden. | routes/encounters.js |
 | `beute_zu_klein` | 400 | In der Kiste liegt zu wenig, um sie zu teilen. | routes/stash.js |
-| `bild_fehlt` | 400 | Es wurde kein Bild übergeben. | routes/media.js |
-| `bild_leer` | 400 | Die Bilddatei ist leer. | routes/media.js |
+| `bild_fehlt` | 400 | Es wurde kein Bild übergeben. | bilder.js |
+| `bild_leer` | 400 | Die Bilddatei ist leer. | bilder.js |
 | `bild_nicht_gefunden` | 404 | Bild nicht gefunden. | routes/media.js |
-| `bild_zu_gross` | 413 | Das Bild ist größer als … MB. | routes/media.js |
+| `bild_zu_gross` | 413 | Das Bild ist größer als … MB. | bilder.js |
 | `bilddatei_fehlt` | 404 | Zu diesem Bild fehlt die Datei auf der Platte. | routes/media.js |
-| `bildformat_nicht_erlaubt` | 415 | Nur PNG, JPEG, WebP, GIF oder AVIF können abgelegt werden. | routes/media.js |
+| `bildformat_nicht_erlaubt` | 415 | Nur PNG, JPEG, WebP, GIF oder AVIF können abgelegt werden. | bilder.js |
 | `blatt_fremd` | 403 | Dieses Blatt gehört jemand anderem. | routes/charaktere/schreiben.js |
 | `blatt_nicht_sichtbar` | 403 | Dieses Blatt ist nicht für dich bestimmt. | routes/charaktere/abschriften.js, routes/charaktere/lesen.js |
 | `blatt_ungueltig` | 400 | Dieses Blatt kann der Almanach nicht lesen. | routes/charaktere/schreiben.js |

@@ -274,6 +274,10 @@ Aus *Begegnungen* stellst du eine ganze vorbereitete Gruppe auf einmal.
 ### 5.2 Die Runde dazu
 
 **Figuren aus dem Kampf** legt für jeden Kämpfer eine Figur auf die Karte.
+Kämpfer mit Charakterblatt bekommen dabei das **Bildnis des Blattes** als
+Figurenbild – die Heldinnen stehen also mit ihrem Gesicht auf der Karte.
+Bindest du eine Figur ohne Bild an ein Blatt, bekommt sie das Bildnis
+ebenfalls. Ändert jemand sein Bildnis später, lege die Figur neu aus.
 Die Spieler würfeln ihre **Initiative selbst** am Spieltisch; sie steht
 sofort in deiner Liste. NSC-Blätter werden dabei übergangen.
 

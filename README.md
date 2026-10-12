@@ -126,7 +126,8 @@ Was einer ändert, sehen die anderen sofort – ohne Neuladen.
   mit einem Klick mehrfach in den Kampf stellen („3 Goblins“) – wahlweise **verborgen**, bis der
   Hinterhalt zuschnappt.
 - **Szenen**: Karten hochladen, Raster einstellen, Szene auf den Tisch legen, Figuren aus dem laufenden
-  Kampf auslegen, Figuren benennen, einfärben, vergrößern, mit einem Bildnis versehen oder verbergen.
+  Kampf auslegen, Figuren benennen, einfärben, vergrößern, mit einem Bildnis versehen oder verbergen. Eine Figur,
+  die zu einem Charakterblatt gehört, trägt dabei von selbst das Bildnis des Blattes.
 - **Vorhang**: Ein Griff, und die Runde sieht vom Tisch gar nichts mehr – kein Bild, keine Figuren, nicht
   einmal den Namen der Szene. Dahinter wechselst du in Ruhe die Karte, stellst die Gegner und malst den
   Nebel; die Runde sieht erst, wenn du öffnest. Kampfliste, Beute und Handzettel laufen daneben weiter,

@@ -211,7 +211,7 @@ Der Vertrag spielt einen Abend in 22 Kapiteln, jedes baut auf dem vorigen auf (s
 | 19-fehlerschluessel | 2 | Vertrag, Kapitel: Jeder Fehler trägt einen Schlüssel. |
 | 20-werkzeuge | 13 | Vertrag, Kapitel: Die Werkzeuge auf dem Rechner des Almanachs. |
 | 21-luecken | 62 | Vertrag, Kapitel: Die geschlossenen Lücken. |
-| 22-kampf-und-blatt | 13 | Vertrag, Kapitel: Kampf und Charakterblatt führen dieselben Werte. |
+| 22-kampf-und-blatt | 19 | Vertrag, Kapitel: Kampf und Charakterblatt führen dieselben Werte. |
 
 ### 01-konten
 
@@ -509,7 +509,8 @@ Schaden, Heilung und Zustände aus der Kampfliste stehen sofort auf dem
 verknüpften Blatt – und umgekehrt. Verknüpft wird nicht nur über „Runde
 holen“, sondern auch, wenn die Spielleitung eine Figur, die an einem
 Kämpfer hängt, im Figurenfeld an ein Blatt bindet. Temporäre
-Trefferpunkte des Blattes fangen Schaden zuerst ab.
+Trefferpunkte des Blattes fangen Schaden zuerst ab. Und eine Figur, die
+zu einem Blatt auf den Tisch kommt, trägt dessen Bildnis.
 
 Ein Kapitel des Prüfdurchgangs (siehe ../vertrag.mjs). Es bekommt den
 gemeinsamen Stand `lage` – die angemeldeten Klienten und was frühere

@@ -5,7 +5,8 @@
  * verknüpften Blatt – und umgekehrt. Verknüpft wird nicht nur über „Runde
  * holen“, sondern auch, wenn die Spielleitung eine Figur, die an einem
  * Kämpfer hängt, im Figurenfeld an ein Blatt bindet. Temporäre
- * Trefferpunkte des Blattes fangen Schaden zuerst ab.
+ * Trefferpunkte des Blattes fangen Schaden zuerst ab. Und eine Figur, die
+ * zu einem Blatt auf den Tisch kommt, trägt dessen Bildnis.
  *
  * Ein Kapitel des Prüfdurchgangs (siehe ../vertrag.mjs). Es bekommt den
  * gemeinsamen Stand `lage` – die angemeldeten Klienten und was frühere
@@ -93,6 +94,45 @@ export default async function kampfUndBlatt(lage) {
   gleich((await zeile()).characterId ?? null, null, 'Wird die Figur gelöst, löst sich auch ihr Kämpfer vom Blatt');
 
   await sl.ruf(`/scenes/figuren/${figur.id}`, { methode: 'DELETE' });
+
+  // Das Bildnis des Blattes wandert auf die Figur: beim Auslegen aus dem
+  // Kampf, beim Auslegen mit Blatt und beim Binden einer Figur ohne Bild.
+  const PIXEL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+  const mitBild = (await spieler.ruf(`/characters/${blatt.id}`)).daten;
+  mitBild.data.portrait = PIXEL;
+  await spieler.ruf(`/characters/${blatt.id}`, { methode: 'PUT', koerper: { name: mitBild.name, data: mitBild.data } });
+  // Wieder verknüpfen (oben wurde gelöst): eine Figur mit Kämpfer und Blatt
+  // auslegen und gleich wieder abräumen – die Verknüpfung bleibt.
+  const brueckenfigur = (
+    await sl.ruf(`/scenes/${szene.id}/figuren`, {
+      methode: 'POST',
+      koerper: { name: 'Brann', x: 0, y: 0, combatantId: verknuepft.id, characterId: blatt.id },
+    })
+  ).daten;
+  await sl.ruf(`/scenes/figuren/${brueckenfigur.id}`, { methode: 'DELETE' });
+  gleich((await zeile()).characterId, blatt.id, 'Eine Figur mit Kämpfer und Blatt verknüpft beide');
+
+  const vorher = new Set((await sl.ruf('/scenes/aktiv')).daten.tokens.map((t) => t.id));
+  await sl.ruf(`/scenes/${szene.id}/figuren/aus-kampf`, { methode: 'POST', koerper: {} });
+  const nachher = (await sl.ruf('/scenes/aktiv')).daten.tokens;
+  const ausKampf = nachher.find((t) => !vorher.has(t.id) && t.combatantId === verknuepft.id);
+  pruefe(Boolean(ausKampf?.mediaId), 'Figuren aus dem Kampf tragen das Bildnis des Blattes');
+  const bild = await sl.ruf(`/media/${ausKampf?.mediaId}`, { roh: true });
+  gleich(bild.status, 200, 'Das Bildnis liegt als Bild bereit');
+
+  const zweite = (
+    await sl.ruf(`/scenes/${szene.id}/figuren`, { methode: 'POST', koerper: { name: 'Brann II', x: 0, y: 0, characterId: blatt.id } })
+  ).daten;
+  gleich(zweite.mediaId, ausKampf?.mediaId, 'Auch eine Figur mit Blatt trägt es – dasselbe Bild, keine zweite Datei');
+
+  const ohne = (await sl.ruf(`/scenes/${szene.id}/figuren`, { methode: 'POST', koerper: { name: 'Brann III', x: 0, y: 0 } })).daten;
+  gleich(ohne.mediaId ?? null, null, 'Eine Figur ohne Blatt bleibt ohne Bild');
+  const gebunden = (await sl.ruf(`/scenes/figuren/${ohne.id}`, { methode: 'PATCH', koerper: { characterId: blatt.id } })).daten;
+  gleich(gebunden.mediaId, ausKampf?.mediaId, 'Wird sie an das Blatt gebunden, trägt sie danach sein Bildnis');
+
+  for (const t of nachher.filter((t) => !vorher.has(t.id))) await sl.ruf(`/scenes/figuren/${t.id}`, { methode: 'DELETE' });
+  await sl.ruf(`/scenes/figuren/${zweite.id}`, { methode: 'DELETE' });
+  await sl.ruf(`/scenes/figuren/${ohne.id}`, { methode: 'DELETE' });
   await sl.ruf(`/encounter/combatants/${verknuepft.id}`, { methode: 'DELETE' });
   await sl.ruf(`/characters/${blatt.id}`, { methode: 'DELETE' });
 }

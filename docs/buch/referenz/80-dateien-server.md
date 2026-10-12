@@ -3,7 +3,7 @@
 > Dieses Kapitel schreibt `npm run handbuch` aus dem Code (scripts/handbuch/referenz/).
 > Änderungen gehören in den Code und seine Kommentare, nicht hierher.
 
-Alle Dateien unter backend/src und backend/scripts (117 Dateien, 12.307 Zeilen), nach Ordnern. Zu jeder Datei ihr Kopfkommentar – dort steht, wozu es sie gibt und warum sie so gebaut ist – und ihre Ausfuhren mit dem Kommentar darüber.
+Alle Dateien unter backend/src und backend/scripts (118 Dateien, 12.400 Zeilen), nach Ordnern. Zu jeder Datei ihr Kopfkommentar – dort steht, wozu es sie gibt und warum sie so gebaut ist – und ihre Ausfuhren mit dem Kommentar darüber.
 
 Einen Überblick, wie die Teile zusammenspielen, gibt das Kapitel über den Server im Teil „Wie es gebaut ist“.
 
@@ -219,6 +219,26 @@ nachprüfen will, wenn am Tisch jemand fragt, wo sein Kupferstück blieb.
 - `inKupfer` (const) – Ein Münzhaufen in Kupfer umgerechnet – die gemeinsame Währung fürs Teilen.
 - `ausKupfer` (function) – Kupfer wieder in Münzen fassen – ohne Elektrum, das am Tisch ohnehin niemand haben will.
 - `teile` (function) – Beute teilen, so wie es am Tisch wirklich zugeht.
+
+### backend/src/bilder.js
+
+*101 Zeilen*
+
+Bilder als Dateien ablegen – für den Upload (routes/media.js) und für das
+Bildnis eines Charakterblattes, das eine Figur auf dem Tisch tragen soll.
+
+Bilder liegen als Dateien neben der Datenbank (im Ordner `medien`), nur
+der Verweis steht in der Tabelle `media`. Ankommen dürfen sie als
+`data:`-URL, wie der Browser sie aus einer Datei erzeugt – und wie das
+Blatt sein Bildnis speichert (`data.portrait`).
+
+**Ausfuhren**
+
+- `MAX_BYTES` (const) – Höchstens so groß darf ein Bild sein.
+- `ERLAUBT` (const) – Die erlaubten Bildformate und ihre Dateiendung.
+- `bildLesen` (function) – Eine data:-URL lesen und prüfen.
+- `bildAblegen` (function) – Ein gelesenes Bild als Datei ablegen und eintragen. Gibt die Kennung zurück.
+- `bildnisFuerFigur` (function) – Das Bild, das eine Figur zu diesem Blatt tragen soll – als Kennung in `media`, oder null, wenn das Blatt keines hat.
 
 ### backend/src/blattmeldung.js
 
@@ -1513,7 +1533,7 @@ aber nur, wenn nichts anderes mehr darauf zeigt.
 
 ### backend/src/routes/media.js
 
-*141 Zeilen*
+*115 Zeilen*
 
 Bilder: hochladen und ausliefern.
 
@@ -1873,7 +1893,7 @@ hält die Rolle vom Moment des Verbindens fest (siehe events.js).
 
 ### backend/src/routes/spieltisch/figuren.js
 
-*210 Zeilen*
+*228 Zeilen*
 
 Die Figuren auf dem Tisch: auslegen, schieben, wegnehmen, aus dem Kampf
 holen.

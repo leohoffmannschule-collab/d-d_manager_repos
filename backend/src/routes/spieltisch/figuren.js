@@ -16,6 +16,7 @@ import { darfBewegen, meldeFigur, sendeSzene } from '../../spieltisch/melden.js'
 import { sendeKampf } from '../../kampf/sicht.js';
 import { verbergeGemeinsam } from '../../kampf/verbergen.js';
 import { kaempferVerknuepfen } from '../../kampf/blatt.js';
+import { bildnisFuerFigur } from '../../bilder.js';
 import { clamp, istFarbe, toNumber } from '../../werte.js';
 
 const router = Router();
@@ -62,7 +63,8 @@ router.post('/:id/figuren', requireDm, (req, res) => {
     toNumber(body.y, 0),
     clamp(toNumber(body.size, 1), 1, 6),
     istFarbe(body.color) ? body.color : '#9a2b22',
-    body.mediaId ?? null,
+    // Ohne eigenes Bild trägt eine Figur mit Blatt dessen Bildnis.
+    body.mediaId ?? bildnisFuerFigur(body.characterId ?? null, req.campaignId),
     body.characterId ?? null,
     body.combatantId ?? null,
     body.hidden ? 1 : 0,
@@ -100,6 +102,12 @@ router.patch('/figuren/:id', (req, res) => {
     return res.status(400).json({ code: 'verweis_unbekannt', error: 'Blatt oder Kämpfer gibt es in dieser Kampagne nicht.' });
   }
   const verborgen = !nurBewegen && 'hidden' in body ? (body.hidden ? 1 : 0) : row.hidden;
+  // Wird eine Figur ohne Bild an ein Blatt gebunden, trägt sie danach dessen
+  // Bildnis. Ein Bild, das sie schon hat, bleibt.
+  const bildBeimBinden =
+    mitBlatt && body.characterId && !row.media_id && !('mediaId' in body)
+      ? bildnisFuerFigur(body.characterId, req.campaignId)
+      : null;
   // Hängt die Figur an einem Kämpfer, verbirgt oder zeigt sich die Zeile in
   // der Kampfliste mit ihr (kampf/verbergen.js) – im selben Block, damit
   // nie nur eine der beiden Seiten umgelegt ist.
@@ -115,7 +123,7 @@ router.patch('/figuren/:id', (req, res) => {
       !nurBewegen && typeof body.name === 'string' ? body.name.slice(0, 60) : row.name,
       !nurBewegen && 'size' in body ? clamp(toNumber(body.size, row.size), 1, 6) : row.size,
       !nurBewegen && istFarbe(body.color) ? body.color : row.color,
-      !nurBewegen && 'mediaId' in body ? (body.mediaId ?? null) : row.media_id,
+      !nurBewegen && 'mediaId' in body ? (body.mediaId ?? null) : bildBeimBinden ?? row.media_id,
       verborgen,
       !nurBewegen && 'lightBright' in body ? clamp(toNumber(body.lightBright, row.light_bright), 0, 200) : row.light_bright,
       !nurBewegen && 'lightDim' in body ? clamp(toNumber(body.lightDim, row.light_dim), 0, 200) : row.light_dim,
@@ -175,6 +183,15 @@ router.post('/:id/figuren/aus-kampf', requireDm, (req, res) => {
      VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?)`
   );
 
+  // Ein Kämpfer, der an einem Blatt hängt, trägt auf dem Tisch dessen
+  // Bildnis – es sei denn, er hat schon ein eigenes Figurenbild. Abgelegt
+  // wird es vor dem Block, weil dabei eine Datei geschrieben wird.
+  const bildnisse = new Map(
+    kaempfer
+      .filter((k) => !vorhanden.has(k.id) && !k.media_id && k.character_id)
+      .map((k) => [k.id, bildnisFuerFigur(k.character_id, req.campaignId)])
+  );
+
   // Ein Block für alle: Bricht es beim dritten Goblin ab, liegt keiner auf
   // dem Tisch statt zwei von fünf.
   transaktion(() => {
@@ -189,8 +206,9 @@ router.post('/:id/figuren/aus-kampf', requireDm, (req, res) => {
         (platz % 12) * raster,
         Math.floor(platz / 12) * raster,
         k.type === 'pc' ? '#2d4f7c' : k.type === 'npc' ? '#2f6b4f' : '#9a2b22',
-        // Ein Kämpfer mit Figurenbild steht damit auch auf der Karte.
-        k.media_id ?? null,
+        // Ein Kämpfer mit Figurenbild steht damit auch auf der Karte, sonst
+        // mit dem Bildnis seines Blattes.
+        k.media_id ?? bildnisse.get(k.id) ?? null,
         k.character_id,
         k.id,
         // Verborgen, wenn der Kämpfer es ist – die beiden gehören zusammen

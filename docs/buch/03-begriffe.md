@@ -167,7 +167,7 @@ Wofür ein Feld steht (`scenes.unit`, `scenes.scale`): vorgegeben sind 5 Fuß wi
 
 ### Figur
 
-Eine Marke auf der Karte (Tabelle `tokens`): Name, Stelle, Größe in Feldern, Farbe, Bild – und auf Wunsch zwei Verknüpfungen: mit einem **Charakterblatt** (dann bewegt sie, wem das Blatt gehört, und ihre Sinne bestimmen die Sicht) und mit einem **Kämpfer** (dann zeigt sie dessen Trefferpunkte und leuchtet, wenn er am Zug ist). Im Code heißen Figuren `token`.
+Eine Marke auf der Karte (Tabelle `tokens`): Name, Stelle, Größe in Feldern, Farbe, Bild – und auf Wunsch zwei Verknüpfungen: mit einem **Charakterblatt** (dann bewegt sie, wem das Blatt gehört, und ihre Sinne bestimmen die Sicht) und mit einem **Kämpfer** (dann zeigt sie dessen Trefferpunkte und leuchtet, wenn er am Zug ist). Hat sie beides, hängt auch der Kämpfer am Blatt: Schaden, Heilung und Zustände laufen dann zwischen Kampfliste und Blatt. Eine Figur mit Blatt, aber ohne eigenes Bild trägt das Bildnis des Blattes. Im Code heißen Figuren `token`.
 
 ### Verborgene Figur
 
