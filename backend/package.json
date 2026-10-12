@@ -1,6 +1,6 @@
 {
   "name": "dnd-manager-backend",
-  "version": "1.0.0",
+  "version": "1.15.2",
   "description": "Backend API for the Pen & Paper character manager (D&D 5e API cache + character storage)",
   "type": "module",
   "main": "src/server.js",
